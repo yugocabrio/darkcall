@@ -1,8 +1,11 @@
 [workspace]
-members = ["crates/auction-core", "crates/input-tool"]
+members = ["crates/auction-core", "crates/input-tool", "crates/native-gate", "crates/output-binding"]
 resolver = "2"
 
 [workspace.package]
 edition = "2024"
 rust-version = "1.90"
 license = "MIT"
+
+[patch.crates-io]
+orchard = { git = "https://github.com/conradoplg/orchard.git", rev = "42015f15733b95e179189628d6fa34d92b5b3b8b" }

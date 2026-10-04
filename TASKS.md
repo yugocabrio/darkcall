@@ -23,19 +23,27 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Client ZK proofs bind bid openings to all three share-pair hashes. All 12
     delivered pairs and the committed MPC root verified in the synthetic gate;
     changed shares, price and root were rejected. Signed acceptance/funding is next.
-- [ ] P0.4 Pin the Ironwood/PCZT/FROST stack; offline native transaction and signature tests.
+- [x] P0.4 Pin the Ironwood/PCZT/FROST stack; offline native transaction and signature tests.
   - Source pinned; upstream's 3 v6 sighash regression tests pass. Own transaction
-    construction, threshold signatures and native decryption still unfinished.
+    construction, native proofs, threshold signatures, extraction and 6 recipient
+    decryptions passed. Both ordinary and zero seller/operator output cases passed.
 - [ ] P0.5 Receive testnet funds, sign 2-of-3, broadcast and decrypt the recipient note.
-- [ ] P0.6 Prove one private settlement row binds to a native note commitment.
+- [x] P0.6 Prove one private settlement row binds to a native note commitment.
+  - Actual Halo2 proof (4,928 bytes) verified against a native Ironwood output;
+    changed row hash/cmx and amount/recipient checks rejected tampering.
+    Prototype Pallas hash is not connected to the BN254 auction plan. Classical
+    binding only; ZIP 2005 rseed derivation/ciphertext correctness not constrained.
 - [ ] P0.7 Reject amount, recipient and transaction substitution; measure runtime and memory.
 - [ ] P0.8 Confirm planned padding, action count, bytes and fee in the native builder.
+  - Four-input/six-output regular and two-zero-row transactions proved, verified,
+    and decrypted: 21,790 bytes, standard fee 30,000. Other supported counts remain.
 
 ## Priority 1 · integration
 
 - [ ] Canonical auction conditions, ticket IDs, accepted roots and settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.
 - [ ] Cross-language generated fixtures and committed-input circuit equivalence.
+- [ ] Shared auction/native row commitment encoding with fully constrained hash links.
 - [ ] Funding ledger and one-note/one-ticket enforcement.
 - [ ] Signed acceptance receipts and consistent final root.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.

@@ -10,7 +10,10 @@ reconstructing every bid. Native Ironwood settlement uses a 2-of-3 FROST escrow.
 has been verified yet.** The integer reference oracle and initial four-bid Noir
 circuit pass their tests. Four client input proofs, delivered-share checks and a
 commitment-bound three-process REP3 auction proof now verify using the standalone
-coNoir verifier; funding authentication and native settlement are unfinished.
+coNoir verifier. An offline six-action Ironwood transaction passes native proof
+verification, 2-of-3 FROST signing and all recipient decryptions. A separate Halo2
+prototype binds one private row to a native output commitment. Funding, testnet
+execution and the connection between the auction plan and binding proof are unfinished.
 Reference calculations are correctness oracles, not the live private auction.
 
 ## Project records
@@ -53,6 +56,8 @@ cargo clippy --workspace --all-targets -- -D warnings
 .deps/noir-1.0.0-rc.2/nargo test --program-dir circuits/bid_input
 .deps/noir-1.0.0-rc.2/nargo test --program-dir circuits/auction4
 .deps/noir-1.0.0-rc.2/nargo compile --program-dir circuits/auction4
+cargo run --release --locked -p darkcall-native-gate -- --prove
+cargo run --release --locked -p darkcall-output-binding
 ```
 
 See [toolchain pins](docs/toolchains.md) before compiling circuits and
@@ -60,3 +65,5 @@ See [toolchain pins](docs/toolchains.md) before compiling circuits and
 The runner is `python3 -B scripts/run_mpc_gate.py`; it uses synthetic inputs on one
 host. The current proof binds to the supplied accepted root. Signed acceptance
 receipts and funding checks are needed to establish which root is authoritative.
+Read [native gate](docs/native-gate.md) and [output binding experiment](docs/output-binding.md)
+before interpreting their evidence. The synthetic transactions cannot be broadcast.

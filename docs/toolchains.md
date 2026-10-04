@@ -8,6 +8,8 @@
 | frost-tools | 06c0dbdbb1bac9b99cd255e74ba2f387c295e660 | Ironwood v6 regression tests pass (3 tests) |
 | Orchard FROST fork | 42015f15733b95e179189628d6fa34d92b5b3b8b | frost-tools Cargo patch |
 | RedDSA FROST | ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead | frost-tools dependency pin |
+| Native APIs | orchard 0.15.5, pczt 0.8.0-rc.1, zcash_primitives 0.29.0, zcash_protocol 0.10.0 | Our offline native gate passed |
+| Halo2 | halo2_proofs 0.3.5, halo2_gadgets 0.5.0 | Native row proof passed |
 | Local Rust | 1.93.0 | Actual rustc output on October 4, 2026 |
 
 Apple Silicon Noir release archive:
@@ -59,6 +61,13 @@ The public TLS test keys from upstream are for localhost testing only.
 At this upstream pin, the binary verifier treats a public-input filename with an
 extension as a format mismatch. The runner uses extensionless public-input files.
 Matching external Barretenberg verification is still an unfinished gate.
+The exact source commit is 87aa5283d5b0cab6632ed49fdd25f6548d2ba91f.
+Apple Clang 15 requires the explicit template deduction guide recorded in
+`patches/barretenberg-apple-clang15.patch`. A BB_LITE build reached linking but
+failed because api_msgpack refers to excluded IPC symbols. The current retry
+uses BB_LITE=OFF, AVM=OFF, Unix Makefiles and -j 2 with the same source patch.
+`scripts/verify_external.py` will check its source/patch and verify an existing
+MPC proof once the build completes; it has not passed yet.
 
 Nargo rejects prerelease versions in the package compiler_version field.
 The rc.2 pin is enforced by the selected binary path, not that field. Initial

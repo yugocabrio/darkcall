@@ -1,0 +1,17 @@
+{
+  "auction_plan_hash_connected": false,
+  "binding_assumption": "classical commitment binding",
+  "changed_amount_rejected": true,
+  "changed_native_commitment_rejected": true,
+  "changed_receiver_rejected": true,
+  "changed_row_hash_rejected": true,
+  "ciphertext_proved": false,
+  "experimental_plan_hash": "Pallas Poseidon P128Pow5T3, length 21",
+  "k": 12,
+  "mock_seconds": 0.572470125,
+  "proof_bytes": 4928,
+  "proof_verified": true,
+  "scope": "one private row to actual native Ironwood output commitment",
+  "total_seconds": 9.528694417,
+  "zip2005_rseed_derivation_constrained": false
+}

@@ -1,0 +1,12 @@
+diff --git a/barretenberg/cpp/src/barretenberg/dsl/acir_format/acir_to_constraint_buf.cpp b/barretenberg/cpp/src/barretenberg/dsl/acir_format/acir_to_constraint_buf.cpp
+index e00b571..3959076 100644
+--- a/barretenberg/cpp/src/barretenberg/dsl/acir_format/acir_to_constraint_buf.cpp
++++ b/barretenberg/cpp/src/barretenberg/dsl/acir_format/acir_to_constraint_buf.cpp
+@@ -32,6 +32,7 @@ using namespace bb;
+ template <class... Ts> struct overloaded : Ts... {
+     using Ts::operator()...;
+ };
++template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+ 
+ bb::fr from_buffer_with_bound_checks(const std::vector<uint8_t>& buffer)
+ {

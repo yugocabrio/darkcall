@@ -1,12 +1,12 @@
 # DarkCall status
 
-Updated: 2026-10-04 20:13 UTC.
+Updated: 2026-10-04 20:34 UTC.
 
 ## Current stage
 
-Implementation authorized. First specification/task-queue commit pushed to main.
-Reference oracle and four-bid Noir calculation circuit implemented. Initial actual
-REP3 witness/proof generation and standalone ZK verification passed.
+Implementation authorized. Specification, oracle and committed-input MPC milestone
+pushed to main (d3c63f0). Offline native signing/transaction and one-row native
+binding experiments passed; their coherent milestone is being prepared for push.
 
 ## Demonstrated
 
@@ -26,12 +26,27 @@ REP3 witness/proof generation and standalone ZK verification passed.
   approximately 0.6 seconds and proof stage approximately 3 seconds on this Mac.
   These are single-host observations, not independent-host benchmarks.
 - Recovery and fresh runner reproduction are recorded in evidence/.
+- Four client ZK input proofs against the trusted circuit key and all twelve
+  delivered REP3 pair checks passed. Changed shares, public price and accepted
+  root were rejected. See evidence/2026-10-04-committed-input-gate.json.
+- Our offline v6 Ironwood/PCZT/FROST gate passed proof generation, 2-of-3
+  signatures, full transaction extraction/verification and 6 recipient decryptions.
+  4 synthetic inputs, 6 outputs/actions, standard fee 30,000, 21,790 transaction
+  bytes. A second proved case includes zero seller/operator rows with the same
+  shape and decryption of all 6 outputs. Neither fabricated transaction is broadcastable.
+- One-row Halo2 proof binds a private amount/expanded recipient to a native
+  Sinsemilla cmx: K=12, 4,928 proof bytes, 9.53 seconds observed total. Changed
+  row hash/cmx, amount and recipient were rejected. This prototype uses Pallas
+  Poseidon, assumes classical binding, and has not been connected to the auction
+  plan. ZIP 2005 rseed derivation and ciphertext are not constrained in it.
+- Latest strict workspace clippy passed (session 52787 consumed).
 
 ## Not demonstrated
 
 Signed accepted-input/funding authentication, matching external Barretenberg
-verification, native threshold spends, testnet settlement, native output binding, fixed native transaction
-shape and recipient decryption. No deployed independent-host privacy validation.
+verification, testnet-funded threshold spends, broadcast/finality, and binding
+the actual auction settlement plan to native outputs. Other supported native
+input counts remain untested. No deployed independent-host privacy validation.
 Per-node peak RAM and network bytes have not been measured.
 
 ## Active implementation
@@ -55,17 +70,35 @@ Jobs 54829, 52988 and 57960 completed with exit 0 and were consumed. Logs are
 
 ## Next action
 
-Evaluate the matching external Barretenberg verifier and construct our own native
-Ironwood/PCZT/FROST transaction. Follow with signed acceptance/funding metadata and
-native output binding. The current circuit outputs price and sold count and binds
-the supplied accepted root; it does not establish an authoritative funding root or
-native settlement. Do not repeat passed gates without a change or unresolved concern.
+Connect the auction plan to native row commitments with a hash constrained in
+both circuit families. Evaluate the matching C++ verifier while it builds.
+Signed acceptance/funding metadata and testnet wallet integration also remain.
+The auction proof currently outputs price/sold count and binds the supplied root;
+it does not establish an authoritative funding root or native settlement.
+Do not repeat passed gates without a change or unresolved concern.
 
 ## Running jobs
 
-- Tool session 77458: matching Barretenberg source build, target bb, -j 2.
-  Source under .deps/barretenberg-src; log .local/barretenberg-build.log.
-  Inspect this job before starting another build.
+- Tool session 93437: matching Barretenberg full source build, target bb, -j 2.
+  Source .deps/barretenberg-src, commit 87aa5283d5b0cab6632ed49fdd25f6548d2ba91f.
+  Log .local/barretenberg-full-build.log, BB_LITE=OFF, AVM=OFF.
+  Initial session 77458 failed under Apple Clang 15 on template deduction.
+  One-line compatibility patch: patches/barretenberg-apple-clang15.patch.
+  Retry session 25775 then failed at linking because BB_LITE excludes IPC symbols
+  still used by api_msgpack. Both failed sessions were consumed. The full build
+  changes that option without another source patch; inspect before duplicate work.
+
+Completed and consumed: native proof 91827, native tests 14189, binding proof
+74999, zero-row proof 42504, strict clippy 52787. Summaries are in evidence/.
+Workspace tests 59783 passed (7 oracle, 1 input hash, 2 native tests) and were
+consumed. Binding proof validation is an executable experiment, not a unit test.
+
+Fast native construction run succeeded: 4 synthetic Ironwood spends, 6 requested
+outputs under standard ZIP 317 fee 30,000, 2-of-3 FROST signatures and changed
+sighash rejection. Two native tests passed, including zero seller/operator rows
+that retain all 6 action/output slots and decrypt the zero-valued output notes.
+Pins follow frost-tools' lockfile: native registry RedDSA 0.5.1 and rerandomized
+FROST 2.1.0, rather than newly resolved 0.5.2/2.2.0.
 
 ## Completed jobs
 
