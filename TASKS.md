@@ -16,9 +16,10 @@ autonomously, incorporate later human/ChatGPT reviews.
 ## Priority 0 · smallest technical gates
 
 - [x] P0.1 Pin coNoir/Nargo/Barretenberg; compile a four-bid circuit.
-- [ ] P0.2 Enter actual REP3 shares, jointly generate a ZK proof, verify using the normal verifier.
+- [x] P0.2 Enter actual REP3 shares, jointly generate a ZK proof, verify using the normal verifier.
   - Four separate synthetic input files, joint witness/proof and standalone coNoir
-    verification passed. Matching external Barretenberg verification remains open.
+    verification passed. Matching C++ Barretenberg verification also passed, with
+    the trusted key matching exactly and altered price/root rejected.
 - [ ] P0.3 Validate shares against bid commitments; reject bad shares and duplicate tickets.
   - Client ZK proofs bind bid openings to all three share-pair hashes. All 12
     delivered pairs and the committed MPC root verified in the synthetic gate;

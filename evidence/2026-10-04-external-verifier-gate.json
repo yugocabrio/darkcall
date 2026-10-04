@@ -1,0 +1,17 @@
+{
+  "barretenberg_source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+  "compatibility_patches": [
+    "Apple Clang 15 deduction guide",
+    "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"
+  ],
+  "zk": true,
+  "passed": true,
+  "matching_key": true,
+  "altered_price_rejected": true,
+  "altered_root_rejected": true,
+  "circuit_sha256": "00a09a0fc7a2831d1b24aa18f8cf528f251ee9a22c12e82b3981f98f37982ffb",
+  "seconds": 0.894,
+  "rejection_messages_checked": true,
+  "scope": "matching external C++ verification of the committed four-bid REP3 proof",
+  "independent_hosts": false
+}

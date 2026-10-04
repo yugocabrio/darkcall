@@ -25,18 +25,20 @@ def main():
     if pin != PIN or not BB.is_file():
         raise RuntimeError("Build the pinned C++ verifier first")
     actual_patch = subprocess.check_output(["git", "-C", str(SOURCE), "diff", "--"], text=True)
-    expected_patch = (ROOT / "patches/barretenberg-apple-clang15.patch").read_text()
+    expected_patch = (ROOT / "patches/barretenberg-apple-clang15.patch").read_text() + (ROOT / "patches/barretenberg-macos-ipc.patch").read_text()
     if actual_patch != expected_patch:
         raise RuntimeError("Unexpected source changes in the verifier checkout")
     out = run / "external-bb"
     out.mkdir(exist_ok=False)
-    summary = {"barretenberg_source": PIN, "compiler_compatibility_patch": "Apple Clang 15 deduction guide", "zk": True, "passed": False}
+    summary = {"barretenberg_source": PIN, "compatibility_patches": ["Apple Clang 15 deduction guide", "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"], "zk": True, "passed": False}
 
     def call(name, command, expected=0):
         with (out / (name + ".log")).open("wb") as log:
             result = subprocess.run([str(BB), *map(str, command)], stdout=log, stderr=subprocess.STDOUT, timeout=180)
         if (expected == 0 and result.returncode != 0) or (expected != 0 and result.returncode == 0):
             raise RuntimeError(name + " unexpected verifier exit " + str(result.returncode))
+        if expected != 0 and "Proof verification failed" not in (out / (name + ".log")).read_text():
+            raise RuntimeError(name + " did not report cryptographic proof rejection")
         return result.returncode
 
     start = time.monotonic()

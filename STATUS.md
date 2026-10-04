@@ -1,12 +1,13 @@
 # DarkCall status
 
-Updated: 2026-10-04 20:34 UTC.
+Updated: 2026-10-04 21:00 UTC.
 
 ## Current stage
 
 Implementation authorized. Specification, oracle and committed-input MPC milestone
 pushed to main (d3c63f0). Offline native signing/transaction and one-row native
-binding experiments passed; their coherent milestone is being prepared for push.
+binding experiments were pushed in c351750. Matching external C++ verification
+has now passed. Shared SHA-256 links are being implemented and measured.
 
 ## Demonstrated
 
@@ -39,12 +40,14 @@ binding experiments passed; their coherent milestone is being prepared for push.
   row hash/cmx, amount and recipient were rejected. This prototype uses Pallas
   Poseidon, assumes classical binding, and has not been connected to the auction
   plan. ZIP 2005 rseed derivation and ciphertext are not constrained in it.
+- Matching C++ Barretenberg derived the identical trusted verification key,
+  accepted the MPC proof and cryptographically rejected altered price/root.
+  Evidence: evidence/2026-10-04-external-verifier-gate.json.
 - Latest strict workspace clippy passed (session 52787 consumed).
 
 ## Not demonstrated
 
-Signed accepted-input/funding authentication, matching external Barretenberg
-verification, testnet-funded threshold spends, broadcast/finality, and binding
+Signed accepted-input/funding authentication, testnet-funded threshold spends, broadcast/finality, and binding
 the actual auction settlement plan to native outputs. Other supported native
 input counts remain untested. No deployed independent-host privacy validation.
 Per-node peak RAM and network bytes have not been measured.
@@ -79,14 +82,14 @@ Do not repeat passed gates without a change or unresolved concern.
 
 ## Running jobs
 
-- Tool session 93437: matching Barretenberg full source build, target bb, -j 2.
-  Source .deps/barretenberg-src, commit 87aa5283d5b0cab6632ed49fdd25f6548d2ba91f.
-  Log .local/barretenberg-full-build.log, BB_LITE=OFF, AVM=OFF.
-  Initial session 77458 failed under Apple Clang 15 on template deduction.
-  One-line compatibility patch: patches/barretenberg-apple-clang15.patch.
-  Retry session 25775 then failed at linking because BB_LITE excludes IPC symbols
-  still used by api_msgpack. Both failed sessions were consumed. The full build
-  changes that option without another source patch; inspect before duplicate work.
+- Tool session 17590: SHA-256 shared input gate. Run
+  .local/mpc-row-hash-20261004T204921Z. Split, witness and VK passed; proving key
+  construction is still in progress. Per-process RSS is recorded by the runner.
+- Tool session 47628: linked Halo2 SHA-256 gate. Build passed; proof experiment
+  in progress. Log .local/halo2-sha-gate.log. Vendored linked APIs are experimental.
+- Barretenberg full source build 93437 and compatibility rebuild 81310 finished
+  successfully and were consumed. External verifier 68694 finished successfully;
+  consume it before polling again. Earlier startup failure 7106 was consumed.
 
 Completed and consumed: native proof 91827, native tests 14189, binding proof
 74999, zero-row proof 42504, strict clippy 52787. Summaries are in evidence/.

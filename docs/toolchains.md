@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | co-snarks | 467a2abbad940d40ed78f38d424cc21920988976 | Upstream workspace declares Rust 1.90 and Noir rc.2 |
 | Noir / Nargo | v1.0.0-rc.2 | coNoir compatibility README |
-| Barretenberg | v5.0.0-nightly.20260522 | coNoir compatibility README; source build in progress; global binary is an older nightly |
+| Barretenberg | v5.0.0-nightly.20260522 | coNoir compatibility README; source build and external verification passed; global binary is an older nightly |
 | frost-tools | 06c0dbdbb1bac9b99cd255e74ba2f387c295e660 | Ironwood v6 regression tests pass (3 tests) |
 | Orchard FROST fork | 42015f15733b95e179189628d6fa34d92b5b3b8b | frost-tools Cargo patch |
 | RedDSA FROST | ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead | frost-tools dependency pin |
@@ -60,17 +60,27 @@ The public TLS test keys from upstream are for localhost testing only.
 
 At this upstream pin, the binary verifier treats a public-input filename with an
 extension as a format mismatch. The runner uses extensionless public-input files.
-Matching external Barretenberg verification is still an unfinished gate.
+Matching external C++ Barretenberg verification passed. Its verification key
+matches the MPC key byte for byte, the proof verifies, and altered price/root
+are rejected with cryptographic proof failures. Evidence is under
+`evidence/2026-10-04-external-verifier-gate.json`.
 The exact source commit is 87aa5283d5b0cab6632ed49fdd25f6548d2ba91f.
-Apple Clang 15 requires the explicit template deduction guide recorded in
-`patches/barretenberg-apple-clang15.patch`. A BB_LITE build reached linking but
-failed because api_msgpack refers to excluded IPC symbols. The current retry
-uses BB_LITE=OFF, AVM=OFF, Unix Makefiles and -j 2 with the same source patch.
-`scripts/verify_external.py` will check its source/patch and verify an existing
-MPC proof once the build completes; it has not passed yet.
+Apple Clang 15 requires the deduction guide in
+`patches/barretenberg-apple-clang15.patch`. A BB_LITE build failed because
+api_msgpack uses excluded IPC symbols. Use BB_LITE=OFF, AVM=OFF, Unix Makefiles
+and -j 2. On macOS 14, add `patches/barretenberg-macos-ipc.patch`: unavailable
+OS IPC symbols are weak-linked, and shared-memory IPC throws explicitly if
+called on an unsupported OS. File-based proof verification is unaffected.
+Both source patches are checked exactly by `scripts/verify_external.py`.
+The first invocation failed at dyld startup before verification; the patched
+binary passed the subsequent run.
+
+```sh
+python3 -B scripts/verify_external.py .local/mpc-auction4-EXISTING_RUN
+```
 
 Nargo rejects prerelease versions in the package compiler_version field.
 The rc.2 pin is enforced by the selected binary path, not that field. Initial
 manifest validation failed with that field and was corrected before the passing
 test/compile runs. The Barretenberg release API for this tag returned 404;
-the source tag was fetched and its C++ verifier build is in progress.
+the source tag was fetched and its C++ verifier built and passed.

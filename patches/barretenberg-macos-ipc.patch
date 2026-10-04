@@ -1,0 +1,52 @@
+diff --git a/barretenberg/cpp/src/barretenberg/ipc/shm/futex.hpp b/barretenberg/cpp/src/barretenberg/ipc/shm/futex.hpp
+index e8c3071..a24f1e9 100644
+--- a/barretenberg/cpp/src/barretenberg/ipc/shm/futex.hpp
++++ b/barretenberg/cpp/src/barretenberg/ipc/shm/futex.hpp
+@@ -12,13 +12,14 @@
+ #include <ctime>
+ 
+ #ifdef __APPLE__
++#include <stdexcept>
+ // Darwin's os_sync API (available since macOS 10.12 / iOS 10)
+ // Forward declarations to avoid header dependency
+ extern "C" {
+-int os_sync_wait_on_address(void* addr, uint64_t value, size_t size, uint32_t flags);
++int os_sync_wait_on_address(void* addr, uint64_t value, size_t size, uint32_t flags) __attribute__((weak_import));
+ int os_sync_wait_on_address_with_timeout(
+-    void* addr, uint64_t value, size_t size, uint32_t flags, uint32_t clockid, uint64_t timeout_ns);
+-int os_sync_wake_by_address_any(void* addr, size_t size, uint32_t flags);
++    void* addr, uint64_t value, size_t size, uint32_t flags, uint32_t clockid, uint64_t timeout_ns) __attribute__((weak_import));
++int os_sync_wake_by_address_any(void* addr, size_t size, uint32_t flags) __attribute__((weak_import));
+ }
+ #define OS_SYNC_WAIT_ON_ADDRESS_SHARED 1u
+ #define OS_SYNC_WAKE_BY_ADDRESS_SHARED 1u
+@@ -45,6 +46,9 @@ namespace bb::ipc {
+ inline int futex_wait(volatile uint32_t* addr, uint32_t expect)
+ {
+ #ifdef __APPLE__
++    if (os_sync_wait_on_address == nullptr) {
++        throw std::runtime_error("Shared-memory IPC synchronization is unavailable on this macOS version");
++    }
+     // macOS: Use os_sync_wait_on_address with SHARED flag for cross-process
+     return os_sync_wait_on_address(
+         const_cast<uint32_t*>(addr), static_cast<uint64_t>(expect), sizeof(uint32_t), OS_SYNC_WAIT_ON_ADDRESS_SHARED);
+@@ -69,6 +73,9 @@ inline int futex_wait(volatile uint32_t* addr, uint32_t expect)
+ inline int futex_wait_timeout(volatile uint32_t* addr, uint32_t expect, uint64_t timeout_ns)
+ {
+ #ifdef __APPLE__
++    if (os_sync_wait_on_address_with_timeout == nullptr) {
++        throw std::runtime_error("Shared-memory IPC synchronization is unavailable on this macOS version");
++    }
+     // macOS: Use os_sync_wait_on_address_with_timeout with SHARED flag for cross-process
+     // Uses MACH_ABSOLUTE_TIME clock (monotonic, measures time since boot)
+     return os_sync_wait_on_address_with_timeout(const_cast<uint32_t*>(addr),
+@@ -98,6 +105,9 @@ inline int futex_wait_timeout(volatile uint32_t* addr, uint32_t expect, uint64_t
+ inline int futex_wake(volatile uint32_t* addr, int n)
+ {
+ #ifdef __APPLE__
++    if (os_sync_wake_by_address_any == nullptr) {
++        throw std::runtime_error("Shared-memory IPC synchronization is unavailable on this macOS version");
++    }
+     // macOS: Use os_sync_wake_by_address with SHARED flag for cross-process
+     (void)n;
+     return os_sync_wake_by_address_any(const_cast<uint32_t*>(addr), sizeof(uint32_t), OS_SYNC_WAKE_BY_ADDRESS_SHARED);
