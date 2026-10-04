@@ -47,7 +47,14 @@ autonomously, incorporate later human/ChatGPT reviews.
 - [ ] Shared auction/native row commitment encoding with fully constrained hash links.
   - Canonical 224-byte SHA-256 format, linked Halo2 SHA and actual native row proof
     passed. Six-row Noir plan circuit compiles/tests pass. Complete MPC hash proof
-    and integrated six-row plan/native execution remain; portable hash timed out.
+    passed on the same private row using ARM AES-enabled coNoir (574.499s proof
+    stage). Normal C++ verification passed. A six-row native proof passed.
+    Integrated six-row plan/native execution is next.
+- [ ] Compare BN254 Poseidon2 emulation in Pallas against the demonstrated SHA bridge.
+  - Human supplied a performance review on Oct 4. Keep the working SHA path as
+    a baseline; measure fully constrained non-native arithmetic before adopting
+    it. Do not claim a 10s–1m bound without an actual proof. Avoid repeated CPU
+    builds: the ARM AES configuration issue has been resolved and measured.
 - [ ] Funding ledger and one-note/one-ticket enforcement.
 - [ ] Signed acceptance receipts and consistent final root.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.

@@ -4,6 +4,9 @@ use ark_bn254::Fr;
 use ark_ff::{Field, PrimeField};
 use bincode::Options;
 use co_noir_types::{Rep3SharedInput, Rep3Type};
+use darkcall_settlement_types::{
+    NativeBatchStatement, NativeContext, Role, Row, link_four_bid_statements,
+};
 use mpc_core::gadgets::poseidon2::{POSEIDON2_BN254_T4_PARAMS, Poseidon2};
 use mpc_core::protocols::rep3;
 use serde::{Deserialize, Serialize};
@@ -56,6 +59,37 @@ struct Book {
 }
 
 impl Book {
+    fn validate_four_active(&self) -> Result<()> {
+        if self.active != [true; 4]
+            || self
+                .ids
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != 4
+        {
+            return Err("expected four active, distinct tickets".into());
+        }
+        for text in self.commitments.iter().chain(std::iter::once(&self.root)) {
+            canonical_field(text)?;
+        }
+        if canonical_field(&self.root)? != self.root()? {
+            return Err("accepted root does not match book".into());
+        }
+        Ok(())
+    }
+
+    fn native_context(&self) -> Result<NativeContext> {
+        self.validate_four_active()?;
+        let encoded = ark_ff::BigInteger::to_bytes_be(&canonical_field(&self.root)?.into_bigint());
+        let mut accepted_root = [0u8; 32];
+        accepted_root[32 - encoded.len()..].copy_from_slice(&encoded);
+        Ok(NativeContext {
+            conditions: self.condition_digest,
+            accepted_root,
+            ticket_ids: self.ids,
+        })
+    }
     fn context(&self) -> Fr {
         let mut fields = vec![domain(b"DarkCall/ctx/v1")];
         fields.extend(limbs(&self.condition_digest));
@@ -147,6 +181,154 @@ impl Book {
         }
         Ok(fields)
     }
+}
+
+fn canonical_field(text: &str) -> Result<Fr> {
+    let field = Fr::from_str(text).map_err(|_| "invalid field")?;
+    if field.to_string() != text {
+        return Err("expected canonical decimal field".into());
+    }
+    Ok(field)
+}
+
+fn validate_rows(book: &Book, encoded: &[Vec<u8>]) -> Result<[Row; 6]> {
+    let context = book.native_context()?;
+    if encoded.len() != 6 {
+        return Err("expected six native rows".into());
+    }
+    let mut used = [false; 6];
+    let mut rows = Vec::new();
+    for (i, bytes) in encoded.iter().enumerate() {
+        let row = Row::decode(bytes).map_err(|_| "invalid settlement row encoding")?;
+        let role = if i < 4 {
+            Role::Refund
+        } else if i == 4 {
+            Role::Seller
+        } else {
+            Role::Operator
+        };
+        let ticket = if i < 4 { book.ids[i] } else { [0; 32] };
+        if row.conditions != context.conditions
+            || row.accepted_root != context.accepted_root
+            || row.ticket != ticket
+            || row.role != role
+        {
+            return Err("native row context/ticket/role mismatch".into());
+        }
+        let index = row.action_index as usize;
+        if index >= 6 || used[index] {
+            return Err("native action indices are not a permutation".into());
+        }
+        used[index] = true;
+        rows.push(row);
+    }
+    rows.try_into().map_err(|_| "wrong row count".into())
+}
+
+// Offline glue only. It never reads or reconstructs any bidder's maximum bid.
+// Authenticating recipient commitments against real receipts is separate work.
+fn plan_fixture(book: &Book, row_path: &Path, out: &Path) -> Result<()> {
+    if fs::metadata(row_path)?.len() > 32768 {
+        return Err("native row file too large".into());
+    }
+    let encoded: Vec<Vec<u8>> = serde_json::from_slice(&fs::read(row_path)?)?;
+    let rows = validate_rows(book, &encoded)?;
+    let mut rng = rand::thread_rng();
+    let nonces: [Fr; 6] = std::array::from_fn(|_| <Fr as ark_ff::UniformRand>::rand(&mut rng));
+    let receivers: [String; 6] = std::array::from_fn(|i| {
+        let row = &rows[i];
+        let mut fields = vec![domain(b"DarkCall/receiver/v1"), book.context()];
+        fields.extend(limbs(&row.ticket));
+        fields.push(Fr::from(row.role as u32));
+        fields.extend(limbs(&row.gd));
+        fields.extend(limbs(&row.pkd));
+        fields.push(nonces[i]);
+        hash(&fields).to_string()
+    });
+    fs::create_dir(out)?;
+    let gd = rows.each_ref().map(|row| row.gd);
+    let pkd = rows.each_ref().map(|row| row.pkd);
+    let salts = rows.each_ref().map(|row| row.salt);
+    let indices = rows.each_ref().map(|row| row.action_index);
+    let operator = format!(
+        "gd = {}\npkd = {}\nreceiver_nonces = {}\nrow_salts = {}\n",
+        serde_json::to_string(&gd)?,
+        serde_json::to_string(&pkd)?,
+        serde_json::to_string(&nonces.map(|x| x.to_string()))?,
+        serde_json::to_string(&salts)?
+    );
+    let public = book
+        .public_toml()?
+        .lines()
+        .filter(|line| !line.starts_with("active = "))
+        .collect::<Vec<_>>()
+        .join("\n")
+        + &format!(
+            "\nreceivers = {}\naction_indices = {}\n",
+            serde_json::to_string(&receivers)?,
+            serde_json::to_string(&indices)?
+        );
+    fs::write(out.join("operator.toml"), operator)?;
+    fs::write(out.join("public.toml"), public)?;
+    fs::write(
+        out.join("expected-row-hashes.json"),
+        serde_json::to_vec_pretty(&rows.each_ref().map(|row| row.commitment()))?,
+    )?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(out.join("operator.toml"), fs::Permissions::from_mode(0o600))?;
+    }
+    Ok(())
+}
+
+// Proofs must already be verified by the caller. This checks their exact public
+// context and row/action mapping; it makes no assertion about chain inclusion.
+fn link_plan(book: &Book, native_path: &Path, mpc_path: &Path) -> Result<()> {
+    book.validate_four_active()?;
+    if fs::metadata(native_path)?.len() > 32768 || fs::metadata(mpc_path)?.len() != 232 * 32 {
+        return Err("unexpected four-bid statement size".into());
+    }
+    let native: NativeBatchStatement = serde_json::from_slice(&fs::read(native_path)?)?;
+    let mpc = fs::read(mpc_path)?;
+    let mut expected = Vec::new();
+    expected.extend(book.condition_digest.map(Fr::from));
+    for id in book.ids {
+        expected.extend(id.map(Fr::from));
+    }
+    expected.extend([
+        Fr::from(book.units),
+        Fr::from(book.reserve),
+        Fr::from(book.budget),
+        Fr::from(book.processing_fee),
+    ]);
+    for leaf in &book.commitments {
+        expected.push(canonical_field(leaf)?);
+    }
+    expected.push(canonical_field(&book.root)?);
+    for (encoded, field) in mpc.chunks_exact(32).zip(expected) {
+        let bytes = ark_ff::BigInteger::to_bytes_be(&field.into_bigint());
+        let mut canonical = [0u8; 32];
+        canonical[32 - bytes.len()..].copy_from_slice(&bytes);
+        if encoded != canonical {
+            return Err("MPC public book does not match exact fixture".into());
+        }
+    }
+    let mut hashes = [[0u32; 8]; 6];
+    for (i, field) in mpc[184 * 32..].chunks_exact(32).enumerate() {
+        if field[..28] != [0; 28] {
+            return Err("SHA digest word exceeds u32".into());
+        }
+        hashes[i / 8][i % 8] = u32::from_be_bytes(field[28..].try_into().unwrap());
+    }
+    link_four_bid_statements(&hashes, &native.bindings(), &native.native_actions)
+        .map_err(|_| "MPC/native row or action substitution")?;
+    println!(
+        "{}",
+        serde_json::json!({"structural_link_passed":true,"proofs_must_be_verified_separately":true,
+        "rows":6,"book_matches":true,"funding_or_chain_inclusion_proven":false})
+    );
+    Ok(())
 }
 
 fn read_share(path: &Path) -> Result<Rep3SharedInput<Fr>> {
@@ -278,7 +460,19 @@ fn main() -> Result<()> {
             if let Some(Rep3Type::Shared(share))=map.get_mut(&key) {share.a += Fr::from(1);} else {return Err("missing bid".into());}
             fs::write(&args[2],bincode::serialize(&map)?)?;
         },
-        _ => return Err("usage: fixture OUT | check BOOK BIDDER PARTY SHARE CLIENT_PUBLIC_INPUT | tamper SHARE OUT BIDDER".into()),
+        Some("native-context") if args.len()==3 => {
+            let book: Book = serde_json::from_slice(&fs::read(&args[1])?)?;
+            fs::write(&args[2], serde_json::to_vec_pretty(&book.native_context()?)?)?;
+        },
+        Some("plan-fixture") if args.len()==4 => {
+            let book: Book = serde_json::from_slice(&fs::read(&args[1])?)?;
+            plan_fixture(&book, Path::new(&args[2]), Path::new(&args[3]))?;
+        },
+        Some("link-plan") if args.len()==4 => {
+            let book: Book = serde_json::from_slice(&fs::read(&args[1])?)?;
+            link_plan(&book, Path::new(&args[2]), Path::new(&args[3]))?;
+        },
+        _ => return Err("usage: fixture OUT | check BOOK BIDDER PARTY SHARE CLIENT_PUBLIC_INPUT | tamper SHARE OUT BIDDER | native-context BOOK OUT | plan-fixture BOOK NATIVE_ROWS OUT | link-plan BOOK NATIVE_PUBLIC MPC_PUBLIC".into()),
     }
     Ok(())
 }
@@ -286,6 +480,64 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn bridge_rejects_context_role_ticket_and_action_substitution() {
+        let mut book = Book {
+            condition_digest: [1; 32],
+            ids: std::array::from_fn(|i| [i as u8; 32]),
+            active: [true; 4],
+            units: 3,
+            reserve: 20,
+            budget: 100,
+            processing_fee: 15000,
+            commitments: ["1", "2", "3", "4"].map(str::to_string),
+            pair_commitments: std::array::from_fn(|_| std::array::from_fn(|_| "0".into())),
+            root: String::new(),
+        };
+        book.root = book.root().unwrap().to_string();
+        let context = book.native_context().unwrap();
+        let rows: Vec<_> = (0..6)
+            .map(|i| {
+                Row {
+                    conditions: context.conditions,
+                    accepted_root: context.accepted_root,
+                    ticket: if i < 4 { book.ids[i] } else { [0; 32] },
+                    role: if i < 4 {
+                        Role::Refund
+                    } else if i == 4 {
+                        Role::Seller
+                    } else {
+                        Role::Operator
+                    },
+                    action_index: [5, 2, 0, 4, 1, 3][i],
+                    gd: [3; 32],
+                    pkd: [4; 32],
+                    amount: 50,
+                    salt: [5; 32],
+                }
+                .encode()
+                .to_vec()
+            })
+            .collect();
+        assert!(validate_rows(&book, &rows).is_ok());
+        // Conditions, root, ticket and role all come from the exact public book.
+        for offset in [16, 48, 80, 112] {
+            let mut changed = rows.clone();
+            changed[0][offset] ^= 1;
+            assert!(validate_rows(&book, &changed).is_err());
+        }
+        let mut changed = rows.clone();
+        changed[1][116..120].copy_from_slice(&5u32.to_le_bytes());
+        assert!(validate_rows(&book, &changed).is_err());
+        let mut changed = rows.clone();
+        changed[1][116..120].copy_from_slice(&6u32.to_le_bytes());
+        assert!(validate_rows(&book, &changed).is_err());
+        assert!(validate_rows(&book, &rows[..5]).is_err());
+        book.root = "0".into();
+        assert!(book.native_context().is_err());
+        assert!(canonical_field("01").is_err());
+    }
+
     #[test]
     fn matches_noir_standard_sponge() {
         // Hex vector is authoritative; convert it explicitly to avoid decimal transcription.

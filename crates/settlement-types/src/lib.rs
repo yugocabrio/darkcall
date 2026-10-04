@@ -7,12 +7,48 @@ pub const ROW_BYTES: usize = 224;
 pub const ROW_DOMAIN: &[u8; 16] = b"DarkCall/row/v1\0";
 pub const FOUR_BID_OUTPUTS: usize = 6;
 
+/// Public synthetic context transport. This is not an acceptance/funding receipt.
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NativeContext {
+    pub conditions: [u8; 32],
+    pub accepted_root: [u8; 32],
+    pub ticket_ids: [[u8; 32]; 4],
+}
+
+/// Public inputs to the fixed six-row native proof, plus the output-only native
+/// fixture's action commitments. It proves neither chain inclusion nor funding.
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NativeBatchStatement {
+    pub row_hashes: [[u32; 8]; 6],
+    pub action_indices: [u32; 6],
+    pub cmxs: [[u8; 32]; 6],
+    pub native_actions: [[u8; 32]; 6],
+}
+impl NativeBatchStatement {
+    pub fn bindings(&self) -> [BindingStatement; 6] {
+        std::array::from_fn(|i| BindingStatement {
+            row_hash: self.row_hashes[i],
+            cmx: self.cmxs[i],
+            action_index: self.action_indices[i],
+        })
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u32)]
 pub enum Role {
     Refund = 0,
     Seller = 1,
     Operator = 2,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DecodeError {
+    WrongLength,
+    WrongDomain,
+    UnknownRole,
 }
 
 /// Private opening. Intentionally does not implement Debug.
@@ -29,6 +65,33 @@ pub struct Row {
     pub salt: [u8; 32],
 }
 impl Row {
+    /// Decode the fixed wire format. Point/field validity, authenticated context
+    /// and proof validity are deliberately checked by the caller, not this codec.
+    pub fn decode(bytes: &[u8]) -> Result<Self, DecodeError> {
+        if bytes.len() != ROW_BYTES {
+            return Err(DecodeError::WrongLength);
+        }
+        if &bytes[..16] != ROW_DOMAIN {
+            return Err(DecodeError::WrongDomain);
+        }
+        let role = match u32::from_le_bytes(bytes[112..116].try_into().unwrap()) {
+            0 => Role::Refund,
+            1 => Role::Seller,
+            2 => Role::Operator,
+            _ => return Err(DecodeError::UnknownRole),
+        };
+        Ok(Self {
+            conditions: bytes[16..48].try_into().unwrap(),
+            accepted_root: bytes[48..80].try_into().unwrap(),
+            ticket: bytes[80..112].try_into().unwrap(),
+            role,
+            action_index: u32::from_le_bytes(bytes[116..120].try_into().unwrap()),
+            gd: bytes[120..152].try_into().unwrap(),
+            pkd: bytes[152..184].try_into().unwrap(),
+            amount: u64::from_le_bytes(bytes[184..192].try_into().unwrap()),
+            salt: bytes[192..224].try_into().unwrap(),
+        })
+    }
     pub fn encode(&self) -> [u8; ROW_BYTES] {
         let mut bytes = [0; ROW_BYTES];
         bytes[..16].copy_from_slice(ROW_DOMAIN);
@@ -123,6 +186,18 @@ mod tests {
                 994172045
             ]
         );
+        let encoded = row.encode();
+        assert_eq!(Row::decode(&encoded).unwrap().encode(), encoded);
+        assert!(matches!(
+            Row::decode(&encoded[..223]),
+            Err(DecodeError::WrongLength)
+        ));
+        let mut bad = encoded;
+        bad[0] ^= 1;
+        assert!(matches!(Row::decode(&bad), Err(DecodeError::WrongDomain)));
+        let mut bad = encoded;
+        bad[112] = 3;
+        assert!(matches!(Row::decode(&bad), Err(DecodeError::UnknownRole)));
     }
     #[test]
     fn native_statement_mapping_rejects_row_transaction_and_action_substitution() {

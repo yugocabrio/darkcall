@@ -94,6 +94,30 @@ private row bytes and a public digest/cmx under ignored `.local/FIXTURE_NAME`.
 `run_row_hash_gate.py --input .local/FIXTURE_NAME/Prover.toml` shares that same row.
 This export never contains wallet keys or native note randomness.
 
+The six-row native gate shares the same `Binding` circuit implementation, loads
+lookup tables once and binds 60 public fields (eight hash words, cmx and action
+index per row). An actual K=17 proof passed, including changed statements and an
+omitted row. The output-only native fixture is not a funded/custody transaction.
+`sha_batch --book-context CONTEXT --export-native-metadata NAME` accepts a public
+synthetic context and exports six private rows under `.local/NAME` (mode 0600),
+public action metadata, the proof and its summary. `sha_batch --verify-export`
+derives a trusted circuit key and verifies using only the public metadata/proof.
+
+The measured shared-row coNoir proof takes 574.499 seconds with
+`RUSTFLAGS='-C target-cpu=native --cfg aes_armv8'`. Portable and CPU-native-only
+builds hit a bounded 1800s timeout. The exact same native row digest matched;
+the normal C++ verifier derived the identical trusted key, accepted the proof
+and rejected a changed digest. This resolves one-row feasibility, not six-row
+auction integration or acceptable production latency. Per-process peak RSS in
+the successful proof stage was 774–791 MB on this single Mac; network bytes are
+not measured. Source and upstream lockfile were unchanged.
+
+`run_settlement_gate.py` is the next synthetic integration gate. It verifies the
+four existing client proofs/share pairs, shares operator metadata, computes the
+six-row auction plan, verifies the native row proof independently and checks the
+actual action mapping with the Rust link checker. Real funding, authenticated
+receiver receipts, custody signatures and transaction finality remain separate.
+
 `darkcall-settlement-types` implements the same Rust wire encoding and a public
 statement link checker. Its independent golden vector matches Python/Noir.
 The checker rejects a changed row hash, reordered native commitments, reused

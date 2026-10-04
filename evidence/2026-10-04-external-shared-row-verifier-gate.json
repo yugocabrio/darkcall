@@ -1,0 +1,16 @@
+{
+  "barretenberg_source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+  "circuit": "row_hash",
+  "compatibility_patches": [
+    "Apple Clang 15 deduction guide",
+    "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"
+  ],
+  "zk": true,
+  "passed": true,
+  "matching_key": true,
+  "cryptographic_rejections": [
+    "digest"
+  ],
+  "circuit_sha256": "793d38beb20858058fe9f46ec2b7dda3e04b622a7244587b2b67e8d1e23bcaa4",
+  "seconds": 1.329
+}

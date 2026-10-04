@@ -1082,6 +1082,7 @@ dependencies = [
  "ark-ff 0.6.0",
  "bincode",
  "co-noir-types",
+ "darkcall-settlement-types",
  "mpc-core",
  "rand 0.8.8",
  "serde",
@@ -1109,6 +1110,7 @@ dependencies = [
 name = "darkcall-output-binding"
 version = "0.1.0"
 dependencies = [
+ "darkcall-settlement-types",
  "darkcall-sha-link",
  "ff 0.13.1",
  "group",
@@ -1125,6 +1127,7 @@ dependencies = [
 name = "darkcall-settlement-types"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "sha2 0.10.9",
 ]
 

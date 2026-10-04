@@ -1,0 +1,64 @@
+{
+  "scope": "shared SHA-256 feasibility gate, not a complete native settlement proof",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "independent_hosts": false,
+  "zk_enabled": true,
+  "private_bytes": 224,
+  "compression_blocks": 4,
+  "stages": [
+    {
+      "name": "split",
+      "passed": true,
+      "seconds": 0.613,
+      "peak_rss_bytes_per_process": [
+        8110080
+      ]
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 0.412,
+      "peak_rss_bytes_per_process": [
+        29147136,
+        28770304,
+        26411008
+      ]
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 1.017,
+      "peak_rss_bytes_per_process": [
+        122322944
+      ]
+    },
+    {
+      "name": "proof",
+      "passed": true,
+      "seconds": 574.499,
+      "peak_rss_bytes_per_process": [
+        773832704,
+        781533184,
+        790904832
+      ]
+    },
+    {
+      "name": "verify",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        7143424
+      ]
+    }
+  ],
+  "network_bytes_measured": false,
+  "binary_flavor": "target-cpu=native; aes_armv8",
+  "binary_sha256": "c9206a40a44b6a393333b9b050a1cd1904881227d889896a711ff07206f418c2",
+  "passed": true,
+  "python_digest_matches": true,
+  "altered_digest_rejected": true,
+  "proof_bytes": 14656,
+  "native_binding_row_digest_matches": true,
+  "native_binding_evidence": "2026-10-04-native-sha-output-binding-gate.json",
+  "complete_auction_plan_connected": false
+}

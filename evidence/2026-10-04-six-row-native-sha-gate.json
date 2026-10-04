@@ -1,0 +1,17 @@
+{
+  "actions": 6,
+  "auction_plan_connected": false,
+  "changed_row_cmx_index_rejected": true,
+  "ciphertext_constrained": false,
+  "classical_binding_assumption": true,
+  "funding_proven": false,
+  "k": 17,
+  "native_custody_signature_verified": false,
+  "omitted_row_rejected": true,
+  "proof_bytes": 8800,
+  "proof_verified": true,
+  "rows": 6,
+  "rseed_derivation_constrained": false,
+  "scope": "six synthetic native outputs bound to SHA settlement rows in one proof",
+  "seconds": 390.019201625
+}

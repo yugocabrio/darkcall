@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-04 21:31 UTC.
+Updated: 2026-10-04 21:57 UTC.
 
 ## Current stage
 
@@ -8,7 +8,9 @@ Implementation authorized. Specification, oracle and committed-input MPC milesto
 pushed to main (d3c63f0). Offline native signing/transaction and one-row native
 binding experiments were pushed in c351750. Matching external C++ verification
 has now passed (cb4ef12 pushed). Shared SHA-256/native cell binding passed;
-MPC hash proof performance is being investigated before full integration.
+The shared MPC/native SHA row now passed, including normal C++ verification.
+A six-row native proof passed; the six-row integrated SHA baseline is running.
+A BN254 Poseidon2-on-Pallas comparison is next, per the human performance review.
 
 ## Demonstrated
 
@@ -87,8 +89,9 @@ Jobs 54829, 52988 and 57960 completed with exit 0 and were consumed. Logs are
 
 ## Next action
 
-Connect the auction plan to native row commitments with a hash constrained in
-both circuit families. Evaluate the matching C++ verifier while it builds.
+Finish the six-row synthetic auction/native bridge and measure it. The normal
+C++ verifier has passed for both auction4 and the shared SHA row. Investigate a
+fully constrained non-native Poseidon2 bridge without discarding the SHA baseline.
 Signed acceptance/funding metadata and testnet wallet integration also remain.
 The auction proof currently outputs price/sold count and binds the supplied root;
 it does not establish an authoritative funding root or native settlement.
@@ -96,24 +99,28 @@ Do not repeat passed gates without a change or unresolved concern.
 
 ## Running jobs
 
-- Tool session 14370: CPU-native MPC SHA run, .local/mpc-row-hash-20261004T211312Z,
-  reading the exact exported native row. Witness/VK passed; proving key is still
-  constructing. Log .local/row-hash-native-gate.log. It has a 1800-second bound.
-- Tool session 87631: ARM AES-enabled coNoir build, unchanged source/lockfile.
-  RUSTFLAGS='-C target-cpu=native --cfg aes_armv8', target directory
-  .deps/co-snarks/target-aes-native. Log .local/co-noir-aes-native-build.log.
-  CPU-native alone does not enable aes 0.8.4's ARM backend; its explicit cfg is
-  required. Next: measure the same row with this build once ready.
-Final strict clippy including settlement-types passed (80172 consumed).
-Log .local/settlement-workspace-clippy.log. Native regressions and all relevant
-SHA/Noir tests passed; the portable MPC proof failure remains explicit evidence.
+- Tool session 11785: six-row SHA MPC
+  baseline, log .local/mpc-settlement4-sha-baseline.log. Inspect the run directory
+  printed by the runner; proof stage has a 7200s bound.
+- Tool session 41679: latest bridge unit tests running; log .local/bridge-adapter-final-tests.log.
 
-Completed/consumed: native SHA binding 2202, standalone SHA 47628, source-cell
-attack 77953, canonical tests 87318, vector tests 91780, clippy 85558, Noir new
-library/settlement tests. Portable MPC SHA session 17590 hit the 1800-second
-bound, killed its children and was consumed; its failure evidence is committed
-with no complete MPC SHA proof claim. CPU-native build 99086 passed/consumed.
-C++ full build/compatibility/verification sessions also passed and were consumed.
+Completed/consumed: 90108 one-row ARM-AES MPC proof (574.499s, 774–791MB peak RSS
+per process); 18376 matching C++ verification (1.329s); 51936 initial six-row
+native proof (K17, 8800 bytes, 390.019s); 79836 book-context six-row native proof
+(202.754s). The book-context run exports a public proof/statement for independent
+verification, under .local/native-four-bid-batch-20261004.
+
+CPU-native-only session 14370 hit the 1800s proof bound and was consumed. Source
+and upstream lockfile remained unchanged. The ARM AES build 87631 passed and was
+consumed. The common one-row digest matched both proof systems. Evidence is in
+2026-10-04-shared-mpc-native-row-gate.json and
+2026-10-04-external-shared-row-verifier-gate.json. A full funded settlement is not
+claimed. Strict clippy passed after the bridge adapters; unit tests are rerunning
+for the latest structural link command.
+
+A release test initially failed with ENOSPC. Removed only completed build caches
+in this workspace, preserving binaries/source/evidence; the retry passed. No
+wallet keys, witness files or user data were removed.
 
 ## Completed jobs
 

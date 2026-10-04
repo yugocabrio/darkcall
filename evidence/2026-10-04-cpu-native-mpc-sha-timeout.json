@@ -1,0 +1,52 @@
+{
+  "scope": "shared SHA-256 feasibility gate, not a complete native settlement proof",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "independent_hosts": false,
+  "zk_enabled": true,
+  "private_bytes": 224,
+  "compression_blocks": 4,
+  "stages": [
+    {
+      "name": "split",
+      "passed": true,
+      "seconds": 1.249,
+      "peak_rss_bytes_per_process": [
+        7946240
+      ]
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 2.695,
+      "peak_rss_bytes_per_process": [
+        31932416,
+        28524544,
+        26607616
+      ]
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 2.463,
+      "peak_rss_bytes_per_process": [
+        122978304
+      ]
+    },
+    {
+      "name": "proof",
+      "passed": false,
+      "error": "proof exceeded bounded timeout",
+      "seconds": 1800.095,
+      "peak_rss_bytes_per_process": [
+        null,
+        null,
+        null
+      ]
+    }
+  ],
+  "network_bytes_measured": false,
+  "binary_flavor": "target-cpu=native",
+  "binary_sha256": "33e6870d345a19e6fcf8edc7338a81db4a71eddecdbca9de2a156a1e195b82eb",
+  "complete_mpc_proof": false,
+  "note": "CPU-native build does not enable aes 0.8.4 ARM AES cfg; same shared row witness and trusted VK passed but proof preparation hit the bounded 1800s limit."
+}
