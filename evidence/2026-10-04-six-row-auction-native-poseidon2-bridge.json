@@ -1,0 +1,181 @@
+{
+  "scope": "six-row comparison with output-only native bundle",
+  "hash_rule": "bn254-poseidon2-packed-row-v1",
+  "circuit": "settlement_poseidon4",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "independent_hosts": false,
+  "funded_transaction": false,
+  "custody_signatures": false,
+  "input_proofs_verified": true,
+  "native_row_proof_verified": true,
+  "binary_sha256": "c9206a40a44b6a393333b9b050a1cd1904881227d889896a711ff07206f418c2",
+  "stages": [
+    {
+      "name": "native-proof-verification",
+      "passed": true,
+      "seconds": 117.439,
+      "peak_rss_bytes_per_process": [
+        539574272
+      ]
+    },
+    {
+      "name": "plan-fixture",
+      "passed": true,
+      "seconds": 0.412,
+      "peak_rss_bytes_per_process": [
+        1720320
+      ]
+    },
+    {
+      "name": "trusted-client-vk",
+      "passed": true,
+      "seconds": 0.209,
+      "peak_rss_bytes_per_process": [
+        25853952
+      ]
+    },
+    {
+      "name": "client-proof-verification",
+      "passed": true,
+      "seconds": 0.212,
+      "peak_rss_bytes_per_process": [
+        7323648,
+        7307264,
+        7225344,
+        7340032
+      ]
+    },
+    {
+      "name": "share-checks",
+      "passed": true,
+      "seconds": 0.229,
+      "peak_rss_bytes_per_process": [
+        1589248,
+        1638400,
+        1589248,
+        1589248,
+        1638400,
+        1703936,
+        1589248,
+        1589248,
+        1638400,
+        1638400,
+        1638400,
+        1589248
+      ]
+    },
+    {
+      "name": "split-public",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        13385728
+      ]
+    },
+    {
+      "name": "split-operator",
+      "passed": true,
+      "seconds": 0.206,
+      "peak_rss_bytes_per_process": [
+        13697024
+      ]
+    },
+    {
+      "name": "merge-0",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        13074432
+      ]
+    },
+    {
+      "name": "merge-1",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        13025280
+      ]
+    },
+    {
+      "name": "merge-2",
+      "passed": true,
+      "seconds": 0.205,
+      "peak_rss_bytes_per_process": [
+        13221888
+      ]
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 1.23,
+      "peak_rss_bytes_per_process": [
+        17055744,
+        17137664,
+        16891904
+      ]
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 0.616,
+      "peak_rss_bytes_per_process": [
+        75005952
+      ]
+    },
+    {
+      "name": "proof",
+      "passed": true,
+      "seconds": 8.17,
+      "peak_rss_bytes_per_process": [
+        600965120,
+        484950016,
+        458145792
+      ]
+    },
+    {
+      "name": "verify",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        7094272
+      ]
+    },
+    {
+      "name": "native-plan-link",
+      "passed": true,
+      "seconds": 0.208,
+      "peak_rss_bytes_per_process": [
+        1638400
+      ]
+    }
+  ],
+  "validated_share_pairs": 12,
+  "passed": true,
+  "price": 50,
+  "sold": 3,
+  "rows": 6,
+  "native_row_hashes_match": true,
+  "proof_bytes": 14656,
+  "changed_price_plan_row_rejected": true,
+  "external_barretenberg_verified": true,
+  "funding_authenticated": false,
+  "receiver_receipts_authenticated": false,
+  "normal_cpp_verification": {
+    "barretenberg_source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+    "circuit": "settlement_poseidon4",
+    "compatibility_patches": [
+      "Apple Clang 15 deduction guide",
+      "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"
+    ],
+    "zk": true,
+    "passed": true,
+    "matching_key": true,
+    "cryptographic_rejections": [
+      "price",
+      "plan",
+      "row"
+    ],
+    "circuit_sha256": "225de53aa4dd40b21aa9526ce404ba99d9a8db71cdae4da679ab8f14d4855285",
+    "seconds": 0.339
+  }
+}

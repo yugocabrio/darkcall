@@ -1,0 +1,175 @@
+{
+  "scope": "operator-only masked refund delivery",
+  "hash_rule": "fresh-field-mask-refund-delivery-v1",
+  "circuit": "delivery4",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "independent_hosts": false,
+  "funded_transaction": false,
+  "custody_signatures": false,
+  "input_proofs_verified": true,
+  "masked_refunds_delivered": true,
+  "binary_sha256": "c9206a40a44b6a393333b9b050a1cd1904881227d889896a711ff07206f418c2",
+  "stages": [
+    {
+      "name": "delivery-fixture",
+      "passed": true,
+      "seconds": 1.227,
+      "peak_rss_bytes_per_process": [
+        1703936
+      ]
+    },
+    {
+      "name": "trusted-client-vk",
+      "passed": true,
+      "seconds": 0.204,
+      "peak_rss_bytes_per_process": [
+        26935296
+      ]
+    },
+    {
+      "name": "client-proof-verification",
+      "passed": true,
+      "seconds": 0.209,
+      "peak_rss_bytes_per_process": [
+        7290880,
+        7290880,
+        7307264,
+        7323648
+      ]
+    },
+    {
+      "name": "share-checks",
+      "passed": true,
+      "seconds": 0.22,
+      "peak_rss_bytes_per_process": [
+        1671168,
+        1769472,
+        1671168,
+        1671168,
+        1671168,
+        1671168,
+        1736704,
+        1671168,
+        1736704,
+        1671168,
+        1671168,
+        1671168
+      ]
+    },
+    {
+      "name": "split-public",
+      "passed": true,
+      "seconds": 0.202,
+      "peak_rss_bytes_per_process": [
+        10403840
+      ]
+    },
+    {
+      "name": "split-operator",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        10321920
+      ]
+    },
+    {
+      "name": "merge-0",
+      "passed": true,
+      "seconds": 0.206,
+      "peak_rss_bytes_per_process": [
+        9945088
+      ]
+    },
+    {
+      "name": "merge-1",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        9863168
+      ]
+    },
+    {
+      "name": "merge-2",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        9977856
+      ]
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 0.619,
+      "peak_rss_bytes_per_process": [
+        12599296,
+        12746752,
+        12550144
+      ]
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 0.616,
+      "peak_rss_bytes_per_process": [
+        44761088
+      ]
+    },
+    {
+      "name": "proof",
+      "passed": true,
+      "seconds": 4.798,
+      "peak_rss_bytes_per_process": [
+        250462208,
+        251314176,
+        247693312
+      ]
+    },
+    {
+      "name": "verify",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        7323648
+      ]
+    },
+    {
+      "name": "deliver-refunds",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        1753088
+      ]
+    }
+  ],
+  "validated_share_pairs": 12,
+  "passed": true,
+  "price": 50,
+  "sold": 3,
+  "maximum_bids_reconstructed": false,
+  "proof_bytes": 14656,
+  "changed_price_root_cipher_rejected": true,
+  "external_barretenberg_verified": true,
+  "funding_authenticated": false,
+  "receiver_receipts_authenticated": false,
+  "normal_cpp_verification": {
+    "barretenberg_source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+    "circuit": "delivery4",
+    "compatibility_patches": [
+      "Apple Clang 15 deduction guide",
+      "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"
+    ],
+    "zk": true,
+    "passed": true,
+    "matching_key": true,
+    "cryptographic_rejections": [
+      "price",
+      "root",
+      "cipher"
+    ],
+    "circuit_sha256": "2b59a46d06f12b61a61b25f6e17584b8aa1bc07ce22d22cfa6553721b5270883",
+    "seconds": 0.465
+  },
+  "masks_fresh_uniform_field_elements": true,
+  "operator_metadata_disclosure": "Operators recover individual refunds, not maximum bids; only masked values are public",
+  "mask_freshness_is_implementation_requirement_not_a_circuit_entropy_proof": true
+}

@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-04 22:31 UTC.
+Updated: 2026-10-04 23:22 UTC.
 
 ## Current stage
 
@@ -105,11 +105,43 @@ Do not repeat passed gates without a change or unresolved concern.
 
 ## Running jobs
 
-- No live tool session. Codec-only native row → REP3 38896 completed/consumed;
-  exact digest matched, and normal C++ verification passed with a matching key.
-- Next: six-row Poseidon comparison with one reused native key and sequential
-  proofs, then integrate the complete four-input/FROST native transaction.
-  Avoid concurrent native proof creation on this 16GB Mac.
+- No live tool session. Public-only replay 86145 passed and was consumed:
+  actual transaction commitments, native proof/signatures and every application
+  proof verified without reading any private file; 107.513s, about 542MB RSS.
+  Evidence: evidence/2026-10-04-public-native-mpc-replay-gate.json.
+- Private refund delivery source is built/tested. Next full run uses the different
+  price-20 book .local/mpc-auction4-20261004T231421Z. First probe a smaller native
+  Poseidon circuit domain (SHA's K17 default may be unnecessary in this codec).
+  Retain verified K17 keys/proofs and reject unsupported parameter choices.
+
+The first four-input/FROST integration 27571 completed/consumed: all application
+proof checks, exact native outputs, 4 threshold spends, native extraction and
+6 recipient decryptions passed. 21790 transaction bytes, 1131.462s total. This
+first run still uses fixture fills. It is not chain funded or broadcast. Evidence:
+evidence/2026-10-04-native-transaction-mpc-frost-integration-gate.json.
+
+- Masked refund delivery 97311 and normal C++ verification 11093 passed.
+  Maximum bids remain REP3 inputs; only masked refunds are public and fresh
+  operator masks decrypt them. Native orchestration source now consumes this
+  delivery, but the live first native run predates that source change.
+- Different bid book 44438 passed: .local/mpc-auction4-20261004T231421Z, price 20,
+  sold 3. Use this book for the next native integration to reject fixed-fill glue.
+- After the current native job, run its public-only verification, then exercise
+  the integration using proved MPC-delivered refunds and a different bid book.
+
+Six-row Poseidon/native comparison 87106 and 28875 completed/consumed. Native
+six-row total 808.534s; key 72.662s; six 11200-byte proofs. MPC witness 1.230s,
+proof 8.170s, about 601MB peak RSS among parties. Normal C++ verifier 54091 passed
+(0.339s) with identical key and altered price/plan/row cryptographically rejected.
+See evidence/2026-10-04-six-row-auction-native-poseidon2-bridge.json.
+
+Strict release workspace clippy 17898 passed; funding ledger tests now total
+12 oracle/state tests. Ledger records wrong/late/unaccepted deposits, rejects
+one-note/two-ticket reuse, pauses frozen books on reorg and prevents concurrent
+settlement/cancellation reservations. This is an in-memory private state machine,
+not persistent wallet integration or an authenticated/public funding proof.
+Public replay built (44698/38104 consumed) and release tests 69294 passed. Actual
+serialized transaction/application-proof replay must still be run.
 
 The six-row SHA baseline 11785 passed/consumed. Run
 .local/mpc-settlement4-20261004T215650Z: witness 1.842s, proof 1654.925s,

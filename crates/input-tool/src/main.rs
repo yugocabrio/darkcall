@@ -271,7 +271,7 @@ fn plan_fixture(book: &Book, row_path: &Path, out: &Path) -> Result<()> {
     fs::write(out.join("operator.toml"), operator)?;
     fs::write(out.join("public.toml"), public)?;
     fs::write(
-        out.join("expected-row-hashes.json"),
+        out.join("expected-sha-row-hashes.json"),
         serde_json::to_vec_pretty(&rows.each_ref().map(|row| row.commitment()))?,
     )?;
     #[cfg(unix)]
@@ -317,7 +317,7 @@ fn link_plan(book: &Book, native_path: &Path, mpc_path: &Path) -> Result<()> {
     let mut hashes = [[0u32; 8]; 6];
     for (i, field) in mpc[184 * 32..].chunks_exact(32).enumerate() {
         if field[..28] != [0; 28] {
-            return Err("SHA digest word exceeds u32".into());
+            return Err("row digest word exceeds u32".into());
         }
         hashes[i / 8][i % 8] = u32::from_be_bytes(field[28..].try_into().unwrap());
     }
@@ -328,6 +328,170 @@ fn link_plan(book: &Book, native_path: &Path, mpc_path: &Path) -> Result<()> {
         serde_json::json!({"structural_link_passed":true,"proofs_must_be_verified_separately":true,
         "rows":6,"book_matches":true,"funding_or_chain_inclusion_proven":false})
     );
+    Ok(())
+}
+
+fn book_fields(book: &Book) -> Result<Vec<Fr>> {
+    book.validate_four_active()?;
+    let mut fields = Vec::new();
+    fields.extend(book.condition_digest.map(Fr::from));
+    for id in book.ids {
+        fields.extend(id.map(Fr::from));
+    }
+    fields.extend([
+        Fr::from(book.units),
+        Fr::from(book.reserve),
+        Fr::from(book.budget),
+        Fr::from(book.processing_fee),
+    ]);
+    for leaf in &book.commitments {
+        fields.push(canonical_field(leaf)?);
+    }
+    fields.push(canonical_field(&book.root)?);
+    Ok(fields)
+}
+fn encoded_field(value: Fr) -> [u8; 32] {
+    let bytes = ark_ff::BigInteger::to_bytes_be(&value.into_bigint());
+    let mut result = [0; 32];
+    result[32 - bytes.len()..].copy_from_slice(&bytes);
+    result
+}
+fn mask_commitment(book: &Book, i: usize, mask: Fr) -> Result<Fr> {
+    let mut fields = vec![
+        domain(b"DarkCall/fill-mask/v1"),
+        book.context(),
+        canonical_field(&book.root)?,
+    ];
+    fields.extend(limbs(&book.ids[i]));
+    fields.push(mask);
+    Ok(hash(&fields))
+}
+fn write_private(path: &Path, bytes: &[u8]) -> Result<()> {
+    use std::io::Write;
+    let mut options = fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    options.open(path)?.write_all(bytes)?;
+    Ok(())
+}
+fn delivery_fixture(book: &Book, out: &Path) -> Result<()> {
+    book.validate_four_active()?;
+    fs::create_dir(out)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(out, fs::Permissions::from_mode(0o700))?;
+    }
+    let mut rng = rand::thread_rng();
+    let masks: [Fr; 4] = std::array::from_fn(|_| <Fr as ark_ff::UniformRand>::rand(&mut rng));
+    let commitments = (0..4)
+        .map(|i| mask_commitment(book, i, masks[i]).map(|f| f.to_string()))
+        .collect::<Result<Vec<_>>>()?;
+    write_private(
+        &out.join("operator.toml"),
+        format!(
+            "output_masks = {}\n",
+            serde_json::to_string(&masks.map(|m| m.to_string()))?
+        )
+        .as_bytes(),
+    )?;
+    write_private(
+        &out.join("masks.json"),
+        &serde_json::to_vec(&masks.map(|m| m.to_string()))?,
+    )?;
+    let public = book
+        .public_toml()?
+        .lines()
+        .filter(|line| !line.starts_with("active = "))
+        .collect::<Vec<_>>()
+        .join("\n")
+        + &format!(
+            "\nmask_commitments = {}\n",
+            serde_json::to_string(&commitments)?
+        );
+    fs::write(out.join("public.toml"), public)?;
+    Ok(())
+}
+// Caller verifies the proof first. Only four operator masks and the public
+// statement are read; maximum bids and their shares are never reconstructed.
+fn delivery_result(book: &Book, masks_path: &Path, mpc_path: &Path, out: &Path) -> Result<()> {
+    if fs::metadata(masks_path)?.len() > 4096 || fs::metadata(mpc_path)?.len() != 179 * 32 {
+        return Err("unexpected delivery file size".into());
+    }
+    let masks: [String; 4] = serde_json::from_slice(&fs::read(masks_path)?)?;
+    let masks = masks
+        .map(|m| canonical_field(&m))
+        .into_iter()
+        .collect::<Result<Vec<_>>>()?;
+    let encoded = fs::read(mpc_path)?;
+    let mut fields = Vec::new();
+    for bytes in encoded.chunks_exact(32) {
+        let field = Fr::from_be_bytes_mod_order(bytes);
+        if encoded_field(field) != bytes {
+            return Err("noncanonical delivery field".into());
+        }
+        fields.push(field);
+    }
+    if fields[..169] != book_fields(book)? {
+        return Err("delivery statement does not match book".into());
+    }
+    for i in 0..4 {
+        if fields[169 + i] != mask_commitment(book, i, masks[i])? {
+            return Err("delivery mask belongs to another auction/ticket".into());
+        }
+    }
+    let small = |value: Fr| -> Result<u64> {
+        let bytes = encoded_field(value);
+        if bytes[..24] != [0; 24] {
+            return Err("delivery amount exceeds u64".into());
+        }
+        Ok(u64::from_be_bytes(bytes[24..].try_into()?))
+    };
+    let price = small(fields[173])?;
+    let sold = small(fields[174])?;
+    if price > book.budget || sold > u64::from(book.units) {
+        return Err("invalid delivery price/sold".into());
+    }
+    let refunds = (0..4)
+        .map(|i| small(fields[175 + i] - masks[i]))
+        .collect::<Result<Vec<_>>>()?;
+    if refunds.iter().any(|v| *v > book.budget) {
+        return Err("invalid delivered refund".into());
+    }
+    let fee = 30000u64;
+    let operator_amount = book
+        .processing_fee
+        .checked_mul(4)
+        .and_then(|v| v.checked_sub(fee))
+        .ok_or("delivery fee shortfall")?;
+    let seller_amount = price.checked_mul(sold).ok_or("seller amount overflow")?;
+    let total = refunds
+        .iter()
+        .try_fold(0u64, |sum, v| sum.checked_add(*v))
+        .and_then(|v| v.checked_add(seller_amount))
+        .and_then(|v| v.checked_add(operator_amount))
+        .and_then(|v| v.checked_add(fee))
+        .ok_or("delivery amount overflow")?;
+    if Some(total)
+        != book
+            .budget
+            .checked_add(book.processing_fee)
+            .and_then(|v| v.checked_mul(4))
+    {
+        return Err("delivered settlement is not conserved".into());
+    }
+    let mut amounts = refunds;
+    amounts.extend([seller_amount, operator_amount]);
+    write_private(
+        out,
+        &serde_json::to_vec_pretty(
+            &serde_json::json!({"amounts":amounts,"price":price,"sold":sold,"network_fee":fee,"maximum_bids_read":false,"proof_must_be_verified_separately":true,"recipient_metadata_private_to_operators":true}),
+        )?,
+    )?;
     Ok(())
 }
 
@@ -388,7 +552,10 @@ fn check(
     Ok(())
 }
 
-fn fixture(out: &Path) -> Result<()> {
+fn fixture(out: &Path, values: [u64; 4]) -> Result<()> {
+    if values.iter().any(|value| *value > 100) {
+        return Err("synthetic bids exceed fixture budget".into());
+    }
     fs::create_dir_all(out)?;
     let mut book = Book {
         condition_digest: [1; 32],
@@ -408,7 +575,7 @@ fn fixture(out: &Path) -> Result<()> {
     };
     let mut rng = rand::thread_rng();
     let mut private_client_files = Vec::new();
-    for (bidder, bid) in [90_u64, 70, 60, 50].into_iter().enumerate() {
+    for (bidder, bid) in values.into_iter().enumerate() {
         let salt = <Fr as ark_ff::UniformRand>::rand(&mut rng);
         let bids = rep3::share_field_element(Fr::from(bid), &mut rng);
         let salts = rep3::share_field_element(salt, &mut rng);
@@ -449,7 +616,10 @@ fn fixture(out: &Path) -> Result<()> {
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
-        Some("fixture") if args.len()==2 => fixture(Path::new(&args[1]))?,
+        Some("fixture") if args.len()==2 || args.len()==6 => {
+            let values=if args.len()==6 {[args[2].parse()?,args[3].parse()?,args[4].parse()?,args[5].parse()?]} else {[90,70,60,50]};
+            fixture(Path::new(&args[1]),values)?;
+        },
         Some("check") if args.len()==6 => {
             let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
             check(&book,args[2].parse()?,args[3].parse()?,Path::new(&args[4]),Path::new(&args[5]))?;
@@ -459,6 +629,14 @@ fn main() -> Result<()> {
             let key=format!("bid{}",args[3].parse::<usize>()?);
             if let Some(Rep3Type::Shared(share))=map.get_mut(&key) {share.a += Fr::from(1);} else {return Err("missing bid".into());}
             fs::write(&args[2],bincode::serialize(&map)?)?;
+        },
+        Some("delivery-fixture") if args.len()==3 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            delivery_fixture(&book,Path::new(&args[2]))?;
+        },
+        Some("delivery-result") if args.len()==5 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            delivery_result(&book,Path::new(&args[2]),Path::new(&args[3]),Path::new(&args[4]))?;
         },
         Some("native-context") if args.len()==3 => {
             let book: Book = serde_json::from_slice(&fs::read(&args[1])?)?;
@@ -536,6 +714,76 @@ mod tests {
         book.root = "0".into();
         assert!(book.native_context().is_err());
         assert!(canonical_field("01").is_err());
+    }
+
+    #[test]
+    fn private_delivery_rejects_wrong_masks_book_and_noncanonical_fields() {
+        let mut book = Book {
+            condition_digest: [1; 32],
+            ids: std::array::from_fn(|i| [i as u8; 32]),
+            active: [true; 4],
+            units: 3,
+            reserve: 20,
+            budget: 100,
+            processing_fee: 15000,
+            commitments: ["1", "2", "3", "4"].map(str::to_string),
+            pair_commitments: std::array::from_fn(|_| std::array::from_fn(|_| "0".into())),
+            root: String::new(),
+        };
+        book.root = book.root().unwrap().to_string();
+        let dir = std::env::temp_dir().join(format!(
+            "darkcall-delivery-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&dir).unwrap();
+        let masks = [Fr::from(100), Fr::from(200), Fr::from(300), Fr::from(400)];
+        let mut fields = book_fields(&book).unwrap();
+        for (i, mask) in masks.iter().enumerate() {
+            fields.push(mask_commitment(&book, i, *mask).unwrap());
+        }
+        fields.extend([Fr::from(50), Fr::from(3)]);
+        for (mask, refund) in masks.iter().zip([50, 50, 50, 100]) {
+            fields.push(*mask + Fr::from(refund));
+        }
+        let encoded = fields
+            .into_iter()
+            .flat_map(encoded_field)
+            .collect::<Vec<_>>();
+        let statement = dir.join("statement");
+        fs::write(&statement, &encoded).unwrap();
+        let pads = dir.join("pads");
+        fs::write(
+            &pads,
+            serde_json::to_vec(&masks.map(|m| m.to_string())).unwrap(),
+        )
+        .unwrap();
+        assert!(delivery_result(&book, &pads, &statement, &dir.join("valid")).is_ok());
+        let mut wrong = masks;
+        wrong[0] += Fr::from(1);
+        fs::write(
+            &pads,
+            serde_json::to_vec(&wrong.map(|m| m.to_string())).unwrap(),
+        )
+        .unwrap();
+        assert!(delivery_result(&book, &pads, &statement, &dir.join("bad-pad")).is_err());
+        fs::write(
+            &pads,
+            serde_json::to_vec(&masks.map(|m| m.to_string())).unwrap(),
+        )
+        .unwrap();
+        let mut invalid = encoded.clone();
+        invalid[175 * 32..176 * 32].fill(255);
+        fs::write(&statement, invalid).unwrap();
+        assert!(delivery_result(&book, &pads, &statement, &dir.join("bad-field")).is_err());
+        fs::write(&statement, &encoded).unwrap();
+        book.condition_digest[0] ^= 1;
+        book.root = book.root().unwrap().to_string();
+        assert!(delivery_result(&book, &pads, &statement, &dir.join("bad-context")).is_err());
+        fs::remove_dir_all(dir).unwrap();
     }
 
     #[test]

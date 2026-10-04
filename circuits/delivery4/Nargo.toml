@@ -1,0 +1,6 @@
+[package]
+name = "darkcall_delivery4"
+type = "bin"
+authors = []
+[dependencies]
+darkcall = { path = "../protocol_lib" }

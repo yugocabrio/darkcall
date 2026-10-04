@@ -8,6 +8,7 @@ witness files stay under ignored .local/. Funding and native settlement remain
 outside this experiment.
 """
 
+import argparse
 import json
 import os
 import pathlib
@@ -17,9 +18,9 @@ import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 UPSTREAM = ROOT / ".deps/co-snarks"
-BIN = UPSTREAM / "target/release/co-noir"
+BIN = UPSTREAM / "target-aes-native/release/co-noir"
 PLAIN = UPSTREAM / "target/release/plaindriver"
-INPUT_TOOL = ROOT / "target/debug/darkcall-input-tool"
+INPUT_TOOL = ROOT / "target/release/darkcall-input-tool"
 CIRCUIT = ROOT / "circuits/auction4/target/darkcall_auction4.json"
 CLIENT_CIRCUIT = ROOT / "circuits/bid_input/target/darkcall_bid_input.json"
 NARGO = ROOT / ".deps/noir-1.0.0-rc.2/nargo"
@@ -27,6 +28,12 @@ PIN = "467a2abbad940d40ed78f38d424cc21920988976"
 
 
 def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--bids',type=int,nargs=4,default=[90,70,60,50],help='Synthetic client fixture only; never real bid arguments')
+    parser.add_argument('--result-file',type=pathlib.Path)
+    args=parser.parse_args()
+    if any(b<0 or b>100 for b in args.bids): raise RuntimeError('Fixture bids outside budget')
+    if args.result_file is not None and not args.result_file.resolve().is_relative_to(ROOT / '.local'): raise RuntimeError('Result file must remain local')
     actual_pin = subprocess.check_output(
         ["git", "-C", str(UPSTREAM), "rev-parse", "HEAD"], text=True
     ).strip()
@@ -98,7 +105,7 @@ def main():
             summary["stages"].append(stage)
             (run / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
 
-    record("client-fixture", [["fixture", run]], 60, INPUT_TOOL)
+    record("client-fixture", [["fixture", run, *args.bids]], 60, INPUT_TOOL)
     crs = UPSTREAM / "co-noir/co-noir-common/src/crs"
     record("trusted-client-vk", [[
         "create-vk", "--circuit", CLIENT_CIRCUIT, "--crs", crs / "bn254_g1.dat",
@@ -191,14 +198,17 @@ def main():
     if len(outputs) % 32:
         raise RuntimeError("Unexpected public input encoding")
     fields = [int.from_bytes(outputs[i:i + 32], "big") for i in range(0, len(outputs), 32)]
-    if fields[-2:] != [50, 3]:
+    eligible=sorted((b for b in args.bids if b>=20),reverse=True)
+    expected_price=eligible[3] if len(eligible)>3 else 20
+    expected_sold=min(3,len(eligible))
+    if fields[-2:] != [expected_price, expected_sold]:
         raise RuntimeError("Public result differs from independent fixture: " + str(fields[-2:]))
-    summary.update(result={"price": 50, "sold": 3}, proof_bytes=(run / "proof.0").stat().st_size)
+    summary.update(result={"price": expected_price, "sold": expected_sold}, proof_bytes=(run / "proof.0").stat().st_size)
     for i in [1, 2]:
         if (run / ("public-input" + str(i))).read_bytes() != outputs:
             raise RuntimeError("MPC parties disagree on public output")
     # Bind both the result and the exact accepted-input root to the proof.
-    for name, offset, value in [("price", -64, 49), ("accepted-root", -96, fields[-3] + 1)]:
+    for name, offset, value in [("price", -64, fields[-2]^1), ("accepted-root", -96, fields[-3] + 1)]:
         bad = bytearray(outputs)
         bad[offset:offset + 32] = value.to_bytes(32, "big")
         path = run / ("tampered-" + name)
@@ -215,6 +225,8 @@ def main():
     summary.update(tampered_price_rejected=True, tampered_root_rejected=True, external_barretenberg_verified=False)
     (run / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print("Verified client share proofs and committed MPC result; rejected share, price and root tampering.", flush=True)
+    if args.result_file is not None:
+        with args.result_file.open("x") as out: json.dump({"run":str(run)},out)
     print("Evidence directory:", run, flush=True)
 
 

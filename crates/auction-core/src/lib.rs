@@ -3,6 +3,8 @@
 //! This module deliberately knows every bid. It is NOT a confidential auction
 //! engine, and must not be used as the live MPC auction service.
 
+pub mod funding;
+
 use std::collections::BTreeSet;
 
 pub const MAX_BIDS: usize = 32;

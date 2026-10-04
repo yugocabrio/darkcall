@@ -1,0 +1,16 @@
+{
+  "acceptance_or_recipient_receipts_authenticated": false,
+  "actual_transaction_outputs_match": true,
+  "chain_funding_or_finality_verified": false,
+  "hash_rule": "bn254-poseidon2-packed-row-v1",
+  "native_proof_and_signatures_verified": true,
+  "native_row_proofs_verified": true,
+  "normal_cpp_auction_proof_verified": true,
+  "private_openings_read": false,
+  "scope": "public-only offline transaction/application-proof replay",
+  "seconds": 107.513170417,
+  "transaction_bytes": 21790,
+  "txid": "c7ab25ba446ddd9d69e983f2f6014ac7791434571c54c15dd8c0a78d60d6941f",
+  "rayon_threads": 2,
+  "command_peak_rss_bytes": 541835264
+}

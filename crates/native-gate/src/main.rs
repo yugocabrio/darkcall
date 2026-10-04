@@ -1,9 +1,13 @@
 //! Offline synthetic Ironwood/PCZT/FROST gate. Never broadcast these transactions:
 //! their input notes and anchor are fabricated, and exist in no chain.
 //! This plaintext oracle fixture is not an MPC-to-settlement binding proof.
+mod integration;
 use darkcall_auction_core::{Bid, Terms, clear};
+use darkcall_settlement_types::{Role, Row};
 use ff::{Field, PrimeField};
+use group::GroupEncoding;
 use incrementalmerkletree::Hashable;
+use integration::Integration;
 use orchard::{
     Note,
     builder::BundleType,
@@ -189,7 +193,11 @@ impl std::fmt::Display for SignError {
     }
 }
 
-fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
+fn gate(
+    prove: bool,
+    zero_rows: bool,
+    integration: Option<&Integration>,
+) -> Result<serde_json::Value> {
     let start = Instant::now();
     let mut rng = OsRng;
     let terms = Terms {
@@ -198,11 +206,23 @@ fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
         budget: 100,
         processing_fee: if zero_rows { 7500 } else { 15000 },
     };
-    let bids = [90_u64, 70, 60, 50].map(|amount| Bid {
-        ticket_id: [amount as u8; 32],
-        amount,
-    });
-    let settlement = clear(terms, &bids).map_err(|e| error("oracle", e))?;
+    let ids = integration
+        .map(|i| i.context.ticket_ids)
+        .unwrap_or_else(|| [90_u64, 70, 60, 50].map(|v| [v as u8; 32]));
+    // Plaintext oracle is only the standalone regression fixture. Integrated
+    // signing consumes proved private fill delivery; no max bids are read here.
+    let settlement = if integration.is_none() {
+        let bids = std::array::from_fn::<_, 4, _>(|i| Bid {
+            ticket_id: ids[i],
+            amount: [90, 70, 60, 50][i],
+        });
+        Some(clear(terms, &bids).map_err(|e| error("oracle", e))?)
+    } else {
+        None
+    };
+    let network_fee = integration
+        .map(|i| i.delivery.fee)
+        .unwrap_or_else(|| settlement.as_ref().unwrap().network_fee);
     let escrow_key = random_key(&mut rng);
     let fvk = FullViewingKey::from(&escrow_key);
     let keys = split_key(&escrow_key, &mut rng)?;
@@ -235,12 +255,23 @@ fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
             .add_ironwood_spend::<Infallible>(fvk.clone(), note, path)
             .map_err(|e| error("spend", e))?;
     }
-    let amounts: Vec<u64> = settlement
-        .refunds
-        .iter()
-        .map(|x| x.refunded)
-        .chain([settlement.seller_amount, settlement.operator_amount])
-        .collect();
+    // Canonical book row order, rather than the oracle's sorted-ticket order.
+    let amounts: Vec<u64> = if let Some(integration) = integration {
+        integration.delivery.amounts.to_vec()
+    } else {
+        let settlement = settlement.as_ref().unwrap();
+        ids.iter()
+            .map(|id| {
+                settlement
+                    .refunds
+                    .iter()
+                    .find(|row| row.ticket_id == *id)
+                    .unwrap()
+                    .refunded
+            })
+            .chain([settlement.seller_amount, settlement.operator_amount])
+            .collect()
+    };
     let receivers: Vec<_> = amounts
         .iter()
         .map(|_| FullViewingKey::from(&random_key(&mut rng)))
@@ -306,6 +337,71 @@ fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
     .as_ref()
     .try_into()
     .map_err(|_| "unexpected v6 sighash length")?;
+    let construction_seconds = start.elapsed().as_secs_f64();
+    let application_started = Instant::now();
+    let approval = if let Some(integration) = integration {
+        let mut native_notes = Vec::new();
+        let mut rows = Vec::new();
+        for i in 0..6 {
+            let (note, recipient, _) = effects_bundle
+                .decrypt_output_with_key(output_indices[i], &receivers[i].to_ivk(Scope::External))
+                .ok_or("binding output decryption failed")?;
+            let mut salt = [0; 32];
+            rng.fill_bytes(&mut salt);
+            rows.push(Row {
+                conditions: integration.context.conditions,
+                accepted_root: integration.context.accepted_root,
+                ticket: if i < 4 { ids[i] } else { [0; 32] },
+                role: if i < 4 {
+                    Role::Refund
+                } else if i == 4 {
+                    Role::Seller
+                } else {
+                    Role::Operator
+                },
+                action_index: output_indices[i] as u32,
+                gd: recipient.g_d().to_bytes(),
+                pkd: recipient.pk_d().inner().to_bytes(),
+                amount: amounts[i],
+                salt,
+            });
+            native_notes.push(note);
+        }
+        let rows: [Row; 6] = rows.try_into().map_err(|_| "wrong row count")?;
+        let native_notes: [Note; 6] = native_notes.try_into().map_err(|_| "wrong note count")?;
+        let actions: Vec<_> = effects_bundle
+            .actions()
+            .iter()
+            .map(|a| a.cmx().to_bytes())
+            .collect();
+        let approved = integration.prove_and_check(
+            &rows,
+            &native_notes,
+            actions.try_into().map_err(|_| "wrong action count")?,
+            message,
+        )?;
+        let original: Vec<_> = effects_bundle
+            .actions()
+            .iter()
+            .map(|a| a.cmx().to_bytes())
+            .collect();
+        approved.check(&original, &message)?;
+        let mut changed = original.clone();
+        changed[0][0] ^= 1;
+        if approved.check(&changed, &message).is_ok() {
+            return Err("substituted native output approved for signing".into());
+        }
+        let mut changed_digest = message;
+        changed_digest[0] ^= 1;
+        if approved.check(&original, &changed_digest).is_ok() {
+            return Err("substituted effects digest approved for signing".into());
+        }
+        eprintln!("Application proof and exact native outputs verified before FROST signing");
+        Some(approved)
+    } else {
+        None
+    };
+    let application_seconds = application_started.elapsed().as_secs_f64();
     // Fully verify private note fields before the low-level signer skips FVK parsing.
     let pczt = Verifier::new(pczt)
         .with_ironwood::<Infallible, _>(
@@ -322,7 +418,7 @@ fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
         )
         .map_err(|e| error("verify private fields", e))?
         .finish();
-    let construction_seconds = start.elapsed().as_secs_f64();
+    let proof_started = Instant::now();
     let pczt = if prove {
         eprintln!("native proving key and six-action proof started");
         let pk = ProvingKey::build(OrchardCircuitVersion::PostNu6_3);
@@ -333,7 +429,29 @@ fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
     } else {
         pczt
     };
-    let proof_seconds = start.elapsed().as_secs_f64() - construction_seconds;
+    let proof_seconds = proof_started.elapsed().as_secs_f64();
+    if let Some(approved) = &approval {
+        let current = pczt
+            .clone()
+            .into_effects()
+            .map_err(|e| error("signer effects", e))?;
+        let digest: [u8; 32] = v6_signature_hash(
+            &current,
+            &SignableInput::Shielded,
+            &current.digest(TxIdDigester),
+        )
+        .as_ref()
+        .try_into()
+        .map_err(|_| "signer digest length")?;
+        let actions: Vec<_> = current
+            .ironwood_bundle()
+            .ok_or("missing signer bundle")?
+            .actions()
+            .iter()
+            .map(|a| a.cmx().to_bytes())
+            .collect();
+        approved.check(&actions, &digest)?;
+    }
     let mut real_spends = 0;
     let pczt = Signer::new(pczt)
         .sign_ironwood_with::<SignError, _>(|_, bundle, _| {
@@ -368,22 +486,44 @@ fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
     }
     let mut summary = serde_json::json!({
         "scope":"offline synthetic native transaction gate", "chain_funding":false,
-        "broadcast":false,"mpc_settlement_binding":false,"native_transaction_verified":false,
+        "broadcast":false,"mpc_settlement_binding":approval.is_some(),"native_transaction_verified":false,
+        "fills_from_plaintext_oracle_fixture":integration.is_none(),"private_fill_delivery_verified":integration.is_some(),
+        "maximum_bids_read":integration.is_none(),"signed_funding_or_receiver_receipts":false,
+        "application_proof_checked_before_signing":approval.is_some(),
+        "native_output_and_effects_substitution_rejected":approval.is_some(),
         "version":6,"pool":"Ironwood","real_spends":real_spends,"actions":6,
-        "requested_outputs":6,"planned_network_fee":settlement.network_fee,
+        "requested_outputs":6,"planned_network_fee":network_fee,
         "zero_value_outputs":amounts.iter().filter(|x|**x==0).count(),
         "constructed_recipients_decrypted":amounts.len(),
         "threshold":"2-of-3","setup":"synthetic trusted dealer",
         "one_signature_share_rejected":true,"changed_sighash_rejected":true,
-        "construction_seconds":construction_seconds,"proof_seconds":proof_seconds,
+        "construction_seconds":construction_seconds,"application_proof_seconds":application_seconds,"proof_seconds":proof_seconds,
     });
     if prove {
         let tx = TransactionExtractor::new(pczt)
             .extract()
             .map_err(|e| error("extract and verify", e))?;
+        if tx.txid().as_ref() != &message {
+            return Err("native-only v6 txid differs from shielded signature digest".into());
+        }
         let bundle = tx
             .ironwood_bundle()
             .ok_or("missing final Ironwood bundle")?;
+        if let Some(approved) = &approval {
+            let actions: Vec<_> = bundle
+                .actions()
+                .iter()
+                .map(|a| a.cmx().to_bytes())
+                .collect();
+            approved.check(&actions, &message)?;
+            summary["application_mpc_run"] = approved
+                .mpc
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string()
+                .into();
+        }
         for (i, (receiver, amount)) in receivers.iter().zip(&amounts).enumerate() {
             let (note, recipient, _) = bundle
                 .decrypt_output_with_key(output_indices[i], &receiver.to_ivk(Scope::External))
@@ -402,6 +542,15 @@ fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
         let mut bytes = Vec::new();
         tx.write(&mut bytes)
             .map_err(|e| error("transaction bytes", e))?;
+        if let Some(integration) = integration {
+            // The fabricated transaction is useful for public verifier replay;
+            // it must never be submitted to any node.
+            std::fs::write(
+                integration.directory.join("synthetic-transaction.bin"),
+                &bytes,
+            )
+            .map_err(|e| error("write synthetic transaction", e))?;
+        }
         summary["native_transaction_verified"] = true.into();
         summary["recipients_decrypted"] = amounts.len().into();
         summary["transaction_bytes"] = bytes.len().into();
@@ -414,14 +563,30 @@ fn gate(prove: bool, zero_rows: bool) -> Result<serde_json::Value> {
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.iter().any(|x| x != "--prove" && x != "--zero-rows") {
-        return Err("usage: darkcall-native-gate [--prove] [--zero-rows]".into());
+    if args.len() == 2 && args[0] == "--verify-integrated" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&integration::verify_public(std::path::Path::new(
+                &args[1]
+            ))?)
+            .map_err(|e| error("public summary", e))?
+        );
+        return Ok(());
     }
-    let prove = args.iter().any(|x| x == "--prove");
+    let integrated = if args.len() == 3 && args[0] == "--integrated" {
+        Some(Integration::new(std::path::Path::new(&args[1]), &args[2])?)
+    } else {
+        if args.iter().any(|x| x != "--prove" && x != "--zero-rows") {
+            return Err("usage: darkcall-native-gate [--prove] [--zero-rows] | --integrated BOOK_RUN LOCAL_NAME".into());
+        }
+        None
+    };
+    let prove = integrated.is_some() || args.iter().any(|x| x == "--prove");
     let zero_rows = args.iter().any(|x| x == "--zero-rows");
     println!(
         "{}",
-        serde_json::to_string_pretty(&gate(prove, zero_rows)?).map_err(|e| error("summary", e))?
+        serde_json::to_string_pretty(&gate(prove, zero_rows, integrated.as_ref())?)
+            .map_err(|e| error("summary", e))?
     );
     Ok(())
 }
@@ -431,14 +596,14 @@ mod tests {
     use super::*;
     #[test]
     fn synthetic_pczt_threshold_and_recipient_gate() {
-        let result = gate(false, false).unwrap();
+        let result = gate(false, false, None).unwrap();
         assert_eq!(result["real_spends"], 4);
         assert_eq!(result["constructed_recipients_decrypted"], 6);
         assert_eq!(result["one_signature_share_rejected"], true);
     }
     #[test]
     fn zero_seller_and_operator_rows_keep_native_shape() {
-        let result = gate(false, true).unwrap();
+        let result = gate(false, true, None).unwrap();
         assert_eq!(result["zero_value_outputs"], 2);
         assert_eq!(result["actions"], 6);
         assert_eq!(result["constructed_recipients_decrypted"], 6);

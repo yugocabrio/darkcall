@@ -6,6 +6,7 @@ import json
 import pathlib
 import subprocess
 import time
+import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE = ROOT / ".deps/barretenberg-src"
@@ -17,14 +18,19 @@ CRS = ROOT / ".deps/co-snarks/co-noir/co-noir-common/src/crs"
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=pathlib.Path)
-    parser.add_argument("--circuit", choices=["auction4", "row_hash", "settlement4", "poseidon_row"], default="auction4")
+    parser.add_argument("--circuit", choices=["auction4", "row_hash", "settlement4", "settlement_poseidon4", "delivery4", "poseidon_row"], default="auction4")
+    parser.add_argument("--output-label", default="external-bb")
     args = parser.parse_args()
+    if not re.fullmatch(r'[a-z0-9-]{1,80}', args.output_label):
+        raise RuntimeError('Invalid verifier output label')
     circuit = ROOT / f"circuits/{args.circuit}/target/darkcall_{args.circuit}.json"
     tampering = {
         "auction4": [("price", "tampered-price"), ("accepted-root", "tampered-accepted-root")],
         "row_hash": [("digest", "altered-digest")],
         "poseidon_row": [("digest", "altered-digest")],
         "settlement4": [("price", "tampered-price"), ("plan", "tampered-plan"), ("row", "tampered-row")],
+        "settlement_poseidon4": [("price", "tampered-price"), ("plan", "tampered-plan"), ("row", "tampered-row")],
+        "delivery4": [("price", "tampered-price"), ("root", "tampered-root"), ("cipher", "tampered-cipher")],
     }[args.circuit]
     run = args.run.resolve()
     if not run.is_relative_to(ROOT / ".local"):
@@ -36,7 +42,7 @@ def main():
     expected_patch = (ROOT / "patches/barretenberg-apple-clang15.patch").read_text() + (ROOT / "patches/barretenberg-macos-ipc.patch").read_text()
     if actual_patch != expected_patch:
         raise RuntimeError("Unexpected source changes in the verifier checkout")
-    out = run / "external-bb"
+    out = run / args.output_label
     out.mkdir(exist_ok=False)
     summary = {"barretenberg_source": PIN, "circuit": args.circuit, "compatibility_patches": ["Apple Clang 15 deduction guide", "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"], "zk": True, "passed": False}
 

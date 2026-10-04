@@ -52,7 +52,7 @@ autonomously, incorporate later human/ChatGPT reviews.
     Integrated six-row SHA plan/native execution and normal C++ verification
     passed: 1654.925s MPC proof, about 1.12GB peak RSS per party. Native fixture
     is output-only; actual four-input/FROST transaction binding remains.
-- [ ] Compare BN254 Poseidon2 emulation in Pallas against the demonstrated SHA bridge.
+- [x] Compare BN254 Poseidon2 emulation in Pallas against the demonstrated SHA bridge.
   - Human supplied a performance review on Oct 4. Keep the working SHA path as
     a baseline; measure fully constrained non-native arithmetic before adopting
     it. Do not claim a 10s–1m bound without an actual proof. Avoid repeated CPU
@@ -60,10 +60,23 @@ autonomously, incorporate later human/ChatGPT reviews.
     One native Poseidon row passed with codec-only configuration: 170.788s total,
     11,200 proof bytes, including amount/recipient/hash/cmx/index rejection.
     Hash-only Pallas proof stage: 39.126s; REP3 row proof: 2.262s. Next measure
-    six native rows with one reused key and sequential proofs.
+    six native rows with one reused key and sequential proofs. Completed: native
+    808.534s including key/proof/verification/adversarial checks; MPC 8.170s versus
+    SHA 1654.925s. Both normal C++ proofs and all six native bindings passed.
+    Initial native run had memory pressure; measurements are single-host.
 - [ ] Funding ledger and one-note/one-ticket enforcement.
+  - Private in-memory ledger tests pass: duplicate funding, wrong/late/unaccepted
+    deposits, reorg pauses, settlement/cancellation reservation and empty auction.
+    Persistent wallet scanning/finality and authenticated receipts remain.
+- [x] Deliver private refund amounts from MPC without opening maximum bids.
+  - Fresh private field masks, mask commitments and normal C++ verification
+    passed. Operators learn individual refunds; values stay out of public proofs.
+- [ ] Deliver winner flags for zero-price auctions before supporting that full flow.
 - [ ] Signed acceptance receipts and consistent final root.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.
+  - Actual four-input/FROST transaction passed all six native/MPC row checks,
+    signing/extraction and recipient decryption. First run uses oracle fixture
+    fills; private delivered-fill source and public-only replay are next.
 - [ ] Seller payment and refunds in one native transaction.
 - [ ] Recipient wallets confirm amounts; public verification checks transaction identity/finality.
 - [ ] Cancellation, late/unaccepted deposits and reorg-safe state transitions.

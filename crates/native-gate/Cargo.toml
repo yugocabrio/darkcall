@@ -7,6 +7,10 @@ license.workspace = true
 
 [dependencies]
 darkcall-auction-core = { path = "../auction-core" }
+darkcall-output-binding = { path = "../output-binding" }
+darkcall-bn254-emulation = { path = "../bn254-emulation" }
+darkcall-settlement-types = { path = "../settlement-types" }
+group = "=0.13.0"
 ff = "=0.13.1"
 incrementalmerkletree = "=0.8.2"
 orchard = { version = "=0.15.5", features = ["unstable-frost"] }
@@ -17,4 +21,3 @@ reddsa = { git = "https://github.com/ZcashFoundation/reddsa.git", rev = "ed49e9c
 serde_json = "1"
 zcash_primitives = "=0.29.0"
 zcash_protocol = "=0.10.0"
-

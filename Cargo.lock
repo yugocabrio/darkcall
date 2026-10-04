@@ -1110,7 +1110,11 @@ name = "darkcall-native-gate"
 version = "0.1.0"
 dependencies = [
  "darkcall-auction-core",
+ "darkcall-bn254-emulation",
+ "darkcall-output-binding",
+ "darkcall-settlement-types",
  "ff 0.13.1",
+ "group",
  "incrementalmerkletree",
  "orchard",
  "pasta_curves",

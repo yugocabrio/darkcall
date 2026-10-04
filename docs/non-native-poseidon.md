@@ -69,3 +69,21 @@ cargo run --release --locked -p darkcall-output-binding --bin poseidon_binding
 The SHA path remains available and is independently reverified after extracting
 the shared native row-cell helper. Classical note commitment binding, rseed and
 ciphertext limitations are unchanged for either additional proof.
+
+
+## Six-row comparison
+
+Both variants now passed the actual four-bid plan, every native row and the normal
+C++ verifier. SHA MPC proof: 1654.925s. Poseidon2 MPC proof: 8.170s, with a 14656-byte
+proof and about 601MB maximum RSS among three processes. Native Poseidon uses six
+11200-byte proofs and one reused key: 72.662s key generation, 808.534s total
+including proofs, verification and adversarial checks. Independent public native
+verification took 117.439s with two Rayon threads. The initial native run used
+default Rayon threads and encountered memory pressure (4.34GB peak RSS, 10.73GB
+peak memory footprint), with concurrent compilation. These are observations,
+not a controlled latency comparison or a production guarantee.
+
+The offline four-input/FROST integration is testing Poseidon2. SHA remains
+available. Auction conditions/receipts must authenticate the selected hash rule
+and trusted circuit identities before real funding; there is no implicit rule
+switch for an already funded auction.

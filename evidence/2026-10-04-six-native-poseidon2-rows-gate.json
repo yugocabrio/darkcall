@@ -1,0 +1,41 @@
+{
+  "actions": 6,
+  "auction_plan_connected": false,
+  "book_context_supplied": true,
+  "changed_row_cmx_index_rejected": true,
+  "ciphertext_constrained": false,
+  "classical_binding_assumption": true,
+  "funding_proven": false,
+  "hash_rule": "bn254-poseidon2-packed-row-v1",
+  "individual_proof_bytes": [
+    11200,
+    11200,
+    11200,
+    11200,
+    11200,
+    11200
+  ],
+  "k": 17,
+  "key_seconds": 72.662071417,
+  "native_custody_signature_verified": false,
+  "proof_bytes": 67200,
+  "proof_verified": true,
+  "row_proof_and_verify_seconds": [
+    98.465607083,
+    148.311916459,
+    181.465278625,
+    92.346566125,
+    106.892447292,
+    103.415900792
+  ],
+  "row_transplant_rejected": true,
+  "rows": 6,
+  "rseed_derivation_constrained": false,
+  "scope": "six synthetic native outputs bound to Poseidon rows, reused key and sequential proofs",
+  "seconds": 808.534405167,
+  "command_peak_rss_bytes": 4342874112,
+  "command_peak_memory_footprint_bytes": 10727265280,
+  "independent_hosts": false,
+  "rayon_threads": "default",
+  "conditions": "Single Mac under memory pressure, with concurrent compilation; not a production latency benchmark"
+}
