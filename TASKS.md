@@ -27,7 +27,8 @@ autonomously, incorporate later human/ChatGPT reviews.
 ## Priority 1 · integration
 
 - [ ] Canonical auction conditions, ticket IDs, accepted roots and settlement rows.
-- [ ] Auction oracle and circuit agree on ties, insufficient demand and empty auctions.
+- [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.
+- [ ] Cross-language generated fixtures and committed-input circuit equivalence.
 - [ ] Funding ledger and one-note/one-ticket enforcement.
 - [ ] Signed acceptance receipts and consistent final root.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.
@@ -51,4 +52,3 @@ After completing a queue item, inspect the resulting implementation for concrete
 correctness, privacy, reliability and usability gaps. Add only useful scoped tasks,
 record evidence, and continue. Do not repeatedly rerun passing checks without a
 change or unresolved concern. Keep scope centered on the four-bid complete flow.
-

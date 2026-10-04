@@ -7,7 +7,8 @@ Three REP3 nodes are intended to compute the result and its proof without
 reconstructing every bid. Native Ironwood settlement uses a 2-of-3 FROST escrow.
 
 **Development began October 4, 2026. No end-to-end privacy or settlement claim
-has been verified yet.** Reference calculations and fixtures are not MPC.
+has been verified yet.** The integer reference oracle and initial four-bid Noir
+circuit pass their tests. Reference calculations and fixtures are not MPC.
 
 ## Project records
 
@@ -40,3 +41,15 @@ The target settlement proof is off-chain; Zcash consensus does not enforce aucti
 
 Our original code is MIT licensed. Upstream components retain their own licenses.
 
+## Current checks
+
+```sh
+cargo test --workspace
+cargo clippy --workspace --all-targets -- -D warnings
+.deps/noir-1.0.0-rc.2/nargo test --program-dir circuits/auction4
+.deps/noir-1.0.0-rc.2/nargo compile --program-dir circuits/auction4
+```
+
+See [toolchain pins](docs/toolchains.md) before compiling circuits. The initial
+circuit is a computation gate; funded input commitments and settlement binding
+remain unfinished.

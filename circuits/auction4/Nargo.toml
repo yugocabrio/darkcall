@@ -1,0 +1,6 @@
+[package]
+name = "darkcall_auction4"
+type = "bin"
+authors = ["Yugo"]
+
+[dependencies]
