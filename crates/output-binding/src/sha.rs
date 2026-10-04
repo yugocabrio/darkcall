@@ -54,13 +54,8 @@ fn assign(
         |mut region| region.assign_advice(|| "field", column, 0, || value),
     )
 }
-impl Circuit<pallas::Base> for Binding {
-    type Config = Config;
-    type FloorPlanner = SimpleFloorPlanner;
-    fn without_witnesses(&self) -> Self {
-        Self::default()
-    }
-    fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Config {
+impl Config {
+    fn configure_hash(meta: &mut ConstraintSystem<pallas::Base>, with_sha: bool) -> Config {
         let advice = std::array::from_fn(|_| meta.advice_column());
         for col in advice {
             meta.enable_equality(col);
@@ -84,7 +79,11 @@ impl Circuit<pallas::Base> for Binding {
         );
         let note = NoteCommitChip::configure(meta, advice, sin.clone());
         let ecc = EccChip::<OrchardFixedBases>::configure(meta, advice, fixed, range);
-        let sha = ShaConfig::configure(meta);
+        let sha = if with_sha {
+            ShaConfig::configure(meta)
+        } else {
+            ShaConfig::configure_encoding(meta)
+        };
         Config {
             advice,
             instance,
@@ -94,6 +93,17 @@ impl Circuit<pallas::Base> for Binding {
             sha,
         }
     }
+}
+impl Circuit<pallas::Base> for Binding {
+    type Config = Config;
+    type FloorPlanner = SimpleFloorPlanner;
+    fn without_witnesses(&self) -> Self {
+        Self::default()
+    }
+    fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Config {
+        Config::configure_hash(meta, true)
+    }
+
     fn synthesize(
         &self,
         config: Config,
@@ -111,6 +121,20 @@ impl Binding {
         mut layouter: impl Layouter<pallas::Base>,
         offset: usize,
     ) -> Result<(), Error> {
+        let (words, cmx) =
+            self.synthesize_words(config, layouter.namespace(|| "native row cells"), offset)?;
+        let digest = config.sha.hash_224(&mut layouter, &words)?;
+        for (i, word) in digest.iter().enumerate() {
+            layouter.constrain_instance(word.cell(), config.instance, offset + i)?;
+        }
+        layouter.constrain_instance(cmx.cell(), config.instance, offset + 8)
+    }
+    fn synthesize_words(
+        &self,
+        config: &Config,
+        mut layouter: impl Layouter<pallas::Base>,
+        offset: usize,
+    ) -> Result<([Cell; 56], Cell), Error> {
         let sin = SinChip::construct(config.sin.clone());
         let ecc = EccChip::construct(config.ecc.clone(), CircuitVersion::AnchoredBase);
         let note_chip = NoteCommitChip::construct(config.note.clone());
@@ -193,14 +217,63 @@ impl Binding {
         for value in self.salt {
             words.push(config.sha.word(&mut layouter, value)?);
         }
-        let digest = config.sha.hash_224(
-            &mut layouter,
-            &words.try_into().map_err(|_| Error::Synthesis)?,
-        )?;
-        for (i, word) in digest.iter().enumerate() {
-            layouter.constrain_instance(word.cell(), config.instance, offset + i)?;
+        Ok((
+            words.try_into().map_err(|_| Error::Synthesis)?,
+            cm.extract_p().inner().clone(),
+        ))
+    }
+}
+
+/// Alternative hash using exact BN254 Poseidon2 semantics. The amount, point
+/// compression, action index and NoteCommit cell links are shared with SHA.
+#[derive(Clone, Default)]
+pub struct PoseidonBinding(pub Binding);
+#[derive(Clone)]
+pub struct PoseidonConfig {
+    native: Config,
+    bn: darkcall_bn254_emulation::Config,
+}
+impl Circuit<pallas::Base> for PoseidonBinding {
+    type Config = PoseidonConfig;
+    type FloorPlanner = SimpleFloorPlanner;
+    fn without_witnesses(&self) -> Self {
+        Self::default()
+    }
+    fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self::Config {
+        PoseidonConfig {
+            native: Config::configure_hash(meta, false),
+            bn: darkcall_bn254_emulation::Config::configure(meta),
         }
-        layouter.constrain_instance(cm.extract_p().inner().cell(), config.instance, offset + 8)
+    }
+    fn synthesize(
+        &self,
+        config: Self::Config,
+        mut layouter: impl Layouter<pallas::Base>,
+    ) -> Result<(), Error> {
+        SinChip::load(config.native.sin.clone(), &mut layouter)?;
+        config.native.sha.load(&mut layouter)?;
+        config.bn.load(&mut layouter)?;
+        let (words, cmx) = self.0.synthesize_words(
+            &config.native,
+            layouter.namespace(|| "native row cells"),
+            0,
+        )?;
+        let mut bytes = Vec::new();
+        for word in &words {
+            let mut part = config.native.sha.word_bytes(&mut layouter, word)?;
+            part.reverse();
+            bytes.extend(part);
+        }
+        let mut packed = Vec::new();
+        for chunk in bytes.chunks(30) {
+            packed.push(config.bn.pack_bytes(&mut layouter, chunk)?);
+        }
+        let packed = packed.try_into().map_err(|_| Error::Synthesis)?;
+        let digest = config.bn.hash_eight(&mut layouter, &packed)?;
+        for (i, word) in config.bn.words(&mut layouter, &digest)?.iter().enumerate() {
+            layouter.constrain_instance(word.cell(), config.native.instance, i)?;
+        }
+        layouter.constrain_instance(cmx.cell(), config.native.instance, 8)
     }
 }
 

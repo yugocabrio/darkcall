@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-04 21:57 UTC.
+Updated: 2026-10-04 22:31 UTC.
 
 ## Current stage
 
@@ -9,7 +9,10 @@ pushed to main (d3c63f0). Offline native signing/transaction and one-row native
 binding experiments were pushed in c351750. Matching external C++ verification
 has now passed (cb4ef12 pushed). Shared SHA-256/native cell binding passed;
 The shared MPC/native SHA row now passed, including normal C++ verification.
-A six-row native proof passed; the six-row integrated SHA baseline is running.
+The six-row integrated SHA baseline passed: client commitments/share proofs,
+private auction plan, six native rows and the actual action mapping. Normal C++
+verification accepted the proof and rejected changed price/plan/row. It is still
+an output-only synthetic native bundle, without chain funding or FROST custody.
 A BN254 Poseidon2-on-Pallas comparison is next, per the human performance review.
 
 ## Demonstrated
@@ -64,7 +67,8 @@ A BN254 Poseidon2-on-Pallas comparison is next, per the human performance review
 ## Not demonstrated
 
 Signed accepted-input/funding authentication, testnet-funded threshold spends, broadcast/finality, and binding
-the actual auction settlement plan to native outputs. Other supported native
+the actual funded/signed native transaction to the auction plan. The six-row
+output-only SHA bridge is now demonstrated. Other supported native
 input counts remain untested. No deployed independent-host privacy validation.
 Per-node peak RAM and network bytes have not been measured.
 
@@ -89,7 +93,9 @@ Jobs 54829, 52988 and 57960 completed with exit 0 and were consumed. Logs are
 
 ## Next action
 
-Finish the six-row synthetic auction/native bridge and measure it. The normal
+The six-row synthetic SHA auction/native bridge passed. Measure the six-row
+Poseidon alternative with one reused native key, then bind the complete
+four-input/FROST transaction. The normal
 C++ verifier has passed for both auction4 and the shared SHA row. Investigate a
 fully constrained non-native Poseidon2 bridge without discarding the SHA baseline.
 Signed acceptance/funding metadata and testnet wallet integration also remain.
@@ -99,28 +105,40 @@ Do not repeat passed gates without a change or unresolved concern.
 
 ## Running jobs
 
-- Tool session 11785: six-row SHA MPC
-  baseline, log .local/mpc-settlement4-sha-baseline.log. Inspect the run directory
-  printed by the runner; proof stage has a 7200s bound.
-- Tool session 41679: latest bridge unit tests running; log .local/bridge-adapter-final-tests.log.
+- No live tool session. Codec-only native row → REP3 38896 completed/consumed;
+  exact digest matched, and normal C++ verification passed with a matching key.
+- Next: six-row Poseidon comparison with one reused native key and sequential
+  proofs, then integrate the complete four-input/FROST native transaction.
+  Avoid concurrent native proof creation on this 16GB Mac.
 
-Completed/consumed: 90108 one-row ARM-AES MPC proof (574.499s, 774–791MB peak RSS
-per process); 18376 matching C++ verification (1.329s); 51936 initial six-row
-native proof (K17, 8800 bytes, 390.019s); 79836 book-context six-row native proof
-(202.754s). The book-context run exports a public proof/statement for independent
-verification, under .local/native-four-bid-batch-20261004.
+The six-row SHA baseline 11785 passed/consumed. Run
+.local/mpc-settlement4-20261004T215650Z: witness 1.842s, proof 1654.925s,
+about 1.12GB peak RSS per proof process. Normal C++ verification 93279 passed
+(1.043s) with identical key and cryptographic price/plan/row rejection. Evidence:
+evidence/2026-10-04-six-row-auction-native-sha-bridge.json and
+2026-10-04-external-six-row-sha-bridge.json.
 
-CPU-native-only session 14370 hit the 1800s proof bound and was consumed. Source
-and upstream lockfile remained unchanged. The ARM AES build 87631 passed and was
-consumed. The common one-row digest matched both proof systems. Evidence is in
-2026-10-04-shared-mpc-native-row-gate.json and
-2026-10-04-external-shared-row-verifier-gate.json. A full funded settlement is not
-claimed. Strict clippy passed after the bridge adapters; unit tests are rerunning
-for the latest structural link command.
+Poseidon hash-only gate 43330 passed: K17, 6848 bytes, mock 2.727s, keygen
+69.472s, proof 39.126s, total 112.242s. REP3 same-sized row 4985 passed with
+1.678s witness/2.262s proof and normal C++ verification. Arithmetic boundary,
+noncanonical alias/wrong quotient and cached-source byte mutation tests passed.
+Native Poseidon binding 55407 passed (unused SHA columns, 546.586s, 13472 bytes),
+including changed amount/recipient and hash/cmx/index. The exact same exported
+row matched REP3 71456 and the normal C++ verifier. Codec-only native binding
+1713 then passed in 170.788s, 11200 bytes, with the same adversarial checks; its
+command peak RSS was 3.49GB. This is one native row, not a six-row comparison.
+SHA native proof verification after the shared helper refactor 8355 passed,
+reading only public metadata/proof and deriving the trusted circuit key.
+Strict full workspace clippy 52484 passed for the latest codec-only source.
 
-A release test initially failed with ENOSPC. Removed only completed build caches
-in this workspace, preserving binaries/source/evidence; the retry passed. No
-wallet keys, witness files or user data were removed.
+No commitment change has been adopted in a funded protocol. SHA remains a
+working baseline. All note binding retains the classical assumption and does
+not constrain ZIP 2005 rseed derivation or ciphertext correctness. See
+`docs/non-native-poseidon.md` for comparison details and arithmetic bounds.
+
+Release tests initially failed with ENOSPC. Removed only completed build caches
+in this workspace, preserving binaries/source/evidence; retry passed. No wallet
+keys, witness files or user data were removed.
 
 ## Completed jobs
 

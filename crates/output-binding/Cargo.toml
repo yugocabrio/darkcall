@@ -18,3 +18,4 @@ serde_json = "1"
 sha2 = "0.10"
 darkcall-sha-link = { path = "../sha-link" }
 darkcall-settlement-types = { path = "../settlement-types" }
+darkcall-bn254-emulation = { path = "../bn254-emulation" }

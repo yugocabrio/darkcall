@@ -1,0 +1,18 @@
+{
+  "barretenberg_source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+  "circuit": "settlement4",
+  "compatibility_patches": [
+    "Apple Clang 15 deduction guide",
+    "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"
+  ],
+  "zk": true,
+  "passed": true,
+  "matching_key": true,
+  "cryptographic_rejections": [
+    "price",
+    "plan",
+    "row"
+  ],
+  "circuit_sha256": "051b87b4a90da7a31583c7a4063427e4046e52b3a0cdd9974176d5c8cb79d0a2",
+  "seconds": 1.043
+}

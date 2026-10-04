@@ -1,0 +1,26 @@
+{
+  "canonical_native_bytes_linked": false,
+  "changed_digest_rejected": true,
+  "comparison_only": true,
+  "digest_words": [
+    319609793,
+    1710209299,
+    432855432,
+    3583678598,
+    2198922644,
+    2954747433,
+    3563103459,
+    2674063830
+  ],
+  "k": 17,
+  "keygen_seconds": 69.472450292,
+  "mock_seconds": 2.7269961670000002,
+  "native_output_binding": false,
+  "proof_bytes": 6848,
+  "proof_seconds": 39.12640325,
+  "proof_verified": true,
+  "scope": "exact existing BN254 Poseidon2 sponge on Pallas, eight private elements",
+  "total_seconds": 112.24197825,
+  "command_peak_rss_bytes": 1456734208,
+  "measured_while_sha_baseline_running": true
+}

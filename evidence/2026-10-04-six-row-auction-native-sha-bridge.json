@@ -1,0 +1,161 @@
+{
+  "scope": "six-row SHA baseline with output-only native bundle",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "independent_hosts": false,
+  "funded_transaction": false,
+  "custody_signatures": false,
+  "input_proofs_verified": true,
+  "native_row_proof_verified": true,
+  "binary_sha256": "c9206a40a44b6a393333b9b050a1cd1904881227d889896a711ff07206f418c2",
+  "stages": [
+    {
+      "name": "native-proof-verification",
+      "passed": true,
+      "seconds": 98.072,
+      "peak_rss_bytes_per_process": [
+        466731008
+      ]
+    },
+    {
+      "name": "plan-fixture",
+      "passed": true,
+      "seconds": 0.208,
+      "peak_rss_bytes_per_process": [
+        1638400
+      ]
+    },
+    {
+      "name": "trusted-client-vk",
+      "passed": true,
+      "seconds": 0.205,
+      "peak_rss_bytes_per_process": [
+        25788416
+      ]
+    },
+    {
+      "name": "client-proof-verification",
+      "passed": true,
+      "seconds": 0.212,
+      "peak_rss_bytes_per_process": [
+        7438336,
+        7356416,
+        7323648,
+        7241728
+      ]
+    },
+    {
+      "name": "share-checks",
+      "passed": true,
+      "seconds": 0.234,
+      "peak_rss_bytes_per_process": [
+        1703936,
+        1703936,
+        1638400,
+        1638400,
+        1589248,
+        1671168,
+        1589248,
+        1900544,
+        1638400,
+        1769472,
+        1589248,
+        1589248
+      ]
+    },
+    {
+      "name": "split-public",
+      "passed": true,
+      "seconds": 0.204,
+      "peak_rss_bytes_per_process": [
+        12550144
+      ]
+    },
+    {
+      "name": "split-operator",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        13058048
+      ]
+    },
+    {
+      "name": "merge-0",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        12222464
+      ]
+    },
+    {
+      "name": "merge-1",
+      "passed": true,
+      "seconds": 0.208,
+      "peak_rss_bytes_per_process": [
+        12320768
+      ]
+    },
+    {
+      "name": "merge-2",
+      "passed": true,
+      "seconds": 0.203,
+      "peak_rss_bytes_per_process": [
+        12222464
+      ]
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 1.842,
+      "peak_rss_bytes_per_process": [
+        34947072,
+        33505280,
+        31014912
+      ]
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 1.834,
+      "peak_rss_bytes_per_process": [
+        279691264
+      ]
+    },
+    {
+      "name": "proof",
+      "passed": true,
+      "seconds": 1654.925,
+      "peak_rss_bytes_per_process": [
+        1123942400,
+        1119092736,
+        1124728832
+      ]
+    },
+    {
+      "name": "verify",
+      "passed": true,
+      "seconds": 0.212,
+      "peak_rss_bytes_per_process": [
+        7143424
+      ]
+    },
+    {
+      "name": "native-plan-link",
+      "passed": true,
+      "seconds": 0.206,
+      "peak_rss_bytes_per_process": [
+        1605632
+      ]
+    }
+  ],
+  "validated_share_pairs": 12,
+  "passed": true,
+  "price": 50,
+  "sold": 3,
+  "rows": 6,
+  "native_row_hashes_match": true,
+  "proof_bytes": 14656,
+  "changed_price_plan_row_rejected": true,
+  "external_barretenberg_verified": false,
+  "funding_authenticated": false,
+  "receiver_receipts_authenticated": false
+}

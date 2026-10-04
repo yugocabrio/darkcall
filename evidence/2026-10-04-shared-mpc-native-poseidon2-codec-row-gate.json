@@ -1,0 +1,81 @@
+{
+  "scope": "shared hash feasibility gate, not a complete native settlement proof",
+  "hash": "existing-bn254-poseidon2-eight-packed-elements",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "independent_hosts": false,
+  "zk_enabled": true,
+  "private_bytes": 224,
+  "compression_blocks": null,
+  "stages": [
+    {
+      "name": "split",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        7995392
+      ]
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 0.417,
+      "peak_rss_bytes_per_process": [
+        9994240,
+        9846784,
+        9568256
+      ]
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 0.206,
+      "peak_rss_bytes_per_process": [
+        19283968
+      ]
+    },
+    {
+      "name": "proof",
+      "passed": true,
+      "seconds": 1.235,
+      "peak_rss_bytes_per_process": [
+        76496896,
+        77430784,
+        76988416
+      ]
+    },
+    {
+      "name": "verify",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        7012352
+      ]
+    }
+  ],
+  "network_bytes_measured": false,
+  "binary_flavor": "target-cpu=native; aes_armv8",
+  "binary_sha256": "c9206a40a44b6a393333b9b050a1cd1904881227d889896a711ff07206f418c2",
+  "passed": true,
+  "reference_digest_matches": true,
+  "python_digest_matches": false,
+  "altered_digest_rejected": true,
+  "proof_bytes": 14656,
+  "same_native_row_digest_matches": true,
+  "native_binding_evidence": "2026-10-04-native-poseidon2-codec-binding-gate.json",
+  "normal_cpp_verifier": {
+    "barretenberg_source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+    "circuit": "poseidon_row",
+    "compatibility_patches": [
+      "Apple Clang 15 deduction guide",
+      "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"
+    ],
+    "zk": true,
+    "passed": true,
+    "matching_key": true,
+    "cryptographic_rejections": [
+      "digest"
+    ],
+    "circuit_sha256": "9d7a24eca4226a8ca30755470586dc8712c5a15d15a85a0ab81971204ada37ea",
+    "seconds": 0.137
+  }
+}

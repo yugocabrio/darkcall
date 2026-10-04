@@ -17,7 +17,7 @@ const IV: [u32; 8] = [
 
 #[derive(Clone, Debug)]
 pub struct Config {
-    sha: Table16Config,
+    sha: Option<Table16Config>,
     columns: [Column<Advice>; 5],
     range: Selector,
     add: Selector,
@@ -30,7 +30,15 @@ pub struct Config {
 
 impl Config {
     pub fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self {
-        let sha = Table16Chip::configure(meta);
+        Self::configure_inner(meta, true)
+    }
+    /// Canonical byte/point encoding without unused SHA round/lookup columns.
+    /// Used only by the alternative hash circuit; SHA's configured shape stays.
+    pub fn configure_encoding(meta: &mut ConstraintSystem<pallas::Base>) -> Self {
+        Self::configure_inner(meta, false)
+    }
+    fn configure_inner(meta: &mut ConstraintSystem<pallas::Base>, with_sha: bool) -> Self {
+        let sha = with_sha.then(|| Table16Chip::configure(meta));
         let columns = std::array::from_fn(|_| meta.advice_column());
         for col in columns {
             meta.enable_equality(col);
@@ -124,7 +132,9 @@ impl Config {
     }
 
     pub fn load(&self, layouter: &mut impl Layouter<pallas::Base>) -> Result<(), Error> {
-        Table16Chip::load(self.sha.clone(), layouter)?;
+        if let Some(sha) = &self.sha {
+            Table16Chip::load(sha.clone(), layouter)?;
+        }
         self.load_bytes(layouter)
     }
 
@@ -505,7 +515,7 @@ impl Config {
             state.push(self.constant(layouter, word)?);
         }
         let mut state: [Cell; 8] = state.try_into().unwrap();
-        let chip = Table16Chip::construct(self.sha.clone());
+        let chip = Table16Chip::construct(self.sha.clone().ok_or(Error::Synthesis)?);
         for block in padded.chunks_exact(16) {
             let initialized = chip.initialize_linked(layouter, &state)?;
             let raw_state =

@@ -1,0 +1,64 @@
+{
+  "scope": "shared hash feasibility gate, not a complete native settlement proof",
+  "hash": "existing-bn254-poseidon2-eight-packed-elements",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "independent_hosts": false,
+  "zk_enabled": true,
+  "private_bytes": 224,
+  "compression_blocks": null,
+  "stages": [
+    {
+      "name": "split",
+      "passed": true,
+      "seconds": 0.204,
+      "peak_rss_bytes_per_process": [
+        7995392
+      ]
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 1.678,
+      "peak_rss_bytes_per_process": [
+        9994240,
+        10076160,
+        9797632
+      ]
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 0.409,
+      "peak_rss_bytes_per_process": [
+        21037056
+      ]
+    },
+    {
+      "name": "proof",
+      "passed": true,
+      "seconds": 2.262,
+      "peak_rss_bytes_per_process": [
+        77594624,
+        79282176,
+        77774848
+      ]
+    },
+    {
+      "name": "verify",
+      "passed": true,
+      "seconds": 0.206,
+      "peak_rss_bytes_per_process": [
+        7274496
+      ]
+    }
+  ],
+  "network_bytes_measured": false,
+  "binary_flavor": "target-cpu=native; aes_armv8",
+  "binary_sha256": "c9206a40a44b6a393333b9b050a1cd1904881227d889896a711ff07206f418c2",
+  "passed": true,
+  "reference_digest_matches": true,
+  "python_digest_matches": false,
+  "altered_digest_rejected": true,
+  "proof_bytes": 14656,
+  "native_note_commitment_linked": false
+}

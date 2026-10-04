@@ -1,0 +1,18 @@
+[package]
+name = "darkcall-bn254-emulation"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+ff = "=0.13.1"
+halo2_proofs = "=0.3.5"
+pasta_curves = "=0.5.2"
+num-bigint = "=0.4.8"
+num-traits = "0.2"
+rand = "0.8"
+serde_json = "1"
+ark-bn254 = "=0.6.0"
+ark-ff = "=0.6.0"
+mpc-core = { git = "https://github.com/TaceoLabs/co-snarks", rev = "467a2abbad940d40ed78f38d424cc21920988976" }

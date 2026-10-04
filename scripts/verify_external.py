@@ -17,12 +17,13 @@ CRS = ROOT / ".deps/co-snarks/co-noir/co-noir-common/src/crs"
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=pathlib.Path)
-    parser.add_argument("--circuit", choices=["auction4", "row_hash", "settlement4"], default="auction4")
+    parser.add_argument("--circuit", choices=["auction4", "row_hash", "settlement4", "poseidon_row"], default="auction4")
     args = parser.parse_args()
     circuit = ROOT / f"circuits/{args.circuit}/target/darkcall_{args.circuit}.json"
     tampering = {
         "auction4": [("price", "tampered-price"), ("accepted-root", "tampered-accepted-root")],
         "row_hash": [("digest", "altered-digest")],
+        "poseidon_row": [("digest", "altered-digest")],
         "settlement4": [("price", "tampered-price"), ("plan", "tampered-plan"), ("row", "tampered-row")],
     }[args.circuit]
     run = args.run.resolve()

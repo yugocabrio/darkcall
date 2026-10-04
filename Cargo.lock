@@ -1075,6 +1075,22 @@ name = "darkcall-auction-core"
 version = "0.1.0"
 
 [[package]]
+name = "darkcall-bn254-emulation"
+version = "0.1.0"
+dependencies = [
+ "ark-bn254",
+ "ark-ff 0.6.0",
+ "ff 0.13.1",
+ "halo2_proofs",
+ "mpc-core",
+ "num-bigint 0.4.8",
+ "num-traits",
+ "pasta_curves",
+ "rand 0.8.8",
+ "serde_json",
+]
+
+[[package]]
 name = "darkcall-input-tool"
 version = "0.1.0"
 dependencies = [
@@ -1110,6 +1126,7 @@ dependencies = [
 name = "darkcall-output-binding"
 version = "0.1.0"
 dependencies = [
+ "darkcall-bn254-emulation",
  "darkcall-settlement-types",
  "darkcall-sha-link",
  "ff 0.13.1",
