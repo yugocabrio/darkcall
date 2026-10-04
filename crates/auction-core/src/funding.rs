@@ -58,12 +58,14 @@ pub struct Registration {
     pub bid_commitment: [u8; 32],
     pub receiver_commitment: [u8; 32],
 }
+#[derive(Clone)]
 struct Deposit {
     observed: Observation,
     disposition: Disposition,
     confirmed: bool,
 }
 
+#[derive(Clone)]
 pub struct Ledger {
     required: u64,
     phase: Phase,

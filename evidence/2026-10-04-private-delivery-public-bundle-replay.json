@@ -1,0 +1,40 @@
+{
+  "public_only_replay": {
+    "acceptance_or_recipient_receipts_authenticated": false,
+    "actual_transaction_outputs_match": true,
+    "chain_funding_or_finality_verified": false,
+    "hash_rule": "bn254-poseidon2-packed-row-v1",
+    "native_proof_and_signatures_verified": true,
+    "native_row_proofs_verified": true,
+    "normal_cpp_auction_proof_verified": true,
+    "private_openings_read": false,
+    "scope": "public-only offline transaction/application-proof replay",
+    "seconds": 134.90987620800001,
+    "transaction_bytes": 21790,
+    "txid": "4b78bda144f5fb1ce3a7fceeebd9825e29907850940f82e0389cfa00d8055d61"
+  },
+  "private_artifacts_copied": false,
+  "original_private_directory_required": false,
+  "source": "native-private-delivery-20261005",
+  "directory": "public-private-delivery-20261005",
+  "tampering": {
+    "trailing_byte": {
+      "rejected": true,
+      "seconds": 0.004,
+      "reason": "unexpected transaction format/pools/trailing data"
+    },
+    "binding_signature": {
+      "rejected": true,
+      "seconds": 2.31,
+      "reason": "native proof or spend/binding signatures invalid"
+    },
+    "transaction_action_metadata": {
+      "rejected": true,
+      "seconds": 0.004,
+      "reason": "statement actions differ from serialized transaction"
+    }
+  },
+  "passed": true,
+  "date_utc": "2026-10-04",
+  "private_wallet_or_bid_material_committed": false
+}

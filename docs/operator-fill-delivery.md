@@ -22,6 +22,9 @@ directories. They must not be committed or sent to the public verifier.
 
 Operators learn individual refunds and therefore winning status when the price
 is positive. They can also use public price/count/timing to infer information.
+For four eligible bids and three units, refunds identify the sole losing ticket;
+its maximum equals the public K+1 clearing price. Hiding witness values cannot
+prevent this output inference.
 This matches the custody/viewing metadata disclosure of this prototype; it is
 not a claim that operators learn nothing about fills. Zero-price winner flags
 need a separate private delivery field before supporting that case in the full

@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/auction-core", "crates/input-tool", "crates/native-gate", "crates/output-binding", "crates/sha-link", "crates/settlement-types", "crates/bn254-emulation"]
+members = ["crates/auction-core", "crates/input-tool", "crates/native-gate", "crates/output-binding", "crates/sha-link", "crates/settlement-types", "crates/bn254-emulation", "crates/wallet-bridge"]
 exclude = ["vendor/halo2_gadgets"]
 resolver = "2"
 

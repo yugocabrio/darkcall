@@ -51,7 +51,8 @@ autonomously, incorporate later human/ChatGPT reviews.
     stage). Normal C++ verification passed. A six-row native proof passed.
     Integrated six-row SHA plan/native execution and normal C++ verification
     passed: 1654.925s MPC proof, about 1.12GB peak RSS per party. Native fixture
-    is output-only; actual four-input/FROST transaction binding remains.
+    is output-only. The later six-row Poseidon/native path binds an actual
+    four-input/FROST synthetic transaction; real funding still remains.
 - [x] Compare BN254 Poseidon2 emulation in Pallas against the demonstrated SHA bridge.
   - Human supplied a performance review on Oct 4. Keep the working SHA path as
     a baseline; measure fully constrained non-native arithmetic before adopting
@@ -67,7 +68,9 @@ autonomously, incorporate later human/ChatGPT reviews.
 - [ ] Funding ledger and one-note/one-ticket enforcement.
   - Private in-memory ledger tests pass: duplicate funding, wrong/late/unaccepted
     deposits, reorg pauses, settlement/cancellation reservation and empty auction.
-    Persistent wallet scanning/finality and authenticated receipts remain.
+    Durable fsynced private journal now passes restart, concurrent lock, truncated
+    tail, symlink, reorg pause and refund retention checks. Persistent wallet
+    scanning/finality and authenticated receipts remain.
 - [x] Deliver private refund amounts from MPC without opening maximum bids.
   - Fresh private field masks, mask commitments and normal C++ verification
     passed. Operators learn individual refunds; values stay out of public proofs.
@@ -76,7 +79,11 @@ autonomously, incorporate later human/ChatGPT reviews.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.
   - Actual four-input/FROST transaction passed all six native/MPC row checks,
     signing/extraction and recipient decryption. First run uses oracle fixture
-    fills; private delivered-fill source and public-only replay are next.
+    fills. Different-book price-20 integration now passed proved private refunds,
+    actual six outputs, FROST/native proofs and all recipient decryptions (1167.489s).
+    Public-only replay passed for both runs. Separate public bundle replay passes
+    without private files and rejects transaction signature/trailing bytes/action
+    metadata changes. Funded chain integration and receipt authentication remain.
 - [ ] Seller payment and refunds in one native transaction.
 - [ ] Recipient wallets confirm amounts; public verification checks transaction identity/finality.
 - [ ] Cancellation, late/unaccepted deposits and reorg-safe state transitions.

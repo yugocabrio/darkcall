@@ -1,192 +1,126 @@
 # DarkCall status
 
-Updated: 2026-10-04 23:22 UTC.
+Updated: 2026-10-04 23:54 UTC.
 
-## Current stage
+## Current outcome
 
-Implementation authorized. Specification, oracle and committed-input MPC milestone
-pushed to main (d3c63f0). Offline native signing/transaction and one-row native
-binding experiments were pushed in c351750. Matching external C++ verification
-has now passed (cb4ef12 pushed). Shared SHA-256/native cell binding passed;
-The shared MPC/native SHA row now passed, including normal C++ verification.
-The six-row integrated SHA baseline passed: client commitments/share proofs,
-private auction plan, six native rows and the actual action mapping. Normal C++
-verification accepted the proof and rejected changed price/plan/row. It is still
-an output-only synthetic native bundle, without chain funding or FROST custody.
-A BN254 Poseidon2-on-Pallas comparison is next, per the human performance review.
+The price-20 four-bid integration passed using **proved private refund delivery**,
+without reading maximum bids or oracle fixture refunds in native orchestration.
+It generated all six BN254 Poseidon2/native bindings, verified the committed MPC
+auction using normal C++ Barretenberg, checked the actual native outputs/effects
+before 2-of-3 FROST signing, generated the Ironwood consensus proof, extracted and
+verified the transaction, and decrypted all six recipients. Total 1167.489s;
+21,790 bytes, 4 inputs / 6 outputs, standard fee 30,000.
 
-## Demonstrated
+**Funding notes and anchors are fabricated. Never broadcast these transactions.**
+This is an offline synthetic gate, not a chain-funded auction. Acceptance and
+recipient receipts are not authenticated. All REP3 processes run on one Mac.
 
-- SSH read and push access to the user-provided repository.
-- Rust oracle: 7 tests passed, including 4,096 small-book invariant cases and
-  all 24 input permutations of a four-bid book. Strict clippy passed.
-- Noir rc.2 circuit: compilation and 8 tests passed, including bad budget,
-  duplicates, fee shortfall, ties, empty books and insufficient demand.
-- Noir rc.2 installed under ignored .deps/ after checking the release SHA256.
-  Global Nargo beta.20 and Barretenberg nightly.20260424 were left unchanged.
-- coNoir 0.7.0 built from the pinned source, with the upstream lockfile unchanged.
-- Four separate synthetic bidder input files were shared and merged for three
-  localhost REP3 processes. They jointly generated the witness and ZK proof.
-- Standalone verifier accepted the proof and rejected changing the public price
-  from 50 to 49. All parties agreed on price 50 and sold count 3.
-- Circuit domain: 8,192. Proof: 14,656 bytes. Initial observed witness stage
-  approximately 0.6 seconds and proof stage approximately 3 seconds on this Mac.
-  These are single-host observations, not independent-host benchmarks.
-- Recovery and fresh runner reproduction are recorded in evidence/.
-- Four client ZK input proofs against the trusted circuit key and all twelve
-  delivered REP3 pair checks passed. Changed shares, public price and accepted
-  root were rejected. See evidence/2026-10-04-committed-input-gate.json.
-- Our offline v6 Ironwood/PCZT/FROST gate passed proof generation, 2-of-3
-  signatures, full transaction extraction/verification and 6 recipient decryptions.
-  4 synthetic inputs, 6 outputs/actions, standard fee 30,000, 21,790 transaction
-  bytes. A second proved case includes zero seller/operator rows with the same
-  shape and decryption of all 6 outputs. Neither fabricated transaction is broadcastable.
-- One-row Halo2 proof binds a private amount/expanded recipient to a native
-  Sinsemilla cmx: K=12, 4,928 proof bytes, 9.53 seconds observed total. Changed
-  row hash/cmx, amount and recipient were rejected. This prototype uses Pallas
-  Poseidon, assumes classical binding, and has not been connected to the auction
-  plan. ZIP 2005 rseed derivation and ciphertext are not constrained in it.
-- Matching C++ Barretenberg derived the identical trusted verification key,
-  accepted the MPC proof and cryptographically rejected altered price/root.
-  Evidence: evidence/2026-10-04-external-verifier-gate.json.
-- Standard SHA-256 linked Halo2 proof passed: 224 private bytes, K=17,
-  5,920 bytes; altered digest rejected. Source-cell mutation test catches missing
-  copy links. Canonical field/point tests reject modulus aliases and sign changes.
-- A SHA-256 row is actually bound to native Ironwood cmx with the same constrained
-  amount/ECC cells: K=17, 8,800 bytes. Digest/cmx/action-index substitution and
-  amount/recipient changes were rejected. Conditions/root/ticket are synthetic.
-  The auction plan is not yet connected; classical binding/rseed/ciphertext
-  limitations remain. See evidence/2026-10-04-native-sha-output-binding-gate.json.
-- Six-row settlement4 Noir circuit compiles and passes 4 tests. Shared row library
-  passes 2 encoding tests, including an independent Python SHA-256 vector.
-- Latest strict workspace clippy passed (85558 consumed). SHA unit/vector,
-  canonical and malicious source-cell tests passed. Release native regressions
-  passed (92023 consumed): 7 oracle, 1 input hash, 2 native cases. Shared Rust
-  row vector and native statement-mapping tests passed (16191 consumed).
+Latest pushed milestone before current changes: 0407d28. Current work adds a public-only artifact bundle,
+transaction tampering checks, a read-only network probe and durable funding journal.
 
-## Not demonstrated
+## Active jobs and next action
 
-Signed accepted-input/funding authentication, testnet-funded threshold spends, broadcast/finality, and binding
-the actual funded/signed native transaction to the auction plan. The six-row
-output-only SHA bridge is now demonstrated. Other supported native
-input counts remain untested. No deployed independent-host privacy validation.
-Per-node peak RAM and network bytes have not been measured.
+- Native private-delivery integration session 99380 completed with exit 0 and was
+  consumed. Source book: .local/mpc-auction4-20261004T231421Z. Native artifacts:
+  .local/native-private-delivery-20261005. MPC settlement:
+  .local/mpc-settlement_poseidon4-20261004T234126Z.
+- Session 9810 build completed/consumed. Public-only bundle replay 85223 passed:
+  134.910s, copied no private files; altered tx binding signature, trailing byte
+  and action metadata all rejected. Artifacts: .local/public-private-delivery-20261005.
+- Standard testnet genesis and compact/tree tip agree, but testnet.zec.rocks reports
+  branch 77190ad9 at 4465703; pinned SDK expects 37a5165b. Probe refuses this chain
+  snapshot. Zaino testnet returned 503; ECC/isolated regtest TLS connects failed.
+  No wallet funding or broadcast. Evidence: test-chain-identification.json.
+- Wallet journal/network tests passed (5); latest regression tests passed (23
+  total across core/input/native/wallet). Strict release all-target workspace
+  clippy passed (64300 consumed). Python public bundle script compiles.
 
-## Active implementation
+Next highest priority: identify a usable native Ironwood test chain, receive actual
+funding notes, construct canonical witnesses and connect wallet observations to
+persistent reservations/finality. Signed acceptance/recipient records remain.
+The 15-minute heartbeat is recovery; continue active work across milestones.
+No native prover or network probe is currently running. Continue scanner/receipt
+implementation while resolving the provider branch mismatch; do not relax checks.
 
-Accepted commitments, client share-consistency proofs and node-side delivered-pair
-checks are integrated. Noir shared library (8 tests), bid-input circuit (4
-tests) and refactored auction circuit (8 tests) passed. Rust input tool's hash vector
-test passed. Run .local/mpc-auction4-20261004T200620Z passed client proofs,
-all 12 delivered-share checks, committed MPC proof generation and verification,
-and rejected changed shares, price and accepted root. Follow-up run
-.local/mpc-auction4-20261004T200736Z passed using a client verification key
-derived from the compiled circuit. Public summary is committed under evidence/.
-Strict workspace clippy passed; process 64607 completed and was consumed.
+## Measurements and evidence
 
-Upstream zcash-sign's 3 Ironwood v6 sighash regression tests passed at frost-tools
-06c0dbdbb1bac9b99cd255e74ba2f387c295e660. This is validation of an upstream public
-fixture, not our own threshold transaction or recipient decryption.
+| Gate | Measured result | Scope |
+| --- | --- | --- |
+| Committed auction4 | Domain 8192, proof ~3s, 14656 bytes | 4 client ZK proofs, 12 delivered-share checks; altered root/price rejected |
+| One-row SHA REP3 | 574.499s proof | ARM AES backend, normal C++ verification passed |
+| Six-row SHA MPC | 1654.925s proof; ~1.12GB peak RSS per party | All six native hashes/action mappings and C++ rejection checks passed |
+| One-row Poseidon2 MPC | 2.262s proof | Same-sized canonical row; normal C++ verification passed |
+| Six native Poseidon2 rows | 808.534s cold total; 6×11200 bytes | Reused native key, sequential proofs; single-host memory pressure |
+| Six-row Poseidon2 MPC | 8.170s proof; ~601MB peak RSS among parties | Exact six native rows; normal C++ accepts/rejects price/plan/row |
+| First native/FROST integration | 1131.462s; 21790 bytes | Oracle fixture fills, fabricated funding; 6 recipient decryptions |
+| First public-only replay | 107.513s; ~542MB RSS | Serialized tx, native signatures/proof, native row proofs, C++ auction proof |
+| Private refund delivery | 4.798s MPC proof | Fresh field masks, C++ verification; no maximum-bid reconstruction |
+| Different-book full integration | 1167.489s total; 1147.188s application proofs | Price 20, sold 3; proved private refunds; native proof 17.815s; 6 decryptions |
 
-Jobs 54829, 52988 and 57960 completed with exit 0 and were consumed. Logs are
-.local/zcash-sign-test.log, .local/plaindriver-build.log and .local/input-tool-test.log.
+Actual commands, pins, memory and limitations are in evidence/. Key latest files:
+- 2026-10-04-native-private-delivery-integration-gate.json
+- 2026-10-04-native-transaction-mpc-frost-integration-gate.json
+- 2026-10-04-public-native-mpc-replay-gate.json
+- 2026-10-04-private-refund-delivery-gate.json
+- 2026-10-04-six-row-auction-native-poseidon2-bridge.json
+- 2026-10-04-six-row-auction-native-sha-bridge.json
+- 2026-10-04-native-poseidon-domain-probes.json (K15/K16 failed with row shortage;
+  retain K17 and all constraints.)
 
-## Next action
+Poseidon2 is the measured implementation path; SHA remains a demonstrated baseline.
+No custom hash is introduced. Exact pinned BN254 Poseidon2 is emulated over Pallas
+using canonical bounded non-native arithmetic and source-cell copy constraints.
+Additional native bindings assume classical security and do not constrain ZIP 2005
+rseed derivation or ciphertext. Consensus proof and recipient decryption are
+separate checks. Application proofs are not native consensus rules.
 
-The six-row synthetic SHA auction/native bridge passed. Measure the six-row
-Poseidon alternative with one reused native key, then bind the complete
-four-input/FROST transaction. The normal
-C++ verifier has passed for both auction4 and the shared SHA row. Investigate a
-fully constrained non-native Poseidon2 bridge without discarding the SHA baseline.
-Signed acceptance/funding metadata and testnet wallet integration also remain.
-The auction proof currently outputs price/sold count and binds the supplied root;
-it does not establish an authoritative funding root or native settlement.
-Do not repeat passed gates without a change or unresolved concern.
+## Other verified implementation
 
-## Running jobs
+- Rust oracle/state machine: 12 tests (7 auction tests, 5 funding transitions),
+  including 4096 small books and all 24 four-bid permutations.
+- Noir shared protocol: 8 tests; bid_input: 4; auction4: 8; settlement4 and
+  settlement_poseidon4: 4 each. Shared 224-byte codec and independent SHA vector.
+- Client ZK commitment/share binding and all 12 delivered-pair checks before MPC.
+- Actual offline PCZT v6/Ironwood, 2-of-3 rerandomized RedPallas FROST, full native
+  proof/signature extraction, 6 recipient decryptions. Ordinary and two-zero-output
+  shapes pass. Other native input counts remain untested.
+- Amount/recipient/hash/cmx/action index substitution, altered v6 effects digest,
+  one-share threshold signing, noncanonical arithmetic aliases and source-cell
+  mutation are rejected in the applicable gates.
+- Private funding ledger rejects duplicate note/ticket reuse, records wrong/late/
+  unaccepted deposits, pauses frozen books after reorg and reserves accepted inputs
+  once for settlement or cancellation. New fsynced journal preserves this across
+  restart and excludes concurrent local writers; no wallet scanner is wired yet.
 
-- No live tool session. Public-only replay 86145 passed and was consumed:
-  actual transaction commitments, native proof/signatures and every application
-  proof verified without reading any private file; 107.513s, about 542MB RSS.
-  Evidence: evidence/2026-10-04-public-native-mpc-replay-gate.json.
-- Private refund delivery source is built/tested. Next full run uses the different
-  price-20 book .local/mpc-auction4-20261004T231421Z. First probe a smaller native
-  Poseidon circuit domain (SHA's K17 default may be unnecessary in this codec).
-  Retain verified K17 keys/proofs and reject unsupported parameter choices.
+## Trust and unfinished guarantees
 
-The first four-input/FROST integration 27571 completed/consumed: all application
-proof checks, exact native outputs, 4 threshold spends, native extraction and
-6 recipient decryptions passed. 21790 transaction bytes, 1131.462s total. This
-first run still uses fixture fills. It is not chain funded or broadcast. Evidence:
-evidence/2026-10-04-native-transaction-mpc-frost-integration-gate.json.
+REP3 privacy assumes at most one semi-honest corrupt party. Two colluding parties
+can reconstruct bids; all three are required for computation. Funds use 2-of-3
+custody: two colluding signers can steal; there is no unilateral user refund.
+Operators know recipients/refunds/viewing metadata. Output inference remains:
+with four eligible bids and three units, the sole loser's maximum equals the
+public K+1 price. Zero-price winner flags still need private delivery.
 
-- Masked refund delivery 97311 and normal C++ verification 11093 passed.
-  Maximum bids remain REP3 inputs; only masked refunds are public and fresh
-  operator masks decrypt them. Native orchestration source now consumes this
-  delivery, but the live first native run predates that source change.
-- Different bid book 44438 passed: .local/mpc-auction4-20261004T231421Z, price 20,
-  sold 3. Use this book for the next native integration to reject fixed-fill glue.
-- After the current native job, run its public-only verification, then exercise
-  the integration using proved MPC-delivered refunds and a different bid book.
+Unfinished: actual chain funding, canonical witnesses, broadcast/finality,
+persistent wallet scanning/reorg recovery, signed acceptance and recipient records,
+authoritative root, cancellation transactions, deployed independent hosts, UI,
+independent reproduction, benchmark scale and submission requirements. No public
+release, mainnet funds, deployed service or contest submission is authorized.
 
-Six-row Poseidon/native comparison 87106 and 28875 completed/consumed. Native
-six-row total 808.534s; key 72.662s; six 11200-byte proofs. MPC witness 1.230s,
-proof 8.170s, about 601MB peak RSS among parties. Normal C++ verifier 54091 passed
-(0.339s) with identical key and altered price/plan/row cryptographically rejected.
-See evidence/2026-10-04-six-row-auction-native-poseidon2-bridge.json.
+## Pinned environment and autonomy
 
-Strict release workspace clippy 17898 passed; funding ledger tests now total
-12 oracle/state tests. Ledger records wrong/late/unaccepted deposits, rejects
-one-note/two-ticket reuse, pauses frozen books on reorg and prevents concurrent
-settlement/cancellation reservations. This is an in-memory private state machine,
-not persistent wallet integration or an authenticated/public funding proof.
-Public replay built (44698/38104 consumed) and release tests 69294 passed. Actual
-serialized transaction/application-proof replay must still be run.
+Nargo 1.0.0-rc.2; coNoir 0.7.0/co-snarks 467a2abbad940d40ed78f38d424cc21920988976;
+ARM AES build uses target-cpu=native and aes_armv8. C++ Barretenberg tag
+v5.0.0-nightly.20260522, 87aa5283d5b0cab6632ed49fdd25f6548d2ba91f, exact two
+checked-in macOS compatibility patches. SDK/native pins are in Cargo.lock and
+prior evidence. New backend proto adapter pins zcash_client_backend 0.24.0-rc.1,
+tonic 0.14.2 and tokio 1.53.1.
 
-The six-row SHA baseline 11785 passed/consumed. Run
-.local/mpc-settlement4-20261004T215650Z: witness 1.842s, proof 1654.925s,
-about 1.12GB peak RSS per proof process. Normal C++ verification 93279 passed
-(1.043s) with identical key and cryptographic price/plan/row rejection. Evidence:
-evidence/2026-10-04-six-row-auction-native-sha-bridge.json and
-2026-10-04-external-six-row-sha-bridge.json.
+Keys, PCZTs, bids, masks, witnesses, wallet journals and private logs remain ignored
+under .local/.deps. No new native prover should run alongside another on this
+16GB Mac. Report RSS and memory footprint separately; cold runs include keygen.
 
-Poseidon hash-only gate 43330 passed: K17, 6848 bytes, mock 2.727s, keygen
-69.472s, proof 39.126s, total 112.242s. REP3 same-sized row 4985 passed with
-1.678s witness/2.262s proof and normal C++ verification. Arithmetic boundary,
-noncanonical alias/wrong quotient and cached-source byte mutation tests passed.
-Native Poseidon binding 55407 passed (unused SHA columns, 546.586s, 13472 bytes),
-including changed amount/recipient and hash/cmx/index. The exact same exported
-row matched REP3 71456 and the normal C++ verifier. Codec-only native binding
-1713 then passed in 170.788s, 11200 bytes, with the same adversarial checks; its
-command peak RSS was 3.49GB. This is one native row, not a six-row comparison.
-SHA native proof verification after the shared helper refactor 8355 passed,
-reading only public metadata/proof and deriving the trusted circuit key.
-Strict full workspace clippy 52484 passed for the latest codec-only source.
-
-No commitment change has been adopted in a funded protocol. SHA remains a
-working baseline. All note binding retains the classical assumption and does
-not constrain ZIP 2005 rseed derivation or ciphertext correctness. See
-`docs/non-native-poseidon.md` for comparison details and arithmetic bounds.
-
-Release tests initially failed with ENOSPC. Removed only completed build caches
-in this workspace, preserving binaries/source/evidence; retry passed. No wallet
-keys, witness files or user data were removed.
-
-## Completed jobs
-
-- coNoir build tool session 44418 completed with exit 0 and was consumed.
-- Command: cargo build --release --locked --manifest-path .deps/co-snarks/Cargo.toml --bin co-noir -j 2
-- Log: .local/co-noir-build.log (ignored).
-- Source: 467a2abbad940d40ed78f38d424cc21920988976.
-- MPC runner sessions 62605 and 94537 ended and were consumed. No MPC processes
-  remain from these runs. Do not poll consumed sessions.
-- The initial verifier invocation failed because upstream's binary parser rejects
-  a public-input filename with an extension. Identical bytes in an extensionless
-  file verified successfully. The corrected runner reproduced all stages.
-
-## Autonomous execution
-
-The continuing task queue is TASKS.md. Same-chat heartbeat darkcall is ACTIVE,
-every 15 minutes, through October 28, 2026 23:59 UTC. It resumes this chat's context.
-Each run resumes from this file and the latest human instructions, records concrete
-progress, runs appropriate checks, commits useful milestones and pushes to origin/main.
+Heartbeat darkcall is ACTIVE every 15 minutes through October 28, 2026 23:59 UTC,
+in this same chat. Resume AGENTS.md, this file, TASKS.md, current jobs and the latest
+human instructions; implement, test, preserve evidence, commit/push useful milestones.

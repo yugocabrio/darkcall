@@ -1,0 +1,40 @@
+{
+  "scope": "read-only TLS/gRPC provider identification; no funds or broadcast",
+  "date_utc": "2026-10-04",
+  "successfully_funded_native_chain": false,
+  "provider_consensus_trusted": true,
+  "standard_testnet": {
+    "endpoint": "https://testnet.zec.rocks:443",
+    "chain_name": "test",
+    "genesis_from_first_block_verified": true,
+    "genesis": "05a60a92d99d85997cce3b87616c089f6124d7342af37106edc76126334a2c38",
+    "compact_tip_and_tree_hash_matched": true,
+    "tip_height": 4465703,
+    "reported_branch": "77190ad9",
+    "expected_branch_from_pinned_sdk": "37a5165b",
+    "accepted": false,
+    "error": "Consensus branch mismatch; cannot authorize funding/spends with the pinned stack."
+  },
+  "other_attempts": [
+    {
+      "endpoint": "https://zaino.testnet.unsafe.zec.rocks:443",
+      "accepted": false,
+      "error": "GetLightdInfo returned HTTP 503 rather than a gRPC response."
+    },
+    {
+      "endpoint": "https://testnet.lightwalletd.com:9067",
+      "accepted": false,
+      "error": "TLS transport connect failed."
+    },
+    {
+      "endpoint": "https://lwd.157.245.208.35.sslip.io:443",
+      "network_scope": "isolated regtest, never standard testnet",
+      "accepted": false,
+      "error": "TLS transport connect failed."
+    }
+  ],
+  "setup_errors_resolved": [
+    "No Rustls provider in initial TLS features; enabled tls-ring.",
+    "TreeState is not a genesis identification API: zero height is unspecified and pre-Sapling state is unavailable. Block 1 previous hash now identifies genesis."
+  ]
+}

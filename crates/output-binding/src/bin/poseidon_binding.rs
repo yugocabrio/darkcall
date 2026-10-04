@@ -97,6 +97,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     public.push(ExtractedNoteCommitment::from_bytes(&cmx).unwrap().inner());
     public.push(pallas::Base::from(action_index as u64));
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.len() == 2 && args[0] == "--mock-k" {
+        let k: u32 = args[1].parse()?;
+        if !(12..=17).contains(&k) {
+            return Err("probe supports K12..17 only".into());
+        }
+        MockProver::run(k, &circuit, vec![public])?
+            .verify()
+            .map_err(|_| "native Poseidon mock constraints failed")?;
+        println!(
+            "{}",
+            serde_json::json!({"mock_passed":true,"actual_proof_generated":false,"k":k,"row_bytes":224,"seconds":start.elapsed().as_secs_f64()})
+        );
+        return Ok(());
+    }
     if !args.is_empty() {
         if args.len() != 2
             || args[0] != "--export-mpc-input"

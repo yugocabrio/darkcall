@@ -1,0 +1,17 @@
+{
+  "scope": "native Poseidon codec domain feasibility",
+  "actual_proof_generated": false,
+  "retained_k": 17,
+  "probes": [
+    {
+      "k": 15,
+      "passed": false,
+      "error": "Error: NotEnoughRowsAvailable { current_k: 15 }"
+    },
+    {
+      "k": 16,
+      "passed": false,
+      "error": "Error: NotEnoughRowsAvailable { current_k: 16 }"
+    }
+  ]
+}
