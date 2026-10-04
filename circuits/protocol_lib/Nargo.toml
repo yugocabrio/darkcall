@@ -1,0 +1,7 @@
+[package]
+name = "darkcall"
+type = "lib"
+authors = ["Yugo"]
+
+[dependencies]
+

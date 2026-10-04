@@ -1,0 +1,17 @@
+[package]
+name = "darkcall-input-tool"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+ark-bn254 = "=0.6.0"
+ark-ff = "=0.6.0"
+bincode = "=1.3.3"
+co-noir-types = { git = "https://github.com/TaceoLabs/co-snarks", rev = "467a2abbad940d40ed78f38d424cc21920988976" }
+mpc-core = { git = "https://github.com/TaceoLabs/co-snarks", rev = "467a2abbad940d40ed78f38d424cc21920988976" }
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+

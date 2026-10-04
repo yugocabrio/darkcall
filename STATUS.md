@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-04 19:43 UTC.
+Updated: 2026-10-04 20:13 UTC.
 
 ## Current stage
 
@@ -29,18 +29,43 @@ REP3 witness/proof generation and standalone ZK verification passed.
 
 ## Not demonstrated
 
-Accepted-input consistency, matching external Barretenberg verification, native
-threshold spends, testnet settlement, native output binding, fixed native transaction
+Signed accepted-input/funding authentication, matching external Barretenberg
+verification, native threshold spends, testnet settlement, native output binding, fixed native transaction
 shape and recipient decryption. No deployed independent-host privacy validation.
 Per-node peak RAM and network bytes have not been measured.
 
+## Active implementation
+
+Accepted commitments, client share-consistency proofs and node-side delivered-pair
+checks are integrated. Noir shared library (8 tests), bid-input circuit (4
+tests) and refactored auction circuit (8 tests) passed. Rust input tool's hash vector
+test passed. Run .local/mpc-auction4-20261004T200620Z passed client proofs,
+all 12 delivered-share checks, committed MPC proof generation and verification,
+and rejected changed shares, price and accepted root. Follow-up run
+.local/mpc-auction4-20261004T200736Z passed using a client verification key
+derived from the compiled circuit. Public summary is committed under evidence/.
+Strict workspace clippy passed; process 64607 completed and was consumed.
+
+Upstream zcash-sign's 3 Ironwood v6 sighash regression tests passed at frost-tools
+06c0dbdbb1bac9b99cd255e74ba2f387c295e660. This is validation of an upstream public
+fixture, not our own threshold transaction or recipient decryption.
+
+Jobs 54829, 52988 and 57960 completed with exit 0 and were consumed. Logs are
+.local/zcash-sign-test.log, .local/plaindriver-build.log and .local/input-tool-test.log.
+
 ## Next action
 
-Bind each private bid to an accepted commitment and verify share consistency.
-Evaluate the matching external Barretenberg verifier and native Ironwood signing
-stack. The current circuit outputs price and sold count; it does not bind bid
-commitments, funding attestations or native settlement. Do not repeat the passed
-calculation gate without a circuit, runner or verifier change that justifies it.
+Evaluate the matching external Barretenberg verifier and construct our own native
+Ironwood/PCZT/FROST transaction. Follow with signed acceptance/funding metadata and
+native output binding. The current circuit outputs price and sold count and binds
+the supplied accepted root; it does not establish an authoritative funding root or
+native settlement. Do not repeat passed gates without a change or unresolved concern.
+
+## Running jobs
+
+- Tool session 77458: matching Barretenberg source build, target bb, -j 2.
+  Source under .deps/barretenberg-src; log .local/barretenberg-build.log.
+  Inspect this job before starting another build.
 
 ## Completed jobs
 

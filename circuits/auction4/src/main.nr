@@ -1,116 +1,28 @@
-// Initial computation gate only. No funding/acceptance commitments or native
-// settlement binding yet. Proving this circuit is not the completed protocol.
+// Committed-input computation gate; native settlement binding remains unfinished.
+use darkcall::{auction, context, verify_accepted};
 global N: u32 = 4;
-global MAX_MONEY: u64 = 2100000000000000;
-
-struct Result {
-    price: u64,
-    sold: u32,
-    seller_amount: u64,
-    operator_amount: u64,
-    network_fee: u64,
-    action_count: u32,
-    refunds: [u64; N],
-}
-
-fn id_less(a: [u8; 32], b: [u8; 32]) -> bool {
-    let mut less = false;
-    let mut equal = true;
-    for i in 0..32 {
-        less = less | (equal & (a[i] < b[i]));
-        equal = equal & (a[i] == b[i]);
-    }
-    less
-}
-
-fn auction(
-    bids: [u64; N],
-    ids: [[u8; 32]; N],
-    active: [bool; N],
-    units: u32,
-    reserve: u64,
-    budget: u64,
-    processing_fee: u64,
-) -> Result {
-    assert(units > 0);
-    assert(units <= 32);
-    assert(reserve <= budget);
-    assert(budget <= MAX_MONEY);
-    assert(processing_fee <= MAX_MONEY - budget);
-    let mut n = 0;
-    for i in 0..N {
-        if active[i] {
-            assert(bids[i] <= budget);
-            n = n + 1;
-            for j in 0..N {
-                if active[j] & (i != j) {
-                    assert(ids[i] != ids[j]);
-                }
-            }
-        } else {
-            assert(bids[i] == 0);
-        }
-    }
-    let total_input = (n as u64) * (budget + processing_fee);
-    assert(total_input <= MAX_MONEY);
-    let action_count = if n == 0 { 0 } else { n + 2 };
-    let network_fee = (action_count as u64) * 5000;
-    assert((n as u64) * processing_fee >= network_fee);
-    let operator_amount = (n as u64) * processing_fee - network_fee;
-    let mut price = reserve;
-    let mut sold = 0;
-    let mut refunds = [0; N];
-    for i in 0..N {
-        let qualified = active[i] & (bids[i] >= reserve);
-        let mut rank = 0;
-        for j in 0..N {
-            let ahead = (bids[j] > bids[i]) | ((bids[j] == bids[i]) & id_less(ids[j], ids[i]));
-            if active[j] & (bids[j] >= reserve) & ahead {
-                rank = rank + 1;
-            }
-        }
-        if qualified & (rank == units) {
-            price = bids[i];
-        }
-        if qualified & (rank < units) {
-            sold = sold + 1;
-        }
-    }
-    let mut refund_total = 0;
-    for i in 0..N {
-        let qualified = active[i] & (bids[i] >= reserve);
-        let mut rank = 0;
-        for j in 0..N {
-            let ahead = (bids[j] > bids[i]) | ((bids[j] == bids[i]) & id_less(ids[j], ids[i]));
-            if active[j] & (bids[j] >= reserve) & ahead {
-                rank = rank + 1;
-            }
-        }
-        let won = qualified & (rank < units);
-        refunds[i] = if active[i] {
-            budget - if won { price } else { 0 }
-        } else {
-            0
-        };
-        refund_total = refund_total + refunds[i];
-    }
-    let seller_amount = (sold as u64) * price;
-    assert(refund_total + seller_amount + operator_amount + network_fee == total_input);
-    Result { price, sold, seller_amount, operator_amount, network_fee, action_count, refunds }
-}
 
 fn main(
     bid0: u64,
     bid1: u64,
     bid2: u64,
     bid3: u64,
+    salt0: Field,
+    salt1: Field,
+    salt2: Field,
+    salt3: Field,
+    condition_digest: pub [u8; 32],
     ids: pub [[u8; 32]; N],
     active: pub [bool; N],
     units: pub u32,
     reserve: pub u64,
     budget: pub u64,
     processing_fee: pub u64,
+    commitments: pub [Field; N],
+    root: pub Field,
 ) -> pub (u64, u32) {
+    let ctx = context(condition_digest, units, reserve, budget, processing_fee);
+    verify_accepted([bid0, bid1, bid2, bid3], [salt0, salt1, salt2, salt3], ids, active, ctx, commitments, root);
     let result = auction(
         [bid0, bid1, bid2, bid3],
         ids,

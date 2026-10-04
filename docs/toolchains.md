@@ -4,7 +4,10 @@
 | --- | --- | --- |
 | co-snarks | 467a2abbad940d40ed78f38d424cc21920988976 | Upstream workspace declares Rust 1.90 and Noir rc.2 |
 | Noir / Nargo | v1.0.0-rc.2 | coNoir compatibility README |
-| Barretenberg | v5.0.0-nightly.20260522 | coNoir compatibility README; not installed yet; global binary is an older nightly |
+| Barretenberg | v5.0.0-nightly.20260522 | coNoir compatibility README; source build in progress; global binary is an older nightly |
+| frost-tools | 06c0dbdbb1bac9b99cd255e74ba2f387c295e660 | Ironwood v6 regression tests pass (3 tests) |
+| Orchard FROST fork | 42015f15733b95e179189628d6fa34d92b5b3b8b | frost-tools Cargo patch |
+| RedDSA FROST | ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead | frost-tools dependency pin |
 | Local Rust | 1.93.0 | Actual rustc output on October 4, 2026 |
 
 Apple Silicon Noir release archive:
@@ -30,21 +33,26 @@ cargo test --workspace
 cargo build --release --locked --manifest-path .deps/co-snarks/Cargo.toml --bin co-noir -j 2
 ```
 
-Initial circuit: calculation feasibility only. It does not authenticate funding
-tickets, bind bids to accepted commitments, or prove native settlement.
+The current calculation circuit binds bids to accepted commitments, but does not
+authenticate funding tickets or prove native settlement.
 
 ## Collaborative calculation gate
 
-After building the pinned coNoir binary:
+Build both proof drivers and the client fixture/checking tool:
 
 ```sh
+cargo build --release --locked --manifest-path .deps/co-snarks/Cargo.toml --bin plaindriver -j 2
+cargo build --locked -p darkcall-input-tool -j 2
 python3 -B scripts/run_mpc_gate.py
 ```
 
-The script creates four separate synthetic bidder input files, splits and merges
-REP3 shares, runs three localhost processes, generates the witness and ZK-enabled
-proof, verifies it using the standalone coNoir verifier and rejects an altered
-public clearing price. All private inputs, shares, TLS fixture keys and witnesses
+The script creates four separate synthetic client openings and proves each bid's
+relationship to its three REP3 share pairs. It verifies each proof against the
+trusted circuit key and checks each node's delivered pair. It merges those
+validated shares, runs three localhost processes, generates the witness and
+ZK-enabled auction proof, verifies it and rejects an altered public clearing
+price or accepted root. Altered delivered shares are rejected before MPC starts.
+All private inputs, shares, TLS fixture keys and witnesses
 remain under ignored .local/ or .deps/. Published evidence is only a summary.
 The public TLS test keys from upstream are for localhost testing only.
 
@@ -56,4 +64,4 @@ Nargo rejects prerelease versions in the package compiler_version field.
 The rc.2 pin is enforced by the selected binary path, not that field. Initial
 manifest validation failed with that field and was corrected before the passing
 test/compile runs. The Barretenberg release API for this tag returned 404;
-source-based installation or an official matching artifact still needs evaluation.
+the source tag was fetched and its C++ verifier build is in progress.

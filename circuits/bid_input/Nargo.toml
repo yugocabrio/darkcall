@@ -1,0 +1,7 @@
+[package]
+name = "darkcall_bid_input"
+type = "bin"
+authors = ["Yugo"]
+
+[dependencies]
+darkcall = { path = "../protocol_lib" }

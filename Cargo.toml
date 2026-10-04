@@ -1,9 +1,8 @@
 [workspace]
-members = ["crates/auction-core"]
+members = ["crates/auction-core", "crates/input-tool"]
 resolver = "2"
 
 [workspace.package]
 edition = "2024"
 rust-version = "1.90"
 license = "MIT"
-

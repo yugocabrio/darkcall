@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Synthetic, single-host MPC computation gate. Not a deployment privacy proof.
 
-Each bidder file contains only one private bid. Shares, TLS test keys and witness
-files stay under ignored .local/. Public summaries contain no private witness.
-The circuit does not yet authenticate accepted inputs or native settlement.
+Each client proves its own salted bid and all three delivered share pairs.
+Nodes verify the proof and their pair before merging inputs. The MPC circuit
+checks the same accepted commitments and root. Shares, fixture TLS keys and
+witness files stay under ignored .local/. Funding and native settlement remain
+outside this experiment.
 """
 
 import json
@@ -16,7 +18,10 @@ import time
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 UPSTREAM = ROOT / ".deps/co-snarks"
 BIN = UPSTREAM / "target/release/co-noir"
+PLAIN = UPSTREAM / "target/release/plaindriver"
+INPUT_TOOL = ROOT / "target/debug/darkcall-input-tool"
 CIRCUIT = ROOT / "circuits/auction4/target/darkcall_auction4.json"
+CLIENT_CIRCUIT = ROOT / "circuits/bid_input/target/darkcall_bid_input.json"
 NARGO = ROOT / ".deps/noir-1.0.0-rc.2/nargo"
 PIN = "467a2abbad940d40ed78f38d424cc21920988976"
 
@@ -25,26 +30,28 @@ def main():
     actual_pin = subprocess.check_output(
         ["git", "-C", str(UPSTREAM), "rev-parse", "HEAD"], text=True
     ).strip()
-    if actual_pin != PIN or not BIN.exists():
+    if actual_pin != PIN or not all(path.exists() for path in [BIN, PLAIN, INPUT_TOOL]):
         raise RuntimeError("Build the pinned coNoir before running this experiment")
     version = subprocess.check_output([str(NARGO), "--version"], text=True)
     if "nargo version = 1.0.0-rc.2\n" not in version:
         raise RuntimeError("Wrong Noir version")
     subprocess.run([str(NARGO), "compile", "--program-dir", str(ROOT / "circuits/auction4")], check=True)
+    subprocess.run([str(NARGO), "compile", "--program-dir", str(ROOT / "circuits/bid_input")], check=True)
     run = ROOT / ".local" / ("mpc-auction4-" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()))
     run.mkdir(exist_ok=False)
     summary = {
         "source_pin": PIN,
-        "scope": "synthetic calculation gate",
+        "scope": "synthetic committed-input calculation gate",
         "independent_hosts": False,
-        "input_commitments": False,
+        "input_commitments": True,
+        "funding_authenticated": False,
         "native_settlement": False,
         "zk_enabled": True,
         "stages": [],
     }
     environment = {**os.environ, "RUST_LOG": "info", "RAYON_NUM_THREADS": "2"}
 
-    def record(name, commands, timeout):
+    def record(name, commands, timeout, binary=BIN):
         print(name, "started", flush=True)
         start = time.monotonic()
         children = []
@@ -55,7 +62,7 @@ def main():
                 handle = (run / (name + "-" + str(i) + ".log")).open("wb")
                 handles.append(handle)
                 children.append(subprocess.Popen(
-                    [str(BIN), *map(str, command)],
+                    [str(binary), *map(str, command)],
                     stdout=handle, stderr=subprocess.STDOUT, env=environment,
                     cwd=run, start_new_session=True,
                 ))
@@ -91,16 +98,39 @@ def main():
             summary["stages"].append(stage)
             (run / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
 
-    bids = [90, 70, 60, 50]
-    for i, bid in enumerate(bids):
-        (run / ("bidder" + str(i) + ".toml")).write_text("bid" + str(i) + ' = "' + str(bid) + '"\n')
-    ids = [[0] * 31 + [i] for i in range(4)]
-    (run / "public.toml").write_text(
-        "ids = " + json.dumps(ids) + "\n"
-        + "active = [true, true, true, true]\nunits = 3\n"
-        + 'reserve = "20"\nbudget = "100"\nprocessing_fee = "15000"\n'
-    )
-    for name in [*(("bidder" + str(i)) for i in range(4)), "public"]:
+    record("client-fixture", [["fixture", run]], 60, INPUT_TOOL)
+    crs = UPSTREAM / "co-noir/co-noir-common/src/crs"
+    record("trusted-client-vk", [[
+        "create-vk", "--circuit", CLIENT_CIRCUIT, "--crs", crs / "bn254_g1.dat",
+        "--hasher", "poseidon2", "--vk", run / "client-vk",
+    ]], 180)
+    record("client-proofs", [[
+        "--prover-crs", crs / "bn254_g1.dat", "--verifier-crs", crs / "bn254_g2.dat",
+        "--input", run / f"client{i}/Prover.toml", "--circuit", CLIENT_CIRCUIT,
+        "--hasher", "poseidon2", "--out-dir", run / f"client{i}", "--zk",
+    ] for i in range(4)], 600, PLAIN)
+    record("client-proof-verification", [[
+        "verify", "--proof", run / f"client{i}/proof_plaindriver",
+        "--public-input", run / f"client{i}/public_inputs_plaindriver",
+        "--vk", run / "client-vk", "--crs", crs / "bn254_g2.dat",
+        "--hasher", "poseidon2", "--has-zk",
+    ] for i in range(4)], 180)
+    record("delivered-share-checks", [[
+        "check", run / "book.json", i, party, run / f"bidder{i}.toml.{party}.shared",
+        run / f"client{i}/public_inputs_plaindriver",
+    ] for i in range(4) for party in range(3)], 60, INPUT_TOOL)
+    record("tamper-share", [[
+        "tamper", run / "bidder0.toml.0.shared", run / "bad-share", 0,
+    ]], 60, INPUT_TOOL)
+    bad_share = subprocess.run([
+        str(INPUT_TOOL), "check", str(run / "book.json"), "0", "0", str(run / "bad-share"),
+        str(run / "client0/public_inputs_plaindriver"),
+    ], capture_output=True, timeout=60)
+    (run / "bad-share-check.log").write_bytes(bad_share.stdout + bad_share.stderr)
+    if bad_share.returncode == 0 or b"delivered share pair does not match proof" not in bad_share.stderr:
+        raise RuntimeError("Changed private share was not rejected before MPC")
+    summary.update(delivered_share_tampering_rejected=True, client_proofs_verified=4, validated_share_pairs=12)
+    for name in ["public"]:
         record("split-" + name, [[
             "split-input", "--circuit", CIRCUIT, "--input", run / (name + ".toml"),
             "--protocol", "REP3", "--out-dir", run,
@@ -141,7 +171,6 @@ def main():
         "--config", run / ("party" + str(i) + ".toml"),
         "--out", run / ("witness." + str(i) + ".shared"),
     ] for i in range(3)], 600)
-    crs = UPSTREAM / "co-noir/co-noir-common/src/crs"
     record("vk", [[
         "create-vk", "--circuit", CIRCUIT, "--crs", crs / "bn254_g1.dat",
         "--hasher", "poseidon2", "--vk", run / "vk",
@@ -168,22 +197,24 @@ def main():
     for i in [1, 2]:
         if (run / ("public-input" + str(i))).read_bytes() != outputs:
             raise RuntimeError("MPC parties disagree on public output")
-    # Alter the public result while retaining the original proof and key.
-    bad = bytearray(outputs)
-    bad[-64:-32] = (49).to_bytes(32, "big")
-    (run / "tampered-public-input").write_bytes(bad)
-    bad_command = [
-        str(BIN), "verify", "--proof", str(run / "proof.0"),
-        "--public-input", str(run / "tampered-public-input"), "--vk", str(run / "vk"),
-        "--crs", str(crs / "bn254_g2.dat"), "--hasher", "poseidon2", "--has-zk",
-    ]
-    with (run / "tampered-verifier.log").open("wb") as log:
-        result = subprocess.run(bad_command, stdout=log, stderr=subprocess.STDOUT, timeout=180, env=environment)
-    if result.returncode == 0 or "Proof verification failed" not in (run / "tampered-verifier.log").read_text():
-        raise RuntimeError("Verifier did not cryptographically reject changed clearing price")
-    summary.update(tampered_price_rejected=True, external_barretenberg_verified=False)
+    # Bind both the result and the exact accepted-input root to the proof.
+    for name, offset, value in [("price", -64, 49), ("accepted-root", -96, fields[-3] + 1)]:
+        bad = bytearray(outputs)
+        bad[offset:offset + 32] = value.to_bytes(32, "big")
+        path = run / ("tampered-" + name)
+        path.write_bytes(bad)
+        command = [
+            str(BIN), "verify", "--proof", str(run / "proof.0"),
+            "--public-input", str(path), "--vk", str(run / "vk"),
+            "--crs", str(crs / "bn254_g2.dat"), "--hasher", "poseidon2", "--has-zk",
+        ]
+        with (run / ("tampered-" + name + ".log")).open("wb") as log:
+            result = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, timeout=180, env=environment)
+        if result.returncode == 0 or "Proof verification failed" not in (run / ("tampered-" + name + ".log")).read_text():
+            raise RuntimeError("Verifier did not cryptographically reject changed " + name)
+    summary.update(tampered_price_rejected=True, tampered_root_rejected=True, external_barretenberg_verified=False)
     (run / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
-    print("Verified collaborative ZK calculation and rejected changed price.", flush=True)
+    print("Verified client share proofs and committed MPC result; rejected share, price and root tampering.", flush=True)
     print("Evidence directory:", run, flush=True)
 
 

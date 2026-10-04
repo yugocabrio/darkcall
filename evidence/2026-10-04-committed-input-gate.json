@@ -1,0 +1,92 @@
+{
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "scope": "synthetic committed-input calculation gate",
+  "independent_hosts": false,
+  "input_commitments": true,
+  "funding_authenticated": false,
+  "native_settlement": false,
+  "zk_enabled": true,
+  "stages": [
+    {
+      "name": "client-fixture",
+      "passed": true,
+      "seconds": 0.207
+    },
+    {
+      "name": "trusted-client-vk",
+      "passed": true,
+      "seconds": 0.207
+    },
+    {
+      "name": "client-proofs",
+      "passed": true,
+      "seconds": 1.027
+    },
+    {
+      "name": "client-proof-verification",
+      "passed": true,
+      "seconds": 0.208
+    },
+    {
+      "name": "delivered-share-checks",
+      "passed": true,
+      "seconds": 0.226
+    },
+    {
+      "name": "tamper-share",
+      "passed": true,
+      "seconds": 0.202
+    },
+    {
+      "name": "split-public",
+      "passed": true,
+      "seconds": 0.264
+    },
+    {
+      "name": "merge-0",
+      "passed": true,
+      "seconds": 0.518
+    },
+    {
+      "name": "merge-1",
+      "passed": true,
+      "seconds": 0.205
+    },
+    {
+      "name": "merge-2",
+      "passed": true,
+      "seconds": 0.207
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 0.815
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 0.409
+    },
+    {
+      "name": "proof",
+      "passed": true,
+      "seconds": 4.904
+    },
+    {
+      "name": "verify",
+      "passed": true,
+      "seconds": 0.207
+    }
+  ],
+  "delivered_share_tampering_rejected": true,
+  "client_proofs_verified": 4,
+  "validated_share_pairs": 12,
+  "result": {
+    "price": 50,
+    "sold": 3
+  },
+  "proof_bytes": 14656,
+  "tampered_price_rejected": true,
+  "tampered_root_rejected": true,
+  "external_barretenberg_verified": false
+}

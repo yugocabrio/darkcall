@@ -20,7 +20,12 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Four separate synthetic input files, joint witness/proof and standalone coNoir
     verification passed. Matching external Barretenberg verification remains open.
 - [ ] P0.3 Validate shares against bid commitments; reject bad shares and duplicate tickets.
+  - Client ZK proofs bind bid openings to all three share-pair hashes. All 12
+    delivered pairs and the committed MPC root verified in the synthetic gate;
+    changed shares, price and root were rejected. Signed acceptance/funding is next.
 - [ ] P0.4 Pin the Ironwood/PCZT/FROST stack; offline native transaction and signature tests.
+  - Source pinned; upstream's 3 v6 sighash regression tests pass. Own transaction
+    construction, threshold signatures and native decryption still unfinished.
 - [ ] P0.5 Receive testnet funds, sign 2-of-3, broadcast and decrypt the recipient note.
 - [ ] P0.6 Prove one private settlement row binds to a native note commitment.
 - [ ] P0.7 Reject amount, recipient and transaction substitution; measure runtime and memory.

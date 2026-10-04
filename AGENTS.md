@@ -18,6 +18,11 @@ git@github.com:yugocabrio/ZECATHON.git on October 4, 2026.
 6. If blocked, preserve the concrete evidence and advance an independent task.
    Report a material blocker once; do not repeat an unchanged failure indefinitely.
 
+The 15-minute heartbeat is recovery only. The human explicitly asked to keep
+working as far as possible and not split active work into artificial 15-minute
+turns. Continue sustained implementation across useful milestones; do not end a
+turn merely because one queue item or a timer interval is complete.
+
 ## Boundaries and truthfulness
 
 - Latest direct human instructions override this queue. Honor any pause immediately.
@@ -45,4 +50,3 @@ git@github.com:yugocabrio/ZECATHON.git on October 4, 2026.
 
 Dates are targets, not a substitute for demonstrated results. If the deadline or
 feature-freeze date is reached, prioritize completion and report remaining gaps.
-
