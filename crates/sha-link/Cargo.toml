@@ -1,0 +1,18 @@
+[package]
+name = "darkcall-sha-link"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+ff = "=0.13.1"
+halo2_gadgets = { version = "=0.5.0", features = ["unstable-sha256-gadget"] }
+halo2_proofs = "=0.3.5"
+pasta_curves = "=0.5.2"
+rand = "0.8"
+serde_json = "1"
+sha2 = "0.10"
+
+[dev-dependencies]
+group = "=0.13.0"

@@ -1,0 +1,14 @@
+{
+  "altered_digest_rejected": true,
+  "compression_blocks": 4,
+  "k": 17,
+  "native_output_binding": false,
+  "private_bytes": 224,
+  "proof_bytes": 5920,
+  "proof_verified": true,
+  "rust_sha256_matches": true,
+  "scope": "standard SHA-256 with linked Halo2 message/state/feed-forward cells",
+  "seconds": 166.416392167,
+  "independent_hosts": false,
+  "measured_with_other_local_jobs": true
+}

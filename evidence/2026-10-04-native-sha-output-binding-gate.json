@@ -1,0 +1,18 @@
+{
+  "auction_plan_connected": false,
+  "canonical_point_encoding": true,
+  "changed_amount_recipient_rejected": true,
+  "changed_hash_cmx_index_rejected": true,
+  "ciphertext_constrained": false,
+  "classical_binding_assumption": true,
+  "k": 17,
+  "native_output_binding": true,
+  "proof_bytes": 8800,
+  "proof_verified": true,
+  "row_bytes": 224,
+  "rseed_derivation_constrained": false,
+  "scope": "SHA-256 settlement row binds canonical recipient/amount to native Ironwood cmx",
+  "seconds": 340.005362541,
+  "independent_hosts": false,
+  "measured_with_other_local_jobs": true
+}

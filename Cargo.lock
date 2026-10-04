@@ -1109,6 +1109,7 @@ dependencies = [
 name = "darkcall-output-binding"
 version = "0.1.0"
 dependencies = [
+ "darkcall-sha-link",
  "ff 0.13.1",
  "group",
  "halo2_gadgets",
@@ -1117,6 +1118,28 @@ dependencies = [
  "pasta_curves",
  "rand 0.8.8",
  "serde_json",
+ "sha2 0.10.9",
+]
+
+[[package]]
+name = "darkcall-settlement-types"
+version = "0.1.0"
+dependencies = [
+ "sha2 0.10.9",
+]
+
+[[package]]
+name = "darkcall-sha-link"
+version = "0.1.0"
+dependencies = [
+ "ff 0.13.1",
+ "group",
+ "halo2_gadgets",
+ "halo2_proofs",
+ "pasta_curves",
+ "rand 0.8.8",
+ "serde_json",
+ "sha2 0.10.9",
 ]
 
 [[package]]
@@ -1664,8 +1687,6 @@ dependencies = [
 [[package]]
 name = "halo2_gadgets"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb2a697cad929f706b7987fe804ad57d43622cd37463ba7e4d662a926fdcfea3"
 dependencies = [
  "arrayvec",
  "bitvec",

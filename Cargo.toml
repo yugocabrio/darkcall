@@ -1,5 +1,6 @@
 [workspace]
-members = ["crates/auction-core", "crates/input-tool", "crates/native-gate", "crates/output-binding"]
+members = ["crates/auction-core", "crates/input-tool", "crates/native-gate", "crates/output-binding", "crates/sha-link", "crates/settlement-types"]
+exclude = ["vendor/halo2_gadgets"]
 resolver = "2"
 
 [workspace.package]
@@ -9,3 +10,4 @@ license = "MIT"
 
 [patch.crates-io]
 orchard = { git = "https://github.com/conradoplg/orchard.git", rev = "42015f15733b95e179189628d6fa34d92b5b3b8b" }
+halo2_gadgets = { path = "vendor/halo2_gadgets" }

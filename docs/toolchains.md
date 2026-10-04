@@ -9,7 +9,7 @@
 | Orchard FROST fork | 42015f15733b95e179189628d6fa34d92b5b3b8b | frost-tools Cargo patch |
 | RedDSA FROST | ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead | frost-tools dependency pin |
 | Native APIs | orchard 0.15.5, pczt 0.8.0-rc.1, zcash_primitives 0.29.0, zcash_protocol 0.10.0 | Our offline native gate passed |
-| Halo2 | halo2_proofs 0.3.5, halo2_gadgets 0.5.0 | Native row proof passed |
+| Halo2 | halo2_proofs 0.3.5, vendored halo2_gadgets 0.5.0 from d751768afe0d2105b349dd93f73fde7f2eade088 | Original and linked-SHA native row proofs passed; four SHA source extension files |
 | Local Rust | 1.93.0 | Actual rustc output on October 4, 2026 |
 
 Apple Silicon Noir release archive:
@@ -84,3 +84,19 @@ The rc.2 pin is enforced by the selected binary path, not that field. Initial
 manifest validation failed with that field and was corrected before the passing
 test/compile runs. The Barretenberg release API for this tag returned 404;
 the source tag was fetched and its C++ verifier built and passed.
+
+## ARM SHA/MPC performance experiment
+
+The portable shared SHA proof exceeded its 1800-second bound. Stack samples
+showed software AES in garbled-table work. aes 0.8.4 requires an explicit
+`aes_armv8` cfg; `target-cpu=native` alone does not select that backend.
+Source and Cargo.lock remain unchanged. The separate experimental build is:
+
+```sh
+CARGO_TARGET_DIR="$PWD/.deps/co-snarks/target-aes-native" RUSTFLAGS='-C target-cpu=native --cfg aes_armv8' cargo build --release --locked --manifest-path .deps/co-snarks/Cargo.toml --bin co-noir -j 2
+python3 -B scripts/run_row_hash_gate.py --aes-native
+```
+
+This is host-specific. Record the binary digest and actual results before
+claiming a speed improvement. The runner records per-process peak RSS using
+macOS time; timed-out children have no complete maximum-RSS observation.

@@ -1,0 +1,5 @@
+[package]
+name = "darkcall_row_hash"
+type = "bin"
+authors = ["DarkCall"]
+

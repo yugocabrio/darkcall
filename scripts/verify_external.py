@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Verify an existing synthetic coNoir run using the pinned C++ Barretenberg."""
 import hashlib
+import argparse
 import json
 import pathlib
 import subprocess
-import sys
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -12,13 +12,16 @@ SOURCE = ROOT / ".deps/barretenberg-src"
 PIN = "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f"
 BB = SOURCE / "barretenberg/cpp/build-darkcall/bin/bb"
 CRS = ROOT / ".deps/co-snarks/co-noir/co-noir-common/src/crs"
-CIRCUIT = ROOT / "circuits/auction4/target/darkcall_auction4.json"
 
 
 def main():
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: verify_external.py EXISTING_RUN_DIRECTORY")
-    run = pathlib.Path(sys.argv[1]).resolve()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("run", type=pathlib.Path)
+    parser.add_argument("--circuit", choices=["auction4", "row_hash"], default="auction4")
+    args = parser.parse_args()
+    circuit = ROOT / f"circuits/{args.circuit}/target/darkcall_{args.circuit}.json"
+    tampering = [("price", "tampered-price"), ("accepted-root", "tampered-accepted-root")] if args.circuit == "auction4" else [("digest", "altered-digest")]
+    run = args.run.resolve()
     if not run.is_relative_to(ROOT / ".local"):
         raise RuntimeError("This experimental verifier expects an ignored local fixture run")
     pin = subprocess.check_output(["git", "-C", str(SOURCE), "rev-parse", "HEAD"], text=True).strip()
@@ -30,7 +33,7 @@ def main():
         raise RuntimeError("Unexpected source changes in the verifier checkout")
     out = run / "external-bb"
     out.mkdir(exist_ok=False)
-    summary = {"barretenberg_source": PIN, "compatibility_patches": ["Apple Clang 15 deduction guide", "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"], "zk": True, "passed": False}
+    summary = {"barretenberg_source": PIN, "circuit": args.circuit, "compatibility_patches": ["Apple Clang 15 deduction guide", "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"], "zk": True, "passed": False}
 
     def call(name, command, expected=0):
         with (out / (name + ".log")).open("wb") as log:
@@ -43,15 +46,15 @@ def main():
 
     start = time.monotonic()
     try:
-        call("trusted-vk", ["write_vk", "--scheme", "ultra_honk", "--verifier_target", "noir-recursive", "-c", CRS, "-b", CIRCUIT, "-o", out])
+        call("trusted-vk", ["write_vk", "--scheme", "ultra_honk", "--verifier_target", "noir-recursive", "-c", CRS, "-b", circuit, "-o", out])
         vk = (out / "vk").read_bytes()
         if vk != (run / "vk").read_bytes():
             raise RuntimeError("C++ verification key differs from the MPC key")
         common = ["verify", "--scheme", "ultra_honk", "--verifier_target", "noir-recursive", "-c", CRS, "-p", run / "proof.0", "-k", out / "vk"]
         call("valid-proof", [*common, "-i", run / "public-input0"])
-        for name in ["price", "accepted-root"]:
-            call("reject-" + name, [*common, "-i", run / ("tampered-" + name)], expected=1)
-        summary.update(passed=True, matching_key=True, altered_price_rejected=True, altered_root_rejected=True, circuit_sha256=hashlib.sha256(CIRCUIT.read_bytes()).hexdigest())
+        for name, filename in tampering:
+            call("reject-" + name, [*common, "-i", run / filename], expected=1)
+        summary.update(passed=True, matching_key=True, cryptographic_rejections=[name for name, _ in tampering], circuit_sha256=hashlib.sha256(circuit.read_bytes()).hexdigest())
     except BaseException as error:
         summary["error"] = str(error)
         raise

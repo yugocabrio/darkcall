@@ -45,6 +45,9 @@ autonomously, incorporate later human/ChatGPT reviews.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.
 - [ ] Cross-language generated fixtures and committed-input circuit equivalence.
 - [ ] Shared auction/native row commitment encoding with fully constrained hash links.
+  - Canonical 224-byte SHA-256 format, linked Halo2 SHA and actual native row proof
+    passed. Six-row Noir plan circuit compiles/tests pass. Complete MPC hash proof
+    and integrated six-row plan/native execution remain; portable hash timed out.
 - [ ] Funding ledger and one-note/one-ticket enforcement.
 - [ ] Signed acceptance receipts and consistent final root.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.

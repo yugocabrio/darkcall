@@ -1,13 +1,14 @@
 # DarkCall status
 
-Updated: 2026-10-04 21:00 UTC.
+Updated: 2026-10-04 21:31 UTC.
 
 ## Current stage
 
 Implementation authorized. Specification, oracle and committed-input MPC milestone
 pushed to main (d3c63f0). Offline native signing/transaction and one-row native
 binding experiments were pushed in c351750. Matching external C++ verification
-has now passed. Shared SHA-256 links are being implemented and measured.
+has now passed (cb4ef12 pushed). Shared SHA-256/native cell binding passed;
+MPC hash proof performance is being investigated before full integration.
 
 ## Demonstrated
 
@@ -43,7 +44,20 @@ has now passed. Shared SHA-256 links are being implemented and measured.
 - Matching C++ Barretenberg derived the identical trusted verification key,
   accepted the MPC proof and cryptographically rejected altered price/root.
   Evidence: evidence/2026-10-04-external-verifier-gate.json.
-- Latest strict workspace clippy passed (session 52787 consumed).
+- Standard SHA-256 linked Halo2 proof passed: 224 private bytes, K=17,
+  5,920 bytes; altered digest rejected. Source-cell mutation test catches missing
+  copy links. Canonical field/point tests reject modulus aliases and sign changes.
+- A SHA-256 row is actually bound to native Ironwood cmx with the same constrained
+  amount/ECC cells: K=17, 8,800 bytes. Digest/cmx/action-index substitution and
+  amount/recipient changes were rejected. Conditions/root/ticket are synthetic.
+  The auction plan is not yet connected; classical binding/rseed/ciphertext
+  limitations remain. See evidence/2026-10-04-native-sha-output-binding-gate.json.
+- Six-row settlement4 Noir circuit compiles and passes 4 tests. Shared row library
+  passes 2 encoding tests, including an independent Python SHA-256 vector.
+- Latest strict workspace clippy passed (85558 consumed). SHA unit/vector,
+  canonical and malicious source-cell tests passed. Release native regressions
+  passed (92023 consumed): 7 oracle, 1 input hash, 2 native cases. Shared Rust
+  row vector and native statement-mapping tests passed (16191 consumed).
 
 ## Not demonstrated
 
@@ -82,26 +96,24 @@ Do not repeat passed gates without a change or unresolved concern.
 
 ## Running jobs
 
-- Tool session 17590: SHA-256 shared input gate. Run
-  .local/mpc-row-hash-20261004T204921Z. Split, witness and VK passed; proving key
-  construction is still in progress. Per-process RSS is recorded by the runner.
-- Tool session 47628: linked Halo2 SHA-256 gate. Build passed; proof experiment
-  in progress. Log .local/halo2-sha-gate.log. Vendored linked APIs are experimental.
-- Barretenberg full source build 93437 and compatibility rebuild 81310 finished
-  successfully and were consumed. External verifier 68694 finished successfully;
-  consume it before polling again. Earlier startup failure 7106 was consumed.
+- Tool session 14370: CPU-native MPC SHA run, .local/mpc-row-hash-20261004T211312Z,
+  reading the exact exported native row. Witness/VK passed; proving key is still
+  constructing. Log .local/row-hash-native-gate.log. It has a 1800-second bound.
+- Tool session 87631: ARM AES-enabled coNoir build, unchanged source/lockfile.
+  RUSTFLAGS='-C target-cpu=native --cfg aes_armv8', target directory
+  .deps/co-snarks/target-aes-native. Log .local/co-noir-aes-native-build.log.
+  CPU-native alone does not enable aes 0.8.4's ARM backend; its explicit cfg is
+  required. Next: measure the same row with this build once ready.
+Final strict clippy including settlement-types passed (80172 consumed).
+Log .local/settlement-workspace-clippy.log. Native regressions and all relevant
+SHA/Noir tests passed; the portable MPC proof failure remains explicit evidence.
 
-Completed and consumed: native proof 91827, native tests 14189, binding proof
-74999, zero-row proof 42504, strict clippy 52787. Summaries are in evidence/.
-Workspace tests 59783 passed (7 oracle, 1 input hash, 2 native tests) and were
-consumed. Binding proof validation is an executable experiment, not a unit test.
-
-Fast native construction run succeeded: 4 synthetic Ironwood spends, 6 requested
-outputs under standard ZIP 317 fee 30,000, 2-of-3 FROST signatures and changed
-sighash rejection. Two native tests passed, including zero seller/operator rows
-that retain all 6 action/output slots and decrypt the zero-valued output notes.
-Pins follow frost-tools' lockfile: native registry RedDSA 0.5.1 and rerandomized
-FROST 2.1.0, rather than newly resolved 0.5.2/2.2.0.
+Completed/consumed: native SHA binding 2202, standalone SHA 47628, source-cell
+attack 77953, canonical tests 87318, vector tests 91780, clippy 85558, Noir new
+library/settlement tests. Portable MPC SHA session 17590 hit the 1800-second
+bound, killed its children and was consumed; its failure evidence is committed
+with no complete MPC SHA proof claim. CPU-native build 99086 passed/consumed.
+C++ full build/compatibility/verification sessions also passed and were consumed.
 
 ## Completed jobs
 

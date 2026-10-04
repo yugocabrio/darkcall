@@ -1,0 +1,8 @@
+[package]
+name = "darkcall_settlement4"
+type = "bin"
+authors = ["DarkCall"]
+
+[dependencies]
+darkcall = { path = "../protocol_lib" }
+rows = { path = "../settlement_lib" }

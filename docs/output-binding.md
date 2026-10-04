@@ -34,9 +34,9 @@ The October 4 run passed: K=12, 4,928 proof bytes, 9.53 seconds total after
 compilation, and all four tampering checks rejected changes. See
 `evidence/2026-10-04-native-output-binding-gate.json` for the limited statement.
 
-Next, agree a commitment encoding computable by both the auction and binding
-circuits. SHA-256 is supported by the pinned REP3 backend, but the stock Halo2
-SHA-256 API exposes values rather than external cell links. Any adaptation must
-explicitly constrain the message and digest cells; computing the same hash in
-host code is insufficient. The Pallas prototype is a feasibility gate, not a
-completed settlement proof or an adopted fallback to operator attestation.
+A subsequent SHA-256 row experiment passes actual native binding with canonical
+compressed point encoding, amount linkage and public action index. The vendored
+Table16 extension and wrapper constrain external message/state cells, padding
+and feed-forward. See [shared rows](settlement-rows.md) for its exact encoding,
+tests and remaining MPC/auction integration. The Pallas prototype above remains
+a feasibility record, not an adopted fallback to operator attestation.

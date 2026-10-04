@@ -10,9 +10,11 @@ reconstructing every bid. Native Ironwood settlement uses a 2-of-3 FROST escrow.
 has been verified yet.** The integer reference oracle and initial four-bid Noir
 circuit pass their tests. Four client input proofs, delivered-share checks and a
 commitment-bound three-process REP3 auction proof now verify using the standalone
-coNoir verifier. An offline six-action Ironwood transaction passes native proof
+coNoir verifier and matching C++ Barretenberg. An offline six-action Ironwood transaction passes native proof
 verification, 2-of-3 FROST signing and all recipient decryptions. A separate Halo2
-prototype binds one private row to a native output commitment. Funding, testnet
+prototype binds one private row to a native output commitment. A subsequent
+SHA-256 row proof links canonical recipient bytes and amount to native cmx; the
+six-row Noir settlement circuit compiles and passes its tests. Funding, testnet
 execution and the connection between the auction plan and binding proof are unfinished.
 Reference calculations are correctness oracles, not the live private auction.
 
@@ -50,7 +52,7 @@ Our original code is MIT licensed. Upstream components retain their own licenses
 ## Current checks
 
 ```sh
-cargo test --workspace
+cargo test --release --locked --workspace -- --test-threads=1
 cargo clippy --workspace --all-targets -- -D warnings
 .deps/noir-1.0.0-rc.2/nargo test --program-dir circuits/protocol_lib
 .deps/noir-1.0.0-rc.2/nargo test --program-dir circuits/bid_input
@@ -67,3 +69,5 @@ host. The current proof binds to the supplied accepted root. Signed acceptance
 receipts and funding checks are needed to establish which root is authoritative.
 Read [native gate](docs/native-gate.md) and [output binding experiment](docs/output-binding.md)
 before interpreting their evidence. The synthetic transactions cannot be broadcast.
+The [shared SHA row encoding](docs/settlement-rows.md) records the bridge candidate,
+passed native proof, failed portable MPC hash run and remaining integration work.

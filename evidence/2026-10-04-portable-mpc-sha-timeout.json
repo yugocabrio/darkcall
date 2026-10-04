@@ -1,0 +1,50 @@
+{
+  "scope": "shared SHA-256 feasibility gate, not a complete native settlement proof",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "independent_hosts": false,
+  "zk_enabled": true,
+  "private_bytes": 224,
+  "compression_blocks": 4,
+  "stages": [
+    {
+      "name": "split",
+      "passed": true,
+      "seconds": 0.207,
+      "peak_rss_bytes_per_process": [
+        7897088
+      ]
+    },
+    {
+      "name": "witness",
+      "passed": true,
+      "seconds": 1.019,
+      "peak_rss_bytes_per_process": [
+        30310400,
+        26214400,
+        28524544
+      ]
+    },
+    {
+      "name": "vk",
+      "passed": true,
+      "seconds": 1.017,
+      "peak_rss_bytes_per_process": [
+        121454592
+      ]
+    },
+    {
+      "name": "proof",
+      "passed": false,
+      "error": "proof exceeded bounded timeout",
+      "seconds": 1800.087,
+      "peak_rss_bytes_per_process": [
+        null,
+        null,
+        null
+      ]
+    }
+  ],
+  "network_bytes_measured": false,
+  "passed": false,
+  "limitation": "Portable build exceeded the bounded 1800-second proof stage; witness and VK passed, no complete MPC SHA proof claimed."
+}
