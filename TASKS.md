@@ -15,8 +15,10 @@ autonomously, incorporate later human/ChatGPT reviews.
 
 ## Priority 0 · smallest technical gates
 
-- [ ] P0.1 Pin coNoir/Nargo/Barretenberg; compile a four-bid circuit.
+- [x] P0.1 Pin coNoir/Nargo/Barretenberg; compile a four-bid circuit.
 - [ ] P0.2 Enter actual REP3 shares, jointly generate a ZK proof, verify using the normal verifier.
+  - Four separate synthetic input files, joint witness/proof and standalone coNoir
+    verification passed. Matching external Barretenberg verification remains open.
 - [ ] P0.3 Validate shares against bid commitments; reject bad shares and duplicate tickets.
 - [ ] P0.4 Pin the Ironwood/PCZT/FROST stack; offline native transaction and signature tests.
 - [ ] P0.5 Receive testnet funds, sign 2-of-3, broadcast and decrypt the recipient note.

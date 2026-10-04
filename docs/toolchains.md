@@ -33,6 +33,25 @@ cargo build --release --locked --manifest-path .deps/co-snarks/Cargo.toml --bin 
 Initial circuit: calculation feasibility only. It does not authenticate funding
 tickets, bind bids to accepted commitments, or prove native settlement.
 
+## Collaborative calculation gate
+
+After building the pinned coNoir binary:
+
+```sh
+python3 -B scripts/run_mpc_gate.py
+```
+
+The script creates four separate synthetic bidder input files, splits and merges
+REP3 shares, runs three localhost processes, generates the witness and ZK-enabled
+proof, verifies it using the standalone coNoir verifier and rejects an altered
+public clearing price. All private inputs, shares, TLS fixture keys and witnesses
+remain under ignored .local/ or .deps/. Published evidence is only a summary.
+The public TLS test keys from upstream are for localhost testing only.
+
+At this upstream pin, the binary verifier treats a public-input filename with an
+extension as a format mismatch. The runner uses extensionless public-input files.
+Matching external Barretenberg verification is still an unfinished gate.
+
 Nargo rejects prerelease versions in the package compiler_version field.
 The rc.2 pin is enforced by the selected binary path, not that field. Initial
 manifest validation failed with that field and was corrected before the passing

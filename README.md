@@ -8,7 +8,9 @@ reconstructing every bid. Native Ironwood settlement uses a 2-of-3 FROST escrow.
 
 **Development began October 4, 2026. No end-to-end privacy or settlement claim
 has been verified yet.** The integer reference oracle and initial four-bid Noir
-circuit pass their tests. Reference calculations and fixtures are not MPC.
+circuit pass their tests. A synthetic three-process REP3 calculation and ZK proof
+now verify using the standalone coNoir verifier; native settlement is unfinished.
+Reference calculations are correctness oracles, not the live private auction.
 
 ## Project records
 
