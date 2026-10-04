@@ -1,0 +1,16 @@
+/target/
+/.deps/
+/.local/
+/evidence/private/
+**/target/
+**/*.pczt
+**/*witness*
+**/Prover.toml
+**/*.db
+**/*.db-shm
+**/*.db-wal
+.env
+.env.*
+!.env.example
+.DS_Store
+

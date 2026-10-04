@@ -1,0 +1,42 @@
+# DarkCall · ZECATHON
+
+Private multi-unit auctions with uniform pricing and shielded ZEC settlement.
+
+A seller offers K identical units. Each funded ticket bids for one unit.
+Three REP3 nodes are intended to compute the result and its proof without
+reconstructing every bid. Native Ironwood settlement uses a 2-of-3 FROST escrow.
+
+**Development began October 4, 2026. No end-to-end privacy or settlement claim
+has been verified yet.** Reference calculations and fixtures are not MPC.
+
+## Project records
+
+- [Protocol proposal](docs/protocol.md): rules, privacy model, custody, fees and settlement.
+- [Current status](STATUS.md): demonstrated behavior, failed experiments and next action.
+- [Task queue and schedule](TASKS.md): completion criteria and priorities.
+- [Development instructions](AGENTS.md): how autonomous work continues.
+
+## Target demonstration
+
+Four funded bidders → confidential price computation → public proof →
+tampered settlement rejected → testnet shielded seller payment and refunds →
+recipient wallets verify notes.
+
+The first target is four bids with the full flow. A 32-bid benchmark comes later.
+
+## Trust model
+
+- REP3 privacy: at most one semi-honest corrupt party; two colluding parties can recover bids.
+- Custody: two of three signers can move funds; users cannot force a unilateral refund.
+- All escrow operators have viewing capability and can see deposit and settlement metadata.
+- Fixed deposits do not prevent Sybil identities or seller shill bids.
+- Prices, fills and timing can reveal information through inference.
+- Item delivery is outside the payment protocol.
+
+This project initially targets **ZEC on testnet**, not a ZSA exchange or mainnet custody.
+The target settlement proof is off-chain; Zcash consensus does not enforce auction rules.
+
+## License
+
+Our original code is MIT licensed. Upstream components retain their own licenses.
+
