@@ -97,6 +97,29 @@ Public-chain funding, DKG migration, authenticated bidder/receiver receipts,
 live-chain freshness and finality remain separate unfinished work. No broadcast
 operation is added here.
 
+## Encrypted ticket memo component
+
+`receipt-transport DIRECTORY` reads four private canonical ticket memos and a
+bounded synthetic amount request, then builds/proves/FROST-signs a fabricated
+one-input/four-output native transfer. Its output is never broadcast. This is
+separate from the six-output auction and performs no auction row binding proof.
+`receipt-transport-open RECIPIENT_DIRECTORY INDEX OUT_MEMO` verifies the native
+transaction against that recipient's expected identity and decrypts with its
+own viewing key only. It does not verify the ticket proof: the client must first
+check the compiled fixed C++ flags verifier, then open the memo with its own
+expected book/ticket. `scripts/check_receipt_transport.py` checks that order and
+the actual independent recipient processes at zero/positive prices.152 request
+substitutions,24 cross-recipient decryptions and encrypted-memo native/AEAD
+mutations reject. No secret keys/pads or memos are public evidence. See
+`evidence/2026-10-05-encrypted-ticket-memos.json`.
+
+The recipient wrapper `scripts/open_ticket_memo.py EXPECTED_BOOK PUBLIC_FLAGS_PROOF
+OWN_RECEIVER_DIRECTORY TICKET_INDEX --name NEW_CHECKPOINT` performs fixed C++
+verification, native authentication/decryption and expected ticket opening in
+that order. It requires only the three real proof files and the recipient's own
+identity. It never consumes operator pads or another recipient's viewing key.
+It remains a local synthetic client, not advancing-chain wallet delivery.
+
 ## Actual new-SDK output bytes and existing binding circuit (unfinished proof)
 
 ```sh

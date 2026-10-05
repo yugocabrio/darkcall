@@ -1,8 +1,49 @@
 # DarkCall status
 
-Updated: 2026-10-05 12:15 UTC.
+Updated: 2026-10-05 (latest receipt/client measurements recorded; git HEAD is authoritative).
 
 ## Current outcome
+
+Compact per-ticket receipts now pass actual native encrypted memo transport.
+Zero-price session99068 is complete/consumed: four recipients use their own
+viewing key only, native consensus proof/signatures and the fixed C++ flags
+proof, then check ticket/root/pads/status/refund. All refunds100 still distinguish
+three winners/one loser. 76 substitutions and 12 cross-recipient decryptions
+reject, including native/AEAD encrypted memo mutation. Complete53.545s, native
+proof5.923s, fee20000, 15478bytes. This is one fabricated input/four memo outputs,
+not the auction's six-row settlement, live funding or network delivery. Full
+NU7 six-row proof remains blocked below10GiB initial disk headroom; do not retry
+unchanged. Positive-price transport also passes in55.756s, proof6.062s; all four
+openings match50/50/50/100 refunds and three winners. Session30746 complete.
+Total152 substitutions and24 cross-recipient decryptions reject. The original
+two-output SDK native mode also passes in9.217s; session79437 complete. Four
+input-tool tests, standalone SDK test, strict all-target release clippy and
+both rustfmt checks pass; no lock/dependency changes.
+The actual single-command recipient client passes four zero-price recipients
+and six invalid-proof/key/statement/book/ticket checks in18.227s. Invalid proof
+stops before copying the receiver key/decrypting a memo; session68979 complete.
+Positive client session11532 completed with a resource guard refusal before
+native decryption: host free disk fell below4GiB. This is not a ticket-proof
+failure. Exact snapshots/keys/public proofs are preserved in
+.local/positive-memo-client-20261005 and its log. Current disk is5.36GiB;
+six-row10GiB gate remains blocked. Do not weaken guards.
+Human reports a power interruption. Existing artifacts were preserved. A fresh
+positive recipient-client check completed as session62101, log
+.local/pos-memo-client-v2-20261005.log, after headroom returned above4GiB and
+macOS reported79% memory free. Four positive-price recipients and all six client
+attacks pass in14.353s; zero-price client18.227s. There are12 client substitutions
+in total; invalid proof stops before reading/copying the receiver key/decrypting.
+The new checkpoint preserves the interrupted/refused one and has no chain/
+proving-key/broadcast operation. All jobs are complete/consumed; no new heavy
+prover is running. Evidence: evidence/2026-10-05-encrypted-ticket-memos.json and
+evidence/2026-10-05-recipient-memo-client.json.
+Next: integrate proven receipt payloads into the six-output auction rather than
+the separate transfer, then registered receiver/advancing-chain delivery. Full
+NU7 native/application proof remains the primary dependency when10GiB headroom
+returns; preserve prepared checkpoints, root lock and historical funded chain.
+Initial session98696 completed with a harness output-label collision between
+recipient verifications; its artifacts/log are preserved. Native transport and
+the first recipient had passed. Fixed labels include the recipient directory.
 
 **NU7 four-input/six-output unsigned preparation passes; full proof not run.**
 The separate pinned SDK now consumes freshly verified blinded v2 delivery,

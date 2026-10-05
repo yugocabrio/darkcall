@@ -67,9 +67,12 @@
 commitmentに含め、実際のREP3共同証明と通常C++検証が通っています。
 旧版のtranscriptに対する返金秘匿の主張は撤回します。新規native構築はv2を
 要求します。公開結果からの推測は残ります。価格0のoperator当落配送から
-MPC/native精算、FROST署名、全出力の復号もofflineで確認しました。入札者へ
+MPC/native精算、FROST署名、全出力の復号もofflineで確認しました。
 各入札者が自分のticketと2組のpadだけで当落・返金を検証するreceiptも、通常C++証明と
-価格0のnative精算の公開contextへの接続までローカルで確認しました。receiptのネットワーク配送、
+価格0のnative精算の公開contextへの接続までローカルで確認しました。
+receiptをshielded memoで暗号化して運ぶ部品も、合成1入力・4出力のnative取引で検証しました。
+価格0／正価格の全受取人の復号と152件の差し替え拒否が通っています。
+この配送取引は6出力のオークション精算とは別です。精算memoへの組み込み、ネットワーク配送、
 入札者本人の認証、資金付き価格0実行は未完了です。詳細と保証範囲は [operator-fill-delivery.md](operator-fill-delivery.md)
 を参照してください。以下の設計目標と、STATUS.mdの実証済み結果は区別します。
 

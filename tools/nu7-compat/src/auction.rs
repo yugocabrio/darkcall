@@ -86,7 +86,7 @@ fn root() -> PathBuf {
         .unwrap()
         .to_owned()
 }
-fn directory(path: &Path) -> Result<PathBuf> {
+pub(crate) fn directory(path: &Path) -> Result<PathBuf> {
     let path = path
         .canonicalize()
         .map_err(|_| "missing NU7 auction directory")?;
@@ -101,7 +101,7 @@ fn directory(path: &Path) -> Result<PathBuf> {
     }
     Ok(path)
 }
-fn read(path: &Path, limit: u64) -> Result<Vec<u8>> {
+pub(crate) fn read(path: &Path, limit: u64) -> Result<Vec<u8>> {
     let file = fs::OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_NOFOLLOW)

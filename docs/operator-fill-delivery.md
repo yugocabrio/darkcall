@@ -147,3 +147,64 @@ python3 scripts/check_ticket_receipts.py .local/BOOK_RUN .local/FLAGS_RUN \
 Native-bundle linking currently accepts the completed NU6.3 public gate. The
 new NU7 six-output adapter remains unverified beyond unsigned preparation until
 the full resource-guarded proof/signature run succeeds.
+
+## Native encrypted memo transport component
+
+The same private opening now has a canonical 512-byte memo encoding. Byte0 is
+ZIP302's arbitrary-data marker `ff`; bytes1–8 are `DCTKT001`. Bytes9–40 contain
+the raw ticket ID. Bytes41–200 contain five canonical big-endian BN254 scalars:
+accepted root, refund mask, refund blinder, winner mask, winner blinder. The
+remaining311 bytes must be zero. No explicit bid or winning bit is encoded.
+Noncanonical fields, unknown versions, nonzero padding and wrong lengths reject.
+The original decimal JSON format remains reproducible. `001` is the memo encoding
+version, bound only to the **blinded v2** flags proof, not legacy v1 delivery.
+
+`flags-ticket-memo-export` and `flags-ticket-memo-open` use the same argument
+order as their JSON counterparts. An open still reports `proof_verified_here=false`:
+the fixed `delivery_flags4` C++ proof must be verified first.
+
+The separately pinned NU7 SDK encrypts these memos using native note encryption,
+builds/proves/signs a fabricated one-input/four-output transfer and serializes it.
+Each recipient then consumes only that public transaction, its own private
+viewing key/expected identity, expected book/ticket and the fixed public flags
+proof. Native proof/signatures are checked before decryption; exact amount,
+recipient, cmx and memo opening are checked afterward. This is **a transport
+component, not the auction's six-output settlement**. It does not prove the
+auction row commitments or connect those transfer notes to actual funded escrow.
+
+Zero-price and positive-price component runs pass in53.545s and55.756s. Each
+checks four own-key recipients,76 memo/key/amount/identity/index/schema/transaction
+substitutions and12 failed cross-recipient decryptions. Changing the serialized
+encrypted memo fails both native authorization and note AEAD. All fixtures/keys
+are local and synthetic; no node, network service or broadcast is used. Receiver
+registration, six-output memo integration and live wallet delivery remain open.
+See [memo evidence](../evidence/2026-10-05-encrypted-ticket-memos.json).
+
+```sh
+python3 scripts/check_receipt_transport.py .local/BOOK_RUN .local/FLAGS_RUN \
+  --name UNUSED_MEMO_CHECK
+```
+
+The recipient can perform every check with one command:
+
+```sh
+python3 scripts/open_ticket_memo.py .local/EXPECTED_BOOK.json \
+  .local/PUBLIC_FLAGS_PROOF .local/OWN_RECIPIENT_DIRECTORY TICKET_INDEX \
+  --name UNUSED_CLIENT_CHECKPOINT
+```
+
+The command freezes the three real public proof files into a new private
+checkpoint, derives its own negative statements, verifies the compiled fixed C++
+key/proof, then reads just the recipient's viewing identity. It authenticates the
+native transaction and opens the decrypted memo against the caller's expected
+book/ticket. A private result records the independently checked proof/native/
+amount/status states and explicitly marks bidder registration, six-output auction
+settlement and chain inclusion as unverified. No caller flag can skip proof
+verification. The lower-level opening commands remain explicitly insufficient
+by themselves. `scripts/check_receipt_client.py` tests this actual client path.
+Four zero-price and four positive-price recipient commands pass in18.227s and
+14.353s, respectively;12 uploaded-key/proof/statement/book/ticket client attacks
+reject. Invalid proof stops before the viewing key is read/copied or a memo is
+decrypted. An initial positive run stopped at the unchanged4GiB resource guard;
+its checkpoint is preserved and a new one passed after headroom returned. See
+[client evidence](../evidence/2026-10-05-recipient-memo-client.json).

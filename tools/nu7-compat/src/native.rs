@@ -187,21 +187,36 @@ pub fn verify_old(path: &str) -> Result<serde_json::Value> {
 }
 
 pub fn gate() -> Result<serde_json::Value> {
-    gate_inner(None)
+    gate_inner(None, None)
 }
 
 pub fn gate_export(name: &str) -> Result<serde_json::Value> {
-    gate_inner(Some(crate::interop_export::create(name)?))
+    gate_inner(Some(crate::interop_export::create(name)?), None)
 }
 
-fn gate_inner(export: Option<std::path::PathBuf>) -> Result<serde_json::Value> {
+pub fn gate_receipts(directory: &std::path::Path) -> Result<serde_json::Value> {
+    gate_inner(
+        None,
+        Some(crate::receipt_transport::Transport::load(directory)?),
+    )
+}
+
+fn gate_inner(
+    export: Option<std::path::PathBuf>,
+    receipts: Option<crate::receipt_transport::Transport>,
+) -> Result<serde_json::Value> {
     let start = Instant::now();
     let mut rng = rand::rng();
     let mut old_rng = OldOsRng;
     let sk = random_key(&mut rng);
     let fvk = FullViewingKey::from(&sk);
     let keys = split_key(&sk, &mut old_rng)?;
-    let note = synthetic_note(&fvk, 1_000_000, &mut rng);
+    let amounts = receipts.as_ref().map_or_else(
+        || vec![390_000_u64, 600_000],
+        |transport| transport.amounts.to_vec(),
+    );
+    let fee = 5000 * amounts.len() as u64;
+    let note = synthetic_note(&fvk, amounts.iter().sum::<u64>() + fee, &mut rng);
     // One fabricated leaf and protocol empty subtrees: never broadcast this gate.
     let path = MerklePath::from_parts(
         0,
@@ -232,23 +247,27 @@ fn gate_inner(export: Option<std::path::PathBuf>) -> Result<serde_json::Value> {
     builder
         .add_ironwood_spend::<Infallible>(fvk.clone(), note, path)
         .map_err(|e| error("synthetic spend", e))?;
-    let receivers: [_; 2] = std::array::from_fn(|_| FullViewingKey::from(&random_key(&mut rng)));
-    let amounts = [390_000_u64, 600_000];
-    for (receiver, amount) in receivers.iter().zip(amounts) {
+    let receivers: Vec<_> = (0..amounts.len())
+        .map(|_| FullViewingKey::from(&random_key(&mut rng)))
+        .collect();
+    for (i, (receiver, amount)) in receivers.iter().zip(&amounts).enumerate() {
         builder
             .add_ironwood_output::<Infallible>(
                 None,
                 receiver.address_at(0u32, Scope::External),
-                Zatoshis::from_u64(amount).unwrap(),
-                MemoBytes::empty(),
+                Zatoshis::from_u64(*amount).unwrap(),
+                receipts
+                    .as_ref()
+                    .map_or_else(MemoBytes::empty, |v| v.memos[i].clone()),
             )
             .map_err(|e| error("output", e))?;
     }
     let parts = builder
         .build_for_pczt(&mut rng, &FeeRule::standard())
         .map_err(|e| error("PCZT builder", e))?;
-    let indices: [usize; 2] =
-        std::array::from_fn(|i| parts.ironwood_meta.output_action_index(i).unwrap());
+    let indices: Vec<usize> = (0..amounts.len())
+        .map(|i| parts.ironwood_meta.output_action_index(i).unwrap())
+        .collect();
     let pczt = Creator::build_from_parts(parts.pczt_parts).ok_or("PCZT version")?;
     let pczt = IoFinalizer::new(pczt)
         .finalize_io(&mut rng)
@@ -259,7 +278,7 @@ fn gate_inner(export: Option<std::path::PathBuf>) -> Result<serde_json::Value> {
         .map_err(|e| error("effects", e))?;
     if effects.version() != TxVersion::V6
         || effects.consensus_branch_id() != BranchId::Nu7
-        || pczt.ironwood().actions().len() != 2
+        || pczt.ironwood().actions().len() != amounts.len()
     {
         return Err("wrong version/branch/actions".into());
     }
@@ -354,8 +373,8 @@ fn gate_inner(export: Option<std::path::PathBuf>) -> Result<serde_json::Value> {
     }
     let bundle = tx.ironwood_bundle().ok_or("Ironwood missing")?;
     let mut openings = Vec::new();
-    for i in 0..2 {
-        let (note, address, _) = bundle
+    for i in 0..amounts.len() {
+        let (note, address, memo) = bundle
             .decrypt_output_with_key(indices[i], &receivers[i].to_ivk(Scope::External))
             .ok_or("recipient decryption")?;
         if note.value().inner() != amounts[i]
@@ -365,6 +384,20 @@ fn gate_inner(export: Option<std::path::PathBuf>) -> Result<serde_json::Value> {
                 != *bundle.actions()[indices[i]].cmx()
         {
             return Err("recipient note mismatch".into());
+        }
+        if let Some(transport) = &receipts {
+            if memo != *transport.memos[i].as_array() {
+                return Err("recipient memo changed during native construction".into());
+            }
+            for (j, other) in receivers.iter().enumerate() {
+                if i != j
+                    && bundle
+                        .decrypt_output_with_key(indices[i], &other.to_ivk(Scope::External))
+                        .is_some()
+                {
+                    return Err("another recipient decrypted the private memo".into());
+                }
+            }
         }
         openings.push(serde_json::json!({"action_index":indices[i],"recipient":address.to_raw_address_bytes().to_vec(),
             "amount":note.value().inner(),"rho":note.rho().to_bytes(),"rseed":note.rseed().as_bytes(),
@@ -385,6 +418,49 @@ fn gate_inner(export: Option<std::path::PathBuf>) -> Result<serde_json::Value> {
     *changed.last_mut().unwrap() ^= 1;
     if verify_bytes(&changed, BranchId::Nu7, &mut rng).is_ok() {
         return Err("binding signature change accepted".into());
+    }
+    if let Some(transport) = &receipts {
+        // Mutate the encrypted memo, not a commitment or signature. Native
+        // authorization must reject it, and note AEAD must fail independently.
+        let ciphertext = bundle.actions()[indices[0]]
+            .encrypted_note()
+            .enc_ciphertext
+            .as_ref();
+        let positions: Vec<_> = bytes
+            .windows(ciphertext.len())
+            .enumerate()
+            .filter_map(|(i, v)| (v == ciphertext).then_some(i))
+            .collect();
+        if positions.len() != 1 {
+            return Err("encrypted memo serialization mapping".into());
+        }
+        let mut changed = bytes.clone();
+        changed[positions[0] + 100] ^= 1;
+        if verify_bytes(&changed, BranchId::Nu7, &mut rng).is_ok() {
+            return Err("encrypted memo substitution accepted".into());
+        }
+        let altered = Transaction::read(&changed[..], BranchId::Nu7)
+            .map_err(|_| "encrypted memo mutation did not preserve transaction encoding")?;
+        if altered
+            .ironwood_bundle()
+            .ok_or("mutated bundle")?
+            .decrypt_output_with_key(indices[0], &receivers[0].to_ivk(Scope::External))
+            .is_some()
+        {
+            return Err("encrypted memo mutation passed AEAD".into());
+        }
+        transport.persist(&bytes, &tx.txid().to_string(), &receivers, &indices)?;
+        return Ok(
+            serde_json::json!({"scope":"synthetic NU7 encrypted receipt transport component; no auction output binding or chain funding",
+            "branch":"77190ad9","actions":4,"synthetic_inputs":1,"recipient_memos_decrypted":4,
+            "cross_recipient_decryptions_rejected":12,"encrypted_memo_mutation_native_rejected":true,
+            "encrypted_memo_mutation_aead_rejected":true,"threshold":"2-of-3","setup":"local trusted dealer; no DKG",
+            "native_proof_and_signatures_verified":true,"one_share_rejected":true,"changed_sighash_rejected":true,
+            "binding_signature_change_rejected":true,"trailing_byte_rejected":true,"pczt_fvks_preserved":true,
+            "txid":tx.txid().to_string(),"fee":fee,"transaction_bytes":bytes.len(),
+            "proof_seconds":proof_seconds,"total_seconds":start.elapsed().as_secs_f64(),
+            "auction_application_binding_verified":false,"chain_funding":false,"broadcast":false}),
+        );
     }
     if let Some(directory) = &export {
         let identity = serde_json::json!({"format":1,"scope":"synthetic NU7 output-byte interoperability",

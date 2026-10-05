@@ -164,8 +164,20 @@ autonomously, incorporate later human/ChatGPT reviews.
     cases also pass; 72 substitutions reject. This is a private proof opening,
     not a signature or replacement for admission/funding authentication.
 - [ ] Private authenticated network delivery and client UI for ticket status receipts.
-  - Issuance/verification are local tools; transport, bidder identity and item
-    delivery remain separate from the demonstrated proof openings/payments.
+  - Actual encrypted memo transport component passes for four recipients at
+    zero/positive price: native PCZT/proof/FROST, own-key decryption, fixed C++
+    flags verification and exact ticket openings. 152 recipient substitutions
+    and24 cross-recipient decryptions reject; encrypted memo mutation fails native
+    authorization and AEAD. Fabricated one-input/four-output transport transfers,
+    not the six-output auction settlement. Integrating memos into that settlement,
+    an advancing chain, registered receiver identities and client UI remain.
+  - A recipient command now freezes public proof inputs, verifies the compiled
+    C++ flags key/proof before reading the receiver key, authenticates the native
+    transaction and checks its decrypted memo against the expected book/ticket.
+    Zero/positive four-recipient runs pass in18.227s/14.353s;12 fail-closed client
+    attacks reject. The initial positive run's below4GiB resource guard refusal
+    is preserved; a fresh checkpoint succeeds after headroom returns. The native
+    transport is still separate from actual six-output auction settlement.
 - [x] Resource guard abort stops nested MPC children without affecting parent/unrelated groups.
   - Synthetic old behavior reproduced a child surviving its parent's resource
     abort. Guard now execs into a fresh owned group with a marker matching its

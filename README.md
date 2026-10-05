@@ -28,8 +28,12 @@ NU7 settlement remains unfinished. Price-zero private winner delivery through
 native proof/FROST and all six decryptions also passes with synthetic funding;
 funded price-zero execution remains separate work. Local private per-ticket
 status/refund receipts now verify against the fixed public proof, including the
-zero-price native settlement context; transport and bidder identity remain
-unfinished. NU7 unsigned six-output preparation passes, while its full proof/
+zero-price native settlement context. A separate synthetic native transfer also
+carries encrypted per-ticket memo receipts; four own-key recipient openings and
+152 substitution checks pass. Connecting memo delivery to the six-output auction
+and registered bidder identities remains unfinished. The recipient's one-command
+client verifies the fixed proof before native decryption and checks its own
+ticket; zero/positive cases and12 client attacks pass. NU7 unsigned six-output preparation passes, while its full proof/
 signature gate is capacity-blocked and unverified. See [status](STATUS.md)
 and [the reproduced attack and fix](docs/operator-fill-delivery.md) for exact scope.
 Plaintext reference fixtures are correctness oracles, not privacy demonstrations.

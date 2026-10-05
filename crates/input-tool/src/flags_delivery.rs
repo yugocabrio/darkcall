@@ -110,6 +110,56 @@ struct TicketReceipt {
     winner_pad: [String; 2],
 }
 const TICKET_RULE: &str = "private-ticket-opening-delivery-flags-v2";
+// ZIP 302 arbitrary memo marker followed by a fixed, versioned binary format.
+// Ticket is raw bytes; root and the four pad fields are canonical big-endian
+// BN254 scalars. All remaining memo bytes must be zero, never extra disclosures.
+const MEMO_HEADER: &[u8; 9] = b"\xffDCTKT001";
+const MEMO_USED: usize = 201;
+
+impl TicketReceipt {
+    fn memo(&self) -> Result<[u8; 512]> {
+        if self.format != 1 || self.rule != TICKET_RULE {
+            return Err("ticket memo version/domain mismatch".into());
+        }
+        let mut bytes = [0; 512];
+        bytes[..9].copy_from_slice(MEMO_HEADER);
+        bytes[9..41].copy_from_slice(&self.ticket);
+        let values = std::iter::once(&self.accepted_root)
+            .chain(&self.refund_pad)
+            .chain(&self.winner_pad);
+        for (chunk, value) in bytes[41..MEMO_USED].chunks_exact_mut(32).zip(values) {
+            chunk.copy_from_slice(&encoded_field(canonical_field(value)?));
+        }
+        Ok(bytes)
+    }
+
+    fn from_memo(bytes: &[u8]) -> Result<Self> {
+        if bytes.len() != 512
+            || bytes[..9] != *MEMO_HEADER
+            || bytes[MEMO_USED..].iter().any(|v| *v != 0)
+        {
+            return Err("ticket memo length/version/padding mismatch".into());
+        }
+        let fields = bytes[41..MEMO_USED]
+            .chunks_exact(32)
+            .map(|encoded| {
+                let field = Fr::from_be_bytes_mod_order(encoded);
+                if encoded_field(field) != encoded {
+                    return Err("noncanonical ticket memo field".into());
+                }
+                Ok(field.to_string())
+            })
+            .collect::<Result<Vec<_>>>()?;
+        Ok(Self {
+            format: 1,
+            rule: TICKET_RULE.into(),
+            ticket: bytes[9..41].try_into()?,
+            accepted_root: fields[0].clone(),
+            refund_pad: [fields[1].clone(), fields[2].clone()],
+            winner_pad: [fields[3].clone(), fields[4].clone()],
+        })
+    }
+}
 
 fn ticket_statement(book: &Book, path: &Path) -> Result<Vec<Fr>> {
     let bytes = bounded(path, 187 * 32)?;
@@ -200,6 +250,16 @@ pub(super) fn export_ticket(
     index: usize,
     out: &Path,
 ) -> Result<()> {
+    let receipt = make_ticket(book, refund_masks, winner_masks, statement, index)?;
+    write_private(out, &serde_json::to_vec(&receipt)?)
+}
+fn make_ticket(
+    book: &Book,
+    refund_masks: &Path,
+    winner_masks: &Path,
+    statement: &Path,
+    index: usize,
+) -> Result<TicketReceipt> {
     if index >= 4 {
         return Err("ticket receipt index outside book".into());
     }
@@ -217,7 +277,30 @@ pub(super) fn export_ticket(
         winner_pad: winner[index].map(|f| f.to_string()),
     };
     ticket_opening(book, &receipt, &fields)?;
-    write_private(out, &serde_json::to_vec(&receipt)?)
+    Ok(receipt)
+}
+pub(super) fn export_memo(
+    book: &Book,
+    refund_masks: &Path,
+    winner_masks: &Path,
+    statement: &Path,
+    index: usize,
+    out: &Path,
+) -> Result<()> {
+    let receipt = make_ticket(book, refund_masks, winner_masks, statement, index)?;
+    write_private(out, &receipt.memo()?)
+}
+pub(super) fn open_memo(
+    book: &Book,
+    expected_index: usize,
+    memo: &Path,
+    statement: &Path,
+) -> Result<serde_json::Value> {
+    let receipt = TicketReceipt::from_memo(&bounded(memo, 512)?)?;
+    if expected_index >= 4 || receipt.ticket != book.ids[expected_index] {
+        return Err("memo differs from recipient's expected ticket".into());
+    }
+    ticket_opening(book, &receipt, &ticket_statement(book, statement)?)
 }
 pub(super) fn open_ticket(
     book: &Book,
@@ -506,6 +589,40 @@ mod tests {
             assert_eq!(one["refund"], 100);
             assert_eq!(one["proof_verified_here"], false);
             assert!(open_ticket(&book, (i + 1) % 4, &receipt, &dir.join("statement")).is_err());
+            let memo = dir.join(format!("memo-{i}"));
+            export_memo(
+                &book,
+                &dir.join("refund"),
+                &dir.join("winner"),
+                &dir.join("statement"),
+                i,
+                &memo,
+            )
+            .unwrap();
+            assert_eq!(
+                open_memo(&book, i, &memo, &dir.join("statement")).unwrap(),
+                one
+            );
+            assert!(open_memo(&book, (i + 1) % 4, &memo, &dir.join("statement")).is_err());
+            let encoded = fs::read(memo).unwrap();
+            assert_eq!(
+                TicketReceipt::from_memo(&encoded)
+                    .unwrap()
+                    .memo()
+                    .unwrap()
+                    .as_slice(),
+                encoded
+            );
+            for position in [0, 1, 8, MEMO_USED, 511] {
+                let mut changed = encoded.clone();
+                changed[position] ^= 1;
+                assert!(TicketReceipt::from_memo(&changed).is_err());
+            }
+            let mut noncanonical = encoded.clone();
+            noncanonical[41..73].fill(0xff);
+            assert!(TicketReceipt::from_memo(&noncanonical).is_err());
+            assert!(TicketReceipt::from_memo(&encoded[..511]).is_err());
+            assert!(TicketReceipt::from_memo(&[encoded.as_slice(), &[0]].concat()).is_err());
             let mut wire: serde_json::Value =
                 serde_json::from_slice(&fs::read(&receipt).unwrap()).unwrap();
             wire["won"] = true.into();
