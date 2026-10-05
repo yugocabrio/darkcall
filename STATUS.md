@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-05 11:20 UTC.
+Updated: 2026-10-05 11:33 UTC.
 
 ## Current outcome
 
@@ -75,13 +75,19 @@ pass. All 23 Python tests and an actual guarded delivery_flags4 REP3 run pass
 Evidence: evidence/2026-10-05-nested-mpc-resource-abort.json. No cryptographic
 predicate, resource limit, wallet journal or confirmed chain transaction changed.
 
-**Active follow-up: shared18 complete-cache partial-Prepare recovery, session
-38702**, log .local/shared-v2-prepared-20261005.log. Only copied historical
-journal prefixes and exact new v2 PCZT/proofs are used; all six verified proofs
-should be reused with no proving key. No RPC/broadcast, no changes to the original
-Finalized journals. This additionally exercises the full integration under the
-new nested-group guard. Do not duplicate this verification job. Next implementation
-priority after this regression is the full six-output NU7 auction/native bridge.
+**Shared18 complete-cache partial-Prepare recovery passes under the new guard.**
+Session 38702 completed/consumed; log .local/shared-v2-prepared-20261005.log.
+Guarded process 232.798s, six cached proofs reverified in 101.419s, zero proving-key
+generation, exact original txid/effects, native/MPC/DKG FROST and six openings pass.
+Two Prepared copies have zero new/duplicate writes; one Frozen copy receives
+one Prepare. Cancellation-purpose substitution rejects before proving/signing.
+Original PCZT/proofs and Finalized journals remain unchanged. Historical notes
+are already spent; no RPC, broadcast, mining or new chain-funding claim.
+Evidence: evidence/2026-10-05-shared-layout-prepared-recovery.json.
+No recorded jobs are active. Implementation/tests/measurements through zero-price,
+fresh funded v2 and the resource abort fix are pushed in 9bff22d. This subsequent
+checkpoint records the completed recovery; identify its current commit with git.
+Next implementation priority is the full six-output NU7 auction/native bridge.
 
 Independent plaintext Rust/Noir ACVM regression passes 77 valid and seven invalid
 generated cases plus rejection of a deliberately wrong reference result. This
@@ -130,7 +136,8 @@ completed/consumed; log .local/prepared-v2-public-20261005.log. Positive native
 recovery 1647 and negative complete-proof gate 3821 are completed/consumed too.
 Eight selected Rust tests, 18 Python tests, rustfmt and strict selected release
 all-target clippy pass. No recorded jobs are active.
-Fresh funded v2, full native zero-price and public-testnet NU7 remain unfinished.
+At that earlier checkpoint, fresh funded v2, full native zero-price and
+public-testnet NU7 were unfinished. The current outcome above supersedes it.
 Evidence: evidence/2026-10-05-blinded-delivery-and-dictionary-attack.json.
 Normal native construction now preflights 16 GiB disk; signed reconciliation is
 unchanged. Runtime guards retain 4 GiB disk/8 GiB root RSS/10% macOS headroom.

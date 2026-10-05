@@ -210,6 +210,10 @@ autonomously, incorporate later human/ChatGPT reviews.
     all six verified proofs and skips the unused proving key. The v2 delivery/
     MPC/FROST gate passes with unchanged original journals and exact effects;
     runtime/disk measurements are recorded without a controlled speedup claim.
+    New explicit shared18 exact-cache recovery also passes under the nested-group
+    resource guard in 232.798s: six reused proofs, no PK, identical effects,
+    zero duplicate Prepare writes and unchanged original source/journals. This
+    reuses spent historical notes offline; no additional RPC/broadcast/funding.
   - The interrupted row-0 run had no reservation/signature. Existing deposits,
     cutoff, DKG packages and all three Frozen journals survived the PC reboot;
     rerunning with fresh output artifacts, one heavy prover and resource guards.
