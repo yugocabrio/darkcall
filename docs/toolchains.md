@@ -1,5 +1,10 @@
 # Cryptographic toolchain pins
 
+For current funded public replay, start with [reproduce.md](reproduce.md): exact
+source/patch/CRS setup, both current native helpers, preflight and replay commands.
+The experiments below are historical development commands, not a complete
+fresh-checkout bootstrap or an independent-machine reproduction.
+
 | Component | Pin | Evidence |
 | --- | --- | --- |
 | co-snarks | 467a2abbad940d40ed78f38d424cc21920988976 | Upstream workspace declares Rust 1.90 and Noir rc.2 |

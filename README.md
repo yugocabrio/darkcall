@@ -47,6 +47,10 @@ This shared16GiB Mac result is not an isolated speed comparison. The same-PK wor
 is already measured separately; no2-minute settlement or parallel speedup is asserted.
 See [submission draft](docs/submission-draft.md) for the story, threat model,
 verified/unverified claims and demo script.
+The [review entry point](docs/judge-review.md) summarizes what to inspect.
+[Fresh-source public replay](docs/reproduce.md) separates tool setup, packaging
+integrity and actual fixed verification. The review kit contains committed source
+and public artifacts; private fixture identities and dependency binaries are excluded.
 
 ## Project records
 

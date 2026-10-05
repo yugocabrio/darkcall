@@ -2,19 +2,28 @@
 
 This standalone Cargo workspace preserves the successful NU6.3 application's
 manifest, lockfile, binaries, wallets and isolated chain. It is an experiment
-toward supporting public testnet. Synthetic auction integration is complete;
-actual NU7 funding/DKG transfers and authenticated four-deposit admission pass;
-current funded six-output memo settlement still needs the final integration.
+toward supporting public testnet. One actual funded six-output memo auction now
+completes on isolated NU7 regtest. The original node and older results remain
+preserved; the current canonical result supersedes their pending integration.
 
 ## Current completed auction
 
-The six-output synthetic NU7 auction now includes four encrypted ticket receipts,
-six fresh shared18 binding proofs, committed REP3 clearing, fixed C++ verification,
-2-of-3 FROST and exact recipient decryption in one transaction. The browser/client
-and public bundle share transaction52555e25…151ab3b. Run `./demo.sh` or
-`./verify.sh demo/artifacts/canonical-nu7-v1`; see [demo](../../docs/demo.md) and
-[measured evidence](../../evidence/2026-10-05-canonical-nu7-memo-auction.json).
-The older component experiments below do not add funding/DKG/confirmation to it.
+Four actual accepted deposits, authenticated client/share checks, signed final
+book, blinded-v2 delivery, four encrypted ticket memos, six fresh shared18
+bindings and fixed REP3 verification use the SAME transaction47019e02…a211938.
+Existing2-of-3 DKG signs all four inputs without an escrow master spending key.
+Zebra accepts it, two controlled confirmations and six exact scans pass, four
+source notes are spent and three journals finalize. Default `./demo.sh` and
+`./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 --authority demo/authority/canonical-nu7-funded-v1.json`
+use that transaction. See [demo](../../docs/demo.md),
+[reproduction](../../docs/reproduce.md) and
+[funded evidence](../../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
+All parties remain on one host; controlled regtest is not public testnet.
+Public bundle verification does not prove chain inclusion or ZK funding.
+
+The historical synthetic transaction52555e25…151ab3b is separate, available via
+`./demo.sh --synthetic` and `./verify.sh demo/artifacts/canonical-nu7-v1`.
+The component records below describe earlier gates rather than current scope.
 
 ## Actual local NU7 funding and DKG transfer
 
@@ -32,8 +41,9 @@ The new `regtest-deposits` and `regtest-admission` modes also pass fresh four-no
 funding,12 signed receipts and three final-book signatures after the declared
 cutoff.13 claim and8 certificate/authority substitutions reject. See
 [admission evidence](../../evidence/2026-10-05-nu7-funded-admission.json).
-These notes remain Frozen/unspent; their latest six-output memo auction settlement
-has not been executed. The synthetic transaction above remains a separate result.
+These notes were Frozen/unspent at admission. The canonical funded transaction
+above consumes exactly those four notes; their journals are now Finalized.
+Do not reuse the historical source openings as fresh funding.
 The old node/SDK remain preserved. The shared off-chain source package adds only
 a local package to the root lock; the new SDK lock includes its existing primitive
 dependencies. See [pins/licenses](../../docs/dependencies.md).

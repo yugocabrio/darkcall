@@ -1,0 +1,126 @@
+{
+  "scope": "public replay prerequisite inventory; not proof verification",
+  "passed": true,
+  "host": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "free_disk_bytes": 13931593728,
+  "checks": [
+    {
+      "name": "python",
+      "passed": true,
+      "result": {
+        "version": "3.14.6"
+      }
+    },
+    {
+      "name": "canonical-public-artifacts",
+      "passed": true,
+      "result": {
+        "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+        "bundle": "demo/artifacts/canonical-nu7-funded-v1",
+        "authority": "demo/authority/canonical-nu7-funded-v1.json",
+        "authority_sha256": "d5f06a09867dafefc1908228efb76a903fa7fc0c8c1ee06a14002e9b0ddbb32e",
+        "public_bundle_bytes": 153557,
+        "proofs_cryptographically_verified": false,
+        "chain_inclusion_verified": false
+      }
+    },
+    {
+      "name": "pinned-noir",
+      "passed": true,
+      "result": {
+        "version": "1.0.0-rc.2"
+      }
+    },
+    {
+      "name": "compiled-settlement_poseidon4",
+      "passed": true,
+      "result": {
+        "bytes": 284864,
+        "sha256": "225de53aa4dd40b21aa9526ce404ba99d9a8db71cdae4da679ab8f14d4855285"
+      }
+    },
+    {
+      "name": "compiled-delivery_flags4",
+      "passed": true,
+      "result": {
+        "bytes": 145232,
+        "sha256": "eb6df7bbd0b68479bfd58a0c94c1062e2bc379bb8388c085b347c4d046eca6fe"
+      }
+    },
+    {
+      "name": "fixed-cpp-verifier",
+      "passed": true,
+      "result": {
+        "source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+        "exact_known_patches": true,
+        "bytes": 29386480,
+        "sha256": "6d908f92466c8b7697ba174cbbe414def5827d9dd1efb9b78cbcd714d66cf0ed"
+      }
+    },
+    {
+      "name": "pinned-crs",
+      "passed": true,
+      "result": {
+        "source": "467a2abbad940d40ed78f38d424cc21920988976",
+        "files": {
+          "bn254_g1.dat": {
+            "git_blob": "a5e6c93b091c78b3903a4cd80e116cd7bd2cf2d8",
+            "bytes": 67748864,
+            "sha256": "a4c09243519a07823c7ca992441fb925c158f87e3d19a0ff57a2c3c788963cec"
+          },
+          "bn254_g2.dat": {
+            "git_blob": "8d2083bbd3c4ee53363189908bb781955a33939c",
+            "bytes": 128,
+            "sha256": "01797bfc4de5a96f0e516a9ea4537d18786dc30cb991aca4274c95822b69c32f"
+          },
+          "grumpkin_g1.dat": {
+            "git_blob": "11ab73e1b8234f3b32da0a39f7cd323f1815489e",
+            "bytes": 16777216,
+            "sha256": "050607e14ff40ac8bf9468b05cf5623451697f1d7160328c0cd1dafd7a346c5c"
+          }
+        }
+      }
+    },
+    {
+      "name": "target/release/darkcall-native-gate",
+      "passed": true,
+      "result": {
+        "bytes": 11509424,
+        "sha256": "c86f69b90877b1b24553b988224381200128e00934deca1ad140eea11f3d5b2b"
+      }
+    },
+    {
+      "name": ".deps/nu7-compat-target/release/darkcall-nu7-compat",
+      "passed": true,
+      "result": {
+        "bytes": 11963440,
+        "sha256": "010424bbdcd16093776921f51e743e28291fb4bec51be5b14eba110280c16694"
+      }
+    },
+    {
+      "name": "Cargo.lock",
+      "passed": true,
+      "result": {
+        "bytes": 120987,
+        "sha256": "7b6077966b9cd008ca5455ef7b2289bc5c93496b11610056176e25faee17bf10"
+      }
+    },
+    {
+      "name": "tools/nu7-compat/Cargo.lock",
+      "passed": true,
+      "result": {
+        "bytes": 130377,
+        "sha256": "3d6f69bc6ad7286a844b5c40d5053242a4e7191d7f4b518a734dbc4b2074d882"
+      }
+    }
+  ],
+  "proofs_cryptographically_verified": false,
+  "second_machine_reproduction": false,
+  "private_runtime_read": false,
+  "network_or_node_used": false,
+  "native_binaries_must_be_built_here": true,
+  "linux_build_and_parallel_performance_verified": false
+}

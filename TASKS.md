@@ -8,6 +8,16 @@ autonomously, incorporate later human/ChatGPT reviews.
 The15-minute automation is deleted at the human's request. Continue on direct
 requests. Converge on a Grand Prize submission; preserve exactly the current
 proof/security model and avoid unrelated recovery/wallet/cryptographic work.
+After the funded canonical milestone, freeze new cryptography. Focus on review
+packaging, reproduction and presentation, followed by measured performance and
+bug fixes. Second-machine/Linux results require an actual available host.
+
+- [ ] Produce a committed-source review kit, validate its exclusions and public
+  links, and start its extracted public-only browser with no private identities.
+- [ ] Reproduce the fixed public verifier on a second machine. Prepare exact
+  tool/patch/CRS instructions and preflight; do not call a same-Mac fresh directory
+  an independent reproduction. Optional human hardware question is pending.
+- [ ] Finish the short demo/video and review copy with exact guarantees and limits.
 
 - [x] One canonical actual current-NU7/v2 funded run: authenticated4 deposits,
   signed final root/recipients, blinded REP3 delivery, four encrypted receipt memos

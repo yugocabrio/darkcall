@@ -1,8 +1,29 @@
 # DarkCall status
 
-Updated: 2026-10-05 (same actual-note certified NU7 memo auction confirmed; public/client/browser checks pass; git HEAD is authoritative).
+Updated: 2026-10-05 (funded core frozen; committed-source review packaging and replay prerequisites; git HEAD is authoritative).
 
 ## Current outcome
+
+**Converging on review/reproduction without changing cryptography.** A local
+committed-source packager creates deterministic archives of source/public
+artifacts with separate authority, exact revision/tree/lock/file digests and a
+short judge entry point. It excludes Git metadata/ignored runtime/dependencies;
+unsafe paths, links/submodules, private runtime names, high-confidence credential
+markers, oversized members and overwrite attempts refuse. Three focused tests
+exercise ignored/uncommitted sentinels, deterministic output, malformed archives,
+expected revision and unsafe tracked paths. All399 candidate source files pass
+the bounded path/marker check. This is not exhaustive secret detection, producer
+authentication, proof verification or independent-machine reproduction.
+Read-only public replay preflight passes on this Mac: exact C++ pin/two patches,
+three committed CRS blobs, Nargo rc.2, two compiled circuits/native helpers and
+both unchanged locks. It reads no private runtime or node and starts no proof.
+`docs/reproduce.md` gives the missing fresh-source steps and notes that Rust
+helpers embed their build directory: rebuild at the final location. Current SDK
+README now distinguishes the completed funded run from historical components.
+No new proof, signature, circuit or public trust root is introduced. First full
+committed kit/exported browser check follows this commit; second-machine/Linux
+access is still unprovided. Optional hardware question is pending. Automation
+remains removed; no public release/deployment/submission is performed.
 
 **One actual funded NU7 transaction now completes the certified memo auction.**
 The exact prepared PCZT resumes unchanged as transaction47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938.
