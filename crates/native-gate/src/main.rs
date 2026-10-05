@@ -3,6 +3,8 @@
 //! real isolated-regtest notes; its driver guards the local chain before broadcast.
 //! This plaintext oracle fixture is not an MPC-to-settlement binding proof.
 mod integration;
+mod regtest_deposits;
+mod regtest_settlement;
 mod regtest_spend;
 use darkcall_auction_core::{Bid, Terms, clear};
 use darkcall_settlement_types::{Role, Row};
@@ -565,6 +567,36 @@ fn gate(
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() == 7 && args[0] == "--regtest-settlement" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&regtest_settlement::build(
+                std::path::Path::new(&args[1]),
+                std::path::Path::new(&args[2]),
+                std::path::Path::new(&args[3]),
+                std::path::Path::new(&args[4]),
+                std::path::Path::new(&args[5]),
+                &args[6],
+            )?)
+            .map_err(|e| error("funded settlement summary", e))?
+        );
+        return Ok(());
+    }
+    if args.len() == 7 && args[0] == "--regtest-deposits" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&regtest_deposits::build(
+                std::path::Path::new(&args[1]),
+                std::path::Path::new(&args[2]),
+                std::path::Path::new(&args[3]),
+                std::path::Path::new(&args[4]),
+                std::path::Path::new(&args[5]),
+                &args[6],
+            )?)
+            .map_err(|e| error("deposit summary", e))?
+        );
+        return Ok(());
+    }
     if args.len() == 5 && args[0] == "--regtest-spend" {
         println!(
             "{}",

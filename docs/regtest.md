@@ -52,3 +52,47 @@ Stopping preserves the chain and wallets. Official binary/archive/image hashes
 and measured results are recorded in the corresponding evidence JSON. Public
 lightwalletd branch checks remain unchanged; the public endpoint returning
 77190ad9 is not compatible with the current SDK snapshot.
+
+## Four actual deposits and certified admission
+
+```sh
+cargo build --release --locked -p darkcall-native-gate -p darkcall-input-tool -j 2
+cargo build --release --locked -p darkcall-wallet-bridge --examples -j 2
+python3 scripts/regtest_deposits.py SOURCE_WALLET CURRENT_PRIVATE_NOTES COMMITTED_MPC_BOOK_RUN --name regtest-deposit4-new
+python3 scripts/regtest_settlement.py .local/regtest-deposit4-new COMMITTED_MPC_BOOK_RUN --name regtest-auction4-new
+```
+
+First refresh the bank's witnesses using its original birthday capture. The
+four-deposit driver checks canonical source funding, builds a native transaction
+with encrypted client-key/nonce memos, mines two controlled confirmations and
+scans four exact escrow notes. Each private claim binds actual cmx, the verified
+bid/pair commitments and a client-chosen receiver commitment. Fresh independent
+receiver wallet keys stay with those wallet processes; native settlement uses
+addresses and outgoing note recovery rather than reading their spending keys.
+
+Admission regenerates a client verification key from the circuit, rechecks four
+client ZK proofs and all 12 delivered share pairs, decrypts the actual confirmed
+outputs, verifies signed instructions and fsyncs three receipts per ticket.
+Operator keys are persisted before any receipt signature. The clock rejects
+late admission. After the original declared cutoff, a separate command reloads
+and verifies all receipt quorums and certifies the exact frozen root under all
+three operator identities. Both receipt and final-book signature locks are
+persisted. The manifest is a trusted local test configuration, not authenticated
+service discovery or a production key ceremony.
+
+The first deposit gate passed with 18,634 bytes, five native actions, fee 25,000,
+and four deposits of 15,100 zatoshi. Native proof took 7.851s; construction 9.540s.
+A Python empty-vin assumption initially stopped inspection after confirmation.
+Recovery checked the existing chain notes and completed admission before the
+original cutoff; it did not remint or change that deadline.
+
+These client actors share one bank and one machine. Tickets, conditions and
+100-zatoshi budgets are fixture inputs, not funding-derived IDs or product-sized
+auction economics. Actual funded auction settlement is a separate active gate;
+this admission result alone does not claim native auction settlement or finality.
+The settlement driver rejects a substituted receiver before proving, binds the
+certified recipients to the MPC statement, checks all six native outputs before
+FROST, and fsyncs all three funding reservations. After canonical broadcast it
+scans each of six recipients, reconciles actual spent escrow nullifiers, and
+records broadcast/finalization in the three journals. Interrupted stages need
+explicit reconciliation; restart-safe automatic broadcast recovery remains work.

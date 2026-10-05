@@ -78,7 +78,8 @@ impl DepositMemo {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Instructions {
     pub bid_commitment: [u8; 32],
     pub pair_commitments: [[u8; 32]; 3],
@@ -103,7 +104,36 @@ pub struct Claim {
     instructions: Instructions,
     signature: Signature,
 }
+/// Private client-to-operator transport. Note association and memo digest must
+/// stay private; signatures do not substitute for canonical chain admission.
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WireClaim {
+    pub memo_digest: [u8; 32],
+    pub note_id: [u8; 32],
+    pub instructions: Instructions,
+    pub signature: Vec<u8>,
+}
 impl Claim {
+    pub fn to_wire(&self) -> WireClaim {
+        WireClaim {
+            memo_digest: self.memo_digest,
+            note_id: self.note_id,
+            instructions: self.instructions.clone(),
+            signature: self.signature.to_bytes().to_vec(),
+        }
+    }
+    pub fn from_wire(wire: WireClaim) -> Result<Self> {
+        wire.instructions.validate()?;
+        let signature =
+            Signature::from_slice(&wire.signature).map_err(|_| "invalid claim signature length")?;
+        Ok(Self {
+            memo_digest: wire.memo_digest,
+            note_id: wire.note_id,
+            instructions: wire.instructions,
+            signature,
+        })
+    }
     fn message(&self) -> Result<Vec<u8>> {
         self.instructions.validate()?;
         let mut bytes = CLAIM_DOMAIN.to_vec();
@@ -336,6 +366,34 @@ mod tests {
             )
             .is_err()
         );
+    }
+    #[test]
+    fn private_wire_roundtrip_rejects_substitution_and_malformed_signature() {
+        let (note, memo, key, instructions, expected) = fixture();
+        let id = orchard::note::ExtractedNoteCommitment::from(note.commitment()).to_bytes();
+        let claim = Claim::sign(&memo, id, instructions, &key).unwrap();
+        let wire = claim.to_wire();
+        let decoded =
+            Claim::from_wire(serde_json::from_slice(&serde_json::to_vec(&wire).unwrap()).unwrap())
+                .unwrap();
+        assert!(verify_note(&note, &memo.encode().unwrap(), &expected, &decoded).is_ok());
+        let mut changed = wire.clone();
+        changed.instructions.refund_receiver_commitment[31] ^= 1;
+        assert!(
+            verify_note(
+                &note,
+                &memo.encode().unwrap(),
+                &expected,
+                &Claim::from_wire(changed).unwrap()
+            )
+            .is_err()
+        );
+        let mut changed = wire.clone();
+        changed.signature.pop();
+        assert!(Claim::from_wire(changed).is_err());
+        let mut changed = wire;
+        changed.instructions.bid_commitment = BN254_MODULUS;
+        assert!(Claim::from_wire(changed).is_err());
     }
     #[test]
     fn memo_context_alias_amount_and_weak_key_are_rejected() {

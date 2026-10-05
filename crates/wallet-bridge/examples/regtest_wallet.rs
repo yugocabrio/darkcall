@@ -174,7 +174,8 @@ fn main() -> Result<()> {
             .encode(&NetworkType::Regtest);
         println!(
             "{}",
-            serde_json::json!({"scope":"isolated regtest only", "address":address,"secret_key_logged":false})
+            serde_json::json!({"scope":"isolated regtest only", "address":address,"receiver":receiver.to_vec(),
+                "internal_receiver":fvk.address_at(1u32,Scope::Internal).to_raw_address_bytes().to_vec(),"secret_key_logged":false})
         );
         return Ok(());
     }
@@ -260,13 +261,10 @@ fn main() -> Result<()> {
             .checked_add(owned.note.value().inner())
             .ok_or("balance overflow")?;
         openings.push(serde_json::json!({"cmx":cmx,"txid":owned.txid,"action_index":owned.action_index,
-            "mined_height":owned.mined_height,"mined_block":owned.mined_block,
+            "mined_height":owned.mined_height,"mined_block":owned.mined_block,"coinbase":owned.coinbase,
             "recipient":owned.note.recipient().to_raw_address_bytes().to_vec(),"amount":owned.note.value().inner(),
             "rho":owned.note.rho().to_bytes(),"rseed":owned.note.rseed().as_bytes(),
             "position":path.position(),"auth_path":path.auth_path().map(|h|h.to_bytes())}));
-    }
-    if openings.is_empty() {
-        return Err("no native notes decrypted from actual blocks".into());
     }
     let private = serde_json::json!({"scope":"isolated regtest wallet openings", "genesis":GENESIS,"nu6_3_height":2,
         "tip_height":scanner.height(),"tip_hash":capture.final_tree.hash,"anchor":scanner.anchor().to_bytes(),"notes":openings});
@@ -278,7 +276,7 @@ fn main() -> Result<()> {
         "{}",
         serde_json::json!({"scope":"actual isolated regtest notes from trusted local Zebra; not standard testnet",
         "height":scanner.height(),"decrypted_unspent_native_notes":private["notes"].as_array().unwrap().len(),
-        "balance_zatoshi":balance,"all_native_paths_match_node_tree":true,"private_keys_or_openings_logged":false,
+        "balance_zatoshi":balance,"spent_native_notes":scanner.notes().values().filter(|n|n.spent_in.is_some()).count(),"all_native_paths_match_node_tree":true,"private_keys_or_openings_logged":false,
         "funding_observations_fabricated":false,"chain_inclusion_source":"pinned local full node RPC, not an SPV proof"})
     );
     Ok(())

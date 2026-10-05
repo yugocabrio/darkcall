@@ -47,7 +47,10 @@ def copy_bundle(source_path, name):
     original_mpc = pathlib.Path(result['run']).resolve()
     if not original_mpc.is_relative_to(local.resolve()):
         raise RuntimeError('MPC source must be an ignored local run')
-    names = ['synthetic-transaction.bin', 'native-public.json'] + [f'native-binding-proof-{i}' for i in range(6)]
+    transaction_names = [n for n in ['synthetic-transaction.bin', 'regtest-transaction.bin'] if (source / n).exists()]
+    if len(transaction_names) != 1:
+        raise RuntimeError('Expected exactly one explicit transaction artifact')
+    names = [transaction_names[0], 'native-public.json'] + [f'native-binding-proof-{i}' for i in range(6)]
     for name in names:
         shutil.copyfile(source / name, dest / name)
     for name in ['vk', 'proof.0', 'public-input0', 'tampered-price', 'tampered-plan', 'tampered-row']:
@@ -68,7 +71,7 @@ def main():
     summary = {'public_only_replay': run(dest), 'private_artifacts_copied': False,
                'original_private_directory_required': False,
                'source': source.name, 'directory': dest.name, 'tampering': {}}
-    tx_path = dest / 'synthetic-transaction.bin'
+    tx_path = next(dest / n for n in ['synthetic-transaction.bin', 'regtest-transaction.bin'] if (dest / n).exists())
     original = tx_path.read_bytes()
     try:
         tx_path.write_bytes(original + b'\x00')

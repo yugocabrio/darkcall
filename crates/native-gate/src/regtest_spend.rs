@@ -11,7 +11,7 @@ use std::{
 use zcash_protocol::consensus::{BlockHeight, NetworkType};
 const GENESIS: &str = "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327";
 #[derive(Clone, Copy)]
-struct Regtest;
+pub(super) struct Regtest;
 impl Parameters for Regtest {
     fn network_type(&self) -> NetworkType {
         NetworkType::Regtest
@@ -33,29 +33,31 @@ impl Parameters for Regtest {
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Opening {
-    cmx: [u8; 32],
-    txid: [u8; 32],
-    action_index: u32,
-    mined_height: u32,
-    mined_block: [u8; 32],
-    recipient: Vec<u8>,
-    amount: u64,
-    rho: [u8; 32],
-    rseed: [u8; 32],
-    position: u32,
-    auth_path: [[u8; 32]; 32],
+pub(super) struct Opening {
+    #[serde(default = "old_coinbase")]
+    pub coinbase: bool,
+    pub cmx: [u8; 32],
+    pub txid: [u8; 32],
+    pub action_index: u32,
+    pub mined_height: u32,
+    pub mined_block: [u8; 32],
+    pub recipient: Vec<u8>,
+    pub amount: u64,
+    pub rho: [u8; 32],
+    pub rseed: [u8; 32],
+    pub position: u32,
+    pub auth_path: [[u8; 32]; 32],
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct WalletNotes {
-    scope: String,
-    genesis: String,
-    nu6_3_height: u32,
-    tip_height: u32,
-    tip_hash: String,
-    anchor: [u8; 32],
-    notes: Vec<Opening>,
+pub(super) struct WalletNotes {
+    pub scope: String,
+    pub genesis: String,
+    pub nu6_3_height: u32,
+    pub tip_height: u32,
+    pub tip_hash: String,
+    pub anchor: [u8; 32],
+    pub notes: Vec<Opening>,
 }
 fn ignored(path: &Path) -> Result<PathBuf> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -69,7 +71,7 @@ fn ignored(path: &Path) -> Result<PathBuf> {
     }
     Ok(path)
 }
-fn read_private(path: &Path, limit: u64) -> Result<Vec<u8>> {
+pub(super) fn read_private(path: &Path, limit: u64) -> Result<Vec<u8>> {
     ignored(path)?;
     let mut options = fs::OpenOptions::new();
     options.read(true);
@@ -95,7 +97,7 @@ fn read_private(path: &Path, limit: u64) -> Result<Vec<u8>> {
         .map_err(|e| error("private read", e))?;
     Ok(bytes)
 }
-fn wallet_key(path: &Path) -> Result<SpendingKey> {
+pub(super) fn wallet_key(path: &Path) -> Result<SpendingKey> {
     let bytes: [u8; 32] = read_private(&path.join("private-spending-key.bin"), 32)?
         .try_into()
         .map_err(|_| "native key length")?;
@@ -103,7 +105,7 @@ fn wallet_key(path: &Path) -> Result<SpendingKey> {
         .into_option()
         .ok_or("invalid native key".into())
 }
-fn write_private(path: &Path, bytes: &[u8]) -> Result<()> {
+pub(super) fn write_private(path: &Path, bytes: &[u8]) -> Result<()> {
     let mut options = fs::OpenOptions::new();
     options.write(true).create_new(true);
     #[cfg(unix)]
@@ -116,53 +118,22 @@ fn write_private(path: &Path, bytes: &[u8]) -> Result<()> {
         .and_then(|_| f.sync_all())
         .map_err(|e| error("private output sync", e))
 }
-pub fn build(
-    wallet: &Path,
-    openings: &Path,
-    recipient_wallet: &Path,
-    name: &str,
-) -> Result<serde_json::Value> {
-    let start = Instant::now();
-    if name.is_empty()
-        || name.len() > 80
-        || !name
-            .bytes()
-            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
-    {
-        return Err("expected a new simple local run name".into());
-    }
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap();
-    let out = root.join(".local").join(name);
-    if out.try_exists().map_err(|e| error("output path", e))? {
-        return Err("regtest output already exists; choose a new run name".into());
-    }
-    let key = wallet_key(wallet)?;
-    let fvk = FullViewingKey::from(&key);
-    let receiver = FullViewingKey::from(&wallet_key(recipient_wallet)?);
-    let state: WalletNotes = serde_json::from_slice(&read_private(openings, 1_000_000)?)
-        .map_err(|e| error("private notes", e))?;
-    if state.scope != "isolated regtest wallet openings"
-        || state.genesis != GENESIS
-        || state.nu6_3_height != 2
-        || state.tip_height < 102
-        || state.notes.is_empty()
-        || state.notes.len() > 500
-    {
-        return Err("unsupported regtest funding state".into());
-    }
-    let opening = &state.notes[0];
-    if state.tip_height
-        < opening
-            .mined_height
-            .checked_add(100)
-            .ok_or("maturity height overflow")?
-    {
-        return Err("regtest coinbase has not matured".into());
-    }
+fn old_coinbase() -> bool {
+    true
+}
+pub(super) struct Source {
+    pub key: SpendingKey,
+    pub fvk: FullViewingKey,
+    pub note: Note,
+    pub path: MerklePath,
+    pub state: WalletNotes,
+    pub opening_index: usize,
+}
+pub(super) fn reconstruct(
+    opening: &Opening,
+    fvk: &FullViewingKey,
+    anchor_bytes: &[u8; 32],
+) -> Result<(Note, MerklePath)> {
     let recipient_bytes: [u8; 43] = opening
         .recipient
         .as_slice()
@@ -171,7 +142,9 @@ pub fn build(
     let recipient = orchard::Address::from_raw_address_bytes(&recipient_bytes)
         .into_option()
         .ok_or("invalid funding recipient")?;
-    if recipient != fvk.address_at(0u32, Scope::External) {
+    if recipient != fvk.address_at(0u32, Scope::External)
+        && recipient != fvk.address_at(1u32, Scope::Internal)
+    {
         return Err("funding note belongs to another wallet".into());
     }
     let rho = Rho::from_bytes(&opening.rho)
@@ -205,9 +178,95 @@ pub fn build(
         nodes.try_into().map_err(|_| "path depth")?,
     );
     let anchor = path.root(note.commitment().into());
-    if anchor.to_bytes() != state.anchor {
+    if anchor.to_bytes() != *anchor_bytes {
         return Err("funding witness differs from scanned canonical anchor".into());
     }
+    Ok((note, path))
+}
+pub(super) fn load_source(wallet: &Path, openings: &Path) -> Result<Source> {
+    let key = wallet_key(wallet)?;
+    let fvk = FullViewingKey::from(&key);
+    let state: WalletNotes = serde_json::from_slice(&read_private(openings, 1_000_000)?)
+        .map_err(|e| error("private notes", e))?;
+    if state.scope != "isolated regtest wallet openings"
+        || state.genesis != GENESIS
+        || state.nu6_3_height != 2
+        || state.tip_height < 2
+        || state.notes.is_empty()
+        || state.notes.len() > 500
+    {
+        return Err("unsupported regtest funding state".into());
+    }
+    let opening = state
+        .notes
+        .iter()
+        .find(|n| {
+            let owned = [
+                fvk.address_at(0u32, Scope::External),
+                fvk.address_at(1u32, Scope::Internal),
+            ]
+            .iter()
+            .any(|a| a.to_raw_address_bytes().as_slice() == n.recipient.as_slice());
+            owned && (!n.coinbase || state.tip_height >= n.mined_height.saturating_add(100))
+        })
+        .ok_or("no spendable known native funding note")?;
+    if opening.coinbase
+        && state.tip_height
+            < opening
+                .mined_height
+                .checked_add(100)
+                .ok_or("maturity height overflow")?
+    {
+        return Err("regtest coinbase has not matured".into());
+    }
+    let (note, path) = reconstruct(opening, &fvk, &state.anchor)?;
+    let opening_index = state
+        .notes
+        .iter()
+        .position(|n| n.cmx == opening.cmx)
+        .ok_or("source index")?;
+    Ok(Source {
+        key,
+        fvk,
+        note,
+        path,
+        state,
+        opening_index,
+    })
+}
+pub fn build(
+    wallet: &Path,
+    openings: &Path,
+    recipient_wallet: &Path,
+    name: &str,
+) -> Result<serde_json::Value> {
+    let start = Instant::now();
+    if name.is_empty()
+        || name.len() > 80
+        || !name
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+    {
+        return Err("expected a new simple local run name".into());
+    }
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let out = root.join(".local").join(name);
+    if out.try_exists().map_err(|e| error("output path", e))? {
+        return Err("regtest output already exists; choose a new run name".into());
+    }
+    let source = load_source(wallet, openings)?;
+    let key = source.key;
+    let fvk = source.fvk;
+    let note = source.note;
+    let path = source.path;
+    let anchor = path.root(note.commitment().into());
+    let state = source.state;
+    let opening = &state.notes[source.opening_index];
+    let receiver = FullViewingKey::from(&wallet_key(recipient_wallet)?);
     let amount = 1_000_000u64;
     let fee = 10_000u64;
     let change = opening

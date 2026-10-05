@@ -31,6 +31,7 @@ def main():
     parser.add_argument('--native-run', type=pathlib.Path, required=True)
     parser.add_argument('--hash', choices=['sha', 'poseidon'], default='sha')
     parser.add_argument('--result-file', type=pathlib.Path)
+    parser.add_argument('--receiver-openings', type=pathlib.Path)
     args = parser.parse_args()
     circuit_name = 'settlement4' if args.hash == 'sha' else 'settlement_poseidon4'
     circuit_path = ROOT / f'circuits/{circuit_name}/target/darkcall_{circuit_name}.json'
@@ -104,7 +105,12 @@ def main():
 
     record('native-proof-verification', [['--verify-export',native]], binary=native_binary)
     summary['native_row_proof_verified'] = True
-    record('plan-fixture', [['plan-fixture',book/'book.json',native/'native-private-rows.json',run/'plan']], binary=INPUT)
+    plan_command = ['plan-fixture', book/'book.json', native/'native-private-rows.json', run/'plan']
+    if args.receiver_openings is not None:
+        if not args.receiver_openings.resolve().is_relative_to(ROOT / '.local'):
+            raise RuntimeError('Receiver openings must stay ignored')
+        plan_command.append(args.receiver_openings.resolve())
+    record('plan-fixture', [plan_command], binary=INPUT)
     record('trusted-client-vk', [['create-vk','--circuit',CLIENT,'--crs',CRS/'bn254_g1.dat','--hasher','poseidon2','--vk',run/'client-vk']])
     record('client-proof-verification', [['verify','--proof',book/f'client{i}/proof_plaindriver',
         '--public-input',book/f'client{i}/public_inputs_plaindriver','--vk',run/'client-vk',

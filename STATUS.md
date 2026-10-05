@@ -1,8 +1,29 @@
 # DarkCall status
 
-Updated: 2026-10-05 01:48 UTC.
+Updated: 2026-10-05 02:10 UTC.
 
 ## Current outcome
+
+Four actual isolated-regtest deposits now pass authenticated admission. A native
+bank transaction delivered four encrypted 15,100-zatoshi deposit outputs;
+18,634 bytes, five actions, fee 25,000, native proof 7.851s, construction 9.540s.
+The escrow SDK scanner verified all four unspent notes and canonical witnesses.
+Each client claim, all four client ZK proofs and 12 delivered pairs were rechecked
+before 12 durable operator receipts. Admission occurred before the original
+wall-clock cutoff; afterward all three operators certified exactly the persisted
+book. Deposit construction does not read maximum bids. All actors are local;
+the bank batches deposits and the prototype still uses fixed fixture tickets and
+tiny fixture budgets. This is real regtest funding, not independent client funding.
+
+**The funded four-input auction run is active**, session 8491, private log
+`.local/regtest-auction4-gate.log`, output `.local/regtest-auction4-20261005`.
+It passed private refund delivery and is generating native bindings. No auction
+settlement broadcast or finality is claimed yet. Source deposits:
+`.local/regtest-deposit4-20261005`; receipts/manifest/journals:
+`.local/regtest-deposit4-20261005-admission`; actual notes at height 108.
+Only one native prover runs. Do not rebuild/overwrite artifacts it is reading,
+reset the node, or start another native prover alongside it.
+
 
 Actual isolated-regtest chain funding and threshold spending now pass. A pinned
 Zebra 6.3.0 node accepted a native v6/Ironwood transaction spending a matured
@@ -29,7 +50,8 @@ before 2-of-3 FROST signing, generated the Ironwood consensus proof, extracted a
 verified the transaction, and decrypted all six recipients. Total 1167.489s;
 21,790 bytes, 4 inputs / 6 outputs, standard fee 30,000.
 
-**Funding notes and anchors are fabricated. Never broadcast these transactions.**
+**The earlier offline integration has fabricated funding/anchors. Never broadcast
+those earlier synthetic transactions.**
 This is an offline synthetic gate, not a chain-funded auction. The original signed
 run predates receipt authentication; the later certified public replay authenticates
 accepted instructions/recipients under an explicit test manifest. All REP3
@@ -40,8 +62,9 @@ Reference commits: 1bd72df (private-delivery native settlement) and 86efe25
 current head. The new all-three final-book certificate now links exact accepted
 entries and all six recipient commitments to the actual MPC public statement.
 Certified public-only native/MPC replay passed in 125.697s with seven altered
-signature/authority/book/recipient cases rejected. Funding admission remains
-synthetic; this is not a chain-funded auction or a public proof of funding.
+signature/authority/book/recipient cases rejected. Funding admission in that historical certified replay was
+synthetic; the newer actual-regtest admission is recorded above. Its operator
+endorsements still are not a public funding proof.
 
 ## Active jobs and next action
 
@@ -71,13 +94,14 @@ binding, root equivocation after restart, malformed MPC inputs and reorg pauses.
 Selected core/input/native/wallet regressions pass (33); strict workspace all-target
 clippy and Python syntax checks pass.
 
-Next highest priority: connect four actual fixed-budget deposits with encrypted
-client claims to durable acceptance receipts, the certified MPC book and native
-settlement signing on this isolated chain. Keep investigating public-testnet
-compatibility separately. The local node is running with persistent ignored
-state, 2 CPUs / 2 GiB, RPC bound only to 127.0.0.1:29332, native branch 37a5165b.
-Funding/spend/regression/clippy jobs completed; no native prover is running.
-Do not reset its chain or wallets. The human has no alternative public endpoint.
+Next highest priority: finish the active actual-funded auction, verify canonical
+broadcast and all six separate recipient wallet scans, reconcile consumed funding
+and three journal reservations, then replay its public-only certified artifacts.
+The node remains at height 108 with pinned branch 37a5165b. Keep public-testnet
+compatibility separate and do not relax its unknown-branch guard. New claims and
+receipt wire encodings support private transport/restart with strict signature,
+quorum and canonical commitment checks. Selected regressions pass (34), workspace
+all-target strict clippy passes. Final transport assertions and strict workspace clippy also pass.
 
 ## Measurements and evidence
 

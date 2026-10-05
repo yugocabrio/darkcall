@@ -20,10 +20,11 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Four separate synthetic input files, joint witness/proof and standalone coNoir
     verification passed. Matching C++ Barretenberg verification also passed, with
     the trusted key matching exactly and altered price/root rejected.
-- [ ] P0.3 Validate shares against bid commitments; reject bad shares and duplicate tickets.
+- [x] P0.3 Validate shares against bid commitments; reject bad shares and duplicate tickets.
   - Client ZK proofs bind bid openings to all three share-pair hashes. All 12
     delivered pairs and the committed MPC root verified in the synthetic gate;
-    changed shares, price and root were rejected. Signed acceptance/funding is next.
+    changed shares, price and root were rejected. Four actual-regtest deposits now
+    repeat all client/pair checks before authenticated durable acceptance.
 - [x] P0.4 Pin the Ironwood/PCZT/FROST stack; offline native transaction and signature tests.
   - Source pinned; upstream's 3 v6 sighash regression tests pass. Own transaction
     construction, native proofs, threshold signatures, extraction and 6 recipient
@@ -82,7 +83,7 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Fresh private field masks, mask commitments and normal C++ verification
     passed. Operators learn individual refunds; values stay out of public proofs.
 - [ ] Deliver winner flags for zero-price auctions before supporting that full flow.
-- [ ] Signed acceptance receipts and consistent final root.
+- [x] Signed acceptance receipts and consistent final root for the four-ticket gate.
   - Three distinct application Ed25519 keys endorse identical authenticated
     instructions. Per-ticket fsynced locks reject equivocation after restart.
     All-three final certificates now check complete frozen local funding and
@@ -90,8 +91,11 @@ autonomously, incorporate later human/ChatGPT reviews.
     and match all accepted entries/root and six recipient commitments to actual
     MPC public inputs. Certified public-only native/MPC replay passes (125.697s),
     with seven changed authority/signature/intent/book/root/recipient cases rejected.
-    Live funding/client-proof/deadline admission and pre-FROST receipt enforcement
-    remain; this is operator attestation, not a public funding proof.
+    Four actual-regtest deposits now pass client-proof/pair admission before the
+    real wall-clock cutoff, durable signed receipts and post-cutoff certification.
+    Private wire receipts reload and reverify all signatures. Pre-FROST enforcement
+    is in the active funded run; independent operators and broader recovery remain.
+    These signatures attest admission, not a public funding proof.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.
   - Actual four-input/FROST transaction passed all six native/MPC row checks,
     signing/extraction and recipient decryption. First run uses oracle fixture

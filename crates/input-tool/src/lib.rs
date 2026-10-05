@@ -90,3 +90,22 @@ pub fn four_active_root(
         fields.try_into().map_err(|_| "commitment count")?,
     )))
 }
+
+/// Exactly the receiver commitment consumed by the settlement circuit. The
+/// nonce is a canonical BN254 field encoding, supplied privately by the client.
+pub fn receiver_commitment(
+    context: Fr,
+    ticket: &[u8; 32],
+    role: u32,
+    gd: &[u8; 32],
+    pkd: &[u8; 32],
+    nonce: &[u8; 32],
+) -> Result<[u8; 32], String> {
+    let mut fields = vec![domain(b"DarkCall/receiver/v1"), context];
+    fields.extend(limbs(ticket));
+    fields.push(Fr::from(role));
+    fields.extend(limbs(gd));
+    fields.extend(limbs(pkd));
+    fields.push(canonical_field(nonce)?);
+    Ok(field_bytes(hash(&fields)))
+}

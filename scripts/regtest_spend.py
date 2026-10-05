@@ -10,6 +10,7 @@ import pathlib
 import subprocess
 from regtest_node import ROOT, GENESIS, rpc, status
 from regtest_funding import tree
+from regtest_deposits import verify_note
 
 NATIVE = ROOT / 'target/release/darkcall-native-gate'
 WALLET = ROOT / 'target/release/examples/regtest_wallet'
@@ -30,17 +31,11 @@ def main():
     state = rpc('z_gettreestate', [s['tip']])
     if bytes(notes['anchor']).hex() != state['ironwood']['commitments']['finalRoot']:
         raise RuntimeError('Source anchor differs from actual full-node root')
-    note = notes['notes'][0]
-    block_hash = bytes(note['mined_block'])[::-1].hex()
-    if rpc('getblockhash', [note['mined_height']]) != block_hash:
-        raise RuntimeError('Source note block is not canonical')
-    txid = bytes(note['txid'])[::-1].hex()
-    block = rpc('getblock', [block_hash, 2])
-    tx = next(t for t in block['tx'] if t['txid'] == txid)
-    if tx['ironwood']['actions'][note['action_index']]['cmx'] != bytes(note['cmx']).hex():
-        raise RuntimeError('Source cmx differs from actual mined output')
-    if tx['confirmations'] < 101:
-        raise RuntimeError('Source coinbase has not matured')
+    bank = json.loads(subprocess.check_output([str(WALLET), 'init', str(args.source_wallet)], cwd=ROOT, text=True))
+    note = next(n for n in notes['notes']
+        if n['recipient'] in [bank['receiver'], bank['internal_receiver']]
+        and (not n.get('coinbase', True) or s['blocks'] >= n['mined_height'] + 100))
+    verify_note(note)
     recipient = ROOT / '.local' / (args.name + '-recipient')
     subprocess.check_output([str(WALLET), 'init', str(recipient)], cwd=ROOT, text=True)
     checkpoint = tree(state)
@@ -64,6 +59,9 @@ def main():
     if status()['tip'] != s['tip']:
         raise RuntimeError('Local chain changed during construction; reconcile before broadcast')
     directory = ROOT / '.local' / args.name
+    provenance = json.loads((directory / 'private-provenance.json').read_text())
+    if provenance['source_cmx'] != note['cmx']:
+        raise RuntimeError('Native builder selected another source note')
     binary = (directory / 'regtest-transaction.bin').read_bytes()
     # This call is hardwired to loopback and preceded by genesis/upgrade/source
     # guards. Do not use this script for mainnet or external testnet custody.

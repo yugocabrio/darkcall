@@ -1,0 +1,59 @@
+{
+  "scope": "actual isolated-regtest four deposits and timely authenticated admission; fixed fixture terms and ticket IDs",
+  "native_construction": {
+    "broadcast": false,
+    "client_signatures_generated": 4,
+    "custody_setup": "local trusted dealer; retained full bank/escrow keys",
+    "deposit_outputs": 4,
+    "deposit_value": 15100,
+    "fee": 25000,
+    "keys_or_memos_logged": false,
+    "maximum_bids_read": false,
+    "native_actions": 5,
+    "native_proof_and_signatures_verified": true,
+    "proof_seconds": 7.850517042,
+    "scope": "four actual-regtest encrypted claim deposits; fixture tickets",
+    "seconds": 9.539800333,
+    "transaction_bytes": 18634,
+    "txid": "16517269f29696330fe1ffebad68861581c463ff93e180cf9c857d74edfe78bb"
+  },
+  "full_node_accepted": true,
+  "canonical_confirmations": 2,
+  "actual_scanner_native_paths_match_node": true,
+  "admission": {
+    "accepted_root_matches": true,
+    "actual_wall_clock_admission_cutoff_checked": true,
+    "canonical_chain_and_unspent_checks": "Python driver + SDK scanner; trusted local full-node RPC",
+    "client_claim_signatures_verified": 4,
+    "client_zk_proofs_reverified": 4,
+    "delivered_share_pairs_reverified": 12,
+    "final_book_signed": false,
+    "funding_observations_fabricated": false,
+    "maximum_bids_read": false,
+    "native_settlement_broadcast": false,
+    "operator_receipt_signatures": 12,
+    "receipt_locks_fsynced": true,
+    "scope": "four actual scanned regtest deposit claims admitted; fixture tickets"
+  },
+  "certificate": {
+    "actual_wall_clock_cutoff_checked": true,
+    "final_book_signatures": 3,
+    "receipt_quorums_reverified": 4,
+    "scope": "chain-admission operator certificate; not a public funding proof"
+  },
+  "checks": {
+    "selected_regressions": 34,
+    "workspace_strict_clippy": "passed including final transport assertions"
+  },
+  "funded_auction_settlement": "running; not yet claimed",
+  "limitations": [
+    "All clients and three operators on one host.",
+    "Deposits batched from one local bank, not independent bidder funding.",
+    "Retained full escrow key; trusted dealer, no DKG.",
+    "Trusted local full-node inclusion; two controlled confirmations, not public-chain finality.",
+    "Fixture budget 100 zatoshi and fee 15000; not product-sized economics.",
+    "Fixture ticket IDs are fixed, not the proposed funding-derived ticket rule."
+  ],
+  "initial_error_and_recovery": "The node accepted deposits. Python inspection assumed nonempty transparent vin and stopped. Fixed shielded-only empty-vin handling, rechecked all four actual notes and admitted them before the ORIGINAL declared cutoff; no additional deposits or changed deadline.",
+  "private_files_or_keys_committed": false
+}

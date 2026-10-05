@@ -29,6 +29,9 @@ pub struct OwnedNote {
     pub mined_height: u32,
     pub mined_block: [u8; 32],
     pub scope: Scope,
+    /// Index zero in a consensus-validated full block is its coinbase. Compact
+    /// metadata alone is not consensus evidence; the provider remains trusted.
+    pub coinbase: bool,
     pub spent_in: Option<([u8; 32], u32)>,
     nullifier: [u8; 32],
     witness: Witness,
@@ -233,6 +236,7 @@ impl Scanner {
                                 mined_height: height,
                                 mined_block: block_hash,
                                 scope: *scope,
+                                coinbase: tx.index == 0,
                                 spent_in: None,
                                 nullifier,
                                 witness: Witness::from_tree(self.tree.clone())

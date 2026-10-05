@@ -20,6 +20,8 @@ pub struct Integration {
     pub directory: PathBuf,
     pub context: NativeContext,
     pub delivery: Delivery,
+    pub receiver_openings: Option<PathBuf>,
+    pub funding_is_synthetic: bool,
 }
 
 pub struct Delivery {
@@ -183,6 +185,8 @@ impl Integration {
             directory,
             context,
             delivery,
+            receiver_openings: None,
+            funding_is_synthetic: true,
         })
     }
 
@@ -238,24 +242,26 @@ impl Integration {
         }
         // Release the large proving key before independent public verification.
         drop(prover);
-        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":true,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false});
+        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false});
         fs::write(
             self.directory.join("native-proof-summary.json"),
             serde_json::to_vec_pretty(&summary).map_err(|e| fail("summary encode", e))?,
         )
         .map_err(|e| fail("summary write", e))?;
         eprintln!("Integrated committed-input MPC verification started");
-        checked(
-            Command::new("python3")
-                .arg(self.root.join("scripts/run_settlement_gate.py"))
-                .arg("--book-run")
-                .arg(&self.book)
-                .arg("--native-run")
-                .arg(&self.directory)
-                .args(["--hash", "poseidon", "--result-file"])
-                .arg(self.directory.join("mpc-result.json")),
-            &self.directory.join("mpc-gate.log"),
-        )?;
+        let mut command = Command::new("python3");
+        command
+            .arg(self.root.join("scripts/run_settlement_gate.py"))
+            .arg("--book-run")
+            .arg(&self.book)
+            .arg("--native-run")
+            .arg(&self.directory)
+            .args(["--hash", "poseidon", "--result-file"])
+            .arg(self.directory.join("mpc-result.json"));
+        if let Some(path) = &self.receiver_openings {
+            command.arg("--receiver-openings").arg(path);
+        }
+        checked(&mut command, &self.directory.join("mpc-gate.log"))?;
         let result: serde_json::Value = serde_json::from_slice(
             &fs::read(self.directory.join("mpc-result.json"))
                 .map_err(|e| fail("MPC result read", e))?,
@@ -385,7 +391,15 @@ pub fn verify_public(directory: &Path, authority: Option<&Path>) -> Result<serde
             .verify_statement(&encoded, &manifest)
             .map_err(|e| fail("certified MPC acceptance", e))?;
     }
-    let bytes = read("synthetic-transaction.bin", 1000000)?;
+    let transaction_name = match (
+        directory.join("synthetic-transaction.bin").exists(),
+        directory.join("regtest-transaction.bin").exists(),
+    ) {
+        (true, false) => "synthetic-transaction.bin",
+        (false, true) => "regtest-transaction.bin",
+        _ => return Err("expected exactly one explicit transaction artifact".into()),
+    };
+    let bytes = read(transaction_name, 1000000)?;
     let mut cursor = std::io::Cursor::new(&bytes);
     let tx = Transaction::read(&mut cursor, BranchId::Nu6_3)
         .map_err(|e| fail("transaction parse", e))?;
@@ -492,7 +506,7 @@ pub fn verify_public(directory: &Path, authority: Option<&Path>) -> Result<serde
     link_four_bid_statements(&hashes, &statement.bindings(), &actual)
         .map_err(|_| "MPC/public transaction mismatch")?;
     Ok(
-        serde_json::json!({"scope":"public-only offline transaction/application-proof replay","private_openings_read":false,"native_proof_and_signatures_verified":true,"native_row_proofs_verified":true,"normal_cpp_auction_proof_verified":true,"actual_transaction_outputs_match":true,"hash_rule":HASH_RULE,"txid":tx.txid().to_string(),"transaction_bytes":bytes.len(),"chain_funding_or_finality_verified":false,"acceptance_or_recipient_receipts_authenticated":authority.is_some(),"acceptance_authentication_scope":"all-three operator attestation; not a public funding proof","seconds":started.elapsed().as_secs_f64()}),
+        serde_json::json!({"scope":"public-only transaction/application-proof replay; chain inclusion checked separately","private_openings_read":false,"native_proof_and_signatures_verified":true,"native_row_proofs_verified":true,"normal_cpp_auction_proof_verified":true,"actual_transaction_outputs_match":true,"hash_rule":HASH_RULE,"txid":tx.txid().to_string(),"transaction_bytes":bytes.len(),"chain_funding_or_finality_verified":false,"acceptance_or_recipient_receipts_authenticated":authority.is_some(),"acceptance_authentication_scope":"all-three operator attestation; not a public funding proof","seconds":started.elapsed().as_secs_f64()}),
     )
 }
 

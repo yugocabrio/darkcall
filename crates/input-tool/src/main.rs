@@ -191,14 +191,41 @@ fn validate_rows(book: &Book, encoded: &[Vec<u8>]) -> Result<[Row; 6]> {
 
 // Offline glue only. It never reads or reconstructs any bidder's maximum bid.
 // Authenticating recipient commitments against real receipts is separate work.
-fn plan_fixture(book: &Book, row_path: &Path, out: &Path) -> Result<()> {
+fn plan_fixture(
+    book: &Book,
+    row_path: &Path,
+    out: &Path,
+    receiver_openings: Option<&Path>,
+) -> Result<()> {
     if fs::metadata(row_path)?.len() > 32768 {
         return Err("native row file too large".into());
     }
     let encoded: Vec<Vec<u8>> = serde_json::from_slice(&fs::read(row_path)?)?;
     let rows = validate_rows(book, &encoded)?;
     let mut rng = rand::thread_rng();
-    let nonces: [Fr; 6] = std::array::from_fn(|_| <Fr as ark_ff::UniformRand>::rand(&mut rng));
+    let nonces: [Fr; 6] = if let Some(path) = receiver_openings {
+        if fs::metadata(path)?.len() > 16384 {
+            return Err("receiver openings too large".into());
+        }
+        let input: serde_json::Value = serde_json::from_slice(&fs::read(path)?)?;
+        let items = input
+            .as_array()
+            .ok_or("receiver openings must be a six-item list")?;
+        if items.len() != 6 {
+            return Err("receiver opening count".into());
+        }
+        items
+            .iter()
+            .map(|item| {
+                let bytes: [u8; 32] = serde_json::from_value(item["nonce"].clone())?;
+                darkcall_input_tool::canonical_field(&bytes).map_err(Into::into)
+            })
+            .collect::<Result<Vec<_>>>()?
+            .try_into()
+            .map_err(|_| "receiver nonce count")?
+    } else {
+        std::array::from_fn(|_| <Fr as ark_ff::UniformRand>::rand(&mut rng))
+    };
     let receivers: [String; 6] = std::array::from_fn(|i| {
         let row = &rows[i];
         let mut fields = vec![domain(b"DarkCall/receiver/v1"), book.context()];
@@ -606,9 +633,9 @@ fn main() -> Result<()> {
             let book: Book = serde_json::from_slice(&fs::read(&args[1])?)?;
             fs::write(&args[2], serde_json::to_vec_pretty(&book.native_context()?)?)?;
         },
-        Some("plan-fixture") if args.len()==4 => {
+        Some("plan-fixture") if args.len()==4 || args.len()==5 => {
             let book: Book = serde_json::from_slice(&fs::read(&args[1])?)?;
-            plan_fixture(&book, Path::new(&args[2]), Path::new(&args[3]))?;
+            plan_fixture(&book, Path::new(&args[2]), Path::new(&args[3]), args.get(4).map(Path::new))?;
         },
         Some("link-plan") if args.len()==4 => {
             let book: Book = serde_json::from_slice(&fs::read(&args[1])?)?;

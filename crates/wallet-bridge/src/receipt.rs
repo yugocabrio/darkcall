@@ -85,7 +85,31 @@ pub struct Receipt {
     operator: usize,
     signature: Signature,
 }
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WireReceipt {
+    pub payload: Payload,
+    pub operator: usize,
+    pub signature: Vec<u8>,
+}
 impl Receipt {
+    pub fn to_wire(&self) -> WireReceipt {
+        WireReceipt {
+            payload: self.payload.clone(),
+            operator: self.operator,
+            signature: self.signature.to_bytes().to_vec(),
+        }
+    }
+    pub fn from_wire(wire: WireReceipt, operators: &Operators, context: &Context) -> Result<Self> {
+        let receipt = Self {
+            payload: wire.payload,
+            operator: wire.operator,
+            signature: Signature::from_slice(&wire.signature)
+                .map_err(|_| "receipt signature length")?,
+        };
+        receipt.verify(operators, context)?;
+        Ok(receipt)
+    }
     /// Issue after chain confirmation, client ZK and this node's delivered-pair
     /// checks caused the exact registration to be accepted in the journal.
     /// A client intent signature by itself is insufficient admission.
@@ -157,6 +181,24 @@ pub struct AcceptedReceipt {
     receipts: [Receipt; 3],
 }
 impl AcceptedReceipt {
+    pub fn to_wire(&self) -> [WireReceipt; 3] {
+        self.receipts.each_ref().map(Receipt::to_wire)
+    }
+    pub fn from_wire(
+        wire: [WireReceipt; 3],
+        operators: &Operators,
+        context: &Context,
+    ) -> Result<Self> {
+        let receipts = wire
+            .into_iter()
+            .map(|r| Receipt::from_wire(r, operators, context))
+            .collect::<Result<Vec<_>>>()?;
+        Self::combine(
+            receipts.try_into().map_err(|_| "receipt quorum length")?,
+            operators,
+            context,
+        )
+    }
     pub fn combine(
         mut receipts: [Receipt; 3],
         operators: &Operators,
@@ -263,6 +305,23 @@ mod tests {
         });
         let accepted = AcceptedReceipt::combine(receipts.clone(), &operators, &context()).unwrap();
         assert_eq!(accepted.payload().ticket, claim.registration().ticket);
+        let encoded = serde_json::to_vec(&accepted.to_wire()).unwrap();
+        let restored = AcceptedReceipt::from_wire(
+            serde_json::from_slice(&encoded).unwrap(),
+            &operators,
+            &context(),
+        )
+        .unwrap();
+        assert_eq!(restored.payload().ticket, accepted.payload().ticket);
+        let mut changed = accepted.to_wire();
+        changed[0].payload.refund_receiver_commitment[31] ^= 1;
+        assert!(AcceptedReceipt::from_wire(changed, &operators, &context()).is_err());
+        let mut changed = accepted.to_wire();
+        changed[1] = changed[0].clone();
+        assert!(AcceptedReceipt::from_wire(changed, &operators, &context()).is_err());
+        let mut changed = accepted.to_wire();
+        changed[0].signature.pop();
+        assert!(AcceptedReceipt::from_wire(changed, &operators, &context()).is_err());
         let mut journal = Journal::open(&f.journal(0), &context()).unwrap();
         let repeated = Receipt::issue(&mut journal, &claim, &operators, 0, &keys[0]).unwrap();
         repeated.verify(&operators, &context()).unwrap();
