@@ -92,6 +92,7 @@ def main():
     parser.add_argument('private_notes', type=pathlib.Path)
     parser.add_argument('book_run', type=pathlib.Path)
     parser.add_argument('--name', required=True)
+    parser.add_argument('--dkg', action='store_true', help='Create escrow through local three-participant DKG without a master spending key')
     args = parser.parse_args()
     if not args.name or len(args.name) > 50 or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in args.name):
         raise RuntimeError('Expected a fresh simple local run name')
@@ -119,7 +120,10 @@ def main():
         receivers.append({'receiver': actor['receiver'], 'nonce': list(nonce)})
     private_write(inputs / 'private-receivers.json', receivers)
     escrow = ROOT / '.local' / (args.name + '-escrow')
-    call(WALLET, 'init', escrow)
+    if args.dkg:
+        call(NATIVE, '--regtest-dkg-init', escrow.name)
+    else:
+        call(WALLET, 'init', escrow)
     initial = tree(node_tree)
     cutoff = int(time.time()) + 120
     private_write(inputs / 'declared-cutoff.json', {'closes_at_utc': cutoff})

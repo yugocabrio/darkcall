@@ -1,8 +1,29 @@
 # DarkCall status
 
-Updated: 2026-10-05 02:58 UTC.
+Updated: 2026-10-05 03:15 UTC.
 
 ## Current outcome
+
+**Local DKG escrow funding/admission now passes; full DKG settlement is running.**
+Three-party pinned RedPallas DKG creates matching 2-of-3 packages and an independent
+native FVK without an escrow SpendingKey/full ASK. All three two-party quorums
+verify; one-share/digest/operator substitutions reject. Separate private packages
+are fsynced and reloaded before publishing readiness; view-only scanner/admission
+reject incomplete setup or master-key aliases. Four actual native deposits into
+this escrow passed canonical witness checks, four client proofs/12 delivered
+pairs, 12 durable receipts and all-three post-cutoff final-book certification.
+This is still one host holding all three shares, not independent operator security.
+Evidence: evidence/2026-10-05-dkg-regtest-admission.json. Native/wallet regressions
+21 pass; strict all-target workspace release clippy passes. Verified private PCZT
+is now durably checkpointed before funding reservation; automatic resume remains.
+
+Active funded DKG settlement: session 77482, log .local/dkg-auction4.log. Source
+.local/regtest-dkg-deposit4-20261005 (confirmed/admitted; 43030 consumed), escrow
+.local/regtest-dkg-deposit4-20261005-escrow, book
+.local/mpc-auction4-20261004T231421Z, output .local/regtest-dkg-auction4-20261005.
+Node height 112. Keep it unchanged until this controlled gate finishes. Inspect
+this session/log before starting any other native prover. No DKG settlement or
+broadcast success claimed yet.
 
 **The isolated NU7 compatibility gate passes without changing the working
 NU6.3 workspace.** New pinned native SDK: synthetic NU7 v6 PCZT → full private-

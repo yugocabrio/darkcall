@@ -1,0 +1,94 @@
+{
+  "scope": "actual isolated-regtest DKG escrow deposit/admission; native settlement still pending",
+  "recorded_utc": "2026-10-05T03:11:00.533729+00:00",
+  "local_dkg": {
+    "threshold": "2-of-3",
+    "library_commit": "ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead",
+    "parts": [
+      1,
+      2,
+      3
+    ],
+    "all_three_group_packages_match": true,
+    "native_even_y_normalization": "pinned RedPallas DKG wrapper normalizes public and secret shares",
+    "escrow_spending_key_generated_or_retained": false,
+    "full_ask_reconstructed": false,
+    "full_viewing_key_exported": true,
+    "independent_hosts": false,
+    "authenticated_operator_transport": false,
+    "key_packages_durable_and_reloaded": true,
+    "file_count_operator_packages": 3
+  },
+  "actual_deposit_and_admission": {
+    "scope": "actual isolated regtest four-deposit admission; fixture clients/tickets/terms",
+    "native_construction": {
+      "broadcast": false,
+      "client_signatures_generated": 4,
+      "custody_setup": "local trusted dealer; retained full bank/escrow keys",
+      "deposit_outputs": 4,
+      "deposit_value": 15100,
+      "fee": 25000,
+      "keys_or_memos_logged": false,
+      "maximum_bids_read": false,
+      "native_actions": 5,
+      "native_proof_and_signatures_verified": true,
+      "proof_seconds": 15.7639925,
+      "scope": "four actual-regtest encrypted claim deposits; fixture tickets",
+      "seconds": 18.754367459,
+      "transaction_bytes": 18634,
+      "txid": "c74d148699afc22de0608f7b56d38d9ea174df101943d29e8671d623add59b48"
+    },
+    "full_node_accepted": true,
+    "canonical_confirmations": 2,
+    "escrow_scan": {
+      "all_native_paths_match_node_tree": true,
+      "balance_zatoshi": 60400,
+      "chain_inclusion_source": "pinned local full node RPC, not an SPV proof",
+      "decrypted_unspent_native_notes": 4,
+      "funding_observations_fabricated": false,
+      "height": 112,
+      "private_keys_or_openings_logged": false,
+      "scope": "actual isolated regtest notes from trusted local Zebra; not standard testnet",
+      "spent_native_notes": 0
+    },
+    "admission": {
+      "accepted_root_matches": true,
+      "actual_wall_clock_admission_cutoff_checked": true,
+      "canonical_chain_and_unspent_checks": "Python driver + SDK scanner; trusted local full-node RPC",
+      "client_claim_signatures_verified": 4,
+      "client_zk_proofs_reverified": 4,
+      "delivered_share_pairs_reverified": 12,
+      "final_book_signed": false,
+      "funding_observations_fabricated": false,
+      "maximum_bids_read": false,
+      "native_settlement_broadcast": false,
+      "operator_receipt_signatures": 12,
+      "receipt_locks_fsynced": true,
+      "scope": "four actual scanned regtest deposit claims admitted; fixture tickets"
+    },
+    "final_book_signed": true,
+    "funded_auction_settlement_broadcast": false,
+    "private_files_committed": false,
+    "certificate": {
+      "actual_wall_clock_cutoff_checked": true,
+      "final_book_signatures": 3,
+      "receipt_quorums_reverified": 4,
+      "scope": "chain-admission operator certificate; not a public funding proof"
+    }
+  },
+  "checks": {
+    "native_every_two_party_quorum": true,
+    "one_share_rejected": true,
+    "changed_digest_rejected": true,
+    "changed_operator_package_rejected": true,
+    "incomplete_viewing_setup_and_master_alias_rejected": true,
+    "native_wallet_regression_tests": 21,
+    "strict_workspace_release_all_target_clippy": true
+  },
+  "limitations": [
+    "All participants and every key share reside on one Mac; no independent custody security demonstration",
+    "Bank batches tiny fixture deposits; ticket IDs/conditions/budgets are fixed fixtures",
+    "Native DKG auction spend and public replay pending",
+    "No standard-public-testnet funding/broadcast"
+  ]
+}

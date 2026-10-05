@@ -3,5 +3,6 @@
 pub mod claim;
 pub mod final_book;
 pub mod journal;
+pub mod local_wallet;
 pub mod receipt;
 pub mod scanner;

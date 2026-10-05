@@ -105,6 +105,9 @@ pub(super) fn wallet_key(path: &Path) -> Result<SpendingKey> {
         .into_option()
         .ok_or("invalid native key".into())
 }
+pub(super) fn wallet_fvk(path: &Path) -> Result<FullViewingKey> {
+    darkcall_wallet_bridge::local_wallet::viewing_key(path)
+}
 pub(super) fn write_private(path: &Path, bytes: &[u8]) -> Result<()> {
     let mut options = fs::OpenOptions::new();
     options.write(true).create_new(true);
@@ -116,6 +119,13 @@ pub(super) fn write_private(path: &Path, bytes: &[u8]) -> Result<()> {
     let mut f = options.open(path).map_err(|e| error("private output", e))?;
     f.write_all(bytes)
         .and_then(|_| f.sync_all())
+        .and_then(|_| {
+            fs::File::open(
+                path.parent()
+                    .ok_or_else(|| std::io::Error::other("private output parent"))?,
+            )
+            .and_then(|parent| parent.sync_all())
+        })
         .map_err(|e| error("private output sync", e))
 }
 fn old_coinbase() -> bool {

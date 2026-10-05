@@ -1,7 +1,7 @@
 //! Four real encrypted deposit outputs from an actual regtest source note.
 //! Client keys are local demo actors; no maximum bids or oracle fills are read.
 use super::*;
-use crate::regtest_spend::{Regtest, load_source, read_private, wallet_key, write_private};
+use crate::regtest_spend::{Regtest, load_source, read_private, wallet_fvk, write_private};
 use darkcall_input_tool::{context, decimal_field_bytes, receiver_commitment};
 use darkcall_wallet_bridge::claim::{
     Claim, DepositMemo, ExpectedFunding, Instructions, verify_output,
@@ -62,7 +62,7 @@ pub fn build(
         return Err("deposit output already exists".into());
     }
     let source = load_source(wallet, openings)?;
-    let escrow = FullViewingKey::from(&wallet_key(escrow_wallet)?);
+    let escrow = wallet_fvk(escrow_wallet)?;
     let book: Book =
         serde_json::from_slice(&read_private(book, 16384)?).map_err(|e| error("book", e))?;
     let receivers: [Receiver; 6] = serde_json::from_slice(&read_private(receivers, 16384)?)

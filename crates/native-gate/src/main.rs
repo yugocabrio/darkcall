@@ -2,6 +2,7 @@
 //! their fabricated inputs. The separate --regtest-spend mode consumes captured
 //! real isolated-regtest notes; its driver guards the local chain before broadcast.
 //! This plaintext oracle fixture is not an MPC-to-settlement binding proof.
+mod custody;
 mod integration;
 mod regtest_deposits;
 mod regtest_settlement;
@@ -567,6 +568,14 @@ fn gate(
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() == 2 && args[0] == "--regtest-dkg-init" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&custody::init(&args[1])?)
+                .map_err(|e| error("DKG summary", e))?
+        );
+        return Ok(());
+    }
     if args.len() == 7 && args[0] == "--regtest-settlement" {
         println!(
             "{}",

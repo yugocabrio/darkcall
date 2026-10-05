@@ -1,5 +1,6 @@
 //! Actual isolated chain funds -> certified private auction -> exact native
-//! settlement. Local trusted dealer; no client spending keys are loaded.
+//! settlement. Supports local DKG shares or the historical trusted dealer;
+//! no client spending keys are loaded.
 use super::*;
 use crate::regtest_spend::{
     Regtest, WalletNotes, read_private, reconstruct, wallet_key, write_private,
@@ -30,8 +31,22 @@ pub fn build(
     name: &str,
 ) -> Result<serde_json::Value> {
     let start = Instant::now();
-    let key = wallet_key(escrow)?;
-    let fvk = FullViewingKey::from(&key);
+    let dkg = [
+        "private-full-viewing-key.bin",
+        "private-frost-public-package.bin",
+        "dkg-ready",
+    ]
+    .iter()
+    .try_fold(false, |found, name| {
+        escrow.join(name).try_exists().map(|exists| found || exists)
+    })
+    .map_err(|e| error("escrow setup", e))?;
+    let (fvk, keys) = if dkg {
+        custody::load(escrow)?
+    } else {
+        let key = wallet_key(escrow)?;
+        (FullViewingKey::from(&key), split_key(&key, &mut OsRng)?)
+    };
     let state: WalletNotes = serde_json::from_slice(&read_private(notes, 1_000_000)?)
         .map_err(|e| error("funding snapshot", e))?;
     let manifest: Manifest =
@@ -332,13 +347,25 @@ pub fn build(
         )
         .map_err(|e| error("funded private fields", e))?
         .finish();
+    // Preserve the exact verified private transaction before reserving inputs.
+    // A crash must not leave only a digest and no transaction to resume/review.
+    // Automatic recovery still requires canonical-chain and proof reconciliation.
+    write_private(
+        &integration.directory.join("prepared-settlement.pczt"),
+        &pczt
+            .clone()
+            .serialize()
+            .map_err(|e| error("private checkpoint encoding", e))?,
+    )?;
+    fs::File::open(integration.directory.parent().ok_or("settlement parent")?)
+        .and_then(|parent| parent.sync_all())
+        .map_err(|e| error("settlement checkpoint parent sync", e))?;
     for j in &mut journals {
         j.append(Event::Prepare {
             effects: message,
             cancellation: false,
         })?;
     }
-    let keys = split_key(&key, &mut OsRng)?;
     let proof_start = Instant::now();
     let pczt = Prover::new(pczt)
         .create_ironwood_proof(&ProvingKey::build(OrchardCircuitVersion::PostNu6_3))
@@ -422,7 +449,7 @@ pub fn build(
         )
         .map_err(|e| error("output map", e))?,
     )?;
-    let summary = serde_json::json!({"scope":"actual isolated regtest certified four-input native auction construction","chain_funding":"actual SDK-scanned notes; provenance checked by Python driver","funding_observations_fabricated":false,"broadcast":false,"client_spending_keys_read":false,"maximum_bids_read":false,"fills_from_plaintext_oracle_fixture":false,"private_refund_delivery_verified":true,"signed_root_and_recipients_checked_before_frost":true,"native_bindings_and_cpp_mpc_verified":true,"source_inputs_match_all_three_durable_journals":true,"funding_reservations_fsynced_before_signing":true,"changed_recipient_outputs_effects_rejected":true,"inputs":4,"outputs":6,"threshold":"2-of-3","setup":"local trusted dealer; full escrow key retained","native_proof_and_signatures_verified":true,"transaction_bytes":bytes.len(),"fee":fee,"price":integration.delivery.price,"sold":integration.delivery.sold,"application_proof_seconds":app_seconds,"proof_seconds":proof_seconds,"total_seconds":start.elapsed().as_secs_f64(),"txid":tx.txid().to_string()});
+    let summary = serde_json::json!({"scope":"actual isolated regtest certified four-input native auction construction","chain_funding":"actual SDK-scanned notes; provenance checked by Python driver","funding_observations_fabricated":false,"broadcast":false,"client_spending_keys_read":false,"maximum_bids_read":false,"fills_from_plaintext_oracle_fixture":false,"private_refund_delivery_verified":true,"signed_root_and_recipients_checked_before_frost":true,"native_bindings_and_cpp_mpc_verified":true,"source_inputs_match_all_three_durable_journals":true,"funding_reservations_fsynced_before_signing":true,"changed_recipient_outputs_effects_rejected":true,"inputs":4,"outputs":6,"threshold":"2-of-3","setup":if dkg {"local three-participant DKG; all shares on one host; no escrow master key"} else {"local trusted dealer; full escrow key retained"},"escrow_master_key_read":!dkg,"escrow_full_ask_derived_or_reconstructed":!dkg,"independent_custody_hosts":false,"native_proof_and_signatures_verified":true,"transaction_bytes":bytes.len(),"fee":fee,"price":integration.delivery.price,"sold":integration.delivery.sold,"application_proof_seconds":app_seconds,"proof_seconds":proof_seconds,"total_seconds":start.elapsed().as_secs_f64(),"txid":tx.txid().to_string()});
     write_private(
         &integration.directory.join("funded-summary.json"),
         &serde_json::to_vec_pretty(&summary).map_err(|e| error("summary", e))?,

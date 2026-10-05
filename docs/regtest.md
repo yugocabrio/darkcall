@@ -40,8 +40,7 @@ ignored .local. The bank retains its full spending key; the signing test uses a
 local trusted dealer and local signers, not DKG or independently operated custody.
 The scanner trusts the local full-node RPC and checkpoint; it is not an SPV proof.
 The gate proves a threshold transfer, not auction admission, MPC settlement
-binding, live reorg recovery or crash-safe broadcast reconciliation. Four actual
-funded claims and their certified auction are the next integration step.
+binding, live reorg recovery or crash-safe broadcast reconciliation. The confirmed four-funded auction is recorded below.
 
 ```sh
 python3 scripts/regtest_node.py status
@@ -51,7 +50,8 @@ python3 scripts/regtest_node.py stop
 Stopping preserves the chain and wallets. Official binary/archive/image hashes
 and measured results are recorded in the corresponding evidence JSON. Public
 lightwalletd branch checks remain unchanged; the public endpoint returning
-77190ad9 is not compatible with the current SDK snapshot.
+77190ad9 is NU7 and is not compatible with the main workspace snapshot. The
+separate tools/nu7-compat gate now passes without changing this reproduction.
 
 ## Four actual deposits and certified admission
 
@@ -119,3 +119,36 @@ Public testnet has moved to NU7 (77190ad9 at 4465026), while this reproducible g
 uses native NU6.3. A public-network flow also needs advancing-chain reconciliation
 and an expiry allowance appropriate to measured proving time; requiring an
 unchanged tip throughout this controlled gate is not viable on a live chain.
+
+
+## Local DKG escrow
+
+Add `--dkg` to `scripts/regtest_deposits.py` for the new escrow setup. It runs the
+pinned RedPallas FROST DKG part1/part2/part3 for three local participants and a
+2-of-3 threshold. Each participant obtains matching public group information;
+the wrapper normalizes both shares and group key to even Y. Fresh native `nk`
+and `rivk` viewing material combines with that group key into a validated FVK.
+No escrow `SpendingKey` or full ASK is generated or reconstructed by this path.
+The bank and recipient wallets remain ordinary wallets with their own keys.
+
+```sh
+python3 scripts/regtest_deposits.py SOURCE_WALLET CURRENT_PRIVATE_NOTES COMMITTED_MPC_BOOK_RUN --name regtest-dkg-deposit4-new --dkg
+python3 scripts/regtest_settlement.py .local/regtest-dkg-deposit4-new COMMITTED_MPC_BOOK_RUN --name regtest-dkg-auction4-new
+```
+
+The FVK, three separate operator key-package files and public-package file stay
+in a fresh 0700 ignored directory with 0600 files. Each file and containing
+directory is synced before the final readiness marker. Existing names are never
+overwritten. Scanner/admission read only the FVK. An incomplete setup or a mix of
+view-only and master-key formats is rejected. Signing reloads canonical packages
+and checks all identifiers, threshold, group key, individual public shares and
+their correspondence to the secret shares before use.
+
+The tests verify native compatibility for all three two-party quorums, reject a
+single share and changed digest, and reject a substituted operator package.
+Another wallet test covers interrupted readiness and master-key aliases.
+Authenticated DKG broadcast/private transports and isolated operator hosts are
+not implemented: the local initializer and signing process hold all three
+shares, so this does not demonstrate independent custody. DKG removes the
+retained escrow master key from the prototype's construction; it does not make
+a compromised single demo host safe. Recovery/cancellation remain separate work.

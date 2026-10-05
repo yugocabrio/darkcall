@@ -52,7 +52,9 @@ autonomously, incorporate later human/ChatGPT reviews.
 
 - [ ] Replace retained escrow master signing key with DKG-generated 2-of-3 shares.
   - Bank/client spending keys are normal owned wallets; only the shared escrow
-    setup is in scope. Validate native FVK compatibility and real threshold spend.
+    setup is in scope. Local DKG/FVK, all three two-party quorums, durable
+    packages and actual four-deposit certified admission pass. Full funded
+    native DKG settlement is running; independent operator hosts remain separate.
 - [ ] Migrate auction native stack to NU7 after isolated compatibility checks.
   - Standalone synthetic native gate and live tree reconstruction pass; root
     Cargo.lock, native binding dependencies and isolated NU6.3 chain are preserved.

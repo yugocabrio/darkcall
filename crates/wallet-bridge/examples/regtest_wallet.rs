@@ -2,7 +2,7 @@
 //! note/witness openings stay in a new private ignored directory, never stdout.
 use darkcall_wallet_bridge::scanner::Scanner;
 use orchard::{
-    keys::{FullViewingKey, Scope, SpendingKey},
+    keys::{Scope, SpendingKey},
     note::NoteVersion,
 };
 use rand::{RngCore, rngs::OsRng};
@@ -52,34 +52,6 @@ fn check_dir(path: &Path) -> Result<()> {
         }
     }
     Ok(())
-}
-fn read_key(path: &Path) -> Result<SpendingKey> {
-    check_dir(path)?;
-    let mut options = fs::OpenOptions::new();
-    options.read(true);
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::OpenOptionsExt;
-        options.custom_flags(libc::O_NOFOLLOW);
-    }
-    let f = options.open(path.join("private-spending-key.bin"))?;
-    let meta = f.metadata()?;
-    if !meta.is_file() || meta.len() != 32 {
-        return Err("invalid private wallet key file".into());
-    }
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::{MetadataExt, PermissionsExt};
-        if meta.permissions().mode() & 0o077 != 0 || meta.nlink() != 1 {
-            return Err("wallet key must be private with one link".into());
-        }
-    }
-    use std::io::Read;
-    let mut bytes = [0; 32];
-    (&f).read_exact(&mut bytes)?;
-    SpendingKey::from_bytes(bytes)
-        .into_option()
-        .ok_or_else(|| "invalid native spending key".into())
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -168,7 +140,8 @@ fn main() -> Result<()> {
             fs::File::open(directory)?.sync_all()?;
             fs::File::open(directory.parent().ok_or("wallet parent")?)?.sync_all()?;
         }
-        let fvk = FullViewingKey::from(&read_key(directory)?);
+        check_dir(directory)?;
+        let fvk = darkcall_wallet_bridge::local_wallet::viewing_key(directory)?;
         let receiver = fvk.address_at(0u32, Scope::External).to_raw_address_bytes();
         let address = Address::try_from_items(vec![Receiver::Orchard(receiver)])?
             .encode(&NetworkType::Regtest);
@@ -182,7 +155,8 @@ fn main() -> Result<()> {
     if args[0] != "scan" || args.len() != 3 {
         return Err("unknown regtest wallet command".into());
     }
-    let fvk = FullViewingKey::from(&read_key(directory)?);
+    check_dir(directory)?;
+    let fvk = darkcall_wallet_bridge::local_wallet::viewing_key(directory)?;
     let capture_path = Path::new(&args[2]);
     if fs::metadata(capture_path)?.len() > 100_000_000 {
         return Err("node capture too large".into());

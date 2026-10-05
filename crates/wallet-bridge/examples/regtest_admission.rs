@@ -8,7 +8,6 @@ use darkcall_wallet_bridge::{
     receipt::{AcceptedReceipt, WireReceipt},
 };
 use ed25519_dalek::SigningKey;
-use orchard::keys::{FullViewingKey, SpendingKey};
 use rand::{RngCore, rngs::OsRng};
 use serde::Deserialize;
 use std::{
@@ -212,14 +211,7 @@ fn main() -> Result<()> {
     if book.active != [true; 4] || sorted != book.ids || sorted.windows(2).any(|i| i[0] == i[1]) {
         return Err("book order/active/duplicate mismatch".into());
     }
-    let key: [u8; 32] = read(&escrow.join("private-spending-key.bin"), 32)?
-        .try_into()
-        .map_err(|_| "escrow key length")?;
-    let fvk = FullViewingKey::from(
-        &SpendingKey::from_bytes(key)
-            .into_option()
-            .ok_or("escrow key")?,
-    );
+    let fvk = darkcall_wallet_bridge::local_wallet::viewing_key(escrow)?;
     let openings: serde_json::Value = serde_json::from_slice(&read(notes, 1_000_000)?)?;
     if openings["scope"] != "isolated regtest wallet openings"
         || openings["genesis"] != GENESIS
