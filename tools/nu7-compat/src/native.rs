@@ -38,7 +38,7 @@ use zcash_protocol::{
 fn error(context: &str, e: impl std::fmt::Debug) -> String {
     format!("{context}: {e:?}")
 }
-fn random_key(rng: &mut impl rand::CryptoRng) -> SpendingKey {
+pub(crate) fn random_key(rng: &mut impl rand::CryptoRng) -> SpendingKey {
     loop {
         let mut bytes = [0; 32];
         rng.fill_bytes(&mut bytes);
@@ -47,7 +47,11 @@ fn random_key(rng: &mut impl rand::CryptoRng) -> SpendingKey {
         }
     }
 }
-fn synthetic_note(fvk: &FullViewingKey, value: u64, rng: &mut impl rand::CryptoRng) -> Note {
+pub(crate) fn synthetic_note(
+    fvk: &FullViewingKey,
+    value: u64,
+    rng: &mut impl rand::CryptoRng,
+) -> Note {
     loop {
         let rho = Rho::from_bytes(&pallas::Base::random(&mut *rng).to_repr()).unwrap();
         let mut bytes = [0; 32];
@@ -66,12 +70,12 @@ fn synthetic_note(fvk: &FullViewingKey, value: u64, rng: &mut impl rand::CryptoR
         }
     }
 }
-struct ThresholdKeys {
+pub(crate) struct ThresholdKeys {
     packages: BTreeMap<frost::Identifier, frost::keys::KeyPackage>,
     public: frost::keys::PublicKeyPackage,
 }
 
-fn split_key(sk: &SpendingKey, rng: &mut OldOsRng) -> Result<ThresholdKeys> {
+pub(crate) fn split_key(sk: &SpendingKey, rng: &mut OldOsRng) -> Result<ThresholdKeys> {
     // Local test trusted-dealer setup only. Deployment must use a reviewed setup.
     let ask = SpendAuthorizingKey::from(sk);
     let bytes: [u8; 32] = ask.randomize(&pallas::Scalar::zero()).to_bytes();
@@ -100,7 +104,7 @@ fn split_key(sk: &SpendingKey, rng: &mut OldOsRng) -> Result<ThresholdKeys> {
     Ok(ThresholdKeys { packages, public })
 }
 
-fn threshold_signature(
+pub(crate) fn threshold_signature(
     keys: &ThresholdKeys,
     alpha: &pallas::Scalar,
     message: &[u8; 32],
@@ -416,7 +420,7 @@ fn gate_inner(export: Option<std::path::PathBuf>) -> Result<serde_json::Value> {
 }
 
 #[derive(Debug)]
-enum SignError {
+pub(crate) enum SignError {
     Parse(OrchardParseError),
     Apply(orchard::pczt::SignerError),
     Custom(String),

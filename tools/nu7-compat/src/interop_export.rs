@@ -149,8 +149,10 @@ pub fn verify(directory: &Path, row: Option<&Path>) -> Result<serde_json::Value>
             .map_err(|_| "public binding statement")?;
         if value.get("layout").is_some() {
             let wrapper = value.as_object().ok_or("shared public wrapper")?;
-            if wrapper.len() != 2 || !wrapper.contains_key("statement") ||
-                value["layout"] != "experimental-shared18-native-row-v1" {
+            if wrapper.len() != 2
+                || !wrapper.contains_key("statement")
+                || value["layout"] != "experimental-shared18-native-row-v1"
+            {
                 return Err("unsupported shared public circuit identity".into());
             }
             value = value["statement"].clone();

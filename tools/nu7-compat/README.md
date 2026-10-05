@@ -61,6 +61,42 @@ absolute PATH blindly.
 Keep the separate lockfile. Actual measurements and any limitations belong in
 the repository's evidence directory after running these gates.
 
+## Four-input/six-output auction adapter
+
+`python3 scripts/run_nu7_auction.py BOOK_RUN --name NEW_NAME --prepare-only`
+verifies actual blinded v2 delivery with the working fixed C++ verifier, creates
+an unsigned new-SDK PCZT with four fabricated input notes and six outputs, and
+checks all six canonical V3 openings in the working SDK. Both price25/sold3 and
+price0/sold3 pass. Zero-price preparation uses the separately masked winning
+bits. No maximum-bid list is opened by this adapter; the books are fabricated
+client fixtures and remain on one host.
+
+This new mode deliberately stores its synthetic PCZT, retained master key and
+recipient FVKs in ignored 0600 files under a 0700 directory. It does **not**
+change the one-output export mode's key-free format. Never copy these prepared
+private files into public artifacts. This is not the existing funded DKG flow.
+
+Without `--prepare-only`, the adapter is designed to generate six shared18 row
+proofs, run actual committed REP3 settlement and the fixed C++ verifier, and have
+the new SDK independently verify those public proofs against its in-memory PCZT
+effects before 2-of-3 signing. Both SDKs exchange bytes only, not field/group
+types; the root lock and historical working33 verifier are unchanged. A public
+replay command is provided by `scripts/replay_nu7_auction.py`.
+
+**The complete new adapter and its public replay are not yet demonstrated.**
+The full run was refused before launching by the unchanged 10 GiB initial-disk
+guard (6.94 GiB free, 5.95 GiB used swap). Preserve the prepared checkpoints and
+run the full gate only after capacity changes. Seven actual unsigned pre-sign
+attack cases pass, including refusing absent application proofs, changed
+amount/receiver/effects/index, unknown fields and trailing PCZT bytes. The
+upstream decoder accepted trailing data, so this persisted-request adapter
+requires exact canonical round-trip bytes. See
+`evidence/2026-10-05-nu7-six-output-preparation.json`.
+
+Public-chain funding, DKG migration, authenticated bidder/receiver receipts,
+live-chain freshness and finality remain separate unfinished work. No broadcast
+operation is added here.
+
 ## Actual new-SDK output bytes and existing binding circuit (unfinished proof)
 
 ```sh

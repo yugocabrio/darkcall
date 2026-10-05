@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-05",
+  "scope": "unsigned synthetic NU7 six-output preparation and pre-sign input checks; no completed auction binding",
+  "sdk": "9c5705f56517c040c50f96d29f1ff15a9383f3e0",
+  "branch": "77190ad9",
+  "commands": [
+    "cargo build --release --locked --offline -p darkcall-native-gate",
+    "CARGO_TARGET_DIR=.deps/nu7-compat-target cargo build --release --locked --offline --manifest-path tools/nu7-compat/Cargo.toml",
+    "python3 scripts/run_nu7_auction.py .local/mpc-auction4-20261005T103810Z --name nu7-auction-prepare-20261005 --prepare-only",
+    "python3 scripts/run_nu7_auction.py .local/mpc-auction4-20261005T093324Z --name nu7-zero-prepare-20261005 --prepare-only",
+    "python3 scripts/check_nu7_prepared.py .local/nu7-auction-prepare-20261005 --name nu7-auction-presign-v2-20261005",
+    "python3 scripts/run_nu7_auction.py .local/mpc-auction4-20261005T103810Z --name nu7-auction-shared-20261005"
+  ],
+  "positive_price": {
+    "scope": "synthetic NU7 auction/native integration; no chain funding",
+    "external_process_seconds": 8.36509470799865,
+    "result": {
+      "application_binding_proofs_generated": false,
+      "broadcast": false,
+      "chain_funding": false,
+      "delivery_rule": "fresh-field-mask-refund-delivery-v2",
+      "maximum_bids_read": false,
+      "prepared": {
+        "actions": 6,
+        "broadcast": false,
+        "fee": 30000,
+        "prepared": true,
+        "recipients_decrypted_before_proving": 6,
+        "synthetic_inputs": 4,
+        "threshold_signatures_created": false
+      },
+      "price": 25,
+      "private_fill_delivery_verified": true,
+      "scope": "synthetic NU7 auction preparation and six output-byte reconstruction only",
+      "seconds": 8.054372208,
+      "six_native_output_openings_checked": true,
+      "sold": 3,
+      "threshold_signatures_created": false
+    }
+  },
+  "zero_price": {
+    "scope": "synthetic NU7 auction/native integration; no chain funding",
+    "external_process_seconds": 7.65427279099822,
+    "result": {
+      "application_binding_proofs_generated": false,
+      "broadcast": false,
+      "chain_funding": false,
+      "delivery_rule": "fresh-field-mask-refund-and-winner-delivery-v2",
+      "maximum_bids_read": false,
+      "prepared": {
+        "actions": 6,
+        "broadcast": false,
+        "fee": 30000,
+        "prepared": true,
+        "recipients_decrypted_before_proving": 6,
+        "synthetic_inputs": 4,
+        "threshold_signatures_created": false
+      },
+      "price": 0,
+      "private_fill_delivery_verified": true,
+      "scope": "synthetic NU7 auction preparation and six output-byte reconstruction only",
+      "seconds": 7.627233583,
+      "six_native_output_openings_checked": true,
+      "sold": 3,
+      "threshold_signatures_created": false
+    }
+  },
+  "input_attacks": {
+    "scope": "unsigned synthetic NU7 pre-sign input attack checks; no binding proof",
+    "tampering": {
+      "missing-proofs": {
+        "rejected": true,
+        "expected_reason": "NU7 application proof rejected before FROST signing"
+      },
+      "amount-substitution": {
+        "rejected": true,
+        "expected_reason": "NU7 prepared output substituted"
+      },
+      "reused-action": {
+        "rejected": true,
+        "expected_reason": "NU7 recipient index collision"
+      },
+      "receiver-substitution": {
+        "rejected": true,
+        "expected_reason": "prepared output cannot decrypt"
+      },
+      "effects-substitution": {
+        "rejected": true,
+        "expected_reason": "NU7 prepared effects changed"
+      },
+      "unknown-key-schema": {
+        "rejected": true,
+        "expected_reason": "strict NU7 auction schema rejected"
+      },
+      "pczt-trailing-byte": {
+        "rejected": true,
+        "expected_reason": "NU7 PCZT parse"
+      }
+    },
+    "passed": true,
+    "native_application_proof_generated": false,
+    "transaction_emitted": false,
+    "broadcast": false,
+    "seconds": 0.37698154199824785
+  },
+  "first_attack_harness": "Trailing-byte case detected upstream parser acceptance; initial run retained at .local/nu7-auction-presign-check-20261005, then canonical round-trip added and all seven cases rerun.",
+  "initial_build_repair": "Direct serde dependency was initially mistakenly pinned to 1.0.228; restored to existing lock version 1.0.229. Final separate lock changes direct dependency edges only; no transitive versions changed.",
+  "full_proof_attempt": {
+    "launched": false,
+    "required_initial_free_gib": 10,
+    "observed_initial_free_gib": 6.94,
+    "observed_used_swap_gib": 5.95,
+    "reason": "initial disk guard; artifacts preserved"
+  },
+  "full_application_native_frost_flow_demonstrated": false,
+  "public_replay_demonstrated": false,
+  "root_lock_sha256": "1e2cfdab9e6a7603589fa6af8805e0778631b646f3b93c46c13bb2992c13d9fb",
+  "old_funded_chain_modified": false,
+  "private_keys_pczt_openings_committed": false,
+  "setup": "synthetic locally retained master key; trusted-dealer signing planned, no DKG",
+  "chain_funding": false,
+  "broadcast": false
+}
