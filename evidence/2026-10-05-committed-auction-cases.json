@@ -1,0 +1,194 @@
+{
+  "date": "2026-10-05",
+  "commands": [
+    "cargo build --release --locked --offline -p darkcall-auction-core --example mpc_oracle",
+    "python3 scripts/check_committed_cases.py --name committed-cases-20261005"
+  ],
+  "scope": "synthetic committed-input REP3/ordinary verifier/Rust correctness regression",
+  "passed": true,
+  "cases": [
+    {
+      "case": "cutoff-tie",
+      "synthetic_bids": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "reserve": 20,
+      "price": 50,
+      "sold": 3,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 16.21774404200187
+    },
+    {
+      "case": "undersubscribed",
+      "synthetic_bids": [
+        90,
+        10,
+        0,
+        0
+      ],
+      "reserve": 20,
+      "price": 20,
+      "sold": 1,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 15.59970233399872
+    },
+    {
+      "case": "exact-demand",
+      "synthetic_bids": [
+        100,
+        20,
+        20,
+        19
+      ],
+      "reserve": 20,
+      "price": 20,
+      "sold": 3,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 14.969823374998668
+    },
+    {
+      "case": "no-qualified",
+      "synthetic_bids": [
+        19,
+        19,
+        0,
+        0
+      ],
+      "reserve": 20,
+      "price": 20,
+      "sold": 0,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 14.517130915999587
+    },
+    {
+      "case": "budget-boundary",
+      "synthetic_bids": [
+        100,
+        100,
+        100,
+        100
+      ],
+      "reserve": 20,
+      "price": 100,
+      "sold": 3,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 14.117536791996827
+    },
+    {
+      "case": "free-tie",
+      "synthetic_bids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reserve": 0,
+      "price": 0,
+      "sold": 3,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 15.016230541998084
+    },
+    {
+      "case": "generated-0",
+      "synthetic_bids": [
+        50,
+        11,
+        86,
+        24
+      ],
+      "reserve": 20,
+      "price": 20,
+      "sold": 3,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 14.358336999997846
+    },
+    {
+      "case": "generated-1",
+      "synthetic_bids": [
+        26,
+        46,
+        54,
+        91
+      ],
+      "reserve": 20,
+      "price": 26,
+      "sold": 3,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 14.132890832999692
+    },
+    {
+      "case": "generated-2",
+      "synthetic_bids": [
+        19,
+        70,
+        100,
+        39
+      ],
+      "reserve": 0,
+      "price": 19,
+      "sold": 3,
+      "four_client_proofs": true,
+      "twelve_share_pairs": true,
+      "actual_rep3_auction_proof": true,
+      "actual_rep3_blinded_flags_proof": true,
+      "normal_cpp_both_verified": true,
+      "private_refunds_and_flags_match_rust": true,
+      "seconds": 15.074069084002986
+    }
+  ],
+  "independent_hosts": false,
+  "native_or_chain_settlement": false,
+  "malicious_mpc_security": false,
+  "maximum_bids_reconstructed_in_mpc": false,
+  "plaintext_oracle_knows_synthetic_bids": true,
+  "seconds": 134.00608333299897,
+  "notes": "All published bid values are fabricated fixtures. Rust plaintext oracle is separate from actual committed-input REP3 execution. Nine books each have four client proofs and twelve validated pairs; auction and blinded flag proofs are each checked by fixed normal C++ verifier.",
+  "source_pins": {
+    "nargo": "1.0.0-rc.2",
+    "co_snarks": "467a2abbad940d40ed78f38d424cc21920988976",
+    "cpp_barretenberg": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f"
+  }
+}
