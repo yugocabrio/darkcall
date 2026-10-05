@@ -569,6 +569,11 @@ fn gate(
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() == 3 && args[0] == "--integration-delivery-check" {
+        let checked = Integration::new(std::path::Path::new(&args[1]), &args[2])?;
+        println!("{}", checked.delivery_gate_summary());
+        return Ok(());
+    }
     if args.len() == 1 && args[0] == "--native-binding-circuit-profile" {
         println!(
             "{}",

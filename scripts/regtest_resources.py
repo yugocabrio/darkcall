@@ -82,12 +82,21 @@ def stop(process):
 
 
 def guarded_json_call(command, *, cwd, env, timeout, observations, interval=10,
-                      minimum_start_disk_bytes=MIN_FREE_BYTES):
+                      minimum_start_disk_bytes=MIN_FREE_BYTES,
+                      expected_failure=None, failure_log=None):
+    if (expected_failure is None) != (failure_log is None) or expected_failure == '':
+        raise ValueError('Expected failure requires both a nonempty diagnostic and private log')
     observations = pathlib.Path(observations)
     initial = sample(cwd)
     check(initial)  # Do not launch a proof when the host is already constrained.
     if initial['free_disk_bytes'] < minimum_start_disk_bytes:
-        raise RuntimeError('Proof not launched: insufficient initial disk headroom for this measured gate')
+        gib = 1024 ** 3
+        message = ('Proof not launched: insufficient initial disk headroom for this measured gate '
+                   f'(need {minimum_start_disk_bytes / gib:.2f} GiB, '
+                   f'available {initial["free_disk_bytes"] / gib:.2f} GiB')
+        if 'system_swap_used_bytes' in initial:
+            message += f', used macOS swap {initial["system_swap_used_bytes"] / gib:.2f} GiB'
+        raise RuntimeError(message + '); retained artifacts/journals are unchanged')
     fd = os.open(observations, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
     started = time.monotonic()
     with os.fdopen(fd, 'w') as metrics, tempfile.TemporaryFile() as output:
@@ -96,7 +105,9 @@ def guarded_json_call(command, *, cwd, env, timeout, observations, interval=10,
             metrics.flush()
             os.fsync(metrics.fileno())
         record(initial)
-        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=output, start_new_session=True)
+        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=output,
+                                   stderr=subprocess.STDOUT if expected_failure is not None else None,
+                                   start_new_session=True)
         try:
             while True:
                 try:
@@ -108,12 +119,24 @@ def guarded_json_call(command, *, cwd, env, timeout, observations, interval=10,
                     check(value)
                     if time.monotonic() - started >= timeout:
                         raise RuntimeError('Proof timeout; private artifacts and journals retained')
-            if code != 0:
+            if code != 0 and expected_failure is None:
                 raise RuntimeError('Local proof process failed; inspect private log/artifacts')
             output.seek(0)
             data = output.read(4 * 1024 ** 2 + 1)
             if len(data) > 4 * 1024 ** 2:
                 raise RuntimeError('Local proof summary exceeds bound')
+            if expected_failure is not None:
+                # Negative cryptographic gates retain diagnostics privately and
+                # accept only the intended rejection, never an arbitrary crash.
+                fd = os.open(failure_log, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+                with os.fdopen(fd, 'wb') as log:
+                    log.write(data)
+                    log.flush()
+                    os.fsync(log.fileno())
+                if code == 0 or expected_failure.encode() not in data:
+                    raise RuntimeError('Expected cryptographic rejection was not observed')
+                record({'completed': True, 'expected_rejection': True})
+                return {'expected_rejection': True, 'returncode': code}
             result = json.loads(data)
             record({'completed': True})
             return result

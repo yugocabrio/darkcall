@@ -1,5 +1,6 @@
 //! Synthetic fixture creator and node-side validation of committed REP3 inputs.
 //! No real bids, keys or shares should be placed in the Git repository.
+mod flags_delivery;
 use ark_bn254::Fr;
 use ark_ff::PrimeField;
 use bincode::Options;
@@ -427,11 +428,32 @@ fn delivery_result(book: &Book, masks_path: &Path, mpc_path: &Path, out: &Path) 
         }
         fields.push(field);
     }
+    let result = refund_statement(book, &masks, &fields)?;
+    write_private(out, &serde_json::to_vec_pretty(&result)?)
+}
+fn refund_statement(book: &Book, masks: &[Fr], fields: &[Fr]) -> Result<serde_json::Value> {
+    if masks.len() != 4 {
+        return Err("four refund masks required".into());
+    }
+    let expected = (0..4)
+        .map(|i| mask_commitment(book, i, masks[i]))
+        .collect::<Result<Vec<_>>>()?;
+    refund_statement_committed(book, masks, fields, &expected)
+}
+fn refund_statement_committed(
+    book: &Book,
+    masks: &[Fr],
+    fields: &[Fr],
+    expected: &[Fr],
+) -> Result<serde_json::Value> {
+    if masks.len() != 4 || fields.len() != 179 || expected.len() != 4 {
+        return Err("fixed refund statement shape".into());
+    }
     if fields[..169] != book_fields(book)? {
         return Err("delivery statement does not match book".into());
     }
     for i in 0..4 {
-        if fields[169 + i] != mask_commitment(book, i, masks[i])? {
+        if fields[169 + i] != expected[i] {
             return Err("delivery mask belongs to another auction/ticket".into());
         }
     }
@@ -477,13 +499,10 @@ fn delivery_result(book: &Book, masks_path: &Path, mpc_path: &Path, out: &Path) 
     }
     let mut amounts = refunds;
     amounts.extend([seller_amount, operator_amount]);
-    write_private(
-        out,
-        &serde_json::to_vec_pretty(
-            &serde_json::json!({"amounts":amounts,"price":price,"sold":sold,"network_fee":fee,"maximum_bids_read":false,"proof_must_be_verified_separately":true,"recipient_metadata_private_to_operators":true}),
-        )?,
-    )?;
-    Ok(())
+    Ok(
+        serde_json::json!({"amounts":amounts,"price":price,"sold":sold,"network_fee":fee,
+        "maximum_bids_read":false,"proof_must_be_verified_separately":true,"recipient_metadata_private_to_operators":true}),
+    )
 }
 
 fn read_share(path: &Path) -> Result<Rep3SharedInput<Fr>> {
@@ -544,6 +563,12 @@ fn check(
 }
 
 fn fixture(out: &Path, values: [u64; 4]) -> Result<()> {
+    fixture_reserve(out, values, 20)
+}
+fn fixture_reserve(out: &Path, values: [u64; 4], reserve: u64) -> Result<()> {
+    if reserve > 100 {
+        return Err("fixture reserve exceeds budget".into());
+    }
     if values.iter().any(|value| *value > 100) {
         return Err("synthetic bids exceed fixture budget".into());
     }
@@ -557,7 +582,7 @@ fn fixture(out: &Path, values: [u64; 4]) -> Result<()> {
         }),
         active: [true; 4],
         units: 3,
-        reserve: 20,
+        reserve,
         budget: 100,
         processing_fee: 15_000,
         commitments: std::array::from_fn(|_| String::new()),
@@ -610,6 +635,31 @@ fn main() -> Result<()> {
         Some("fixture") if args.len()==2 || args.len()==6 => {
             let values=if args.len()==6 {[args[2].parse()?,args[3].parse()?,args[4].parse()?,args[5].parse()?]} else {[90,70,60,50]};
             fixture(Path::new(&args[1]),values)?;
+        },
+        Some("fixture-reserve") if args.len()==7 => {
+            fixture_reserve(Path::new(&args[1]),[args[3].parse()?,args[4].parse()?,args[5].parse()?,args[6].parse()?],args[2].parse()?)?;
+        },
+        Some("flags-fixture") if args.len()==3 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            flags_delivery::fixture(&book,Path::new(&args[2]),true)?;
+        },
+        Some("private-fixture") if args.len()==3 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            flags_delivery::fixture(&book,Path::new(&args[2]),false)?;
+        },
+        Some("flags-result") if args.len()==6 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            flags_delivery::result(&book,Path::new(&args[2]),Some(Path::new(&args[3])),Path::new(&args[4]),Path::new(&args[5]))?;
+        },
+        Some("private-result") if args.len()==5 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            flags_delivery::result(&book,Path::new(&args[2]),None,Path::new(&args[3]),Path::new(&args[4]))?;
+        },
+        Some("audit-public-delivery") if args.len()==6 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            let flags=match args[4].as_str() {"flags"=>true,"refund"=>false,_=>return Err("audit flags/refund mode".into())};
+            let blinded=match args[5].as_str() {"v1"=>false,"v2"=>true,_=>return Err("audit v1/v2 mode".into())};
+            flags_delivery::audit(&book,Path::new(&args[2]),Path::new(&args[3]),flags,blinded)?;
         },
         Some("check") if args.len()==6 => {
             let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;

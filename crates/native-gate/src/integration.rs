@@ -75,6 +75,14 @@ fn checked(command: &mut Command, log: &Path) -> Result<()> {
 }
 
 impl Integration {
+    /// Check delivery consumption alone, before native key/proof/signature work.
+    pub fn delivery_gate_summary(&self) -> serde_json::Value {
+        serde_json::json!({"scope":"native integration consumes verified blinded-mask refunds only; no native construction",
+            "delivery_rule":"fresh-field-mask-refund-delivery-v2","delivery_verified":true,
+            "normal_cpp_delivery_verifier_passed":true,"maximum_bids_read":false,
+            "price":self.delivery.price,"sold":self.delivery.sold,"native_transaction_built":false,
+            "custody_signatures":false,"broadcast":false})
+    }
     pub fn new(book: &Path, name: &str) -> Result<Self> {
         if name.is_empty()
             || !name
@@ -151,7 +159,7 @@ impl Integration {
         let run = PathBuf::from(result["run"].as_str().ok_or("delivery run path missing")?)
             .canonicalize()
             .map_err(|e| fail("delivery path", e))?;
-        if !run.starts_with(&local) || result["hash_rule"] != "fresh-field-mask-refund-delivery-v1"
+        if !run.starts_with(&local) || result["hash_rule"] != "fresh-field-mask-refund-delivery-v2"
         {
             return Err("unexpected delivery run/rule".into());
         }
@@ -159,7 +167,7 @@ impl Integration {
             Command::new("python3")
                 .arg(root.join("scripts/verify_external.py"))
                 .arg(&run)
-                .args(["--circuit", "delivery4"]),
+                .args(["--circuit", "delivery_private4"]),
             &directory.join("delivery-external.log"),
         )?;
         if fs::metadata(run.join("delivered-amounts.json"))
@@ -174,6 +182,9 @@ impl Integration {
                 .map_err(|e| fail("private delivery read", e))?,
         )
         .map_err(|e| fail("private delivery parse", e))?;
+        if value["delivery_rule"] != "fresh-field-mask-refund-delivery-v2" {
+            return Err("decoded delivery rule mismatch".into());
+        }
         let amounts = serde_json::from_value(value["amounts"].clone())
             .map_err(|e| fail("private amount vector", e))?;
         let delivery = Delivery {
@@ -232,9 +243,42 @@ impl Integration {
         fs::File::open(&self.directory)
             .and_then(|f| f.sync_all())
             .map_err(|e| fail("sync row checkpoint directory", e))?;
-        eprintln!("Integrated native row key generation started");
+        let cached = self
+            .native_proof_source
+            .as_ref()
+            .filter(|source| {
+                (0..6).all(|i| source.join(format!("native-binding-proof-{i}")).exists())
+            })
+            .map(|source| {
+                (0..6)
+                    .map(|i| {
+                        crate::regtest_spend::read_private(
+                            &source.join(format!("native-binding-proof-{i}")),
+                            65536,
+                        )
+                    })
+                    .collect::<Result<Vec<_>>>()
+            })
+            .transpose()?;
+        let cached_start = Instant::now();
+        if let Some(proofs) = &cached {
+            // Fully cached recovery needs only the original fixed VK, not a PK.
+            // Invalid cached bytes still fail closed, never become fresh proofs.
+            darkcall_output_binding::poseidon_rows::verify_set(&statement, proofs)
+                .map_err(|e| fail("resumed complete native proof set", e))?;
+        }
+        let cached_set_verify_seconds = if cached.is_some() {
+            cached_start.elapsed().as_secs_f64()
+        } else {
+            0.0
+        };
+        eprintln!("Integrated native row key preparation started");
         let key_start = Instant::now();
-        let prover = RowProver::new().map_err(|e| fail("native row key", e))?;
+        let prover = if cached.is_some() {
+            None
+        } else {
+            Some(RowProver::new().map_err(|e| fail("native row key", e))?)
+        };
         let key_seconds = key_start.elapsed().as_secs_f64();
         let mut times = Vec::new();
         let mut reused = 0;
@@ -248,12 +292,17 @@ impl Integration {
                 .native_proof_source
                 .as_ref()
                 .map(|p| p.join(format!("native-binding-proof-{i}")));
-            let proof = if let Some(path) = previous.filter(|p| p.exists()) {
+            let proof = if let Some(proofs) = &cached {
+                reused += 1;
+                proofs[i].clone()
+            } else if let Some(path) = previous.filter(|p| p.exists()) {
                 let proof = crate::regtest_spend::read_private(&path, 65536)?;
                 // Existing bytes are never accepted merely because a file is
                 // present. Reverify under our trusted circuit and exact current
                 // row/cmx/index; reject altered/partial proofs without fallback.
                 prover
+                    .as_ref()
+                    .ok_or("missing native prover")?
                     .verify(&proof, &public)
                     .map_err(|e| fail("resumed native row proof", e))?;
                 reused += 1;
@@ -261,6 +310,8 @@ impl Integration {
                 proof
             } else {
                 prover
+                    .as_ref()
+                    .ok_or("missing native prover")?
                     .prove(opening, &public)
                     .map_err(|e| fail("native row proof", e))?
             };
@@ -275,8 +326,9 @@ impl Integration {
             times.push(t.elapsed().as_secs_f64());
         }
         // Release the large proving key before independent public verification.
+        let proving_key_generated = prover.is_some();
         drop(prover);
-        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"reused_native_row_proofs":reused,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false});
+        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"reused_native_row_proofs":reused,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false,"proving_key_generated":proving_key_generated,"cached_set_verify_seconds":cached_set_verify_seconds});
         fs::write(
             self.directory.join("native-proof-summary.json"),
             serde_json::to_vec_pretty(&summary).map_err(|e| fail("summary encode", e))?,

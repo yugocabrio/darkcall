@@ -1,8 +1,53 @@
 # DarkCall status
 
-Updated: 2026-10-05 09:23 UTC.
+Updated: 2026-10-05 10:15 UTC.
 
 ## Current outcome
+
+**A concrete delivery privacy flaw is reproduced and the v2 fix passes actual
+REP3, independent C++ verification and offline native MPC/FROST recovery.**
+Legacy delivery4 deterministically commits each mask; public price/budget let
+a transcript reader hash the two possible refund masks. A public-only audit
+recovers all four historical local DKG refund candidates, and four winner bits
+from the initially drafted unblinded flag variant. Fresh masks alone do not hide
+these candidates. No full maximum-bid recovery or external publication/leak is
+asserted; the final public settlement bundle excludes delivery transcripts.
+Withdraw v1 transcript privacy claims and preserve historical proof reproduction.
+
+New delivery_private4 and delivery_flags4 add fresh independent uniform private
+commitment blinders, with separate versioned domains/pads for refunds and winner
+bits. Nonzero refund and zero-price flag REP3 gates pass; normal C++ trusted keys
+match and changed price/root/cipher/flags reject. Four input-tool and three Noir
+tests pass. The 16-small-blinder dictionary check is a regression, not an exhaustive
+hiding proof. New native construction requires v2. Native delivery-only consumption
+passes; no native transaction/signatures in that smaller gate. Actual secret share/
+witness writes now inherit umask 077 in 0700 MPC directories; the local parent is
+restricted to 0700, protecting historical fixture contents without changing bytes.
+
+The exact offline copied partial-Prepare DKG gate now also passes with v2 delivery:
+235.147s total, application 218.865s, native proof 7.941s. All six original row
+proofs reverify (102.196s); **no proving key is generated** for complete-cache
+recovery. Original trusted working33 circuit and VK remain unchanged. Same txid/
+effects, four DKG threshold spends, native proof/signatures, six exact openings and
+certified MPC/native checks pass. Two Prepared copies receive zero duplicate
+writes; the Frozen copy receives one Prepare. Original source/proofs/journals are
+unchanged. Historical notes are already spent: no RPC, broadcast or new funded
+auction. Sampled free disk stays above 13,016,420,352 bytes during this gate.
+Changed complete cached proof also rejects before key preparation/signatures or
+journal writes (106.276s); no regeneration fallback. Fresh public-only certified
+replay also passes (107.491s): exact native proof/signatures, all six original
+row proofs, normal C++ settlement proof and all-three signed final-book receipts,
+without delivery pads/blinders/shares/decoded amounts/private openings. Seven
+certificate/authority/book/recipient substitutions reject. Session 53311 is
+completed/consumed; log .local/prepared-v2-public-20261005.log. Positive native
+recovery 1647 and negative complete-proof gate 3821 are completed/consumed too.
+Eight selected Rust tests, 18 Python tests, rustfmt and strict selected release
+all-target clippy pass. No recorded jobs are active.
+Fresh funded v2, full native zero-price and public-testnet NU7 remain unfinished.
+Evidence: evidence/2026-10-05-blinded-delivery-and-dictionary-attack.json.
+Normal native construction now preflights 16 GiB disk; signed reconciliation is
+unchanged. Runtime guards retain 4 GiB disk/8 GiB root RSS/10% macOS headroom.
+
 
 **The separate shared18 NU7-output binding proof and public-only replay pass.**
 The exact new-SDK synthetic V3 output bytes now produce a trusted shared-layout

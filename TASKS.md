@@ -109,9 +109,23 @@ autonomously, incorporate later human/ChatGPT reviews.
     pass. Restart compares the whole actual re-derived scan, not cached balances.
     General advancing public-chain wallet/reorg handling remains separate work.
 - [x] Deliver private refund amounts from MPC without opening maximum bids.
-  - Fresh private field masks, mask commitments and normal C++ verification
-    passed. Operators learn individual refunds; values stay out of public proofs.
-- [ ] Deliver winner flags for zero-price auctions before supporting that full flow.
+  - Legacy deterministic mask commitments reveal two-candidate refunds; that
+    transcript privacy claim is withdrawn after a public-only attack reproduced
+    all four candidates. Versioned delivery_private4 now adds independent secret
+    commitment blinders; actual REP3 and normal C++ verification pass. Native
+    consumption and offline exact cached DKG settlement recovery pass with v2.
+    Operators learn refunds and outcome inference remains; full maximum bids are
+    not opened. Final public settlement bundles exclude the delivery transcript.
+- [x] Deliver separately masked winner flags, including zero-price ties.
+  - Actual delivery_flags4 REP3 proof and normal C++ verification pass; independent
+    private mask/blinder pairs and domains prevent the legacy bit-candidate oracle.
+    Price/root/cipher/flag changes reject. The small-blinder audit is a regression,
+    not an exhaustive hiding proof. Native zero-price remains a separate gate.
+- [ ] Run a new funded v2 native auction and complete zero-price native delivery.
+- [x] Reject changed complete cached binding proofs without regeneration/signatures.
+  - The exact copied partial-Prepare negative gate changes one cached proof;
+    trusted fixed-VK verification rejects before proving-key preparation or FROST.
+    No journal changes, regeneration or original artifact changes occur.
 - [x] Signed acceptance receipts and consistent final root for the four-ticket gate.
   - Three distinct application Ed25519 keys endorse identical authenticated
     instructions. Per-ticket fsynced locks reject equivocation after restart.
@@ -158,6 +172,10 @@ autonomously, incorporate later human/ChatGPT reviews.
     native/application proofs, all six SDK receipts and four spent nullifiers
     reverified. Zero re-sends/blocks/journal writes; canonical height 114 retained.
     General live reorg/expiry remains a separate unfinished gate.
+    Complete-cache offline recovery now uses only the original trusted VK, reuses
+    all six verified proofs and skips the unused proving key. The v2 delivery/
+    MPC/FROST gate passes with unchanged original journals and exact effects;
+    runtime/disk measurements are recorded without a controlled speedup claim.
   - The interrupted row-0 run had no reservation/signature. Existing deposits,
     cutoff, DKG packages and all three Frozen journals survived the PC reboot;
     rerunning with fresh output artifacts, one heavy prover and resource guards.

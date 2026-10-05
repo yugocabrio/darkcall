@@ -10,6 +10,27 @@ import regtest_resources as resources
 
 
 class ResourceTests(unittest.TestCase):
+    def test_expected_failure_requires_exact_diagnostic_and_private_log(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory)
+            plenty = {'free_disk_bytes': resources.MIN_FREE_BYTES + 1}
+            for i, (code, message, passes) in enumerate(((1, 'bad cached proof', True),
+                                                       (1, 'unrelated failure', False),
+                                                       (0, 'bad cached proof', False))):
+                with patch.object(resources, 'sample', return_value=plenty):
+                    args = dict(cwd=path, env=os.environ, timeout=5,
+                                observations=path / f'metrics-{i}',
+                                expected_failure='bad cached proof', failure_log=path / f'log-{i}')
+                    command = [sys.executable, '-c',
+                               f'import sys; print({message!r},file=sys.stderr); sys.exit({code})']
+                    if passes:
+                        self.assertEqual(resources.guarded_json_call(command, **args),
+                                         {'expected_rejection': True, 'returncode': 1})
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, 'not observed'):
+                            resources.guarded_json_call(command, **args)
+                self.assertEqual((path / f'log-{i}').stat().st_mode & 0o777, 0o600)
+
     def test_swap_observation_is_used_bytes_not_total_allocation(self):
         self.assertEqual(resources.swap_used_bytes(
             'vm.swapusage: total = 7168.00M used = 6117.31M free = 1050.69M (encrypted)'),

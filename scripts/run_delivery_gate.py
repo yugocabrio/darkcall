@@ -26,13 +26,20 @@ CRS = UPSTREAM / 'co-noir/co-noir-common/src/crs'
 
 
 def main():
+    # coNoir writes secret input/witness shares itself. Restrict its inherited
+    # creation mode as well as the enclosing directory, independent of shell.
+    os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--book-run', type=pathlib.Path, required=True)
     parser.add_argument('--result-file', type=pathlib.Path)
+    modes=parser.add_mutually_exclusive_group()
+    modes.add_argument('--winner-flags', action='store_true', help='Separate blinded-commitment circuit includes privately masked winner bits')
+    modes.add_argument('--legacy-masks', action='store_true', help='Historical v1 only; public candidate guessing reveals refunds')
     args = parser.parse_args()
-    circuit_name = 'delivery4'
+    circuit_name = 'delivery_flags4' if args.winner_flags else 'delivery4' if args.legacy_masks else 'delivery_private4'
     circuit_path = ROOT / f'circuits/{circuit_name}/target/darkcall_{circuit_name}.json'
-    hash_rule = 'fresh-field-mask-refund-delivery-v1'
+    hash_rule = ('fresh-field-mask-refund-and-winner-delivery-v2' if args.winner_flags else
+                 'fresh-field-mask-refund-delivery-v1' if args.legacy_masks else 'fresh-field-mask-refund-delivery-v2')
     book = args.book_run.resolve()
     if args.result_file is not None and not args.result_file.resolve().is_relative_to(ROOT / '.local'):
         raise RuntimeError('Result file must remain in ignored local fixtures')
@@ -45,7 +52,7 @@ def main():
     for circuit in [circuit_name, 'bid_input']:
         subprocess.run([str(NARGO), 'compile', '--program-dir', str(ROOT / 'circuits' / circuit)], check=True)
     run = ROOT / '.local' / ('mpc-' + circuit_name + '-' + time.strftime('%Y%m%dT%H%M%SZ', time.gmtime()))
-    run.mkdir()
+    run.mkdir(mode=0o700)
     summary = dict(scope='operator-only masked refund delivery', hash_rule=hash_rule, circuit=circuit_name, source_pin=PIN,
                    independent_hosts=False, funded_transaction=False, custody_signatures=False,
                    input_proofs_verified=False, masked_refunds_delivered=False,
@@ -94,7 +101,8 @@ def main():
             summary['stages'].append(stage)
             (run/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
 
-    record('delivery-fixture', [['delivery-fixture',book/'book.json',run/'plan']], binary=INPUT)
+    fixture_mode = 'flags-fixture' if args.winner_flags else 'delivery-fixture' if args.legacy_masks else 'private-fixture'
+    record('delivery-fixture', [[fixture_mode,book/'book.json',run/'plan']], binary=INPUT)
     record('trusted-client-vk', [['create-vk','--circuit',CLIENT,'--crs',CRS/'bn254_g1.dat','--hasher','poseidon2','--vk',run/'client-vk']])
     record('client-proof-verification', [['verify','--proof',book/f'client{i}/proof_plaindriver',
         '--public-input',book/f'client{i}/public_inputs_plaindriver','--vk',run/'client-vk',
@@ -131,16 +139,22 @@ def main():
     encoded=(run/'public-input0').read_bytes()
     if any((run/f'public-input{i}').read_bytes()!=encoded for i in [1,2]): raise RuntimeError('MPC parties disagree')
     fields=[int.from_bytes(encoded[i:i+32],'big') for i in range(0,len(encoded),32)]
-    if len(fields)!=179: raise RuntimeError('Unexpected delivery statement size')
-    record('deliver-refunds',[['delivery-result',book/'book.json',run/'plan/masks.json',run/'public-input0',run/'delivered-amounts.json']],binary=INPUT)
-    for name,index in [('price',173),('root',168),('cipher',175)]:
+    if len(fields)!=(187 if args.winner_flags else 179): raise RuntimeError('Unexpected delivery statement size')
+    result = ['flags-result',book/'book.json',run/'plan/masks.json',run/'plan/winner-masks.json',run/'public-input0',run/'delivered-amounts.json'] if args.winner_flags else ['delivery-result' if args.legacy_masks else 'private-result',book/'book.json',run/'plan/masks.json',run/'public-input0',run/'delivered-amounts.json']
+    record('deliver-refunds',[result],binary=INPUT)
+    offset = 4 if args.winner_flags else 0
+    changed_fields = [('price',173+offset),('root',168),('cipher',175+offset)]
+    if args.winner_flags: changed_fields.append(('winner',183))
+    for name,index in changed_fields:
         changed=bytearray(encoded); changed[index*32:(index+1)*32]=(fields[index]^1).to_bytes(32,'big')
         (run/f'tampered-{name}').write_bytes(changed)
         log=run/f'reject-{name}.log'
         with log.open('wb') as out:
             result=subprocess.run([str(BIN),*map(str,[*verify,'--public-input',run/f'tampered-{name}'])],stdout=out,stderr=subprocess.STDOUT,env=env,timeout=300)
         if result.returncode==0 or 'Proof verification failed' not in log.read_text(): raise RuntimeError('No cryptographic rejection of '+name)
-    summary.update(passed=True,price=fields[173],sold=fields[174],masked_refunds_delivered=True,maximum_bids_reconstructed=False,
+    summary.update(passed=True,price=fields[173+offset],sold=fields[174+offset],masked_refunds_delivered=True,maximum_bids_reconstructed=False,
+        masked_winner_flags_delivered=args.winner_flags,changed_masked_winner_rejected=args.winner_flags,
+        mask_commitments_blinded=not args.legacy_masks,legacy_candidate_guessing_leak=args.legacy_masks,
         proof_bytes=(run/'proof.0').stat().st_size,changed_price_root_cipher_rejected=True,
         external_barretenberg_verified=False,funding_authenticated=False,receiver_receipts_authenticated=False)
     (run/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')

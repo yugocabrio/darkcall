@@ -125,7 +125,8 @@ def main():
         command.append(str(source))
     construction = guarded_json_call(command,
         cwd=ROOT, env=ENV, timeout=3600,
-        observations=ROOT / '.local' / (args.name + '-resources.jsonl'))
+        observations=ROOT / '.local' / (args.name + '-resources.jsonl'),
+        minimum_start_disk_bytes=16 * 1024 ** 3)
     directory = ROOT / '.local' / args.name
     if status()['tip'] != snapshot['tip']:
         raise RuntimeError('Chain changed during proving; rescan/reconcile before broadcast')

@@ -58,6 +58,8 @@ def main():
     parser.add_argument('built_source', type=pathlib.Path)
     parser.add_argument('proved_source', type=pathlib.Path)
     parser.add_argument('--name', required=True)
+    parser.add_argument('--reject-cached-proof-only', action='store_true',
+                        help='Change one copied cached proof; require rejection before proving/signing/reservation')
     args = parser.parse_args()
     if (not args.name or len(args.name) > 32
             or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in args.name)):
@@ -129,9 +131,9 @@ def main():
             or not all(o['reserved_transaction_matches'] for o in operators[:2])):
         raise RuntimeError('Copied partial-reservation fixture did not reconstruct the expected stage')
 
-    def command(target, name):
+    def command(target, name, proof_source=source):
         return [str(NATIVE), '--regtest-resume-built', *map(str,
-                (escrow, notes, book, receivers, target, name, source))]
+                (escrow, notes, book, receivers, target, name, proof_source))]
 
     log = local / (args.name + '-rejection.log')
     fd = os.open(log, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
@@ -150,6 +152,42 @@ def main():
         negative_path = negative / f'private-node-{i}.jsonl'
         if private_read(negative_path) != negative_prefixes[i]:
             raise RuntimeError('Rejected operation mutated a copied journal')
+
+    if args.reject_cached_proof_only:
+        corrupt = local / (args.name + '-bad-proof-source')
+        corrupt.mkdir(mode=0o700)
+        for path in source.iterdir():
+            data = bytearray(private_read(path, 1_000_000))
+            if path.name == 'native-binding-proof-0':
+                if len(data) < 2:
+                    raise RuntimeError('Expected a complete cached proof before corruption')
+                data[len(data) // 2] ^= 1
+            write_bytes(corrupt / path.name, data)
+        log = local / (args.name + '-proof-rejection.log')
+        rejected = guarded_json_call(command(admission, args.name, corrupt),
+            cwd=ROOT, env=ENV, timeout=300,
+            observations=local / (args.name + '-resources.jsonl'),
+            expected_failure='resumed complete native proof set', failure_log=log)
+        if b'Integrated native row key preparation started' in private_read(log):
+            raise RuntimeError('Invalid complete cache reached proving-key preparation')
+        if any((local / args.name / filename).exists() for filename in
+               ('native-proof-summary.json', 'prepared-settlement.pczt', 'regtest-transaction.bin')):
+            raise RuntimeError('Invalid complete cache reached native proof/signing checkpoint')
+        for i in range(3):
+            if private_read(admission / f'private-node-{i}.jsonl') != prefixes[i]:
+                raise RuntimeError('Invalid complete cache changed a reservation journal')
+        for path, digest in original_hashes.items():
+            if hashlib.sha256(private_read(path)).hexdigest() != digest:
+                raise RuntimeError('Negative gate changed an original construction/proof/journal')
+        summary = {'scope': 'offline changed complete cached-proof rejection; no native signing or chain operation',
+            **rejected, 'changed_cached_proof_rejected': True,
+            'proving_key_generated': False, 'native_signatures_created': False,
+            'new_prepare_events': 0, 'copied_journals_unchanged': True,
+            'original_journals_and_source_unchanged': True,
+            'broadcast': False, 'rpc_called': False, 'mining': False}
+        private_write(local / (args.name + '-summary.json'), summary)
+        print(json.dumps(summary, indent=2), flush=True)
+        return
 
     construction = guarded_json_call(command(admission, args.name), cwd=ROOT, env=ENV,
         timeout=1800, observations=local / (args.name + '-resources.jsonl'))
@@ -171,6 +209,8 @@ def main():
         if hashlib.sha256(private_read(path)).hexdigest() != digest:
             raise RuntimeError('Original construction/proofs/journals changed')
     profile = json.loads((local / args.name / 'native-proof-summary.json').read_bytes())
+    if profile['proving_key_generated'] or profile['reused_native_row_proofs'] != 6:
+        raise RuntimeError('Complete-cache recovery unexpectedly generated a proving key or row')
     summary = {'scope': 'offline historical actual-regtest note construction from copied journal prefixes; never broadcast',
         'construction': construction, 'existing_prepared_journals': 2, 'frozen_journals': 1,
         'existing_prepare_events_rewritten_or_duplicated': 0, 'new_prepare_events': 1,

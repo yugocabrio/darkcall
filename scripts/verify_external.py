@@ -18,7 +18,7 @@ CRS = ROOT / ".deps/co-snarks/co-noir/co-noir-common/src/crs"
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=pathlib.Path)
-    parser.add_argument("--circuit", choices=["auction4", "row_hash", "settlement4", "settlement_poseidon4", "delivery4", "poseidon_row"], default="auction4")
+    parser.add_argument("--circuit", choices=["auction4", "row_hash", "settlement4", "settlement_poseidon4", "delivery4", "delivery_private4", "delivery_flags4", "poseidon_row"], default="auction4")
     parser.add_argument("--output-label", default="external-bb")
     args = parser.parse_args()
     if not re.fullmatch(r'[a-z0-9-]{1,80}', args.output_label):
@@ -31,6 +31,8 @@ def main():
         "settlement4": [("price", "tampered-price"), ("plan", "tampered-plan"), ("row", "tampered-row")],
         "settlement_poseidon4": [("price", "tampered-price"), ("plan", "tampered-plan"), ("row", "tampered-row")],
         "delivery4": [("price", "tampered-price"), ("root", "tampered-root"), ("cipher", "tampered-cipher")],
+        "delivery_flags4": [("price", "tampered-price"), ("root", "tampered-root"), ("cipher", "tampered-cipher"), ("winner", "tampered-winner")],
+        "delivery_private4": [("price", "tampered-price"), ("root", "tampered-root"), ("cipher", "tampered-cipher")],
     }[args.circuit]
     run = args.run.resolve()
     if not run.is_relative_to(ROOT / ".local"):

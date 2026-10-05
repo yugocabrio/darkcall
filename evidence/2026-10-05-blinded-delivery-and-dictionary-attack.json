@@ -1,0 +1,595 @@
+{
+  "recorded_utc": "2026-10-05T10:15:36.834494+00:00",
+  "scope": "Public-only legacy dictionary attack; actual blinded-mask REP3/coSNARK refund and zero-price flag gates; offline historical-note exact native MPC/FROST recovery using all six verified cached bindings, never broadcast",
+  "legacy_public_only_attack": {
+    "refund": {
+      "blind_guesses_per_candidate": 0,
+      "blinded_commitment": false,
+      "private_masks_bids_shares_read": false,
+      "refunded_tickets_recovered": 4,
+      "scope": "public-only candidate/mask dictionary regression; not exhaustive hiding proof",
+      "winner_bits_recovered": 0
+    },
+    "winner": {
+      "blind_guesses_per_candidate": 0,
+      "blinded_commitment": false,
+      "private_masks_bids_shares_read": false,
+      "refunded_tickets_recovered": 4,
+      "scope": "public-only candidate/mask dictionary regression; not exhaustive hiding proof",
+      "winner_bits_recovered": 4
+    }
+  },
+  "v2_refund": {
+    "mpc": {
+      "scope": "operator-only masked refund delivery",
+      "hash_rule": "fresh-field-mask-refund-delivery-v2",
+      "circuit": "delivery_private4",
+      "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+      "independent_hosts": false,
+      "funded_transaction": false,
+      "custody_signatures": false,
+      "input_proofs_verified": true,
+      "masked_refunds_delivered": true,
+      "binary_sha256": "c9206a40a44b6a393333b9b050a1cd1904881227d889896a711ff07206f418c2",
+      "stages": [
+        {
+          "name": "delivery-fixture",
+          "passed": true,
+          "seconds": 0.212,
+          "peak_rss_bytes_per_process": [
+            1818624
+          ]
+        },
+        {
+          "name": "trusted-client-vk",
+          "passed": true,
+          "seconds": 0.211,
+          "peak_rss_bytes_per_process": [
+            31932416
+          ]
+        },
+        {
+          "name": "client-proof-verification",
+          "passed": true,
+          "seconds": 0.216,
+          "peak_rss_bytes_per_process": [
+            7405568,
+            7307264,
+            7372800,
+            7356416
+          ]
+        },
+        {
+          "name": "share-checks",
+          "passed": true,
+          "seconds": 0.219,
+          "peak_rss_bytes_per_process": [
+            1851392,
+            1785856,
+            1736704,
+            1785856,
+            1785856,
+            1818624,
+            1785856,
+            1851392,
+            1851392,
+            1851392,
+            1818624,
+            1818624
+          ]
+        },
+        {
+          "name": "split-public",
+          "passed": true,
+          "seconds": 0.205,
+          "peak_rss_bytes_per_process": [
+            10829824
+          ]
+        },
+        {
+          "name": "split-operator",
+          "passed": true,
+          "seconds": 0.213,
+          "peak_rss_bytes_per_process": [
+            10616832
+          ]
+        },
+        {
+          "name": "merge-0",
+          "passed": true,
+          "seconds": 0.216,
+          "peak_rss_bytes_per_process": [
+            10141696
+          ]
+        },
+        {
+          "name": "merge-1",
+          "passed": true,
+          "seconds": 0.207,
+          "peak_rss_bytes_per_process": [
+            10076160
+          ]
+        },
+        {
+          "name": "merge-2",
+          "passed": true,
+          "seconds": 0.212,
+          "peak_rss_bytes_per_process": [
+            10174464
+          ]
+        },
+        {
+          "name": "witness",
+          "passed": true,
+          "seconds": 0.64,
+          "peak_rss_bytes_per_process": [
+            14270464,
+            13795328,
+            13893632
+          ]
+        },
+        {
+          "name": "vk",
+          "passed": true,
+          "seconds": 0.42,
+          "peak_rss_bytes_per_process": [
+            55115776
+          ]
+        },
+        {
+          "name": "proof",
+          "passed": true,
+          "seconds": 4.363,
+          "peak_rss_bytes_per_process": [
+            342949888,
+            345538560,
+            330301440
+          ]
+        },
+        {
+          "name": "verify",
+          "passed": true,
+          "seconds": 0.218,
+          "peak_rss_bytes_per_process": [
+            7225344
+          ]
+        },
+        {
+          "name": "deliver-refunds",
+          "passed": true,
+          "seconds": 0.224,
+          "peak_rss_bytes_per_process": [
+            1785856
+          ]
+        }
+      ],
+      "validated_share_pairs": 12,
+      "passed": true,
+      "price": 20,
+      "sold": 3,
+      "maximum_bids_reconstructed": false,
+      "masked_winner_flags_delivered": false,
+      "changed_masked_winner_rejected": false,
+      "mask_commitments_blinded": true,
+      "legacy_candidate_guessing_leak": false,
+      "proof_bytes": 14656,
+      "changed_price_root_cipher_rejected": true,
+      "external_barretenberg_verified": false,
+      "funding_authenticated": false,
+      "receiver_receipts_authenticated": false
+    },
+    "cpp": {
+      "barretenberg_source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+      "circuit": "delivery_private4",
+      "compatibility_patches": [
+        "Apple Clang 15 deduction guide",
+        "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"
+      ],
+      "zk": true,
+      "passed": true,
+      "matching_key": true,
+      "cryptographic_rejections": [
+        "price",
+        "root",
+        "cipher"
+      ],
+      "circuit_sha256": "c1de8aaedcb4d82538330907759bf8f0735ce81ea5e383d50e872cd232f845c3",
+      "seconds": 0.304
+    },
+    "candidate_regression": {
+      "blind_guesses_per_candidate": 16,
+      "blinded_commitment": true,
+      "private_masks_bids_shares_read": false,
+      "refunded_tickets_recovered": 0,
+      "scope": "public-only candidate/mask dictionary regression; not exhaustive hiding proof",
+      "winner_bits_recovered": 0
+    }
+  },
+  "v2_zero_price_flags": {
+    "mpc": {
+      "scope": "operator-only masked refund delivery",
+      "hash_rule": "fresh-field-mask-refund-and-winner-delivery-v2",
+      "circuit": "delivery_flags4",
+      "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+      "independent_hosts": false,
+      "funded_transaction": false,
+      "custody_signatures": false,
+      "input_proofs_verified": true,
+      "masked_refunds_delivered": true,
+      "binary_sha256": "c9206a40a44b6a393333b9b050a1cd1904881227d889896a711ff07206f418c2",
+      "stages": [
+        {
+          "name": "delivery-fixture",
+          "passed": true,
+          "seconds": 0.243,
+          "peak_rss_bytes_per_process": [
+            2015232
+          ]
+        },
+        {
+          "name": "trusted-client-vk",
+          "passed": true,
+          "seconds": 0.23,
+          "peak_rss_bytes_per_process": [
+            35864576
+          ]
+        },
+        {
+          "name": "client-proof-verification",
+          "passed": true,
+          "seconds": 0.239,
+          "peak_rss_bytes_per_process": [
+            7143424,
+            7192576,
+            7061504,
+            7094272
+          ]
+        },
+        {
+          "name": "share-checks",
+          "passed": true,
+          "seconds": 0.237,
+          "peak_rss_bytes_per_process": [
+            1703936,
+            1818624,
+            1753088,
+            1753088,
+            1753088,
+            1703936,
+            1753088,
+            1884160,
+            1703936,
+            1703936,
+            1851392,
+            1703936
+          ]
+        },
+        {
+          "name": "split-public",
+          "passed": true,
+          "seconds": 0.211,
+          "peak_rss_bytes_per_process": [
+            10813440
+          ]
+        },
+        {
+          "name": "split-operator",
+          "passed": true,
+          "seconds": 0.229,
+          "peak_rss_bytes_per_process": [
+            10616832
+          ]
+        },
+        {
+          "name": "merge-0",
+          "passed": true,
+          "seconds": 0.21,
+          "peak_rss_bytes_per_process": [
+            9945088
+          ]
+        },
+        {
+          "name": "merge-1",
+          "passed": true,
+          "seconds": 0.223,
+          "peak_rss_bytes_per_process": [
+            10158080
+          ]
+        },
+        {
+          "name": "merge-2",
+          "passed": true,
+          "seconds": 0.211,
+          "peak_rss_bytes_per_process": [
+            10272768
+          ]
+        },
+        {
+          "name": "witness",
+          "passed": true,
+          "seconds": 0.841,
+          "peak_rss_bytes_per_process": [
+            14565376,
+            14696448,
+            14352384
+          ]
+        },
+        {
+          "name": "vk",
+          "passed": true,
+          "seconds": 0.656,
+          "peak_rss_bytes_per_process": [
+            58114048
+          ]
+        },
+        {
+          "name": "proof",
+          "passed": true,
+          "seconds": 4.62,
+          "peak_rss_bytes_per_process": [
+            351649792,
+            361168896,
+            370212864
+          ]
+        },
+        {
+          "name": "verify",
+          "passed": true,
+          "seconds": 0.209,
+          "peak_rss_bytes_per_process": [
+            7127040
+          ]
+        },
+        {
+          "name": "deliver-refunds",
+          "passed": true,
+          "seconds": 0.211,
+          "peak_rss_bytes_per_process": [
+            1785856
+          ]
+        }
+      ],
+      "validated_share_pairs": 12,
+      "passed": true,
+      "price": 0,
+      "sold": 3,
+      "maximum_bids_reconstructed": false,
+      "masked_winner_flags_delivered": true,
+      "changed_masked_winner_rejected": true,
+      "mask_commitments_blinded": true,
+      "legacy_candidate_guessing_leak": false,
+      "proof_bytes": 14656,
+      "changed_price_root_cipher_rejected": true,
+      "external_barretenberg_verified": false,
+      "funding_authenticated": false,
+      "receiver_receipts_authenticated": false
+    },
+    "cpp": {
+      "barretenberg_source": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+      "circuit": "delivery_flags4",
+      "compatibility_patches": [
+        "Apple Clang 15 deduction guide",
+        "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"
+      ],
+      "zk": true,
+      "passed": true,
+      "matching_key": true,
+      "cryptographic_rejections": [
+        "price",
+        "root",
+        "cipher",
+        "winner"
+      ],
+      "circuit_sha256": "eb6df7bbd0b68479bfd58a0c94c1062e2bc379bb8388c085b347c4d046eca6fe",
+      "seconds": 0.41
+    },
+    "candidate_regression": {
+      "blind_guesses_per_candidate": 16,
+      "blinded_commitment": true,
+      "private_masks_bids_shares_read": false,
+      "refunded_tickets_recovered": 0,
+      "scope": "public-only candidate/mask dictionary regression; not exhaustive hiding proof",
+      "winner_bits_recovered": 0
+    }
+  },
+  "noir_tests_passed": 3,
+  "input_tool_tests_passed": 4,
+  "native_funded_e2e_rerun_with_v2": false,
+  "privacy_assumptions": "Fresh independent uniform masks and private commitment blinders; Poseidon2 commitment hiding assumptions and semi-honest REP3. Public aggregate outcomes can still imply amounts/status. Guessing 16 blind values is a regression test, not a formal or exhaustive security proof.",
+  "prior_funded_proofs_or_journals_modified": false,
+  "private_masks_blinders_bids_shares_in_evidence": false,
+  "native_delivery_consumer": {
+    "broadcast": false,
+    "custody_signatures": false,
+    "delivery_rule": "fresh-field-mask-refund-delivery-v2",
+    "delivery_verified": true,
+    "maximum_bids_read": false,
+    "native_transaction_built": false,
+    "normal_cpp_delivery_verifier_passed": true,
+    "price": 20,
+    "scope": "native integration consumes verified blinded-mask refunds only; no native construction",
+    "sold": 3
+  },
+  "offline_native_cached_recovery_v2": {
+    "scope": "offline historical actual-regtest note construction from copied journal prefixes; never broadcast",
+    "construction": {
+      "application_proof_seconds": 218.865271,
+      "broadcast": false,
+      "chain_funding": "actual SDK-scanned notes; provenance checked by Python driver",
+      "changed_recipient_outputs_effects_rejected": true,
+      "client_spending_keys_read": false,
+      "escrow_full_ask_derived_or_reconstructed": false,
+      "escrow_master_key_read": false,
+      "fee": 30000,
+      "fills_from_plaintext_oracle_fixture": false,
+      "funding_observations_fabricated": false,
+      "funding_reservations_fsynced_before_signing": true,
+      "independent_custody_hosts": false,
+      "inputs": 4,
+      "maximum_bids_read": false,
+      "native_bindings_and_cpp_mpc_verified": true,
+      "native_proof_and_signatures_verified": true,
+      "outputs": 6,
+      "price": 20,
+      "private_refund_delivery_verified": true,
+      "proof_seconds": 7.940713833,
+      "scope": "actual isolated regtest certified four-input native auction construction",
+      "setup": "local three-participant DKG; all shares on one host; no escrow master key",
+      "signed_root_and_recipients_checked_before_frost": true,
+      "sold": 3,
+      "source_inputs_match_all_three_durable_journals": true,
+      "threshold": "2-of-3",
+      "total_seconds": 235.147127959,
+      "transaction_bytes": 21790,
+      "txid": "89547f42484258df9958dd2775018a4665c3888363c26a99aacd0e5abb97b859"
+    },
+    "existing_prepared_journals": 2,
+    "frozen_journals": 1,
+    "existing_prepare_events_rewritten_or_duplicated": 0,
+    "new_prepare_events": 1,
+    "same_transaction_effects": true,
+    "original_journals_and_source_unchanged": true,
+    "cancellation_purpose_substitution_rejected_before_native_proving_signing": true,
+    "native_proof_profile": {
+      "book_context_supplied": true,
+      "cached_set_verify_seconds": 102.19648325,
+      "delivery_run": "mpc-delivery_private4-20261005T100354Z",
+      "fills_from_plaintext_oracle_fixture": false,
+      "funding_proven": false,
+      "hash_rule": "bn254-poseidon2-packed-row-v1",
+      "key_seconds": 4.2e-08,
+      "native_custody_signature_verified": false,
+      "price": 20,
+      "private_fill_delivery_verified": true,
+      "proof_verified": true,
+      "proving_key_generated": false,
+      "reused_native_row_proofs": 6,
+      "row_proof_and_verify_seconds": [
+        0.0083175,
+        0.004962375,
+        0.006927375,
+        0.006049708,
+        0.0039525,
+        0.005006625
+      ],
+      "rows": 6,
+      "seconds": 102.243508541,
+      "sold": 3,
+      "synthetic_inputs": false
+    },
+    "maximum_bids_read": false,
+    "historical_notes_may_already_be_spent": true,
+    "chain_funding_verified_here": false,
+    "broadcast": false,
+    "mining": false,
+    "rpc_called": false,
+    "private_material_committed": false
+  },
+  "offline_native_cached_recovery_resources": {
+    "sample_interval_seconds": 10,
+    "max_sampled_root_resident_kib": 743104,
+    "min_sampled_free_disk_bytes": 13016420352,
+    "max_sampled_used_swap_bytes": 6252721602,
+    "sampled_not_true_peak": true,
+    "controlled_performance_comparison": false
+  },
+  "permission_gate": {
+    "local_parent_mode": "0700",
+    "settlement_mpc_run_mode": "0700",
+    "generated_secret_witness_and_input_share_modes": "0600",
+    "scripts_inherit_umask": "077",
+    "original_secret_contents_changed": false
+  },
+  "commands": [
+    "python3 scripts/run_delivery_gate.py --book-run .local/mpc-auction4-20261004T231421Z",
+    "python3 scripts/run_delivery_gate.py --book-run .local/mpc-auction4-20261005T093324Z --winner-flags",
+    "python3 scripts/verify_external.py .local/mpc-delivery_private4-20261005T094410Z --circuit delivery_private4",
+    "python3 scripts/verify_external.py .local/mpc-delivery_flags4-20261005T094306Z --circuit delivery_flags4",
+    "RAYON_NUM_THREADS=2 target/release/darkcall-native-gate --integration-delivery-check .local/mpc-auction4-20261004T231421Z delivery-consumer-v2-20261005",
+    "python3 scripts/regtest_prepared_gate.py .local/regtest-dkg-deposit4-20261005 .local/mpc-auction4-20261004T231421Z .local/regtest-dkg-auction4-recovery2-20261005 .local/regtest-dkg-auction4-resumed-20261005 --name prepared-v2-20261005",
+    "python3 -m unittest discover -s scripts -p test_regtest_*.py",
+    "cargo clippy --locked --release -p darkcall-native-gate -p darkcall-input-tool --all-targets -- -D warnings",
+    "python3 scripts/regtest_prepared_gate.py .local/regtest-dkg-deposit4-20261005 .local/mpc-auction4-20261004T231421Z .local/regtest-dkg-auction4-recovery2-20261005 .local/regtest-dkg-auction4-resumed-20261005 --name prepared-v2-bad-proof-20261005 --reject-cached-proof-only",
+    "cargo test --locked --release -p darkcall-input-tool -p darkcall-native-gate",
+    "cargo fmt --all -- --check",
+    "python3 scripts/replay_certified_bundle.py .local/prepared-v2-20261005 .local/regtest-dkg-deposit4-20261005-admission/final-book-certificate.json .local/regtest-dkg-deposit4-20261005-admission/manifest.json --name prepared-v2-public-20261005"
+  ],
+  "changed_complete_cached_proof_rejection": {
+    "scope": "offline changed complete cached-proof rejection; no native signing or chain operation",
+    "expected_rejection": true,
+    "returncode": 1,
+    "changed_cached_proof_rejected": true,
+    "proving_key_generated": false,
+    "native_signatures_created": false,
+    "new_prepare_events": 0,
+    "copied_journals_unchanged": true,
+    "original_journals_and_source_unchanged": true,
+    "broadcast": false,
+    "rpc_called": false,
+    "mining": false
+  },
+  "python_checkpoint_recovery_resource_tests_passed": 18,
+  "strict_native_input_all_target_release_clippy_passed": true,
+  "certified_public_only_v2_native_replay": {
+    "source": "prepared-v2-20261005",
+    "directory": "prepared-v2-public-20261005",
+    "public_only_replay": {
+      "acceptance_authentication_scope": "all-three operator attestation; not a public funding proof",
+      "acceptance_or_recipient_receipts_authenticated": true,
+      "actual_transaction_outputs_match": true,
+      "chain_funding_or_finality_verified": false,
+      "hash_rule": "bn254-poseidon2-packed-row-v1",
+      "native_proof_and_signatures_verified": true,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "private_openings_read": false,
+      "scope": "public-only transaction/application-proof replay; chain inclusion checked separately",
+      "seconds": 107.490798667,
+      "transaction_bytes": 21790,
+      "txid": "89547f42484258df9958dd2775018a4665c3888363c26a99aacd0e5abb97b859"
+    },
+    "trusted_manifest_supplied_explicitly": true,
+    "funding_journals_or_private_openings_copied": false,
+    "chain_funding_or_finality_verified": false,
+    "tampering": {
+      "operator_signature": {
+        "rejected": true,
+        "seconds": 0.007,
+        "reason": "certified MPC acceptance"
+      },
+      "duplicate_operator": {
+        "rejected": true,
+        "seconds": 0.007,
+        "reason": "certified MPC acceptance"
+      },
+      "accepted_intent": {
+        "rejected": true,
+        "seconds": 0.004,
+        "reason": "certified MPC acceptance"
+      },
+      "bid_commitment": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "accepted_root": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "refund_receiver": {
+        "rejected": true,
+        "seconds": 0.004,
+        "reason": "certified MPC acceptance"
+      },
+      "trusted_auction_cutoff": {
+        "rejected": true,
+        "seconds": 0.002,
+        "reason": "certified MPC acceptance"
+      }
+    },
+    "passed": true
+  },
+  "root_native_unit_tests_passed": 4,
+  "rustfmt_check_passed": true
+}

@@ -28,8 +28,10 @@ PIN = "467a2abbad940d40ed78f38d424cc21920988976"
 
 
 def main():
+    os.umask(0o077)  # Includes coNoir-created secret shares/witnesses.
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bids',type=int,nargs=4,default=[90,70,60,50],help='Synthetic client fixture only; never real bid arguments')
+    parser.add_argument('--reserve',type=int,choices=(0,20),default=20,help='Synthetic context; zero enables zero-price fixtures')
     parser.add_argument('--result-file',type=pathlib.Path)
     args=parser.parse_args()
     if any(b<0 or b>100 for b in args.bids): raise RuntimeError('Fixture bids outside budget')
@@ -45,7 +47,7 @@ def main():
     subprocess.run([str(NARGO), "compile", "--program-dir", str(ROOT / "circuits/auction4")], check=True)
     subprocess.run([str(NARGO), "compile", "--program-dir", str(ROOT / "circuits/bid_input")], check=True)
     run = ROOT / ".local" / ("mpc-auction4-" + time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()))
-    run.mkdir(exist_ok=False)
+    run.mkdir(mode=0o700, exist_ok=False)
     summary = {
         "source_pin": PIN,
         "scope": "synthetic committed-input calculation gate",
@@ -105,7 +107,8 @@ def main():
             summary["stages"].append(stage)
             (run / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
 
-    record("client-fixture", [["fixture", run, *args.bids]], 60, INPUT_TOOL)
+    fixture = ["fixture", run, *args.bids] if args.reserve == 20 else ["fixture-reserve", run, args.reserve, *args.bids]
+    record("client-fixture", [fixture], 60, INPUT_TOOL)
     crs = UPSTREAM / "co-noir/co-noir-common/src/crs"
     record("trusted-client-vk", [[
         "create-vk", "--circuit", CLIENT_CIRCUIT, "--crs", crs / "bn254_g1.dat",
@@ -198,8 +201,8 @@ def main():
     if len(outputs) % 32:
         raise RuntimeError("Unexpected public input encoding")
     fields = [int.from_bytes(outputs[i:i + 32], "big") for i in range(0, len(outputs), 32)]
-    eligible=sorted((b for b in args.bids if b>=20),reverse=True)
-    expected_price=eligible[3] if len(eligible)>3 else 20
+    eligible=sorted((b for b in args.bids if b>=args.reserve),reverse=True)
+    expected_price=eligible[3] if len(eligible)>3 else args.reserve
     expected_sold=min(3,len(eligible))
     if fields[-2:] != [expected_price, expected_sold]:
         raise RuntimeError("Public result differs from independent fixture: " + str(fields[-2:]))

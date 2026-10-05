@@ -26,6 +26,7 @@ CRS = UPSTREAM / 'co-noir/co-noir-common/src/crs'
 
 
 def main():
+    os.umask(0o077)  # Includes coNoir-created secret shares/witnesses.
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--book-run', type=pathlib.Path, required=True)
     parser.add_argument('--native-run', type=pathlib.Path, required=True)
@@ -54,7 +55,7 @@ def main():
     if native_summary.get('hash_rule', 'sha256-row-v1') != hash_rule:
         raise RuntimeError('Native proof uses a different hash rule')
     run = ROOT / '.local' / ('mpc-' + circuit_name + '-' + time.strftime('%Y%m%dT%H%M%SZ', time.gmtime()))
-    run.mkdir()
+    run.mkdir(mode=0o700)
     summary = dict(scope='six-row comparison with output-only native bundle', hash_rule=hash_rule, circuit=circuit_name, source_pin=PIN,
                    independent_hosts=False, funded_transaction=False, custody_signatures=False,
                    input_proofs_verified=False, native_row_proof_verified=False,
