@@ -1,8 +1,33 @@
 # DarkCall status
 
-Updated: 2026-10-05 (NU7 actual funding/DKG transfer recorded; git HEAD is authoritative).
+Updated: 2026-10-05 (fresh NU7 funded admission/final root recorded; git HEAD is authoritative).
 
 ## Current outcome
+
+**Four fresh NU7 deposits now produce an authenticated frozen book.**
+Fresh local DKG escrow receives four actual15100zatoshi notes in a native NU7
+transaction7d7fd7a4…56d1efe8 (18634bytes/five actions/25000fee). Zebra accepts it,
+two controlled confirmations and all four canonical scanner paths pass at110.
+New SDK decrypts actual memo ciphertexts and reuses existing claim-intent
+validation: four client signatures, four input ZK proofs and12 delivered pairs
+are reverified without reading maximum bids. Twelve acceptance receipts and
+three final-book signatures are durable, issued after the declared real cutoff.
+Same accepted root matches the client input book. Escrow admission reads FVK
+only, not custody packages/master spending key. All actors remain on one host.
+Thirteen actual ciphertext/claim/book/receiver/encoding substitutions reject;
+eight certificate/root/authority substitutions reject without changing journals.
+Legacy wallet17 tests, its examples2 tests, shared protocol12 tests and both
+strict all-target clippy checks pass. Native circuit/verifier remain unchanged.
+Off-chain source is shared to avoid an old/new SDK bip32 dependency conflict.
+Root lock adds only the local package; no existing external resolution changes.
+The separate SDK lock retains all327 original packages/checksums and adds179
+for existing off-chain primitives. Selected-target inventories431/462 packages
+have no missing license declaration. See
+`evidence/2026-10-05-nu7-funded-admission.json`.
+These accepted notes are Frozen/unspent. Latest funded six-output memo settlement,
+binding/MPC/FROST, public replay and recipient delivery are still to connect.
+Existing committed input proofs/shares use fixture tickets/terms on one host;
+this is controlled regtest, not public testnet or a public ZK funding proof.
 
 **Actual NU7 funding and DKG spending pass on a separate full node.**
 Official Zebra7.0.0-rc.0 activates branch77190ad9 at height2 on its own regtest,
@@ -89,21 +114,27 @@ retained as `.local/canonical-nu7-public-attacks-20261005`, not a crypto failure
 Only rebuildable `target/release/deps/*.rmeta` compiler metadata was deleted
 (1141971132bytes); all binaries/source/proofs/keys/journals were kept.
 
-**Current local jobs.** Warm measurement and NU7 actual-note migration gate are
-complete; no heavy prover/compiler remains running. New node
-darkcall-zebra-regtest-nu7-700rc0 is idle at108 on29342 with its own state;
+**Current local jobs.** Warm measurement and NU7 actual-note/admission gates are
+complete. Driver44502, tests8656, SDK build27074 and inventory48696 all completed
+and were consumed. Root native-gate regression build2342 also passes in136s and was consumed.
+SDK test20201 also passed (one existing chain-identity test) and was consumed.
+No heavy build/prover remains running; preserve the Frozen funded book for settlement.
+New funded book, escrow and three Frozen journals are under
+.local/nu7-funded-book-20261005[-escrow/-admission]. Original cutoff is preserved.
+Never reset these wallets/journals or remint funding to recover construction.
+Node darkcall-zebra-regtest-nu7-700rc0 is idle at110 on29342 with its own state;
 the old6.3.0 node is untouched. SDK release build/strict clippy/fmt and Python
-checks pass; no lock or dependency changes. Transfer build26960, clippy21904,
-bank send7832 and DKG spend43138 all finished and were consumed; do not duplicate.
+checks pass. Transfer build26960, clippy21904, bank send7832 and DKG spend43138
+all finished and were consumed; do not duplicate.
 Private wallet captures/keys remain ignored; retain them for the next integration.
 Local canonical demo remains PID34999,
 exec session45695 at http://127.0.0.1:8877; log
 .local/canonical-demo-v2-server-20261005.log. Temporary public-only test server
 PID35061/session42429 was stopped; no duplicate server is needed. Automation
 `darkcall` was deleted at the human's request. Check process/port before restarting.
-Root and NU7 locks are unchanged. Root worker tests, strict clippy, both rustfmt
-checks and relevant Python checks pass. New SDK inventory refreshed295 packages
-under its existing lock; no missing declared license. See
+Locks/inventories reflect the shared off-chain package described above. Prior root
+worker checks remain valid; wallet/protocol checks were rerun after this source
+packaging change. Both rustfmt checks and relevant Python checks pass. See
 `evidence/2026-10-05-canonical-nu7-memo-auction.json` and `docs/submission-draft.md`.
 
 Next high-value gap: same NU7 execution with actual funding, authenticated

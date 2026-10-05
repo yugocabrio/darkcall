@@ -1,7 +1,7 @@
 # Pinned dependencies and notices
 
 DarkCall's own source uses MIT (`LICENSE`). Preserve upstream notices for copied
-vendor source and external tools. The generated inventory records 430 packages
+vendor source and external tools. The generated inventory records 431 packages
 resolved by Cargo.lock on aarch64-apple-darwin, their declared license expressions,
 registry checksums and exact git sources; no declaration is missing in this graph.
 It contains repository paths, never local absolute paths or private artifacts.
@@ -38,7 +38,7 @@ and [Zebra source](https://github.com/ZcashFoundation/zebra/blob/v6.3.0/Cargo.to
 coSNARK carries a GPL file for its coCircom compiler path; its coNoir and mpc-core
 manifests inherit the MIT OR Apache-2.0 workspace declaration. DarkCall's current
 graph does not build coCircom. External binaries have additional dependencies;
-the 430-package export covers this workspace target, not those separate graphs
+the 431-package export covers this workspace target, not those separate graphs
 or every system package in the pinned Ubuntu runtime image.
 
 The two macOS Barretenberg compatibility patches are preserved under patches/
@@ -52,11 +52,18 @@ in the final release package. The human controls OSS publication.
 
 The separate NU7 SDK workspace is pinned to librustzcash commit
 `9c5705f56517c040c50f96d29f1ff15a9383f3e0`; it does not alter the root lock.
-The refreshed selected-target NU7 inventory includes 295 packages, no missing
+The refreshed selected-target NU7 inventory includes462 packages, no missing
 license declarations, and lock SHA256
-`855d53ea101e2b0ef75d703417abc1d237aac7711a1eb684209b1945f3305a41`.
-The previous export was stale after the earlier byte-compatibility additions;
-this refresh changes the inventory, not the dependency resolution.
+`6327f83359bb5674e13e2acd1be989bcc9fef383ddc7d23dbb257ec58939bae0`.
+Authenticated admission reuses the existing off-chain claim/receipt/journal source
+through the local `darkcall-wallet-protocol` package. It intentionally excludes
+the old native transaction/backend SDK: putting both full SDK graphs together
+conflicted on bip32 prerelease/stable versions. The new lock retains all327 prior
+package identities/checksums and adds179 entries for those existing primitives.
+The root lock only adds the local package; all existing external versions and
+checksums remain unchanged. No signature domain, native binding circuit or
+verifier changes. Both selected-target inventories are refreshed; these are
+source-license declarations, not binary dependency inventories or legal approval.
 
 ```sh
 python3 scripts/dependency_inventory.py --manifest tools/nu7-compat/Cargo.toml --output evidence/2026-10-05-nu7-dependency-inventory.json

@@ -1240,6 +1240,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "darkcall-wallet-protocol"
+version = "0.1.0"
+dependencies = [
+ "darkcall-auction-core",
+ "darkcall-input-tool",
+ "ed25519-dalek",
+ "hex",
+ "libc",
+ "orchard",
+ "rand 0.8.8",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+]
+
+[[package]]
 name = "darling"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

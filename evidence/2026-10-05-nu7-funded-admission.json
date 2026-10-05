@@ -1,0 +1,175 @@
+{
+  "date": "2026-10-05",
+  "base_git_head": "e398976",
+  "scope": "fresh actual NU7 deposits and authenticated final book on isolated regtest; NOT six-output auction settlement",
+  "commands": [
+    "cargo build --release --locked --offline --manifest-path tools/nu7-compat/Cargo.toml",
+    "cargo test --release --locked --offline -p darkcall-wallet-bridge -p darkcall-wallet-protocol -j 2",
+    "python3 scripts/regtest_nu7_deposits.py .local/nu7-bank-20261005 .local/nu7-bank-20261005/private-nu7-notes-108.json .local/mpc-auction4-20261005T120230Z --name nu7-funded-book-20261005",
+    "python3 scripts/check_nu7_claims.py .local/nu7-funded-book-20261005-escrow .local/nu7-funded-book-20261005 --name nu7-funded-claim-checks-v2-20261005",
+    "python3 scripts/check_nu7_certificate.py .local/nu7-funded-book-20261005-admission --name nu7-final-certificate-checks-v2-20261005"
+  ],
+  "result": {
+    "scope": "actual isolated NU7 regtest four-deposit admission; fixture clients/tickets/terms",
+    "native_construction": {
+      "branch": "77190ad9",
+      "broadcast": false,
+      "client_signatures_generated": 4,
+      "custody_setup": "owned bank wallet signs deposits; DKG/view-only escrow destination full viewing key",
+      "deposit_outputs": 4,
+      "deposit_value": 15100,
+      "escrow_signing_key_read": false,
+      "fee": 25000,
+      "keys_or_memos_logged": false,
+      "maximum_bids_read": false,
+      "native_actions": 5,
+      "native_proof_and_signatures_verified": true,
+      "proof_seconds": 9.183787625,
+      "scope": "four actual NU7-regtest encrypted claim deposits; fixture tickets",
+      "seconds": 13.139812833,
+      "source_is_dkg": false,
+      "transaction_bytes": 18634,
+      "txid": "7d7fd7a4049a8da86a34e94132dc94b57afc8b9ba21da406e5b75f4d56d1efe8"
+    },
+    "full_node_accepted": true,
+    "canonical_confirmations": 2,
+    "escrow_scan": {
+      "all_native_paths_match_node_tree": true,
+      "balance_zatoshi": 60400,
+      "decrypted_unspent_native_notes": 4,
+      "funding_observations_fabricated": false,
+      "height": 110,
+      "keys_openings_or_memos_logged": false,
+      "native_consensus_source": "pinned local full node, not scanner/SPV proof",
+      "scope": "actual isolated NU7 notes from trusted local Zebra; not public testnet",
+      "spent_native_notes": 0
+    },
+    "admission": {
+      "accepted_root_matches": true,
+      "actual_wall_clock_admission_cutoff_checked": true,
+      "canonical_chain_and_unspent_checks": "Python driver + SDK scanner; trusted local full-node RPC",
+      "client_claim_signatures_verified": 4,
+      "client_zk_proofs_reverified": 4,
+      "delivered_share_pairs_reverified": 12,
+      "final_book_signed": false,
+      "funding_observations_fabricated": false,
+      "maximum_bids_read": false,
+      "native_settlement_broadcast": false,
+      "operator_receipt_signatures": 12,
+      "receipt_locks_fsynced": true,
+      "scope": "four actual scanned NU7 regtest deposit claims admitted; fixture tickets"
+    },
+    "final_book_signed": true,
+    "funded_auction_settlement_broadcast": false,
+    "private_files_committed": false,
+    "certificate": {
+      "actual_wall_clock_cutoff_checked": true,
+      "final_book_signatures": 3,
+      "receipt_quorums_reverified": 4,
+      "scope": "chain-admission operator certificate; not a public funding proof"
+    }
+  },
+  "claim_refusals": {
+    "scope": "actual NU7 ciphertext/intent replay; no admission or chain proof",
+    "verified": {
+      "chain_inclusion_or_unspent_verified": false,
+      "client_claim_signatures_verified": 4,
+      "client_zk_or_delivered_shares_verified": false,
+      "maximum_bids_read": false,
+      "native_outputs_decrypted": 4,
+      "receipts_or_journals_created": false,
+      "scope": "read-only actual NU7 deposit ciphertext/client-intent check"
+    },
+    "rejected": [
+      "claim-signature",
+      "claim-note",
+      "claim-memo",
+      "claim-bid",
+      "claim-pair",
+      "claim-refund",
+      "map-action",
+      "map-refund",
+      "book-context",
+      "book-ticket",
+      "book-budget",
+      "trailing-transaction",
+      "old-branch"
+    ],
+    "source_unchanged": true,
+    "receipts_or_journals_written": false,
+    "seconds": 0.10131037500104867
+  },
+  "certificate_refusals": {
+    "scope": "actual NU7 admission certificate replay; caller-trusted local authority",
+    "verified": {
+      "accepted_root_authenticated": true,
+      "final_book_signatures_verified": 3,
+      "funding_chain_or_unspent_proved": false,
+      "mpc_or_native_settlement_verified": false,
+      "private_keys_or_journals_read": false,
+      "scope": "public accepted-book certificate check under caller-trusted authority"
+    },
+    "rejected": [
+      "signature",
+      "duplicate-endorsement",
+      "root",
+      "ticket",
+      "refund-receiver",
+      "authority-key",
+      "authority-cutoff",
+      "authority-context"
+    ],
+    "original_journals_unchanged": true,
+    "signing_or_broadcast": false,
+    "seconds": 0.059924041997874156
+  },
+  "checks": {
+    "legacy_wallet_tests_passed": 17,
+    "legacy_wallet_example_tests_passed": 2,
+    "shared_protocol_tests_passed": 12,
+    "sdk_strict_all_target_clippy": true,
+    "legacy_and_shared_protocol_strict_all_target_clippy": true,
+    "rustfmt": true,
+    "python_compile": true,
+    "root_native_gate_regression_build": true,
+    "sdk_chain_identity_test_passed": 1
+  },
+  "source_reuse": {
+    "offchain_modules": "existing claim-intent/receipt/final-book/journal implementation source is reused by both stacks",
+    "native_sdk_families_combined": false,
+    "old_sdk_claim_adapter_preserved": true,
+    "note_byte_reconstruction_cmx_checked_after_actual_nu7_decryption": true,
+    "native_output_binding_circuit_or_verifier_changed": false,
+    "root_external_resolution_changed": false,
+    "sdk_preexisting_packages_retained": 327,
+    "sdk_added_lock_packages": 179,
+    "existing_registry_checksums_changed": false
+  },
+  "failures": [
+    {
+      "stage": "initial path dependency",
+      "result": "old and new native SDK bip32 prerelease/stable version resolution conflict; resolved by shared off-chain module packaging, not relaxing validation"
+    },
+    {
+      "stage": "first port compile",
+      "result": "old rand OsRng/RngCore imports needed explicit rand_old alias; corrected"
+    },
+    {
+      "stage": "first strict clippy",
+      "result": "range-loop lint in read-only check; corrected with enumerate"
+    },
+    {
+      "stage": "first certificate mutation harness",
+      "result": "signature is a hex string, not byte list; harness TypeError corrected; original state unchanged"
+    }
+  ],
+  "limits": [
+    "fixture client bids/tickets/terms and actors on one machine; accepted input proofs/shares reuse an existing committed input book",
+    "ordinary bank key retained; new escrow uses local DKG with all three shares on one host",
+    "trusted local full node and birthday, controlled confirmations; no public testnet finality or public ZK funding proof",
+    "certificate authority is caller-trusted local setup, not authenticated production service discovery",
+    "new accepted notes are still Frozen/unspent; no latest funded six-output MPC/memo/binding/FROST settlement or chain broadcast",
+    "current browser/public bundle remains the separately measured synthetic NU7 transaction",
+    "build activity overlapped the deposit construction; timing is not isolated performance benchmarking"
+  ]
+}

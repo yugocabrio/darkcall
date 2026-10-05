@@ -20,6 +20,13 @@
 
 既存のMPCオークション研究やFROST資金管理を踏まえ、独自性の候補を「Zcashのshielded精算まで監査できるオークション」に置きます。世界初とは主張しません。関連研究の[Riggs](https://eprint.iacr.org/2023/1336)は比較対象であり、その仕組みをそのままZcashへ移せるという根拠にはしません。
 
+10月5日の新SDK移行では、別のNU7隔離regtestで実入金とDKGエスクローからの署名済み送金を確認しました。
+さらに新規4入金から実memo復号、client proof／share検査、12枚の受付証、締切後の3者署名付きfinal rootまで通っています。
+この資金付き受付集合はまだFrozenで、同じ6出力のmemo精算・binding証明・chain確認への接続は未完了です。
+新SDKと旧SDKは、同じoff-chain claim／receipt／journalのソースを再利用し、native noteの正規バイトとcmxの一致を確認します。
+元の暗号回路・検証者は変更していません。資金のchain掲載は信頼するfull nodeで確認し、受付署名自体を公開ZK資金証明とは扱いません。
+詳細は [regtest.md](regtest.md) と [実測記録](../evidence/2026-10-05-nu7-funded-admission.json) を参照してください。
+
 ## オークションのルール
 
 以下は採用を提案するルールです。数値の上限や手数料は、実装開始後の測定で確定します。

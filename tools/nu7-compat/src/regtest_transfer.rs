@@ -41,7 +41,7 @@ use zcash_protocol::{
 
 const GENESIS: &str = "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327";
 #[derive(Clone, Copy)]
-struct Regtest;
+pub(super) struct Regtest;
 impl Parameters for Regtest {
     fn network_type(&self) -> NetworkType {
         NetworkType::Regtest
@@ -62,21 +62,21 @@ impl Parameters for Regtest {
         }))
     }
 }
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Opening {
-    coinbase: bool,
-    cmx: [u8; 32],
-    txid: [u8; 32],
-    action_index: u32,
-    mined_height: u32,
-    mined_block: [u8; 32],
-    recipient: Vec<u8>,
-    amount: u64,
-    rho: [u8; 32],
-    rseed: [u8; 32],
-    position: u32,
-    auth_path: [[u8; 32]; 32],
+pub(super) struct Opening {
+    pub coinbase: bool,
+    pub cmx: [u8; 32],
+    pub txid: [u8; 32],
+    pub action_index: u32,
+    pub mined_height: u32,
+    pub mined_block: [u8; 32],
+    pub recipient: Vec<u8>,
+    pub amount: u64,
+    pub rho: [u8; 32],
+    pub rseed: [u8; 32],
+    pub position: u32,
+    pub auth_path: [[u8; 32]; 32],
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -91,7 +91,10 @@ struct Notes {
     notes: Vec<Opening>,
 }
 
-fn signing_keys(wallet: &Path, fvk: &FullViewingKey) -> Result<(native::ThresholdKeys, bool)> {
+pub(super) fn signing_keys(
+    wallet: &Path,
+    fvk: &FullViewingKey,
+) -> Result<(native::ThresholdKeys, bool)> {
     if wallet.join("private-spending-key.bin").exists() {
         let bytes = auction::read(&wallet.join("private-spending-key.bin"), 32)?
             .try_into()
@@ -140,13 +143,16 @@ fn signing_keys(wallet: &Path, fvk: &FullViewingKey) -> Result<(native::Threshol
     Ok((native::ThresholdKeys { packages, public }, true))
 }
 
-pub fn build(
-    wallet: &Path,
-    notes_path: &Path,
-    recipient: &Path,
-    name: &str,
-) -> Result<serde_json::Value> {
-    let started = Instant::now();
+pub(super) struct Source {
+    pub index: usize,
+    pub opening: Opening,
+    pub tip_height: u32,
+    pub tip_hash: String,
+    pub fvk: FullViewingKey,
+    pub note: Note,
+    pub path: MerklePath,
+}
+pub(super) fn load_source(wallet: &Path, notes_path: &Path) -> Result<Source> {
     let wallet = auction::directory(wallet)?;
     auction::directory(notes_path.parent().ok_or("NU7 notes parent")?)?;
     let state: Notes = serde_json::from_slice(&auction::read(notes_path, 1_000_000)?)
@@ -162,7 +168,6 @@ pub fn build(
         return Err("NU7 transfer requires actual isolated regtest notes".into());
     }
     let fvk = regtest_wallet::viewing_key(&wallet)?;
-    let receiver = regtest_wallet::viewing_key(recipient)?;
     let (index, source) = state
         .notes
         .iter()
@@ -218,6 +223,38 @@ pub fn build(
     if anchor.to_bytes() != state.anchor {
         return Err("NU7 source witness differs from node anchor".into());
     }
+    Ok(Source {
+        index,
+        opening: source.clone(),
+        tip_height: state.tip_height,
+        tip_hash: state.tip_hash,
+        fvk,
+        note,
+        path,
+    })
+}
+
+pub fn build(
+    wallet: &Path,
+    notes_path: &Path,
+    recipient: &Path,
+    name: &str,
+) -> Result<serde_json::Value> {
+    let started = Instant::now();
+    let wallet = auction::directory(wallet)?;
+    let loaded = load_source(&wallet, notes_path)?;
+    let Source {
+        index,
+        opening,
+        tip_height,
+        tip_hash,
+        fvk,
+        note,
+        path,
+    } = loaded;
+    let source = &opening;
+    let receiver = regtest_wallet::viewing_key(recipient)?;
+    let anchor = path.root(note.commitment().into());
     let (keys, dkg) = signing_keys(&wallet, &fvk)?;
     let fee = 10_000u64;
     let amount = (source.amount / 2).min(1_000_000u64);
@@ -225,12 +262,7 @@ pub fn build(
         .amount
         .checked_sub(amount + fee)
         .ok_or("NU7 source cannot cover transfer/fee")?;
-    let height = BlockHeight::from_u32(
-        state
-            .tip_height
-            .checked_add(1)
-            .ok_or("NU7 height overflow")?,
-    );
+    let height = BlockHeight::from_u32(tip_height.checked_add(1).ok_or("NU7 height overflow")?);
     let mut rng = rand::rng();
     let mut old_rng = OsRng;
     let mut builder = Builder::new(
@@ -382,7 +414,7 @@ pub fn build(
     write(&output.join("private-provenance.json"),&serde_json::to_vec(&serde_json::json!({
         "source_index":index,"source_txid":source.txid,"source_action":source.action_index,
         "source_cmx":source.cmx,"source_height":source.mined_height,"source_block":source.mined_block,
-        "funding_tip_height":state.tip_height,"funding_tip_hash":state.tip_hash})).map_err(|_| "NU7 provenance encoding")?)?;
+        "funding_tip_height":tip_height,"funding_tip_hash":tip_hash})).map_err(|_| "NU7 provenance encoding")?)?;
     let result = serde_json::json!({"scope":"actual-note isolated NU7 threshold transfer; not auction settlement",
         "genesis":GENESIS,"branch":"77190ad9","inputs":1,"outputs":2,"threshold":"2-of-3",
         "setup":if dkg {"existing local DKG packages; all shares on one host"} else {"ordinary bank key, local trusted dealer"},

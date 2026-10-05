@@ -10,6 +10,9 @@ publish = false
 [workspace]
 
 [dependencies]
+darkcall-wallet-protocol = { path = "../../crates/wallet-protocol" }
+darkcall-input-tool = { path = "../../crates/input-tool" }
+ed25519-dalek = "=2.2.0"
 ff = "=0.14.0"
 group = "=0.14.0"
 hex = "=0.4.3"
@@ -32,6 +35,11 @@ pczt = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c
 zcash_client_backend = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", default-features = false, features = ["orchard", "lightwalletd-tonic-transport", "lightwalletd-tonic-tls-webpki-roots"] }
 zcash_primitives = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
 zcash_protocol = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
+
+[patch.crates-io]
+# The reused off-chain claim/receipt/journal library keeps the exact old SDK.
+# Only canonical note/FVK/commitment bytes cross the two native SDK families.
+orchard = { git = "https://github.com/conradoplg/orchard.git", rev = "42015f15733b95e179189628d6fa34d92b5b3b8b" }
 
 [profile.release]
 debug = 0

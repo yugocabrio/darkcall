@@ -44,9 +44,50 @@ reside on one host. The first bank transfer uses its ordinary retained key and
 local trusted-dealer FROST. Three altered DKG setups reject before proof creation.
 
 Evidence: `../evidence/2026-10-05-nu7-funded-dkg-transfer.json`. This is a native
-funding/transfer gate. The latest funded four-bid admission, accepted root and
-same six-output memo settlement are not connected yet. Historical funded
+funding/transfer gate. Four-bid admission and the accepted root are now demonstrated below; the
+latest same six-output memo settlement remains to connect. Historical funded
 auction results below remain NU6.3 and must not be combined into a NU7 E2E claim.
+
+## Fresh NU7 deposits, admission and final root
+
+```sh
+python3 scripts/regtest_nu7_deposits.py SOURCE_WALLET CURRENT_PRIVATE_NU7_NOTES COMMITTED_INPUT_BOOK --name nu7-funded-book-new
+python3 scripts/check_nu7_claims.py .local/nu7-funded-book-new-escrow .local/nu7-funded-book-new --name nu7-claim-checks-new
+python3 scripts/check_nu7_certificate.py .local/nu7-funded-book-new-admission --name nu7-certificate-checks-new
+```
+
+This creates a fresh local DKG escrow and six separate recipient wallets. Four
+native15100zatoshi deposits use encrypted client-key/nonce memos and fresh signed
+instructions tied to actual output cmxs. The Python driver checks the unchanged
+canonical source, broadcasts only to port29342, obtains two confirmations and
+reconstructs all four exact native notes/witnesses. Admission independently
+decrypts the full transaction with the escrow FVK, byte-checks V3 commitments,
+verifies client intent against the existing shared implementation, rechecks four
+client input proofs and all12 delivered share pairs, then fsyncs12 acceptance
+receipts. It does not read maximum bids, escrow custody packages or recipient keys.
+After the original real cutoff, all three operators sign exactly the authenticated
+accepted root and retain their journal locks. Never alter that cutoff on restart.
+
+The run at110 uses transaction7d7fd7a4…56d1efe8,18634bytes/five actions/25000fee;
+native proof9.184s, construction13.140s. Compilation overlapped this measurement,
+so it is not an isolated performance comparison. Input proofs/shares, tickets and
+terms are fixture actors from an existing committed input book. Thirteen actual
+ciphertext/claim/book/receiver/encoding changes and eight certificate/authority
+changes reject. The certificate replay reads only public certificate and explicit
+caller-trusted authority; no operator keys or journals. The authority is local
+trusted setup, not authenticated production service discovery.
+
+Off-chain claim/receipt/final-book/journal source is reused through
+`crates/wallet-protocol`; this avoids importing the conflicting old native SDK
+into the new SDK. Native decryption and canonical chain provenance remain separate
+requirements. A plaintext note supplied to intent validation is not funding
+proof. The root still tests its old native ciphertext adapter too.
+
+Evidence: `../evidence/2026-10-05-nu7-funded-admission.json`. The four new notes are
+Frozen/unspent and ready for the next connection. The latest six-output receipt
+memo settlement, fresh bindings/MPC/FROST, recipient scans and chain broadcast
+are still pending for this funded book. Do not add the old funded auction or the
+new synthetic demo to claim it is complete.
 
 ## Preserved NU6.3 reproduction
 

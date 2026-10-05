@@ -18,8 +18,12 @@ proof/security model and avoid unrelated recovery/wallet/cryptographic work.
     bank funding of DKG escrow and actual DKG-source threshold spend with two
     confirmations. Six scanner, three DKG-loader, four reconciliation and actual
     witness refusals pass. This is a transfer gate, not the canonical auction.
-  - [ ] Connect existing authenticated funding claims, client proof/share checks,
+  - [x] Connect existing authenticated funding claims, client proof/share checks,
     signed admission and final-book journals to actual new-SDK NU7 deposits.
+    - Fresh four-deposit DKG run accepted at110,12 durable receipts, three final
+      signatures after original cutoff.13 claim/encoding and8 certificate/authority
+      refusals;17+2 legacy and12 shared protocol tests pass. Source modules are
+      reused; no proof/circuit change. Current funded six-output settlement is pending.
   - [ ] Use those accepted notes/recipients for the same six-output memo PCZT,
     unchanged native bindings/MPC/FROST, full-node inclusion and public replay.
 - [x] One coherent recorded synthetic browser story using that exact same run/bundle.

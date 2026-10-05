@@ -3,7 +3,8 @@
 This standalone Cargo workspace preserves the successful NU6.3 application's
 manifest, lockfile, binaries, wallets and isolated chain. It is an experiment
 toward supporting public testnet. Synthetic auction integration is complete;
-actual funded admission/DKG/chain execution still needs the new-stack migration.
+actual NU7 funding/DKG transfers and authenticated four-deposit admission pass;
+current funded six-output memo settlement still needs the final integration.
 
 ## Current completed auction
 
@@ -27,9 +28,15 @@ ordinary retained-key wallet. Scanner RPC/birthday remain trusted.
 
 See [commands and limits](../../docs/regtest.md) and
 [actual evidence](../../evidence/2026-10-05-nu7-funded-dkg-transfer.json).
-This is the transfer migration gate; it does not yet connect actual funding,
-signed admission/final root or chain confirmation to the synthetic auction above.
-The old node/SDK and both Rust locks remain unchanged.
+The new `regtest-deposits` and `regtest-admission` modes also pass fresh four-note
+funding,12 signed receipts and three final-book signatures after the declared
+cutoff.13 claim and8 certificate/authority substitutions reject. See
+[admission evidence](../../evidence/2026-10-05-nu7-funded-admission.json).
+These notes remain Frozen/unspent; their latest six-output memo auction settlement
+has not been executed. The synthetic transaction above remains a separate result.
+The old node/SDK remain preserved. The shared off-chain source package adds only
+a local package to the root lock; the new SDK lock includes its existing primitive
+dependencies. See [pins/licenses](../../docs/dependencies.md).
 
 The native SDK is pinned to librustzcash
 `9c5705f56517c040c50f96d29f1ff15a9383f3e0`: protocol 0.11.0-pre.0, primitives
