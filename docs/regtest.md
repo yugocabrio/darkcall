@@ -88,11 +88,34 @@ original cutoff; it did not remint or change that deadline.
 
 These client actors share one bank and one machine. Tickets, conditions and
 100-zatoshi budgets are fixture inputs, not funding-derived IDs or product-sized
-auction economics. Actual funded auction settlement is a separate active gate;
-this admission result alone does not claim native auction settlement or finality.
+auction economics. The subsequent actual funded auction now passes the complete six-output flow;
+the admission result is still separate from native settlement and chain checks.
 The settlement driver rejects a substituted receiver before proving, binds the
 certified recipients to the MPC statement, checks all six native outputs before
 FROST, and fsyncs all three funding reservations. After canonical broadcast it
 scans each of six recipients, reconciles actual spent escrow nullifiers, and
 records broadcast/finalization in the three journals. Interrupted stages need
 explicit reconciliation; restart-safe automatic broadcast recovery remains work.
+
+## Confirmed four-funded auction result
+
+The first funded run passed at height 110: four native inputs, six outputs, 21,790
+bytes and a 30,000-zatoshi fee. Construction took 1425.263s, including all six
+application binding proofs and independent MPC verification. The actual native
+consensus proof took 8.091s. Proof/profile timing overlapped early regression and
+build work; it is not an isolated benchmark. All six separate wallets decrypted
+exact private expected amounts and built witnesses matching the node. The escrow
+scanner detected all four actual consumed nullifiers. All three journals moved
+through reserved, broadcast and finalized state.
+
+Certified public-only replay took 105.691s and read no private source artifacts.
+It checked root/recipient authentication, native transaction proof and signatures,
+all six binding proofs and normal C++ MPC verification. Ten modified certificate,
+authority, book, tx byte/signature/action cases were rejected. Inclusion/finality
+is still trusted full-node evidence, not part of the public application proof.
+Recorded evidence: ../evidence/2026-10-05-regtest-funded-auction.json.
+
+Public testnet has moved to NU7 (77190ad9 at 4465026), while this reproducible gate
+uses native NU6.3. A public-network flow also needs advancing-chain reconciliation
+and an expiry allowance appropriate to measured proving time; requiring an
+unchanged tip throughout this controlled gate is not viable on a live chain.

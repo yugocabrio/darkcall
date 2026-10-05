@@ -1,0 +1,193 @@
+{
+  "scope": "actual isolated regtest certified four-funded MPC/native auction",
+  "construction": {
+    "application_proof_seconds": 1406.442331792,
+    "broadcast": false,
+    "chain_funding": "actual SDK-scanned notes; provenance checked by Python driver",
+    "changed_recipient_outputs_effects_rejected": true,
+    "client_spending_keys_read": false,
+    "fee": 30000,
+    "fills_from_plaintext_oracle_fixture": false,
+    "funding_observations_fabricated": false,
+    "funding_reservations_fsynced_before_signing": true,
+    "inputs": 4,
+    "maximum_bids_read": false,
+    "native_bindings_and_cpp_mpc_verified": true,
+    "native_proof_and_signatures_verified": true,
+    "outputs": 6,
+    "price": 20,
+    "private_refund_delivery_verified": true,
+    "proof_seconds": 8.090766541,
+    "scope": "actual isolated regtest certified four-input native auction construction",
+    "setup": "local trusted dealer; full escrow key retained",
+    "signed_root_and_recipients_checked_before_frost": true,
+    "sold": 3,
+    "source_inputs_match_all_three_durable_journals": true,
+    "threshold": "2-of-3",
+    "total_seconds": 1425.26326975,
+    "transaction_bytes": 21790,
+    "txid": "9d16a088186749dba179df1330fa8a7da6a9343473671c08a381fcdb91fc54da"
+  },
+  "substituted_receiver_rejected_before_proving": true,
+  "full_node_accepted": true,
+  "canonical_confirmations": 2,
+  "recipients": [
+    {
+      "role": "refund",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "refund",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "refund",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "refund",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "seller",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "operator",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    }
+  ],
+  "all_six_exact_private_amounts_verified": true,
+  "escrow_actual_spent_notes": 4,
+  "three_durable_journals_finalized": true,
+  "maximum_bids_read": false,
+  "public_only_replay_pending": false,
+  "finality_scope": "two controlled-regtest confirmations, not public-chain finality",
+  "setup": "all actors/signers on one host; trusted dealer retains full escrow key",
+  "private_witnesses_or_keys_committed": false,
+  "public_only_replay": {
+    "source": "regtest-auction4-20261005",
+    "directory": "regtest-auction4-public-20261005",
+    "public_only_replay": {
+      "acceptance_authentication_scope": "all-three operator attestation; not a public funding proof",
+      "acceptance_or_recipient_receipts_authenticated": true,
+      "actual_transaction_outputs_match": true,
+      "chain_funding_or_finality_verified": false,
+      "hash_rule": "bn254-poseidon2-packed-row-v1",
+      "native_proof_and_signatures_verified": true,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "private_openings_read": false,
+      "scope": "public-only transaction/application-proof replay; chain inclusion checked separately",
+      "seconds": 105.690885709,
+      "transaction_bytes": 21790,
+      "txid": "9d16a088186749dba179df1330fa8a7da6a9343473671c08a381fcdb91fc54da"
+    },
+    "trusted_manifest_supplied_explicitly": true,
+    "funding_journals_or_private_openings_copied": false,
+    "chain_funding_or_finality_verified": false,
+    "tampering": {
+      "operator_signature": {
+        "rejected": true,
+        "seconds": 0.004,
+        "reason": "certified MPC acceptance"
+      },
+      "duplicate_operator": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "accepted_intent": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "bid_commitment": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "accepted_root": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "refund_receiver": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "trusted_auction_cutoff": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      }
+    },
+    "passed": true
+  },
+  "transaction_tampering": {
+    "trailing_byte": {
+      "rejected": true,
+      "seconds": 0.017,
+      "reason": "unexpected transaction format/pools/trailing data"
+    },
+    "binding_signature": {
+      "rejected": true,
+      "seconds": 1.572,
+      "reason": "native proof or spend/binding signatures invalid"
+    },
+    "action_metadata": {
+      "rejected": true,
+      "seconds": 0.004,
+      "reason": "statement actions differ from serialized transaction"
+    }
+  },
+  "native_binding_profile": {
+    "book_context_supplied": true,
+    "delivery_run": "mpc-delivery4-20261005T020439Z",
+    "fills_from_plaintext_oracle_fixture": false,
+    "funding_proven": false,
+    "hash_rule": "bn254-poseidon2-packed-row-v1",
+    "key_seconds": 135.520465959,
+    "native_custody_signature_verified": false,
+    "price": 20,
+    "private_fill_delivery_verified": true,
+    "proof_verified": true,
+    "row_proof_and_verify_seconds": [
+      278.538301042,
+      193.566024208,
+      162.638298125,
+      186.185979,
+      172.438388125,
+      158.51939
+    ],
+    "rows": 6,
+    "seconds": 1287.464019542,
+    "sold": 3,
+    "synthetic_inputs": false
+  },
+  "mpc_proof_seconds": 8.31,
+  "benchmark_scope": "Cold integration, two Rayon threads; regression/clippy/build work overlapped early native rows, so this is completion timing, not an isolated comparative benchmark.",
+  "limitations": [
+    "Fixed local client/ticket fixture and 100-zatoshi budget; four deposits came from one local bank.",
+    "Three local signers with a trusted dealer and retained full escrow key; not DKG or independent custody.",
+    "REP3 semi-honest privacy assumes at most one corrupt party; all three are required.",
+    "Receipt quorum attests confirmed admission; no public ZK funding/inclusion proof.",
+    "Two controlled-regtest confirmations; no public-chain probabilistic finality claim.",
+    "Extra native binding is classical and does not constrain ZIP 2005 rseed derivation/ciphertext. Sender outgoing recovery and separate recipient scans verify ciphertext in this run.",
+    "Current public testnet runs NU7. Its native stack migration is not complete.",
+    "Crash-resume broadcast reconciliation, reorg rollback, cancellation and zero-price winner flags remain."
+  ]
+}

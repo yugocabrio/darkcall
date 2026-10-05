@@ -1,8 +1,29 @@
 # DarkCall status
 
-Updated: 2026-10-05 02:10 UTC.
+Updated: 2026-10-05 02:40 UTC.
 
 ## Current outcome
+
+**The four-funded native auction passed on the actual isolated chain.** Confirmed
+native deposits → authenticated client/proof/share admission → durable receipts
+and all-three final root → private refund delivery → six constrained native
+bindings → normal C++ MPC verification → certified recipient/effects checks →
+fsynced input reservations → four 2-of-3 FROST spends → native consensus proof →
+full-node acceptance → two controlled confirmations → six separate exact wallet
+receipts and four actual spent-nullifier detections → three finalized journals.
+
+Construction: 1425.263s (23m45s), application proofs 1406.442s, native consensus
+proof 8.091s; 21,790 bytes, four inputs / six outputs, fee 30,000; price 20, sold 3.
+MPC proof 8.310s; native row key/proofs/verification 1287.464s. Early build/test work
+overlapped this cold run; these are completion timings, not isolated benchmarks.
+Public-only certified replay passed in 105.691s, without private openings/keys,
+and seven changed certificate/authority/book cases plus three changed tx bytes,
+signature/action metadata cases were rejected. Chain inclusion is checked through
+the trusted full-node driver, separately from public proof replay.
+
+Transaction: 9d16a088186749dba179df1330fa8a7da6a9343473671c08a381fcdb91fc54da.
+Evidence: evidence/2026-10-05-regtest-funded-auction.json. This is one controlled
+regtest fixture, not public testnet or production custody. See limitations below.
 
 Four actual isolated-regtest deposits now pass authenticated admission. A native
 bank transaction delivered four encrypted 15,100-zatoshi deposit outputs;
@@ -15,15 +36,13 @@ book. Deposit construction does not read maximum bids. All actors are local;
 the bank batches deposits and the prototype still uses fixed fixture tickets and
 tiny fixture budgets. This is real regtest funding, not independent client funding.
 
-**The funded four-input auction run is active**, session 8491, private log
-`.local/regtest-auction4-gate.log`, output `.local/regtest-auction4-20261005`.
-It passed private refund delivery and is generating native bindings. No auction
-settlement broadcast or finality is claimed yet. Source deposits:
-`.local/regtest-deposit4-20261005`; receipts/manifest/journals:
-`.local/regtest-deposit4-20261005-admission`; actual notes at height 108.
-Only one native prover runs. Do not rebuild/overwrite artifacts it is reading,
-reset the node, or start another native prover alongside it.
-
+The funded run (8491) and public replay (14874) completed/consumed. Private logs:
+.local/regtest-auction4-gate.log / .local/regtest-certified-replay.log. Construction:
+.local/regtest-auction4-20261005; public-only bundle:
+.local/regtest-auction4-public-20261005. Source deposits:
+.local/regtest-deposit4-20261005; receipts/manifest/journals:
+.local/regtest-deposit4-20261005-admission. The node is at height 110. No native
+prover is running. Do not reset these wallets or the persistent isolated chain.
 
 Actual isolated-regtest chain funding and threshold spending now pass. A pinned
 Zebra 6.3.0 node accepted a native v6/Ironwood transaction spending a matured
@@ -94,16 +113,14 @@ binding, root equivocation after restart, malformed MPC inputs and reorg pauses.
 Selected core/input/native/wallet regressions pass (33); strict workspace all-target
 clippy and Python syntax checks pass.
 
-Next highest priority: finish the active actual-funded auction, verify canonical
-broadcast and all six separate recipient wallet scans, reconcile consumed funding
-and three journal reservations, then replay its public-only certified artifacts.
-The node remains at height 108 with pinned branch 37a5165b. Keep public-testnet compatibility separate. New pinned primary-source research
-identifies its reported 77190ad9/4465703 as NU7, activated at 4465026. This is
-missing support in our older native SDK, not an established endpoint fault.
-The mismatch guard remains; queue an isolated NU7 compatibility gate. New claims and
-receipt wire encodings support private transport/restart with strict signature,
-quorum and canonical commitment checks. Selected regressions pass (34), workspace
-all-target strict clippy passes. Final transport assertions and strict workspace clippy also pass.
+Next highest priority: isolate NU7-aware native SDK compatibility and preserve
+this old-branch reproduction; improve escrow setup beyond the retained trusted-
+dealer master key, then add cancellation/restart recovery and client UI. Public
+source research identifies 77190ad9 as NU7, activated at 4465026; a new live probe
+at 4466083 confirms the branch mismatch with the old SDK. Do not relax native
+branch guards. Selected regressions pass (34), receipt transport tests and strict
+workspace all-target clippy pass; the read-only diagnosis compiles and was probed.
+Dependency inventory records 430 selected-target packages and explicit pins.
 
 ## Measurements and evidence
 
@@ -171,10 +188,8 @@ Operators know recipients/refunds/viewing metadata. Output inference remains:
 with four eligible bids and three units, the sole loser's maximum equals the
 public K+1 price. Zero-price winner flags still need private delivery.
 
-Unfinished: actual four-deposit auction funding/settlement and public-testnet
-broadcast/finality,
-persistent wallet scanning/reorg recovery, live admission/signing with the new
-signed receipts/root, cancellation transactions, deployed independent hosts, UI,
+Unfinished: public-testnet native support/broadcast, broader funded cases,
+persistent wallet scanning/reorg recovery, general service/client admission and signing, cancellation transactions, deployed independent hosts, UI,
 independent reproduction, benchmark scale and submission requirements. No public
 release, mainnet funds, deployed service or contest submission is authorized.
 

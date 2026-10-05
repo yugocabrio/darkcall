@@ -98,7 +98,7 @@ autonomously, incorporate later human/ChatGPT reviews.
     Private wire receipts reload and reverify all signatures. Pre-FROST enforcement
     is in the active funded run; independent operators and broader recovery remain.
     These signatures attest admission, not a public funding proof.
-- [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.
+- [x] Four-ticket MPC result → settlement commitment → PCZT → proof checks → native signing.
   - Actual four-input/FROST transaction passed all six native/MPC row checks,
     signing/extraction and recipient decryption. First run uses oracle fixture
     fills. Different-book price-20 integration now passed proved private refunds,
@@ -106,8 +106,11 @@ autonomously, incorporate later human/ChatGPT reviews.
     Public-only replay passed for both runs. Separate public bundle replay passes
     without private files and rejects transaction signature/trailing bytes/action
     metadata changes. Funded chain integration and receipt authentication remain.
-- [ ] Seller payment and refunds in one native transaction.
-- [ ] Recipient wallets confirm amounts; public verification checks transaction identity/finality.
+- [x] Seller payment and refunds in one native transaction on actual isolated regtest.
+- [x] Six recipient wallets confirm amounts; public verification checks transaction identity.
+  - Actual isolated chain confirms all six payments and consumption of all four
+    funding notes. Two controlled confirmations are checked through trusted RPC,
+    separate from public-only proof/signature replay; no SPV/public finality claim.
 - [ ] Cancellation, late/unaccepted deposits and reorg-safe state transitions.
 - [ ] Resolve fee/dust policy for wrong-amount deposits before wallet integration.
 
