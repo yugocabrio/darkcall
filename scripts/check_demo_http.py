@@ -13,13 +13,15 @@ import time
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8877)
+    parser.add_argument('--settlement-security-only', action='store_true')
+    parser.add_argument('--settlement-only', action='store_true')
     args = parser.parse_args()
     host = '127.0.0.1:' + str(args.port)
     origin = 'http://' + host
     start = time.monotonic()
 
     def call(method, path, body=None, headers=None):
-        connection = http.client.HTTPConnection('127.0.0.1',args.port,timeout=120)
+        connection = http.client.HTTPConnection('127.0.0.1',args.port,timeout=950 if args.settlement_only else 120)
         try:
             connection.request(method,path,body,headers or {})
             response = connection.getresponse()
@@ -33,6 +35,34 @@ def main():
     if status != 200: raise RuntimeError('Demo state unavailable')
     state = json.loads(raw)
     headers = {'Origin':origin,'Content-Type':'application/json','X-DarkCall-Token':state['csrf']}
+    if args.settlement_only:
+        status,data = call('POST','/api/settlement','{}',headers)
+        value = json.loads(data)
+        if (status != 200 or not all(value[k] for k in ('native_proof_and_signatures_verified',
+                'native_row_proofs_verified','normal_cpp_auction_proof_verified','actual_transaction_outputs_match',
+                'acceptance_or_recipient_receipts_authenticated'))
+                or value['private_openings_read'] or value['chain_funding_or_finality_verified']):
+            raise RuntimeError('Public settlement API verification did not pass')
+        forbidden = {'viewing_key','spending_key','refund_pad','winner_pad','pczt','witness','private_path'}
+        if forbidden.intersection(value): raise RuntimeError('Private field in settlement response')
+        print(json.dumps({'scope':'actual public-only six-output settlement API verification; fixed historical regtest bundle',
+            'result':value,'private_fields_served':False,'no_proving_key_or_new_signature':True,
+            'seconds':time.monotonic()-start},indent=2))
+        return
+    if args.settlement_security_only:
+        checks = []
+        for label,value,extra,expected in [
+            ('supplied-path',{'path':'../../wallet'}, {},400),
+            ('supplied-authority',{'authority':'untrusted'}, {},400),
+            ('supplied-key',{'viewing_key':'unused'}, {},400),
+            ('cross-origin',{}, {'Origin':'https://attacker.invalid'},403),
+            ('wrong-session-token',{}, {'X-DarkCall-Token':'invalid'},403)]:
+            if call('POST','/api/settlement',json.dumps(value),{**headers,**extra})[0] != expected:
+                raise RuntimeError('Settlement API boundary rejection absent: '+label)
+            checks.append(label)
+        print(json.dumps({'scope':'public settlement API boundary checks; no extra proof verification run',
+            'rejected':checks,'private_paths_or_supplied_keys_accepted':False,'seconds':time.monotonic()-start},indent=2))
+        return
     denied = []
     for label,path,extra,expected in [
         ('private-file','/.local/private-recipient-0.json',{},404),

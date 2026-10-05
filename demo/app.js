@@ -58,5 +58,18 @@ document.querySelectorAll('[data-case]').forEach(button => button.addEventListen
 $('ticket').addEventListener('change',resetResult);
 $('verify').addEventListener('click',() => run('verify'));
 $('tamper').addEventListener('click',() => run('tamper'));
+$('settlement').addEventListener('click', async () => {
+  if (busy || !state) return;
+  lock(true); setError('');
+  $('settlement-result').textContent = 'Verifying six output-binding proofs, the native transaction and the fixed auction proof. This can take about two minutes…';
+  try {
+    const response = await fetch('/api/settlement', {method:'POST', headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:'{}'});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Settlement verification failed');
+    if (!result.native_row_proofs_verified || !result.native_proof_and_signatures_verified || !result.normal_cpp_auction_proof_verified || !result.actual_transaction_outputs_match || !result.acceptance_or_recipient_receipts_authenticated || result.private_openings_read || result.chain_funding_or_finality_verified) throw new Error('Incomplete settlement verification');
+    $('settlement-result').textContent = '✓ All six shielded outputs match the proved auction. Accepted-book signatures and native authorization verified. No private openings read. Transaction: ' + result.txid;
+  } catch (error) { $('settlement-result').textContent=''; setError(error.message); }
+  finally { lock(false); }
+});
 lock(true);
-fetch('/api/state').then(async response => { const data=await response.json(); if (!response.ok) throw new Error(data.error || 'Demo unavailable'); state=data; renderCase(); lock(false); }).catch(error => setError(error.message));
+fetch('/api/state').then(async response => { const data=await response.json(); if (!response.ok) throw new Error(data.error || 'Demo unavailable'); state=data; renderCase(); if (state.last_settlement) $('settlement-result').textContent = 'Previous public verification passed for all six output bindings, the accepted-book signatures, native authorization and MPC proof. Transaction: ' + state.last_settlement.txid; lock(false); }).catch(error => setError(error.message));

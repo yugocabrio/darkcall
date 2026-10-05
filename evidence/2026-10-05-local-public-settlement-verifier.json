@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-05",
+  "scope": "browser/API public-only replay of historical completed fresh-v2 isolated-regtest settlement; not new memo flow or live chain verification",
+  "commands": [
+    "python3 scripts/check_demo_http.py --settlement-only",
+    "python3 scripts/check_demo_http.py --settlement-security-only"
+  ],
+  "verification": {
+    "scope": "actual public-only six-output settlement API verification; fixed historical regtest bundle",
+    "result": {
+      "txid": "66b860cf45a173ad03dd7b7112ff731b12ef15e62857a096c1488979add5b648",
+      "transaction_bytes": 21790,
+      "native_proof_and_signatures_verified": true,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "actual_transaction_outputs_match": true,
+      "acceptance_or_recipient_receipts_authenticated": true,
+      "private_openings_read": false,
+      "chain_funding_or_finality_verified": false,
+      "seconds": 103.076388042,
+      "verified_at_unix": 1791210839
+    },
+    "private_fields_served": false,
+    "no_proving_key_or_new_signature": true,
+    "seconds": 103.152650834003
+  },
+  "api_boundary_checks": {
+    "scope": "public settlement API boundary checks; no extra proof verification run",
+    "rejected": [
+      "supplied-path",
+      "supplied-authority",
+      "supplied-key",
+      "cross-origin",
+      "wrong-session-token"
+    ],
+    "private_paths_or_supplied_keys_accepted": false,
+    "seconds": 0.006291292003879789
+  },
+  "snapshot_original_public_hashes_match": true,
+  "private_artifacts_in_snapshot": false,
+  "original_public_authority_supplied_outside_bundle": true,
+  "browser_persisted_result_rendered": true,
+  "historical_settlement_contains_ticket_memos": false,
+  "new_proof_or_signature_generated": false,
+  "broadcast": false
+}

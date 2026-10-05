@@ -624,3 +624,12 @@ footer {
     font-size:50px
   }
 }
+
+#settlement-result {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+  color: #c3e6a1;
+}
+#settlement-result:empty {
+  display: none;
+}

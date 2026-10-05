@@ -261,6 +261,12 @@ autonomously, incorporate later human/ChatGPT reviews.
     refusal. Four winner/loser API cases,15 HTTP/input rejections and two proof
     refusals before key access pass. No browser keys/pads or fake bid submission.
     Live admission, bidder authentication, seller and full settlement views remain.
+    A public settlement verification action is also connected to the historical
+    complete price-25 six-output regtest bundle and independently supplied
+    public operator authority; no browser-supplied paths/keys are accepted.
+    Actual public-only six-row/native/MPC/accepted-book API replay passes in
+    103.153s and result rendering is confirmed; five boundary substitutions
+    reject. Public snapshot hashes equal the original, with no private artifacts.
 - [ ] Four-bid repeatable demo, including intentionally rejected tampering.
 - [ ] Benchmark four bids, then attempt 32 without weakening the guarantees.
 - [ ] Threat model, dependency/license inventory and independent reproduction.

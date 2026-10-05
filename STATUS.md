@@ -6,7 +6,9 @@ Updated: 2026-10-05 (latest receipt/client measurements recorded; git HEAD is au
 
 **The first local browser receipt/verifier UI works with actual proofs.**
 `python3 scripts/serve_demo.py` is running at http://127.0.0.1:8877, PID63042,
-exec session32486; log .local/browser-demo-20261005.log. Check this process/port
+exec session32486; log .local/browser-demo-20261005.log. This original server
+was stopped for the public-verifier update. The current server is PID80820,
+session72775, log .local/browser-demo-v3-20261005.log. Check this process/port
 before launching another server. It is loopback-only and serves no repo/private
 files. The API runs the existing actual recipient command and returns only own
 status/refund plus public verification flags. No keys/pads/raw memos are served.
@@ -26,6 +28,23 @@ non-memo NU7 pre-sign regression also passes all seven cases in0.105s.
 No heavy prover is running. Next: registered client/admission/settlement views,
 exact prepared NU7 proof resumption when10GiB initial disk headroom is available,
 and advancing-chain memo delivery. Preserve historical funding/journals/keys.
+
+**The public six-output settlement verifier is connected to the browser too.**
+It snapshots the completed fresh-v2 price25 owned-regtest bundle and supplies
+the original public authority from outside the bundle. The actual API check
+passes in103.153s (native verifier103.076s): all three accepted-book endorsements,
+six native row proofs, serialized transaction authorization and normal fixed C++
+MPC proof match. No private opening/key/PCZT/funding journal is read. All copied
+public artifacts have exact original source hashes; only public files are in the
+snapshot .local/browser-settlement-9c7d0e1adbc1. Five path/authority/key/origin/token
+API substitutions refuse before any verification. The result is fsynced locally
+and the UI explicitly displays it as a previous verification, not a fresh run.
+Browser state shows the correct funded-v2 transaction66b860cf…5b648. Earlier
+UI-triggered verification completed in112.879s; its tab closed before subsequent
+inspection, so a fresh API run validated the persisted/result rendering path.
+Both completed jobs are consumed; current server remains idle. This historical
+transaction has no receipt memos. Chain inclusion/current funding are not proved
+by public replay, and no new signature/transaction/proving key was generated.
 
 **Four receipt memos now belong to the same six-output NU7 prepared PCZT.**
 Positive-price50/sold3 preparation completes in9.300s; price0/sold3 in7.937s.

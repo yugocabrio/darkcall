@@ -30,6 +30,16 @@ ticket is not bidder authentication. Operators know winning status/refunds.
 This is not a deployed wallet, independent-host privacy demonstration, admission
 receipt or proof of chain inclusion.
 
+**Verify settlement** independently runs the public-only verifier on the
+completed price-25 six-output owned-regtest auction. It snapshots public
+transaction/row/MPC proofs, supplies the original public operator authority
+from outside that bundle, and verifies all three acceptance signatures, six
+native bindings, native authorization and the fixed C++ auction proof. It
+reads no bid openings, wallet keys, PCZT or funding journal. This historical
+settlement has no receipt memos; this check does not reestablish chain inclusion
+or current spendability. A verification takes about two minutes on this host.
+Its fixed checkpoint/authority paths are in `serve_demo.py`, not browser input.
+
 ## Fixture prerequisites
 
 Default fixtures are private ignored checkpoints from the measured runs:
@@ -59,6 +69,8 @@ requires10GiB initial disk headroom; the UI never lowers that requirement.
 
 ```sh
 python3 scripts/check_demo_http.py
+python3 scripts/check_demo_http.py --settlement-security-only
+python3 scripts/check_demo_http.py --settlement-only
 ```
 
 The actual check covers four positive/zero winner/loser results, two corrupted

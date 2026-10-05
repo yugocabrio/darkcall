@@ -11,14 +11,19 @@ import os
 import pathlib
 import secrets
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from check_ticket_receipts import public_book
 from open_ticket_memo import open_receipt
 from regtest_deposits import ROOT, private_read
 from regtest_prepared_gate import write_bytes
+from regtest_resources import guarded_json_call
+from regtest_deposits import ENV, NATIVE
 
 WEB = ROOT / 'demo'
 DEFAULTS = {'positive':'positive-receipt-memo-20261005', 'zero':'zero-receipt-memo-v2-20261005'}
+PUBLIC = ROOT / '.local/regtest-shared-v2-public-20261005'
+AUTHORITY = ROOT / '.local/regtest-shared-v2-deposit4-20261005-admission/manifest.json'
 
 
 class Demo:
@@ -29,6 +34,7 @@ class Demo:
             raise RuntimeError('Demo fixtures must be ignored synthetic checkpoints')
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
+        self.last_settlement = None
 
     def state(self):
         cases = []
@@ -45,7 +51,7 @@ class Demo:
                 'root':book['root'], 'txid':summary['txid'], 'fee':summary['fee'],
                 'bytes':summary['transaction_bytes'], 'branch':summary['branch'],
                 'scope':'synthetic receipt component; separate one-input/four-output transfer'})
-        return {'cases':cases, 'csrf':self.token,
+        return {'cases':cases, 'csrf':self.token, 'last_settlement':self.last_settlement,
             'live_admission':False, 'independent_hosts':False, 'operators_know_results':True,
             'six_output_memo_e2e':False, 'chain_inclusion_verified':False}
 
@@ -91,6 +97,50 @@ class Demo:
         finally:
             self.lock.release()
 
+    def settlement(self):
+        if not self.lock.acquire(blocking=False):
+            return 409, {'error':'Another verification is running. Please try again shortly.'}
+        try:
+            # Fixed public-only fixture and independently configured authority.
+            # Never discover authority keys in a supplied proof bundle or accept
+            # a browser-provided path. Snapshot exact public bytes before verify.
+            target = ROOT / '.local' / ('browser-settlement-' + secrets.token_hex(6))
+            target.mkdir(mode=0o700)
+            mpc = target / 'mpc-public'
+            mpc.mkdir(mode=0o700)
+            for file in ['native-public.json','native-layout.json','final-book-certificate.json',
+                    'regtest-transaction.bin'] + [f'native-binding-proof-{i}' for i in range(6)]:
+                write_bytes(target / file, private_read(PUBLIC / file,1000000))
+            original = json.loads(private_read(PUBLIC / 'mpc-result.json',4096))
+            source = pathlib.Path(original['run']).resolve(strict=True)
+            if source != (PUBLIC / 'mpc-public').resolve(strict=True):
+                raise RuntimeError('Expected public-only settlement checkpoint')
+            for file in ('vk','proof.0','public-input0','tampered-price','tampered-plan','tampered-row'):
+                write_bytes(mpc / file,private_read(source / file,1000000))
+            original['run'] = str(mpc)
+            write_bytes(target / 'mpc-result.json',json.dumps(original).encode())
+            # Explicit authority comes from the original registration setup,
+            # outside the public proof bundle, and contains public keys only.
+            authority = ROOT / '.local' / (target.name + '-authority.json')
+            write_bytes(authority,private_read(AUTHORITY,32768))
+            result = guarded_json_call([str(NATIVE),'--verify-certified-integrated',str(target),str(authority)],
+                cwd=ROOT,env=ENV,timeout=900,observations=target/'verification-resources.jsonl')
+            if (not all(result[key] for key in ('native_proof_and_signatures_verified',
+                    'native_row_proofs_verified','normal_cpp_auction_proof_verified',
+                    'actual_transaction_outputs_match','acceptance_or_recipient_receipts_authenticated'))
+                    or result['private_openings_read'] or result['chain_funding_or_finality_verified']):
+                raise RuntimeError('Incomplete public settlement verification')
+            public = {key:result[key] for key in ('txid','transaction_bytes','native_proof_and_signatures_verified',
+                'native_row_proofs_verified','normal_cpp_auction_proof_verified','actual_transaction_outputs_match',
+                'acceptance_or_recipient_receipts_authenticated','private_openings_read',
+                'chain_funding_or_finality_verified','seconds')}
+            public['verified_at_unix'] = int(time.time())
+            write_bytes(target / 'verification-result.json',json.dumps(public).encode())
+            self.last_settlement = public
+            return 200, public
+        finally:
+            self.lock.release()
+
 
 def handler(demo, port):
     host = '127.0.0.1:' + str(port)
@@ -132,12 +182,16 @@ def handler(demo, port):
             if (not self.allowed_host() or self.headers.get('Origin') != origin
                     or self.headers.get('X-DarkCall-Token') != demo.token):
                 return self.reply(403,{'error':'Same origin and session token required'})
-            if self.path != '/api/verify': return self.reply(404,{'error':'Not found'})
+            if self.path not in ('/api/verify','/api/settlement'): return self.reply(404,{'error':'Not found'})
             try:
                 length = int(self.headers.get('Content-Length','0'))
                 if not 0 < length <= 1024 or self.headers.get('Content-Type') != 'application/json':
                     return self.reply(400,{'error':'Bounded JSON request required'})
                 value = json.loads(self.rfile.read(length))
+                if self.path == '/api/settlement':
+                    if value != {}: return self.reply(400,{'error':'Settlement accepts no supplied paths or keys'})
+                    status,result = demo.settlement()
+                    return self.reply(status,result)
                 if (not isinstance(value,dict) or set(value) != {'case','ticket','action'}
                         or value['action'] not in ('verify','tamper')):
                     return self.reply(400,{'error':'Expected a demo case, ticket and action'})
