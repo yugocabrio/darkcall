@@ -1,8 +1,25 @@
 # DarkCall status
 
-Updated: 2026-10-05 00:50 UTC.
+Updated: 2026-10-05 01:48 UTC.
 
 ## Current outcome
+
+Actual isolated-regtest chain funding and threshold spending now pass. A pinned
+Zebra 6.3.0 node accepted a native v6/Ironwood transaction spending a matured
+shielded coinbase with its actual canonical Merkle witness and 2-of-3 rerandomized
+FROST. After two controlled blocks, a separate wallet decrypted the exact
+1,000,000-zatoshi payment and built witnesses matching the full-node tree.
+Transaction: 9,166 bytes; native proof 4.353s; construction 6.075s; fee 10,000.
+A different valid transaction spending the same note was rejected by the node
+for its already-spent native nullifier. Changed witnesses fail before proving.
+
+This is a **threshold transfer on an isolated regtest**, not the funded auction
+or standard public testnet. Setup retains the bank spending key and uses a local
+trusted dealer, not DKG. The node supplies trusted chain inclusion and two
+controlled confirmations, not an SPV proof or public-chain finality. Funding,
+keys, witnesses and transactions remain ignored. Evidence and reproduction:
+`evidence/2026-10-05-regtest-funded-threshold-spend.json`, `docs/regtest.md`.
+
 
 The price-20 four-bid integration passed using **proved private refund delivery**,
 without reading maximum bids or oracle fixture refunds in native orchestration.
@@ -38,7 +55,8 @@ synthetic; this is not a chain-funded auction or a public proof of funding.
 - Standard testnet genesis and compact/tree tip agree, but testnet.zec.rocks reports
   branch 77190ad9 at 4465703; pinned SDK expects 37a5165b. Probe refuses this chain
   snapshot. Zaino testnet returned 503; ECC/isolated regtest TLS connects failed.
-  No wallet funding or broadcast. Evidence: test-chain-identification.json.
+  No standard-public-testnet funding or broadcast. Isolated regtest now passes.
+  Evidence: test-chain-identification.json and regtest-funded-threshold-spend.json.
 - Wallet journal/network tests passed (5); latest regression tests passed (23
   total across core/input/native/wallet). Strict release all-target workspace
   clippy passed (64300 consumed). Python public bundle script compiles.
@@ -53,16 +71,13 @@ binding, root equivocation after restart, malformed MPC inputs and reorg pauses.
 Selected core/input/native/wallet regressions pass (33); strict workspace all-target
 clippy and Python syntax checks pass.
 
-Next highest priority: usable native Ironwood chain funding. Public endpoint probes
-remain blocked. Docker is now running; inspect a pinned official Zebra regtest
-binary for a small isolated chain, with loopback-only RPC and bounded resources.
-The human has no alternative endpoint to supply. Wire scanner observations,
-authenticated claims and receipt admission to actual funding and signer checks.
-The 15-minute heartbeat is recovery; continue active work across milestones.
-No native prover or public endpoint probe is currently running. Certified replay
-16498 completed/consumed, artifacts .local/certified-public-private-delivery-20261005.
-Synthetic receipt gate is .local/synthetic-certified-book-20261005; its journals
-are private and its fresh keys were not persisted. Do not relax branch checks.
+Next highest priority: connect four actual fixed-budget deposits with encrypted
+client claims to durable acceptance receipts, the certified MPC book and native
+settlement signing on this isolated chain. Keep investigating public-testnet
+compatibility separately. The local node is running with persistent ignored
+state, 2 CPUs / 2 GiB, RPC bound only to 127.0.0.1:29332, native branch 37a5165b.
+Funding/spend/regression/clippy jobs completed; no native prover is running.
+Do not reset its chain or wallets. The human has no alternative public endpoint.
 
 ## Measurements and evidence
 
@@ -130,7 +145,8 @@ Operators know recipients/refunds/viewing metadata. Output inference remains:
 with four eligible bids and three units, the sole loser's maximum equals the
 public K+1 price. Zero-price winner flags still need private delivery.
 
-Unfinished: actual chain funding, canonical witnesses, broadcast/finality,
+Unfinished: actual four-deposit auction funding/settlement and public-testnet
+broadcast/finality,
 persistent wallet scanning/reorg recovery, live admission/signing with the new
 signed receipts/root, cancellation transactions, deployed independent hosts, UI,
 independent reproduction, benchmark scale and submission requirements. No public

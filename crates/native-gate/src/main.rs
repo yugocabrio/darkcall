@@ -1,7 +1,9 @@
-//! Offline synthetic Ironwood/PCZT/FROST gate. Never broadcast these transactions:
-//! their input notes and anchor are fabricated, and exist in no chain.
+//! Default modes are offline synthetic Ironwood/PCZT/FROST gates. Never broadcast
+//! their fabricated inputs. The separate --regtest-spend mode consumes captured
+//! real isolated-regtest notes; its driver guards the local chain before broadcast.
 //! This plaintext oracle fixture is not an MPC-to-settlement binding proof.
 mod integration;
+mod regtest_spend;
 use darkcall_auction_core::{Bid, Terms, clear};
 use darkcall_settlement_types::{Role, Row};
 use ff::{Field, PrimeField};
@@ -106,7 +108,7 @@ struct ThresholdKeys {
 }
 
 fn split_key(sk: &SpendingKey, rng: &mut OsRng) -> Result<ThresholdKeys> {
-    // Synthetic trusted-dealer setup only. Deployment must use a reviewed setup.
+    // Local test trusted-dealer setup only. Deployment must use a reviewed setup.
     let ask = SpendAuthorizingKey::from(sk);
     let bytes: [u8; 32] = ask.randomize(&pallas::Scalar::zero()).into();
     let signing_key = frost::SigningKey::deserialize(&bytes).map_err(|e| error("FROST key", e))?;
@@ -563,6 +565,19 @@ fn gate(
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() == 5 && args[0] == "--regtest-spend" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&regtest_spend::build(
+                std::path::Path::new(&args[1]),
+                std::path::Path::new(&args[2]),
+                std::path::Path::new(&args[3]),
+                &args[4]
+            )?)
+            .map_err(|e| error("regtest summary", e))?
+        );
+        return Ok(());
+    }
     if args.len() == 2 && args[0] == "--verify-integrated" {
         println!(
             "{}",

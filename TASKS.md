@@ -29,6 +29,11 @@ autonomously, incorporate later human/ChatGPT reviews.
     construction, native proofs, threshold signatures, extraction and 6 recipient
     decryptions passed. Both ordinary and zero seller/operator output cases passed.
 - [ ] P0.5 Receive testnet funds, sign 2-of-3, broadcast and decrypt the recipient note.
+  - Actual isolated regtest equivalent passes: matured native funding, canonical
+    witnesses, 2-of-3 FROST, full-node acceptance, two confirmations and exact
+    recipient scan. Standard public testnet remains blocked by branch mismatch.
+    This gate is a transfer, not the funded auction; trusted-dealer master key is
+    retained. A second valid spend of the same note is rejected by the node.
 - [x] P0.6 Prove one private settlement row binds to a native note commitment.
   - Actual Halo2 proof (4,928 bytes) verified against a native Ironwood output;
     changed row hash/cmx and amount/recipient checks rejected tampering.

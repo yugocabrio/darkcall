@@ -1,0 +1,58 @@
+{
+  "scope": "actual isolated Zebra regtest threshold spend; not standard testnet or auction settlement",
+  "source_funding_canonical_and_mature": true,
+  "changed_witness_rejected_before_proving": true,
+  "native_construction": {
+    "actual_chain_provenance_checked_by_this_binary": false,
+    "broadcast": false,
+    "genesis": "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327",
+    "inputs": 1,
+    "mpc_settlement_binding": false,
+    "native_proof_and_signatures_verified": true,
+    "one_share_rejected": true,
+    "outputs": 2,
+    "planned_fee": 10000,
+    "proof_seconds": 4.352730208,
+    "recipient_amount": 1000000,
+    "recipients_decrypted": 2,
+    "scope": "native isolated regtest threshold transfer; not auction settlement",
+    "seconds": 6.074521125,
+    "setup": "local trusted dealer; not DKG",
+    "threshold": "2-of-3",
+    "transaction_bytes": 9166,
+    "txid": "1a894f136b3448190450577bb25aa110d56c1e18934bd35a8a8edf01195fe66c"
+  },
+  "broadcast_accepted_by_full_node": true,
+  "canonical_confirmations": 2,
+  "recipient_scan": {
+    "all_native_paths_match_node_tree": true,
+    "balance_zatoshi": 1000000,
+    "chain_inclusion_source": "pinned local full node RPC, not an SPV proof",
+    "decrypted_unspent_native_notes": 1,
+    "funding_observations_fabricated": false,
+    "height": 106,
+    "private_keys_or_openings_logged": false,
+    "scope": "actual isolated regtest notes from trusted local Zebra; not standard testnet"
+  },
+  "private_keys_or_openings_committed": false,
+  "finality_scope": "two controlled-regtest confirmations; no public-chain probabilistic finality claim",
+  "spent_nullifier_negative": {
+    "scope": "actual isolated regtest spent-nullifier rejection",
+    "rejected": true,
+    "reason_class": "already spent native nullifier",
+    "new_variant_has_valid_native_proof_and_signatures": true
+  },
+  "pins": {
+    "zebra": "6.3.0",
+    "archive_sha256": "807db2dce0692b3fe237e7e470dabab952af0e30bb9ea2549d43c5ad2da77360",
+    "runtime_image": "ubuntu@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55",
+    "branch": "37a5165b",
+    "genesis": "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327"
+  },
+  "checks": {
+    "selected_regressions": 33,
+    "strict_release_all_target_clippy": "passed",
+    "python_syntax": "passed"
+  },
+  "reproduction": "docs/regtest.md"
+}
