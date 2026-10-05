@@ -117,21 +117,22 @@ fn main() -> Result<()> {
         let mut encoded = hex::decode(&args[2])?;
         encoded.reverse();
         let effects: [u8; 32] = encoded.try_into().map_err(|_| "effects length")?;
-        let event = match args[3].as_str() {
-            "broadcast" => Event::Broadcast { effects },
-            "finalize" => Event::Finalize { effects },
+        let finalized = match args[3].as_str() {
+            "broadcast" => false,
+            "finalize" => true,
             _ => return Err("expected broadcast or finalize".into()),
         };
+        let mut written = 0;
         for i in 0..3 {
             let mut journal = Journal::open(
                 &out.join(format!("private-node-{i}.jsonl")),
                 &manifest.context,
             )?;
-            journal.append(event.clone())?;
+            written += usize::from(journal.record_transaction_outcome(effects, finalized)?);
         }
         println!(
             "{}",
-            serde_json::json!({"recorded_in_three_durable_journals":args[3],"chain_check":"caller must verify actual canonical inclusion"})
+            serde_json::json!({"recorded_in_three_durable_journals":args[3],"journal_events_written":written,"unchanged_operator_records":3-written,"chain_check":"caller must verify actual canonical inclusion"})
         );
         return Ok(());
     }

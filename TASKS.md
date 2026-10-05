@@ -54,7 +54,8 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Bank/client spending keys are normal owned wallets; only the shared escrow
     setup is in scope. Local DKG/FVK, all three two-party quorums, durable
     packages and actual four-deposit certified admission pass. Full funded
-    native DKG settlement is running; independent operator hosts remain separate.
+    native DKG settlement is rerunning after the PC reboot; its existing funding
+    and receipts were verified intact. Independent operator hosts remain separate.
 - [ ] Migrate auction native stack to NU7 after isolated compatibility checks.
   - Standalone synthetic native gate and live tree reconstruction pass; root
     Cargo.lock, native binding dependencies and isolated NU6.3 chain are preserved.
@@ -121,6 +122,14 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Actual isolated chain confirms all six payments and consumption of all four
     funding notes. Two controlled confirmations are checked through trusted RPC,
     separate from public-only proof/signature replay; no SPV/public finality claim.
+- [ ] Crash recovery of exact prepared/signed native settlements.
+  - Partial broadcast/finality updates across the three journals are idempotent
+    for the same reserved digest, rejecting substitutions and skipped stages.
+    Native construction stores a private verified PCZT before reservation.
+    Automatic unsigned-PCZT resume and chain/broadcast reconciliation remain.
+  - The interrupted row-0 run had no reservation/signature. Existing deposits,
+    cutoff, DKG packages and all three Frozen journals survived the PC reboot;
+    rerunning with fresh output artifacts, one heavy prover and resource guards.
 - [ ] Cancellation, late/unaccepted deposits and reorg-safe state transitions.
 - [ ] Resolve fee/dust policy for wrong-amount deposits before wallet integration.
 

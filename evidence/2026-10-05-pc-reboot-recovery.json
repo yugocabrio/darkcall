@@ -1,0 +1,27 @@
+{
+  "scope": "PC-reboot audit of interrupted local DKG funded auction; completion pending",
+  "recorded_utc": "2026-10-05T07:04:48.099114+00:00",
+  "interrupted_stage": "native row 0 proof",
+  "private_prepared_pczt_present": false,
+  "signed_transaction_present": false,
+  "funding_journal_prepare_broadcast_finalize_present": false,
+  "all_three_journals_frozen_and_final_book_locked": true,
+  "restored_node_height": 112,
+  "same_tip_and_four_funding_blocks_transactions_commitments_canonical": true,
+  "mempool_transactions": 0,
+  "original_funding_cutoff_receipts_and_dkg_packages_reused": true,
+  "chain_wallets_or_receipts_reset": false,
+  "private_files_committed": false,
+  "crash_cause_established": false,
+  "checks": {
+    "core_wallet_regression_tests_pass": 30,
+    "strict_selected_all_target_release_clippy": true,
+    "resource_guard_python_tests_pass": 3
+  },
+  "limitations": [
+    "Recovery construction/public replay not completed at recording time",
+    "All DKG shares remain on one host",
+    "No automatic unsigned-PCZT resume or signed broadcast reconciliation yet",
+    "Resource guards mitigate observed constraints but cannot guarantee host stability"
+  ]
+}

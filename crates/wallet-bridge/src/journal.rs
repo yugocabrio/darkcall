@@ -287,6 +287,25 @@ impl Journal {
     pub fn phase(&self) -> Phase {
         self.ledger.phase()
     }
+    /// Reconcile a caller-verified broadcast/finality observation after a crash
+    /// between operator journal writes. Repeats for the exact reserved digest
+    /// are no-ops. Different digests and skipped stages still fail closed.
+    pub fn record_transaction_outcome(
+        &mut self,
+        effects: [u8; 32],
+        finalized: bool,
+    ) -> Result<bool> {
+        if self.ledger.reserved_effects() != Some(effects) {
+            return Err("outcome differs from reserved transaction".into());
+        }
+        match (self.phase(), finalized) {
+            (Phase::Prepared, false) => self.append(Event::Broadcast { effects })?,
+            (Phase::Broadcast, true) => self.append(Event::Finalize { effects })?,
+            (Phase::Broadcast, false) | (Phase::Finalized, _) => return Ok(false),
+            _ => return Err("outcome cannot skip or reset funding stages".into()),
+        }
+        Ok(true)
+    }
     pub fn context(&self) -> &Context {
         &self.context
     }
@@ -448,6 +467,65 @@ mod tests {
             Journal::open(&f.journal(), &context()).unwrap().phase(),
             Phase::Finalized
         );
+    }
+    #[test]
+    fn partial_operator_outcomes_resume_once_without_reset_or_substitution() {
+        let f = Fixture::new();
+        let effects = [5; 32];
+        let paths: [_; 3] = std::array::from_fn(|i| f.path.join(format!("operator-{i}.jsonl")));
+        for path in &paths {
+            let mut j = Journal::open(path, &context()).unwrap();
+            fund(&mut j);
+            j.append(Event::Freeze).unwrap();
+            j.append(Event::Prepare {
+                effects,
+                cancellation: false,
+            })
+            .unwrap();
+            assert!(j.record_transaction_outcome(effects, true).is_err());
+        }
+        // Crash after operator zero persisted broadcast, before the other two.
+        Journal::open(&paths[0], &context())
+            .unwrap()
+            .record_transaction_outcome(effects, false)
+            .unwrap();
+        let mut written = 0;
+        for path in &paths {
+            let mut j = Journal::open(path, &context()).unwrap();
+            assert!(j.record_transaction_outcome([6; 32], false).is_err());
+            written += usize::from(j.record_transaction_outcome(effects, false).unwrap());
+        }
+        assert_eq!(written, 2);
+        Journal::open(&paths[0], &context())
+            .unwrap()
+            .record_transaction_outcome(effects, true)
+            .unwrap();
+        written = 0;
+        for path in &paths {
+            let mut j = Journal::open(path, &context()).unwrap();
+            let before = fs::metadata(path).unwrap().len();
+            assert!(j.record_transaction_outcome([6; 32], true).is_err());
+            assert_eq!(fs::metadata(path).unwrap().len(), before);
+            written += usize::from(j.record_transaction_outcome(effects, true).unwrap());
+            let after = fs::metadata(path).unwrap().len();
+            assert!(!j.record_transaction_outcome(effects, true).unwrap());
+            assert!(!j.record_transaction_outcome(effects, false).unwrap());
+            assert_eq!(fs::metadata(path).unwrap().len(), after);
+            assert!(
+                j.append(Event::Prepare {
+                    effects: [6; 32],
+                    cancellation: true
+                })
+                .is_err()
+            );
+        }
+        assert_eq!(written, 2);
+        for path in &paths {
+            assert_eq!(
+                Journal::open(path, &context()).unwrap().phase(),
+                Phase::Finalized
+            );
+        }
     }
     #[test]
     fn crash_tail_and_symlink_fail_closed() {

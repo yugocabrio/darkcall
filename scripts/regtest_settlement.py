@@ -12,6 +12,7 @@ from regtest_node import ROOT, rpc, status
 from regtest_deposits import (ADMIT, NATIVE, ENV, private_write, call, verify_snapshot,
                              verify_note, capture)
 from regtest_funding import tree
+from regtest_resources import guarded_json_call
 
 
 def main():
@@ -49,8 +50,11 @@ def main():
     if negative.returncode == 0 or 'receiver opening differs from certified client intent' not in negative.stderr:
         raise RuntimeError('Substituted receiver was not rejected before proving/signing')
     bad_path.unlink()
-    construction = call(NATIVE, '--regtest-settlement', escrow, notes_path, args.book_run,
-                        receivers_path, admission, args.name, timeout=3600)
+    construction = guarded_json_call(
+        [str(NATIVE), '--regtest-settlement', *map(str, (escrow, notes_path, args.book_run,
+                                                       receivers_path, admission, args.name))],
+        cwd=ROOT, env=ENV, timeout=3600,
+        observations=ROOT / '.local' / (args.name + '-resources.jsonl'))
     directory = ROOT / '.local' / args.name
     if status()['tip'] != snapshot['tip']:
         raise RuntimeError('Chain changed during proving; rescan/reconcile before broadcast')
@@ -95,7 +99,10 @@ def main():
         'three_durable_journals_finalized': True, 'maximum_bids_read': False,
         'public_only_replay_pending': True,
         'finality_scope': 'two controlled-regtest confirmations, not public-chain finality',
-        'setup': 'all actors/signers on one host; trusted dealer retains full escrow key',
+        'setup': construction['setup'],
+        'escrow_master_key_read': construction['escrow_master_key_read'],
+        'escrow_full_ask_derived_or_reconstructed': construction['escrow_full_ask_derived_or_reconstructed'],
+        'independent_custody_hosts': construction['independent_custody_hosts'],
         'private_witnesses_or_keys_committed': False}
     private_write(directory / 'confirmed-summary.json', summary)
     print(json.dumps(summary, indent=2), flush=True)

@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-05 03:15 UTC.
+Updated: 2026-10-05 07:04 UTC.
 
 ## Current outcome
 
@@ -17,13 +17,31 @@ Evidence: evidence/2026-10-05-dkg-regtest-admission.json. Native/wallet regressi
 21 pass; strict all-target workspace release clippy passes. Verified private PCZT
 is now durably checkpointed before funding reservation; automatic resume remains.
 
-Active funded DKG settlement: session 77482, log .local/dkg-auction4.log. Source
-.local/regtest-dkg-deposit4-20261005 (confirmed/admitted; 43030 consumed), escrow
-.local/regtest-dkg-deposit4-20261005-escrow, book
-.local/mpc-auction4-20261004T231421Z, output .local/regtest-dkg-auction4-20261005.
-Node height 112. Keep it unchanged until this controlled gate finishes. Inspect
-this session/log before starting any other native prover. No DKG settlement or
-broadcast success claimed yet.
+The human's PC reboot interrupted the previous funded DKG run at native row 0,
+BEFORE a private prepared PCZT, funding reservation or signed transaction. Its
+partial ignored artifacts remain intact. Docker/pinned Zebra restarted against
+existing state at height 112, with the identical tip and all four funding blocks,
+transactions and commitments canonical. The mempool is empty; all three journals
+replay through Freeze/LockFinalBook without Prepare/Broadcast/Finalize.
+
+Recovery funded DKG settlement: session 60888, log .local/dkg-auction4-recovery.log.
+Source .local/regtest-dkg-deposit4-20261005, escrow same-name-escrow, book
+.local/mpc-auction4-20261004T231421Z, new output
+.local/regtest-dkg-auction4-recovery-20261005. Original deposits, cutoff, receipts,
+DKG packages and chain are reused; no reset, redeposit or changed root.
+Keep node height 112 unchanged until this controlled gate finishes; inspect the
+log/session before starting another native prover. No DKG settlement/broadcast
+success claimed yet. Resource observations stay in the ignored same-name
+-resources.jsonl file. The driver aborts its own process group under 4 GiB free
+disk, over 6 GiB root-prover RSS or under 10% macOS reported memory headroom.
+These guards do not diagnose the PC crash or guarantee host stability.
+
+Partial three-operator broadcast/finality journal updates are now idempotent for
+exact reserved effects, retaining strict stages and rejecting substitution,
+reset/cancellation and skipped finalization. Selected core/wallet regressions:
+30 tests pass; strict selected all-target release clippy passes. Three Python
+resource guard tests pass. This does not yet automatically recover an unsigned
+PCZT or reconcile a signed transaction with chain inclusion after restart.
 
 **The isolated NU7 compatibility gate passes without changing the working
 NU6.3 workspace.** New pinned native SDK: synthetic NU7 v6 PCZT → full private-
@@ -149,8 +167,9 @@ binding, root equivocation after restart, malformed MPC inputs and reorg pauses.
 Selected core/input/native/wallet regressions pass (33); strict workspace all-target
 clippy and Python syntax checks pass.
 
-Next highest priority: improve escrow setup beyond the retained trusted-dealer
-master key; the isolated NU7 compatibility gate now passes. Keep the old-branch
+Next highest priority: finish the already funded local-DKG native settlement
+and public replay, then signed-transaction restart reconciliation. The isolated
+NU7 compatibility gate now passes. Keep the old-branch
 reproduction while implementing funded NU7 and live-chain freshness, then
 cancellation/restart recovery and client UI. Public
 source research identifies 77190ad9 as NU7, activated at 4465026; a new live probe

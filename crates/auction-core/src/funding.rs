@@ -92,6 +92,11 @@ impl Ledger {
     pub fn phase(&self) -> Phase {
         self.phase
     }
+    /// Digest of the already reserved transaction. Reading this never releases
+    /// inputs or allows another settlement/cancellation to take their place.
+    pub fn reserved_effects(&self) -> Option<[u8; 32]> {
+        self.transaction.as_ref().map(|t| t.0)
+    }
     pub fn registration(&self, ticket: &TicketId) -> Option<&Registration> {
         self.tickets.get(ticket)
     }
