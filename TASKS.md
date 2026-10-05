@@ -126,7 +126,7 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Actual isolated chain confirms all six payments and consumption of all four
     funding notes. Two controlled confirmations are checked through trusted RPC,
     separate from public-only proof/signature replay; no SPV/public finality claim.
-- [ ] Crash recovery of exact prepared/signed native settlements.
+- [x] Controlled-chain crash recovery of exact built/prepared/signed native settlements.
   - Partial broadcast/finality updates across the three journals are idempotent
     for the same reserved digest, rejecting substitutions and skipped stages.
     Native construction stores a private verified PCZT before reservation.
@@ -135,12 +135,15 @@ autonomously, incorporate later human/ChatGPT reviews.
     passed against a deliberately interrupted two-proof actual DKG construction.
     Exact source PCZT/rows/commitments reused; two cached proofs reverified,
     four missing proofs generated; changed amount rejects before reservation.
-    Exact same-purpose Prepared-stage reservations are now recoverable in code
-    and unit tests; a separate full native Prepared-stage gate remains. Signed native recovery
+    Exact same-purpose Prepared-stage gate now passes full native/MPC/FROST on
+    copied historical prefixes (two Prepared, one Frozen); six existing proofs
+    reverified, zero duplicate reservations, one new Prepare, no original changes
+    or RPC/broadcast. Cancellation-purpose substitution rejects before native row
+    proving/signing. This is offline, not another funded-chain run. Signed native recovery
     passes on the actual completed DKG auction: original checkpoint, exact bytes,
     native/application proofs, all six SDK receipts and four spent nullifiers
     reverified. Zero re-sends/blocks/journal writes; canonical height 114 retained.
-    Prepared-stage full integration and live reorg/expiry remain separate gates.
+    General live reorg/expiry remains a separate unfinished gate.
   - The interrupted row-0 run had no reservation/signature. Existing deposits,
     cutoff, DKG packages and all three Frozen journals survived the PC reboot;
     rerunning with fresh output artifacts, one heavy prover and resource guards.

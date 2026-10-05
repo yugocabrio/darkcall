@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-05 08:05 UTC.
+Updated: 2026-10-05 08:23 UTC.
 
 ## Current outcome
 
@@ -40,8 +40,8 @@ exact signed bytes, public proofs, six wallet receipts and four spent nullifiers
 No transaction re-send/re-sign, no generated blocks, no broadcast/finalize journal
 writes. Node height 114 and the same canonical tip are retained. Separate tx
 trailing-byte, binding-signature and action-metadata changes also reject. Evidence
-above includes this actual finalized-restart gate; Prepared-stage integration and
-general live-chain reorg/expiry remain separate unfinished work.
+above includes this actual finalized-restart gate. General live-chain reorg/expiry
+remains unfinished; the copied Prepared-stage integration gate is recorded below.
 
 PC reboot audit and controlled resource stops remain in separate evidence.
 The first rebooted run had no native output checkpoint/reservation/signature;
@@ -57,9 +57,18 @@ continues only the identical effects and purpose. Existing Prepared reservations
 may resume through the same built PCZT; complete signed transactions must use
 signed reconciliation. No note unlock/reset/replacement exists. Selected native/
 core/wallet regression tests 35 pass, strict selected all-target release clippy
-passes, and 11 Python checkpoint/reconciliation/resource tests pass. Prepared-
-stage native integration still needs a separate controlled gate. General live
-reorg/expiry/cancellation remain unfinished.
+passes, and 11 Python checkpoint/reconciliation/resource tests pass. The separate
+offline Prepared-stage native integration now also passes (312.374s): copied
+prefixes from the actual DKG journals reconstruct two Prepared and one Frozen
+operator. All six cached row proofs reverify; same effects/private MPC/certification
+and four DKG spends/native proof pass. Existing reservations receive zero duplicate
+writes; only the Frozen copy appends one Prepare. Original finalized journals and
+source artifacts remain unchanged. Changed cancellation purpose rejects before
+native row proving/signing; four prefix tests pass. No RPC/broadcast/mining in this
+gate: notes are historical and already spent. This is not another funded auction
+or an actual interrupted Prepare fan-out. Evidence:
+evidence/2026-10-05-prepared-dkg-recovery.json. General live reorg/expiry/cancellation
+remain unfinished.
 
 **The isolated NU7 compatibility gate passes without changing the working
 NU6.3 workspace.** New pinned native SDK: synthetic NU7 v6 PCZT → full private-

@@ -166,8 +166,9 @@ unapproved exact private PCZT before row proving. Approved PCZT is separately
 fsynced before reservation. Pre-reservation continuation now uses the built checkpoint and verifies existing
 row proofs under the trusted circuit against the exact native cmxs/row/context.
 Frozen journals can start reservation. Exact same-purpose Prepared reservations
-can continue in code and unit tests; a full native Prepared-stage integration gate
-remains unfinished. Never unlock or replace reserved inputs.
+now also pass a complete native/MPC/FROST construction from private copied crash
+prefixes. This offline gate uses historical notes that are now spent; production
+journals are never truncated or edited. Never unlock or replace reserved inputs.
 
 ```sh
 python3 scripts/regtest_settlement.py ORIGINAL_DEPOSIT_RUN ORIGINAL_MPC_BOOK_RUN --name FRESH_RESUMED_NAME --resume-built ORIGINAL_PARTIAL_NAME
@@ -232,8 +233,19 @@ The new exact-reservation helper also accepts a crash between Prepare writes or
 during native consensus proving, provided effects AND purpose remain identical.
 A different digest, settlement/cancellation substitution, poisoned handle or
 later-stage reset is rejected. Outcome fan-out preflights all three journals
-before writing. These Prepared-stage conditions pass unit tests; the actual
-funded built-stage run above started from Frozen. A separate full Prepared-stage
-integration gate remains. If complete signed bytes exist, use --resume-signed
+before writing. A complete Prepared-stage integration now passes in 312.374s
+using copied historical journal prefixes: two Prepared and one Frozen, all six
+cached proofs reverified, unchanged effects, four DKG spends/native proof and
+one new Prepare only. Cancellation-purpose substitution rejects before row
+proving/signing. Original finalized journals are preserved. The offline harness
+never calls RPC, broadcasts or mines; these historical notes are already spent.
+This is not a second funded auction. Reproduce with:
+
+```sh
+python3 scripts/regtest_prepared_gate.py ORIGINAL_DEPOSIT_RUN ORIGINAL_MPC_BOOK_RUN ORIGINAL_BUILT_RUN COMPLETED_PROOF_RUN --name FRESH_OFFLINE_NAME
+```
+
+Evidence: ../evidence/2026-10-05-prepared-dkg-recovery.json.
+The actual funded built-stage run above started from Frozen. If complete signed bytes exist, use --resume-signed
 instead of constructing/signing again. General live-chain reorg/expiry recovery
 remains outside these controlled-chain paths.
