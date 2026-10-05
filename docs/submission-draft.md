@@ -101,7 +101,10 @@ ignored identities switches to public-only. `./verify.sh --funded PUBLIC_BUNDLE
 --authority TRUSTED_AUTHORITY` needs public artifacts, explicit separate authority
 and pinned compiled tools. Missing/wrong files and uploaded verification keys must
 fail closed. The verifier does not discover authority keys in a supplied bundle.
-Tool bootstrap/build steps are in [toolchains](toolchains.md) and [demo](demo.md).
+Fresh-source bootstrap/preflight/replay steps are in [reproduce](reproduce.md).
+The [review entry point](judge-review.md) is included in the local committed-source
+kit. A [captioned edited demo draft](demo-video.md) has source screenshots and a
+reproducible renderer; it is explicitly separate from real-time proving.
 
 Before release: replace pending rows with measured evidence; freeze the exact
 canonical bundle; reproduce on a second machine; record witness/prove/verify/memory

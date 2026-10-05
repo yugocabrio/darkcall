@@ -137,9 +137,10 @@ upstream decoder accepted trailing data, so this persisted-request adapter
 requires exact canonical round-trip bytes. See
 `evidence/2026-10-05-nu7-six-output-preparation.json`.
 
-Public-chain funding, DKG migration, authenticated funded admission,
-live-chain freshness and finality remain separate unfinished work. No broadcast
-operation is added here.
+This standalone synthetic mode does not add funding or admission. The later
+funded regtest result at the top completes local DKG/admission/confirmation;
+public-chain funding and advancing-chain freshness remain unfinished. No
+broadcast operation is added to this binary; controlled drivers use owned RPC.
 
 ## Encrypted ticket memo component
 

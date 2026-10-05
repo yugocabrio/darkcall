@@ -127,6 +127,7 @@ Commit the intended source first, then:
 ```sh
 python3 -B scripts/review_kit.py create --revision HEAD --output .local/review-kit.tar.gz
 python3 -B scripts/review_kit.py check .local/review-kit.tar.gz --expected-commit FULL_COMMIT
+python3 -B scripts/check_review_kit.py .local/review-kit.tar.gz --expected-commit FULL_COMMIT
 ```
 
 The deterministic archive contains committed source/public artifacts and a short
@@ -135,3 +136,8 @@ Links/submodules, ignored/runtime/private paths, common credential markers,
 oversized members and overwrites are refused. This is a bounded packaging check,
 not an exhaustive secret audit or producer authentication. No dependency binaries
 or Git configuration are exported. Nothing is uploaded or published by the command.
+The extracted-browser check creates only a new ignored public snapshot and stops
+its own temporary server. It records same-host API/static/missing-key/missing-tool
+behavior; it does not claim cryptographic replay or another-machine reproduction.
+That extraction smoke requires Python3.12+ for the standard-library data filter;
+the read-only archive audit and public-only browser need Python3.10+.

@@ -79,7 +79,8 @@ class ReviewKitTests(unittest.TestCase):
 
     def test_tracked_runtime_and_credential_markers_refused(self):
         for name in ('.local/pads.json','scripts/private-keys.json','circuits/auction4/Prover.toml',
-                     'crates/input-tool/target/fixture','evidence/private/run.json'):
+                     'crates/input-tool/target/fixture','evidence/private/run.json',
+                     'evidence/wallet.db-wal','evidence/wallet.db-shm'):
             with self.subTest(name=name),self.assertRaises(RuntimeError): kit.safe_source(name,b'{}')
         for value in (b' '.join([b'-----BEGIN',b'RSA',b'PRIVATE',b'KEY-----']),
                       b'https'+b'://user:fixture-password@example.invalid/repo',

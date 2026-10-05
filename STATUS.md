@@ -1,8 +1,30 @@
 # DarkCall status
 
-Updated: 2026-10-05 (funded core frozen; committed-source review packaging and replay prerequisites; git HEAD is authoritative).
+Updated: 2026-10-05 (judge-facing UI simplified; same verifier/API; edited demo draft rendered; git HEAD is authoritative).
 
 ## Current outcome
+
+**Judge-facing information hierarchy now leads with the result.** The latest
+human request changes the frontend only: “Sealed bids. Verifiable settlement.”,
+price/sold, bidder choice, prominent WON/LOST/refund, public settlement and actual
+tamper rejection. Receipt steps, transaction/root and trust/limitations are in
+three closed disclosures. No backend, circuit, authority, API request or response
+acceptance guard changed. Browser winner/refund50, loser/refund100 and corrupted
+proof rejection pass against the same funded transaction47019e02…a211938. Full
+public verification passes on the new UI; its settlement badge appears only after
+that response passes, not on receipt verification or previous server state.
+Technical/trust disclosures open correctly. Mobile390px has no horizontal
+overflow; temporary viewport reset. JavaScript syntax, diff check and the three
+review-kit tests pass. See `evidence/2026-10-05-judge-demo-presentation.json`.
+
+**A captioned110s demo draft is rendered and visually checked.** Six native
+browser screenshots show actual verified fixture UI, then two explanatory cards;
+1920×1080, no audio,1,381,053bytes. It is explicitly edited stills, not a live
+auction/screen recording or110-second proving claim. Screenshot/storyboard and
+renderer are tracked; MP4 remains ignored at
+`.local/darkcall-judge-demo-draft-20261005.mp4`. Winner/public/trust frames were
+inspected. Same canonical transaction throughout; regtest, privacy/custody and
+operator outcome visibility stay explicit. No upload/submission performed.
 
 **Converging on review/reproduction without changing cryptography.** A local
 committed-source packager creates deterministic archives of source/public
@@ -20,9 +42,13 @@ both unchanged locks. It reads no private runtime or node and starts no proof.
 `docs/reproduce.md` gives the missing fresh-source steps and notes that Rust
 helpers embed their build directory: rebuild at the final location. Current SDK
 README now distinguishes the completed funded run from historical components.
-No new proof, signature, circuit or public trust root is introduced. First full
-committed kit/exported browser check follows this commit; second-machine/Linux
-access is still unprovided. Optional hardware question is pending. Automation
+No new proof, signature, circuit or public trust root is introduced. Actual
+revision34f6654 kit export/audit and fresh public-only extraction pass:400 source
+files,1,139,444bytes, no dependencies/private identities/Git metadata copied.
+Missing identity refuses409; absent compiled tools report incomplete prerequisites.
+This is same-host packaging smoke, not cryptographic/second-machine reproduction.
+Latest UI source will be exported after its commit. Second-machine/Linux access
+is still unprovided. Optional hardware question is pending. Automation
 remains removed; no public release/deployment/submission is performed.
 
 **One actual funded NU7 transaction now completes the certified memo auction.**
@@ -47,7 +73,10 @@ trusted admission authority is a separate public setup file. Evidence:
 All operators/fixture actors remain on one host on isolated regtest, not public
 chain. Signed admission attests funding; it is not a public ZK funding proof.
 
-**Current local jobs.** No heavy prover/verifier runs remain. Recovery59400,
+**Current local jobs.** No heavy prover/verifier/video-render runs remain. Two
+public browser checks and final own receipt opening completed in this session;
+the new UI's success was captured only after actual full verification. Video
+render21944 completed. Recovery59400,
 public replay85667, public attacks6044, own-client96262 and HTTP77185/15526 completed
 and were consumed. Default funded UI PID20469/exec78615 listens only127.0.0.1:8877;
 log`.local/funded-canonical-demo-server-20261005.log`. Public-only test UI28293/

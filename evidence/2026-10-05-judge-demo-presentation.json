@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-05",
+  "scope": "Frontend hierarchy and recorded demo; no protocol redesign",
+  "base_commit": "34f665492cfb70f84f72dc817274e9b45bb93565",
+  "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+  "backend_and_security": {
+    "api_request_lines_unchanged": true,
+    "response_acceptance_guards_unchanged": true,
+    "guard_count": 6,
+    "protected_files_unchanged_sha256": {
+      "scripts/serve_demo.py": "8df2466c4e9122c275dce09f726773481223e312c0f227b2aa999317659fd4cc",
+      "scripts/replay_public_bundle.py": "403dd3845ac7eac7e4eb34dde381b42bc0ae05642013731d2495efbef44a8061",
+      "scripts/public_bundle.py": "da1275314e100f493e41b552a52e38d39e45e2739fd5c54d2539a8b686869a61",
+      "scripts/funded_public_bundle.py": "6d67b88da79ed0edbfdc5291c0f26824532ead6252a938187ca450d677cc2cf4",
+      "demo.sh": "ad47e290b79f91ded5477889119ff890237009fcc1a65355afefc54558a4325a",
+      "verify.sh": "77096d30cd1e7962bdc6c238cad66845af0e5c809f046bce37201c5b4e6696bb",
+      "Cargo.lock": "7b6077966b9cd008ca5455ef7b2289bc5c93496b11610056176e25faee17bf10",
+      "tools/nu7-compat/Cargo.lock": "3d6f69bc6ad7286a844b5c40d5053242a4e7191d7f4b518a734dbc4b2074d882"
+    }
+  },
+  "browser": {
+    "url": "http://127.0.0.1:8877/",
+    "actual_winner_refund": 50,
+    "actual_loser_refund": 100,
+    "actual_corrupted_proof_rejected_before_key_read": true,
+    "actual_full_public_settlement_passed": true,
+    "same_canonical_transaction": true,
+    "receipt_pass_does_not_claim_full_settlement": true,
+    "previous_server_success_does_not_restore_settlement_badge": true,
+    "advanced_technical_trust_details_closed_by_default": true,
+    "technical_and_trust_expansion_checked": true,
+    "desktop_width": 1280,
+    "desktop_document_width": 1280,
+    "mobile_width": 390,
+    "mobile_document_width": 390,
+    "temporary_viewport_reset": true
+  },
+  "checks": {
+    "javascript_syntax": true,
+    "python_syntax": true,
+    "git_diff_check": true,
+    "review_kit_test_methods": 3,
+    "review_kit_tests_passed": true
+  },
+  "video": {
+    "passed": true,
+    "scope": "Edited stills of actual verified fixture UI, with explanatory cards; not a real-time screen recording",
+    "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "seconds": 110,
+    "scenes": 8,
+    "width": 1920,
+    "height": 1080,
+    "audio": false,
+    "published": false,
+    "output": ".local/darkcall-judge-demo-draft-20261005.mp4",
+    "video_bytes": 1381053,
+    "video_sha256": "9230afcff92d1dcabad29afbf5b861fef5d945b1f64ec45fea4fc58f00517da1",
+    "image_sha256": {
+      "01-intro.jpg": "c22d6cb1c4b16d4416b0d638eca5f966db2ff9b084e05433a686d3736fc399eb",
+      "02-sealed.jpg": "2e83303eba2d3a1c972c0e2456345b865336dcbc2ecc79f63003cbaabae41d8c",
+      "03-winner.jpg": "3ce9c7ac83e069b7d57de7ea4ccd0b5237b5db803d6217819b753c2248dd136f",
+      "04-loser.jpg": "a0eafced742c38328326c1caeb1e0a09aa13786bafd50a8fcbd14cce2a276072",
+      "05-tamper.jpg": "e16425f70e199488bcf92166425a6e5418c28985a34a41ba112d6c10067cd09d",
+      "06-public-check.jpg": "a285e080c77f3f9dde52b1420373e76a112b9b69dabbfa3feaa966702d72f8e9"
+    },
+    "private_material_read": false,
+    "proof_generation_in_video": false
+  },
+  "visually_inspected_video_frames_seconds": [
+    33,
+    75,
+    98
+  ],
+  "limits": {
+    "recorded_fixture_not_live_admission": true,
+    "one_host_isolated_regtest": true,
+    "second_machine_reproduction": false,
+    "public_testnet": false,
+    "parallel_proving_benchmark": false,
+    "published_or_submitted": false
+  }
+}

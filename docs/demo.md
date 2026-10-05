@@ -38,17 +38,22 @@ The local server's recorded two confirmations are not a chain-inclusion proof.
 ## Functional story
 
 1. Four committed maximum bids remain secret-shared; recorded price/units are public.
-2. Select a fixture ticket and **Verify & open my result**. Both fixed C++ proofs,
+2. Choose a fixture bidder and **Open my result**. Both fixed C++ proofs,
    exact context/price/sold and signed admission must pass before the own FVK is read.
    The client verifies native authorization, decrypts its memo, checks the caller's
    expected ticket/book and matches native amount to refund. No other identity copied.
 3. **Run tamper check** rejects an altered proof before key access/decryption.
-4. **Verify settlement** checks the SAME native transaction, six binding proofs,
+4. **Verify public settlement** checks the SAME native transaction, six binding proofs,
    fixed MPC/receipt proofs and signed accepted book under the configured authority.
 
 Receipt verification and full six-row settlement verification are separate stages.
 Recorded/previous results are labeled. There is no fake bid form, live browser
 admission or production bidder authentication. Selecting a ticket is not login.
+The judge-facing view leads with sealed bids, price and the own result. Advanced
+receipt checks, transaction/root and trust/limitations are collapsed by default.
+A receipt pass displays auction/receipt and native checks; the settlement badge
+appears only after full public verification passes. Previous server verification
+is labeled separately and does not restore that badge after a page reload.
 The server binds IPv4 loopback, serves only three static files and a same-origin/
 session-token bounded API. It exposes no keys, pads, raw memos, signing or RPC.
 All operators know refunds/status; two MPC colluders can reconstruct maximum bids.

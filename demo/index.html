@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>DarkCall — private bids, verifiable outcomes</title>
+  <title>DarkCall — sealed bids, verifiable settlement</title>
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
@@ -11,41 +11,41 @@
   <header class="topbar">
     <a class="brand" href="/" aria-label="DarkCall home"><span class="brand-mark">◈</span> DARKCALL<span class="brand-dot">.</span></a>
     <span class="top-label">PRIVATE MARKETS / ZCASH</span>
-    <span class="local-pill"><i></i> LOCAL DEMO</span>
+    <span class="local-pill">PROOF-BACKED DEMO</span>
   </header>
   <main>
     <section class="intro">
-      <div class="eyebrow"><span>01 / SEALED CALL AUCTION</span><span class="hairline"></span></div>
-      <h1>Keep your bid.<br><em>Show the outcome.</em></h1>
-      <p class="lead">Private price discovery. Shielded payments.<br>A result you can verify for yourself.</p>
-      <div class="assumptions"><span><b>3</b> computation parties</span><span><b>2 of 3</b> custody authorization</span><span><b>0</b> public bid amounts</span></div>
+      <h1>Sealed bids.<br><em>Verifiable settlement.</em></h1>
+      <p class="lead">A sealed-bid auction settled privately on Zcash.</p>
+      <p id="scope-description" class="scope-note">Loading the recorded demo…</p>
     </section>
-    <div class="scope-note"><span class="scope-tag">WHAT YOU’RE TRYING</span><p id="scope-description">Loading the recorded auction’s exact verification scope…</p></div>
     <section class="workspace" aria-label="Auction and private result">
       <article class="auction-panel">
-        <div class="panel-top"><span class="eyebrow">THE PUBLIC OUTCOME</span><span class="recorded-label">RECORDED RUN</span></div>
-        <div class="auction-heading"><h2>One price.<br>Four sealed bids.</h2><span class="auction-number">#004</span></div>
+        <div class="panel-top"><span class="eyebrow">THE AUCTION</span><span class="recorded-label">RECORDED</span></div>
+        <h2>4 private bids <span>·</span> 3 units</h2>
         <div id="case-tabs" class="case-tabs" role="group" aria-label="Auction scenario"><button data-case="positive" class="active" aria-pressed="true">Standard clearing</button><button data-case="zero" aria-pressed="false">Zero-price tie</button></div>
-        <div class="market-stats"><div><span>Clearing price</span><strong id="price">—</strong><small>zatoshi / unit</small></div><div><span>Units sold</span><strong id="sold">—<i>/ 3</i></strong><small>uniform-price allocation</small></div></div>
-        <div class="sealed-book"><div class="book-header"><span>COMMITTED BOOK</span><span>4 / 4 SEALED</span></div><div class="sealed-tickets"><div><span>01</span><b>••••••</b><i>sealed</i></div><div><span>02</span><b>••••••</b><i>sealed</i></div><div><span>03</span><b>••••••</b><i>sealed</i></div><div><span>04</span><b>••••••</b><i>sealed</i></div></div><div class="root-row"><span>BOOK ROOT</span><code id="root">Loading…</code></div></div>
-        <p class="book-caption">The public record reveals the price and units sold. Your maximum bid remains secret-shared.</p>
-        <details class="public-details"><summary>Inspect the transaction <span>↗</span></summary><dl><dt>Transaction</dt><dd id="txid">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Chain inclusion</dt><dd id="chain-scope">Not claimed for this synthetic demo</dd></dl></details>
+        <div class="market-stats"><div><span>CLEARING PRICE</span><strong id="price">—</strong><small>zatoshi / unit</small></div><div><span>SOLD</span><strong id="sold">—<i>/ 3</i></strong><small>units</small></div></div>
+        <div class="sealed-tickets" aria-label="Four sealed bids"><div><span>01</span><b>••••</b><small>sealed</small></div><div><span>02</span><b>••••</b><small>sealed</small></div><div><span>03</span><b>••••</b><small>sealed</small></div><div><span>04</span><b>••••</b><small>sealed</small></div></div>
+        <p class="book-caption">One price for every winning bidder.<br>Maximum bids stay secret-shared.</p>
       </article>
       <article class="receipt-panel">
-        <div class="panel-top"><span class="eyebrow">ONLY YOUR OPENING</span><span class="lock-icon" aria-hidden="true">◇</span></div>
-        <h2>Your private<br>result.</h2>
-        <label for="ticket">Choose a demo identity</label>
-        <select id="ticket"><option value="0">Ticket 01</option><option value="1">Ticket 02</option><option value="2">Ticket 03</option><option value="3">Ticket 04</option></select>
-        <div id="result" class="result-box" aria-live="polite"><span class="result-symbol">◈</span><h3>Still sealed to you.</h3><p>Verify the proof, decrypt your memo,<br>then open your own result.</p></div>
-        <button id="verify" class="primary-button">Verify & open my result <span>↗</span></button>
-        <ol class="verification-steps"><li id="step-proof"><span>01</span> Verify the fixed auction receipt proof</li><li id="step-native"><span>02</span> Authenticate the native transaction</li><li id="step-open"><span>03</span> Decrypt and check your ticket / refund</li></ol>
-        <p class="identity-note">Each verification reads one recipient’s viewing key. This local demo stores all test identities on the same computer.</p>
+        <div class="panel-top"><span class="eyebrow">ONLY YOUR RESULT</span><span class="lock-icon" aria-hidden="true">◇</span></div>
+        <h2>Your private result.</h2>
+        <div class="bidder-choice"><label for="ticket">Choose a bidder</label><select id="ticket"><option value="0">Bidder 01</option><option value="1">Bidder 02</option><option value="2">Bidder 03</option><option value="3">Bidder 04</option></select></div>
+        <div id="result" class="result-box" aria-live="polite"><h3>Still sealed.</h3><p>Open your encrypted receipt to see your result.</p></div>
+        <div id="result-checks" class="result-checks" aria-live="polite" hidden></div>
+        <button id="verify" class="primary-button">Open my result <span>↗</span></button>
+        <details class="advanced-details"><summary>Advanced verification details <span>+</span></summary><ol class="verification-steps"><li id="step-proof">Verify the fixed auction and receipt proofs</li><li id="step-native">Authenticate the native transaction</li><li id="step-open">Decrypt and check your own ticket / refund</li></ol><p class="identity-note">Each opening reads only that bidder’s viewing key. This recorded demo stores all fixture identities on the same computer. Selecting a bidder is not a production login.</p></details>
       </article>
     </section>
-    <section class="proof-strip settlement-strip"><div><span class="eyebrow">VERIFY THE COMPLETE SETTLEMENT</span><h3>Six shielded outputs. One public check.</h3><p id="settlement-scope">Loading the public verifier scope…</p></div><button id="settlement" class="secondary-button">Verify settlement <span>→</span></button><p id="settlement-result" aria-live="polite"></p></section>
-    <section class="proof-strip"><div><span class="eyebrow">TRY TO BREAK THE PROOF</span><h3>A changed proof stops here.</h3><p>Run an actual corrupted-proof check. The client must reject it before reading the recipient key.</p></div><button id="tamper" class="secondary-button">Run tamper check <span>→</span></button><p id="tamper-result" aria-live="polite"></p></section>
-    <section class="trust-row"><div><span class="eyebrow">THE PRIVACY MODEL</span><p>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two custody signers can authorize funds. Operators learn refunds and winning status; each bidder verifies their own result.</p></div><div><span class="eyebrow">VERIFIED STAGES</span><p id="stage-status">Recorded clearing. Own receipt unopened. Settlement not reverified in this session.</p><p id="remaining-scope"></p></div></section>
     <p id="error" class="error" role="alert" hidden></p>
+    <section class="proof-strip settlement-strip"><div><span class="eyebrow">VERIFY THE COMPLETE SETTLEMENT</span><h3>One transaction. Every output checked.</h3><p id="settlement-scope">Verify that the shielded Zcash transaction matches the auction outcome — without seeing the bids.</p><small>6 output bindings · auction proof · native authorization · accepted book</small></div><button id="settlement" class="secondary-button">Verify public settlement <span>→</span></button><p id="settlement-result" class="check-result" aria-live="polite"></p></section>
+    <section class="proof-strip tamper-strip"><div><span class="eyebrow">TRY TO BREAK IT</span><h3>Try to cheat.</h3><p>Change the proof. Watch DarkCall reject it before your viewing key is touched.</p></div><button id="tamper" class="secondary-button">Run tamper check <span>→</span></button><p id="tamper-result" class="check-result" aria-live="polite"></p></section>
+    <section class="how-it-works"><span class="eyebrow">HOW IT WORKS</span><ol><li><span>01</span>Private bids</li><li><span>02</span>Confidential clearing</li><li><span>03</span>Shielded settlement</li><li><span>04</span>Your private receipt</li></ol></section>
+    <section class="technical-section" aria-label="Further details">
+      <details class="public-details"><summary>Technical details <span>+</span></summary><p>REP3 computation · FROST signing · Halo2 output bindings · NU7</p><dl><dt>Transaction ID</dt><dd id="txid">—</dd><dt>Accepted root</dt><dd id="root">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Verification stages</dt><dd id="stage-status">Recorded clearing; own receipt unopened. Settlement not reverified in this session.</dd><dt>Public check</dt><dd id="settlement-detailed-result">Not run in this page session.</dd></dl></details>
+      <details class="public-details"><summary>Trust model & limitations <span>+</span></summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds; users cannot force a unilateral refund.</li><li>Operators have escrow viewing capability and learn refunds and winning status. Public outcomes can allow inference.</li><li>One-host prototype on isolated regtest. No public-testnet, malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The configured admission authority is trusted separately.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded fixture run; no live browser bid admission.</p></details>
+    </section>
   </main>
   <footer><span>DARKCALL / ZECATHON 2026</span><span>Private inputs. Public checks.</span><span>BUILT ON ZCASH</span></footer>
 </body>

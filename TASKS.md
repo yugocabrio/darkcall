@@ -11,13 +11,27 @@ proof/security model and avoid unrelated recovery/wallet/cryptographic work.
 After the funded canonical milestone, freeze new cryptography. Focus on review
 packaging, reproduction and presentation, followed by measured performance and
 bug fixes. Second-machine/Linux results require an actual available host.
+Latest frontend review: simplify the judge-facing story; keep backend/API and
+security acceptance unchanged; put technical/trust details behind disclosures.
 
-- [ ] Produce a committed-source review kit, validate its exclusions and public
+- [x] Produce a committed-source review kit, validate its exclusions and public
   links, and start its extracted public-only browser with no private identities.
+  - Revision34f6654:400 committed source files,1139444-byte archive; same-host
+    extraction/public-only page passes. No Git/runtime/dependency/key export.
+    Missing own identity refuses409; missing compiled tools report incomplete
+    prerequisites. This is not second-machine or cryptographic reproduction.
 - [ ] Reproduce the fixed public verifier on a second machine. Prepare exact
   tool/patch/CRS instructions and preflight; do not call a same-Mac fresh directory
   an independent reproduction. Optional human hardware question is pending.
-- [ ] Finish the short demo/video and review copy with exact guarantees and limits.
+- [x] Simplify judge-facing UI without backend/API/security changes. Winner/loser,
+  tamper and public settlement pass on the same canonical funded transaction;
+  actual verification controls badges. Technical/trust details collapse;390px
+  mobile has no horizontal overflow. No unconditional “nobody sees” claim.
+- [x] Render a short captioned edited demo draft and review copy with exact
+  guarantees/limits.110s/1920×1080, six verified UI stills plus two scope cards;
+  source storyboard/renderer tracked, MP4 ignored. This is not real-time proving.
+- [ ] Human review of the demo draft; narration/continuous capture if desired,
+  final submission assets. No publication or contest submission performed.
 
 - [x] One canonical actual current-NU7/v2 funded run: authenticated4 deposits,
   signed final root/recipients, blinded REP3 delivery, four encrypted receipt memos
@@ -119,26 +133,14 @@ bug fixes. Second-machine/Linux results require an actual available host.
     recipient wallets, full-node confirmations and three finalized journals.
     Exact built-PCZT recovery reused two verified rows after controlled process
     interruption. All shares remain local; independent operator hosts are separate.
-- [ ] Migrate auction native stack to NU7 after isolated compatibility checks.
-  - Standalone synthetic native gate and live tree reconstruction pass; root
-    Cargo.lock, native binding dependencies and isolated NU6.3 chain are preserved.
-    Seven new-to-old native V3 encoding/commitment/nullifier/psi/rcm_v3 byte cases
-    pass without shared Rust types. New-SDK native output export and public cmx
-    mapping checks pass; nine malformed public/private byte cases reject.
-    Existing-circuit new-output proof hit the disk guard twice during keygen;
-    no completed application proof. Preserve sources and avoid identical retries
-    without capacity. Separate shared18 layout preserves the original configuration
-    fingerprint and canonical/native constraints; actual new-output MockProver and
-    five tamper cases pass. Actual shared18 SNARK
-    and public-only new-native/row replay now pass (221.541s / 107.893s); one
-    synthetic output only. Preserve working33 trusted verifier and original funded
-    artifacts; full NU7 auction/wallet funding and live-chain freshness remain.
-    New adapter verifies v2 delivery and prepares/checks all six unsigned NU7
-    outputs at price25 and price0. Seven pre-sign malformed/substitution checks
-    pass, including canonical PCZT trailing-byte refusal. The later canonical
-    synthetic NU7 memo run completes all six fresh proofs, threshold native
-    authorization, six decryptions and public replay. Initial13.79GiB headroom;
-    no guard relaxation. Live funded admission/DKG/public-chain execution remains.
+- [x] Integrate current NU7 auction on isolated regtest after compatibility gates.
+  - Canonical funded tx47019e02…a211938 completes the four actual accepted notes,
+    signed admission, blinded-v2 memo delivery, six shared18 proofs, fixed MPC,
+    existing DKG, full-node acceptance, confirmations and exact wallet scans.
+    Root/SDK locks, byte interop, historical working33 verifier and original
+    NU6.3 chain remain preserved. The old working33 NU7 proof attempts were
+    resource-limited; the explicit shared18 variant is demonstrated. Public
+    testnet and general advancing-chain freshness/recovery remain separate gaps.
 
 - [x] Canonical four-ticket conditions/IDs, certified accepted root and six settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.

@@ -43,7 +43,8 @@ def safe_source(name, data):
     if (set(p.parts) & {'.git', '.deps', '.local', 'target', '__pycache__'}
             or name.startswith('evidence/private/') or p.name == 'Prover.toml'
             or p.name.startswith(('.env', 'private-')) or 'witness' in p.name.lower()
-            or p.suffix in {'.pczt', '.db', '.sqlite', '.pyc', '.pem', '.key', '.log'}):
+            or p.suffix in {'.pczt', '.db', '.db-shm', '.db-wal', '.sqlite', '.sqlite3',
+                            '.sqlite-shm', '.sqlite-wal', '.pyc', '.pem', '.key', '.log'}):
         raise RuntimeError('Runtime/private artifact refused')
     # High-confidence credential markers only; this does not claim to be a
     # complete secret scanner. Git metadata and ignored files never enter.
