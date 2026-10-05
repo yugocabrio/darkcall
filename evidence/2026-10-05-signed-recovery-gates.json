@@ -1,0 +1,45 @@
+{
+  "scope": "bounded DKG rerun interruption and signed native restart implementation; end-to-end recovery pending",
+  "recorded_utc": "2026-10-05T07:20:39.366514+00:00",
+  "interruption": {
+    "elapsed_seconds": 472.081,
+    "completed_native_row_proofs": 3,
+    "prover_resident_kib": 6433280,
+    "system_memory_free_percent": 70,
+    "free_disk_bytes": 26428518400,
+    "reason": "conservative 6 GiB root-prover RSS cap",
+    "cryptographic_failure": false,
+    "funding_reservations_or_broadcast": false,
+    "original_pczt_was_not_checkpointed_before_proofs": true,
+    "partial_artifacts_retained": true
+  },
+  "new_resource_policy": {
+    "single_heavy_prover": true,
+    "max_root_prover_resident_gib": 8,
+    "min_free_disk_gib": 4,
+    "min_mac_reported_memory_free_percent": 10,
+    "guarantees_host_stability": false
+  },
+  "changes": {
+    "unapproved_exact_native_pczt_checkpoint_before_row_proving": true,
+    "approved_private_pczt_checkpoint_before_reservation": true,
+    "signed_recovery_reverifies_exact_transaction_native_and_application_proofs": true,
+    "unsigned_pczt_automatic_resume": false,
+    "receipt_scans_recompute_full_actual_sdk_result_before_reusing_openings": true,
+    "different_capture_or_cached_native_amount_rejected": true
+  },
+  "checks": {
+    "selected_native_wallet_rust_regressions_pass": 22,
+    "strict_selected_all_target_release_clippy": true,
+    "python_resource_and_reconciliation_tests_pass": 10,
+    "actual_repeated_four_deposit_sdk_scan_pass": true,
+    "actual_changed_cached_amount_clone_rejected": true
+  },
+  "limitations": [
+    "Active rerun/signed recovery/public replay not yet complete",
+    "All three DKG shares remain on one local host",
+    "No public-testnet funding/broadcast; local controlled confirmations and trusted full-node RPC",
+    "Automatic unsigned-PCZT/partial-proof resume, expiry and reorg recovery remain"
+  ],
+  "private_material_committed": false
+}

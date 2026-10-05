@@ -8,6 +8,7 @@ import argparse
 import json
 import os
 import pathlib
+import stat
 import subprocess
 import time
 from regtest_node import ROOT, GENESIS, rpc, status
@@ -17,6 +18,22 @@ NATIVE = ROOT / 'target/release/darkcall-native-gate'
 WALLET = ROOT / 'target/release/examples/regtest_wallet'
 ADMIT = ROOT / 'target/release/examples/regtest_admission'
 ENV = {**os.environ, 'RAYON_NUM_THREADS': '2'}
+
+
+def private_read(path, limit=1_000_000):
+    path = pathlib.Path(path)
+    if not path.resolve(strict=True).is_relative_to((ROOT / '.local').resolve()):
+        raise RuntimeError('Private file is outside ignored local state')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(fd, 'rb') as handle:
+        metadata = os.fstat(handle.fileno())
+        if (not stat.S_ISREG(metadata.st_mode) or metadata.st_mode & 0o077
+                or metadata.st_nlink != 1 or metadata.st_size > limit):
+            raise RuntimeError('Private file type, permissions, links or size differ')
+        data = handle.read(limit + 1)
+        if len(data) > limit:
+            raise RuntimeError('Private file exceeds bound')
+        return data
 
 
 def private_write(path, value):
@@ -80,8 +97,16 @@ def capture(wallet, initial, snapshot):
     if status()['tip'] != snapshot['tip']:
         raise RuntimeError('Chain changed while capturing')
     p = wallet / f'node-capture-{snapshot["blocks"]}.json'
-    private_write(p, {'genesis': GENESIS, 'branch': snapshot['consensus']['chaintip'],
-        'nu6_3_height': 2, 'initial': initial, 'final_tree': final, 'blocks': blocks})
+    actual = {'genesis': GENESIS, 'branch': snapshot['consensus']['chaintip'],
+        'nu6_3_height': 2, 'initial': initial, 'final_tree': final, 'blocks': blocks}
+    if p.exists():
+        # A restart may follow a successful capture or a partial wallet scan.
+        # Regenerate the complete trusted-node capture; preserve and reject any
+        # differing/truncated checkpoint rather than silently overwrite it.
+        if json.loads(private_read(p, 100_000_000)) != actual:
+            raise RuntimeError('Existing capture differs from current canonical node data')
+    else:
+        private_write(p, actual)
     result = call(WALLET, 'scan', wallet, p)
     return result, wallet / f'private-notes-{snapshot["blocks"]}.json'
 

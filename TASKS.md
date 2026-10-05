@@ -126,7 +126,12 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Partial broadcast/finality updates across the three journals are idempotent
     for the same reserved digest, rejecting substitutions and skipped stages.
     Native construction stores a private verified PCZT before reservation.
-    Automatic unsigned-PCZT resume and chain/broadcast reconciliation remain.
+    Early unapproved PCZT now checkpoints exact output openings before proving;
+    automatic unsigned-PCZT/partial-proof resume remains. Signed native recovery
+    is implemented and unit-tested, including canonical bytes, original input
+    checkpoint, exact journal reservations, RPC-error distinction, existing
+    broadcasts/confirmations and fresh SDK receipt/nullifier reconciliation;
+    actual retained-chain recovery run is next.
   - The interrupted row-0 run had no reservation/signature. Existing deposits,
     cutoff, DKG packages and all three Frozen journals survived the PC reboot;
     rerunning with fresh output artifacts, one heavy prover and resource guards.

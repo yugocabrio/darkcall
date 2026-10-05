@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-05 07:04 UTC.
+Updated: 2026-10-05 07:20 UTC.
 
 ## Current outcome
 
@@ -24,24 +24,42 @@ existing state at height 112, with the identical tip and all four funding blocks
 transactions and commitments canonical. The mempool is empty; all three journals
 replay through Freeze/LockFinalBook without Prepare/Broadcast/Finalize.
 
-Recovery funded DKG settlement: session 60888, log .local/dkg-auction4-recovery.log.
+The first monitored recovery stopped at 472.081s after three successful native
+row proofs: the conservative 6 GiB RSS guard rejected a 6.135 GiB transient while
+macOS reported 70% memory headroom and disk still had 24.61 GiB. This is a resource
+policy stop, not a failed cryptographic proof. All journals remain Frozen and no
+transaction/checkpoint reservation or broadcast was produced. Those partial
+artifacts cannot be reused without the original native output openings; the
+prior construction did not checkpoint them until all application proofs passed.
+
+The new code checkpoints the exact private built PCZT BEFORE row proving, as
+well as the approved private PCZT before reservation. The early checkpoint is
+unapproved and cannot authorize signing. Automatic unsigned-PCZT/partial-proof
+resume remains unfinished. An immutable ignored driver checkpoint also binds
+source snapshot, original recipients, authority and certificate for signed
+recovery. No keys, notes or checkpoint data are committed.
+
+Recovery DKG settlement rerun: session 83499, log .local/dkg-auction4-recovery2.log.
 Source .local/regtest-dkg-deposit4-20261005, escrow same-name-escrow, book
 .local/mpc-auction4-20261004T231421Z, new output
-.local/regtest-dkg-auction4-recovery-20261005. Original deposits, cutoff, receipts,
-DKG packages and chain are reused; no reset, redeposit or changed root.
-Keep node height 112 unchanged until this controlled gate finishes; inspect the
-log/session before starting another native prover. No DKG settlement/broadcast
-success claimed yet. Resource observations stay in the ignored same-name
--resources.jsonl file. The driver aborts its own process group under 4 GiB free
-disk, over 6 GiB root-prover RSS or under 10% macOS reported memory headroom.
-These guards do not diagnose the PC crash or guarantee host stability.
+.local/regtest-dkg-auction4-recovery2-20261005. Original funding/cutoff/receipts/DKG
+packages remain. Keep node height 112 unchanged until this gate finishes; inspect
+the log/session before starting another native prover. No DKG spend/broadcast
+success claimed yet. Recorded legitimate RSS motivates an 8 GiB root-prover
+ceiling on this 16 GiB host, with separate 4 GiB disk and 10% system-memory guards.
+Observations stay ignored. These thresholds do not diagnose/guarantee host safety.
 
-Partial three-operator broadcast/finality journal updates are now idempotent for
-exact reserved effects, retaining strict stages and rejecting substitution,
-reset/cancellation and skipped finalization. Selected core/wallet regressions:
-30 tests pass; strict selected all-target release clippy passes. Three Python
-resource guard tests pass. This does not yet automatically recover an unsigned
-PCZT or reconcile a signed transaction with chain inclusion after restart.
+Signed-transaction restart reconciliation is now implemented behind
+scripts/regtest_settlement.py --resume-signed: validate immutable original source
+and exact journal reservation; publicly reverify certificate/MPC/native proofs
+and actual signed bytes; distinguish a missing tx from RPC outage; never recreate
+notes/effects or re-send a confirmed tx; mine only remaining controlled blocks;
+re-decrypt recipients and reconcile original spent nullifiers before idempotent
+finalization. Actual end-to-end signed recovery is pending the active DKG run.
+Ten Python resource/reconciliation tests pass, selected native/wallet regressions
+22 pass, strict selected all-target release clippy passes. Actual SDK repeated
+scan re-decrypts all four retained DKG deposits and rejects a changed cached
+amount in a new isolated clone without modifying source files.
 
 **The isolated NU7 compatibility gate passes without changing the working
 NU6.3 workspace.** New pinned native SDK: synthetic NU7 v6 PCZT → full private-

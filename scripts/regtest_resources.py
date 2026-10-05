@@ -15,7 +15,10 @@ import tempfile
 import time
 
 MIN_FREE_BYTES = 4 * 1024 ** 3
-MAX_RESIDENT_KIB = 6 * 1024 ** 2
+# A measured native row transiently reached 6.14 GiB while macOS reported 70%
+# headroom. Keep one prover, a half-of-16-GiB resident ceiling, and independent
+# system/disk guards rather than interrupt that observed legitimate peak.
+MAX_RESIDENT_KIB = 8 * 1024 ** 2
 MIN_MAC_FREE_PERCENT = 10
 
 
@@ -42,7 +45,7 @@ def check(observation):
     if observation['free_disk_bytes'] < MIN_FREE_BYTES:
         raise RuntimeError('Proof stopped: less than 4 GiB disk headroom; artifacts retained')
     if observation.get('prover_resident_kib', 0) > MAX_RESIDENT_KIB:
-        raise RuntimeError('Proof stopped: prover exceeds 6 GiB resident memory; artifacts retained')
+        raise RuntimeError('Proof stopped: prover exceeds 8 GiB resident memory; artifacts retained')
     if observation.get('system_memory_free_percent', 100) < MIN_MAC_FREE_PERCENT:
         raise RuntimeError('Proof stopped: system memory headroom below 10%; artifacts retained')
 

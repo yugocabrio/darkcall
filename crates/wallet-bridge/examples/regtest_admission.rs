@@ -111,6 +111,33 @@ fn main() -> Result<()> {
         .unwrap()
         .parent()
         .unwrap();
+    if args.len() == 3 && args[0] == "state" {
+        let out = Path::new(&args[1]);
+        let manifest: Manifest = serde_json::from_slice(&read(&out.join("manifest.json"), 16384)?)?;
+        let mut encoded = hex::decode(&args[2])?;
+        encoded.reverse();
+        let effects: [u8; 32] = encoded.try_into().map_err(|_| "effects length")?;
+        let mut states = Vec::new();
+        // Keep all locks while auditing the complete set; only public state
+        // flags leave this command, never note IDs or reservation contents.
+        let journals = (0..3)
+            .map(|i| {
+                Journal::open(
+                    &out.join(format!("private-node-{i}.jsonl")),
+                    &manifest.context,
+                )
+            })
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        for (i, journal) in journals.iter().enumerate() {
+            states.push(
+                serde_json::json!({"operator":i,"phase":format!("{:?}",journal.phase()),
+                "reserved_transaction_matches":journal.reserved_effects()==Some(effects),
+                "accepted_tickets":journal.registrations().count()}),
+            );
+        }
+        println!("{}", serde_json::json!({"operators":states}));
+        return Ok(());
+    }
     if args.len() == 4 && args[0] == "record" {
         let out = Path::new(&args[1]);
         let manifest: Manifest = serde_json::from_slice(&read(&out.join("manifest.json"), 16384)?)?;

@@ -307,6 +307,19 @@ pub fn build(
         .try_into()
         .unwrap();
     let app_start = Instant::now();
+    // Persist the exact native output openings BEFORE expensive row proofs.
+    // This is an unapproved construction, not permission to reserve/sign.
+    // It allows a future exact-proof resume without creating new cmxs/rho/rseed.
+    write_private(
+        &integration.directory.join("private-built-settlement.pczt"),
+        &pczt
+            .clone()
+            .serialize()
+            .map_err(|e| error("early checkpoint encoding", e))?,
+    )?;
+    fs::File::open(integration.directory.parent().ok_or("settlement parent")?)
+        .and_then(|parent| parent.sync_all())
+        .map_err(|e| error("early checkpoint parent sync", e))?;
     let approval = integration.prove_and_check(
         &rows.try_into().map_err(|_| "row count")?,
         &output_notes.try_into().map_err(|_| "note count")?,

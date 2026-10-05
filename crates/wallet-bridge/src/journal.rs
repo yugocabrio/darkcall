@@ -287,6 +287,9 @@ impl Journal {
     pub fn phase(&self) -> Phase {
         self.ledger.phase()
     }
+    pub fn reserved_effects(&self) -> Option<[u8; 32]> {
+        self.ledger.reserved_effects()
+    }
     /// Reconcile a caller-verified broadcast/finality observation after a crash
     /// between operator journal writes. Repeats for the exact reserved digest
     /// are no-ops. Different digests and skipped stages still fail closed.

@@ -54,6 +54,12 @@ miner_address = "t27eWDgjFYJGVXmzrXeVjnb5J3uXDM9xH9v"
 '''
 
 
+class RpcError(RuntimeError):
+    def __init__(self, error):
+        super().__init__('regtest RPC: ' + str(error))
+        self.code = error.get('code')
+
+
 def rpc(method, params=None, timeout=20):
     request = urllib.request.Request(RPC, data=json.dumps({
         'jsonrpc': '2.0', 'method': method, 'params': params or [], 'id': 'darkcall-regtest'
@@ -61,7 +67,7 @@ def rpc(method, params=None, timeout=20):
     with urllib.request.urlopen(request, timeout=timeout) as response:
         result = json.load(response)
     if result.get('error'):
-        raise RuntimeError('regtest RPC: ' + str(result['error']))
+        raise RpcError(result['error'])
     return result['result']
 
 

@@ -28,6 +28,7 @@ fn private_write(path: &Path, bytes: &[u8]) -> Result<()> {
     let mut f = options.open(path)?;
     f.write_all(bytes)?;
     f.sync_all()?;
+    fs::File::open(path.parent().ok_or("private file parent")?)?.sync_all()?;
     Ok(())
 }
 fn check_dir(path: &Path) -> Result<()> {
@@ -242,10 +243,20 @@ fn main() -> Result<()> {
     }
     let private = serde_json::json!({"scope":"isolated regtest wallet openings", "genesis":GENESIS,"nu6_3_height":2,
         "tip_height":scanner.height(),"tip_hash":capture.final_tree.hash,"anchor":scanner.anchor().to_bytes(),"notes":openings});
-    private_write(
-        &directory.join(format!("private-notes-{}.json", scanner.height())),
-        &serde_json::to_vec_pretty(&private)?,
-    )?;
+    let opening_path = directory.join(format!("private-notes-{}.json", scanner.height()));
+    if opening_path.try_exists()? {
+        // Replay the actual ciphertexts and witnesses first, then compare the
+        // complete fresh result. Never trust cached plaintext balances or
+        // overwrite changed/truncated openings after a crash.
+        let persisted: serde_json::Value = serde_json::from_slice(
+            &darkcall_wallet_bridge::local_wallet::read_private(&opening_path, 1_000_000)?,
+        )?;
+        if persisted != private {
+            return Err("existing private notes differ from freshly verified scan".into());
+        }
+    } else {
+        private_write(&opening_path, &serde_json::to_vec_pretty(&private)?)?;
+    }
     println!(
         "{}",
         serde_json::json!({"scope":"actual isolated regtest notes from trusted local Zebra; not standard testnet",

@@ -152,3 +152,41 @@ not implemented: the local initializer and signing process hold all three
 shares, so this does not demonstrate independent custody. DKG removes the
 retained escrow master key from the prototype's construction; it does not make
 a compromised single demo host safe. Recovery/cancellation remain separate work.
+
+## Restart after a PC/process interruption
+
+Restart Docker and `python3 scripts/regtest_node.py start`; existing state is
+preserved. Inspect the run log, private checkpoint and all three journals before
+starting another proof. A stop before any reservation/complete signed transaction
+can reconstruct against the original confirmed funding with a fresh output name.
+Do not reset funding, change the cutoff/root, or release reserved notes.
+
+New construction records an immutable ignored recovery input checkpoint and an
+unapproved exact private PCZT before row proving. Approved PCZT is separately
+fsynced before reservation. Automatic unsigned-PCZT/partial-proof continuation
+is still unfinished; those files preserve the exact data for that next gate.
+
+For a complete signed construction, use the SAME existing settlement name:
+
+```sh
+python3 scripts/regtest_settlement.py ORIGINAL_DEPOSIT_RUN ORIGINAL_MPC_BOOK_RUN --name EXISTING_SETTLEMENT_NAME --resume-signed
+```
+
+This validates original funding/receivers/authority/certificate hashes and a
+canonical original chain checkpoint, audits the exact reservation in every
+journal, and publicly reverifies all proofs/signatures and signed bytes. It
+checks whether the exact tx is already confirmed/in the mempool. RPC failure
+is not interpreted as missing broadcast. Confirmed transactions are not sent
+again, and only missing controlled confirmation blocks are generated. Recipients
+and escrow re-scan full native ciphertexts/nullifiers; complete cached captures
+and openings must equal a freshly computed result. No cached balance alone
+authorizes finalization. Reorg/expiry/changed-chain cases fail closed without
+unlocking inputs or creating replacement effects. Existing pre-feature runs
+without a recovery input checkpoint require an explicit audit/migration.
+
+Actual full signed-recovery gate is pending in evidence/2026-10-05-signed-recovery-gates.json.
+The first monitored rerun reached three verified rows before a conservative
+6 GiB RSS guard stopped it (6.135 GiB transient, 70% reported memory headroom).
+The next measured run uses one prover with an 8 GiB root RSS ceiling and separate
+4 GiB disk/10% macOS memory-headroom guards. Observations are private/ignored.
+These are operational limits, not a hardware-crash guarantee or weakened proof.
