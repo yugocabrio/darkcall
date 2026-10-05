@@ -37,6 +37,7 @@ def snapshot(source, authority, prefix='certified-public'):
         raise RuntimeError('Unknown or incomplete certified public bundle format')
     local = ROOT / '.local'
     if local.is_symlink(): raise RuntimeError('Ignored snapshot directory symlink refused')
+    local.mkdir(mode=0o700, exist_ok=True)
     target = local / (prefix + '-' + secrets.token_hex(6))
     target.mkdir(mode=0o700)
     for folder in ('mpc-public','receipt-proof-public'): (target / folder).mkdir(mode=0o700)

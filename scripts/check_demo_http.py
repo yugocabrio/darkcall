@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Actual loopback demo API checks, including key-before-proof refusal.
 
-Synthetic fixtures only. HTTP checks do not prove MPC transport security or
-independent operator separation. Responses are recursively checked for secrets.
+Controlled synthetic/regtest fixtures only. HTTP checks do not prove MPC
+transport security or independent operator separation. Responses are recursively
+checked for secrets.
 """
 import argparse
 import http.client
@@ -39,6 +40,9 @@ def main():
     state = json.loads(raw)
     if args.canonical and (not state['six_output_memo_e2e'] or len(state['cases']) != 1):
         raise RuntimeError('Expected one same-run six-output auction')
+    if args.funded and (not state['funded_canonical']
+            or state['recorded_local_confirmations'] != (None if args.public_only else 2)):
+        raise RuntimeError('Expected recorded local funded scope; not public chain verification')
     headers = {'Origin':origin,'Content-Type':'application/json','X-DarkCall-Token':state['csrf']}
     if args.settlement_only:
         status,data = call('POST','/api/settlement','{}',headers)
@@ -141,7 +145,7 @@ def main():
             raise RuntimeError('HTTP corrupted-proof gate did not preserve recipient secrecy')
         clean(value)
     print(json.dumps({'scope':'loopback receipt demo actual API/client integration',
-        'verified':verified,'http_rejections':denied,'corrupt_proofs_rejected_before_key':2,
+        'verified':verified,'http_rejections':denied,'corrupt_proofs_rejected_before_key':1 if args.canonical else 2,
         'private_fields_served':False,'browser_ui_checked_separately':True,
         'six_output_memo_e2e_verified':args.canonical,'seconds':time.monotonic()-start},indent=2))
 

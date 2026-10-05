@@ -1,0 +1,281 @@
+{
+  "scope": "one actual-note certified NU7 memo auction, public/client replay; all actors on one controlled host",
+  "implementation_commit": "700c60c",
+  "network": {
+    "node_version": "Zebra 7.0.0-rc.0",
+    "consensus_branch": "77190ad9",
+    "genesis": "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327",
+    "height": 112,
+    "public_testnet": false,
+    "confirmations": 2,
+    "confirmation_scope": "controlled local full-node confirmation; not public-chain finality"
+  },
+  "funding": {
+    "txid": "7d7fd7a4049a8da86a34e94132dc94b57afc8b9ba21da406e5b75f4d56d1efe8",
+    "actual_notes": 4,
+    "amount_per_note_zatoshi": 15100,
+    "accepted_receipts": 12,
+    "final_book_signatures": 3,
+    "fixture_tickets_terms_client_proofs_and_shares": true,
+    "all_sources_consumed": true,
+    "escrow_balance_after_zatoshi": 0,
+    "all_journals_finalized_same_transaction": true
+  },
+  "transaction": {
+    "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "price_zatoshi": 50,
+    "sold": 3,
+    "inputs": 4,
+    "actions": 6,
+    "bytes": 21790,
+    "fee_zatoshi": 30000,
+    "four_encrypted_receipt_memos_in_same_transaction": true,
+    "six_exact_recipient_scans_with_canonical_paths": true,
+    "same_transaction_all_stages": true
+  },
+  "construction": {
+    "seconds": 1846.222772208,
+    "including_chain_and_scans_seconds": 1847.6527608749966,
+    "native_rayon_threads": 1,
+    "same_pczt_resumed": true,
+    "source_pczt_rows_unchanged": true,
+    "master_spending_key_read": false,
+    "full_ask_reconstructed": false,
+    "setup": "existing 2-of-3 DKG; all shares on one host",
+    "threshold_spends": 4,
+    "one_share_and_changed_digest_rejected": true,
+    "private_plaintext_maximum_bids_read": false,
+    "independent_signed_admission_link_before_reservation_or_real_dkg_key": true
+  },
+  "timing": {
+    "native_key_seconds": 201.875484334,
+    "six_row_proof_verify_seconds": [
+      185.946181666,
+      226.979492959,
+      182.640151334,
+      202.094042541,
+      237.423639292,
+      260.762732625
+    ],
+    "six_row_service_total_seconds": 1295.846240417,
+    "native_consensus_proof_seconds": 14.088200833,
+    "signer_independent_application_verification_seconds": 199.653740417,
+    "rep3_witness_seconds": 1.423,
+    "rep3_proof_seconds": 10.824,
+    "separate_fixed_row_replay_before_rep3_seconds": 107.906,
+    "first_stopped_attempt_seconds": 190.563,
+    "initial_stop_before_reservation_signing_broadcast": true,
+    "interpretation": "Shared16GiB M1; one native thread/paging recovery, not isolated performance comparison or parallel speedup"
+  },
+  "mpc": {
+    "input_proofs_verified": true,
+    "validated_share_pairs": 12,
+    "proof_bytes": 14656,
+    "changed_price_plan_row_rejected": true,
+    "normal_cpp_verification": false,
+    "layout": "experimental-shared18-native-row-v1",
+    "fresh_row_proofs": 6,
+    "proof_or_primitive_security_changed": false
+  },
+  "public_bundle": {
+    "path": "demo/artifacts/canonical-nu7-funded-v1",
+    "artifact_files": 19,
+    "total_files": 20,
+    "bytes": 153557,
+    "separate_trusted_authority": "demo/authority/canonical-nu7-funded-v1.json",
+    "private_keys_pczt_witness_pads_openings_exported": false,
+    "native_proof_signatures_six_bindings_mpc_flags_certificate_replayed": true,
+    "seconds": 112.43050575,
+    "chain_inclusion_proven_by_bundle": false,
+    "signed_funding_scope": "all-three operator attestation under explicitly configured authority; not public funding ZK"
+  },
+  "recipient_client": {
+    "four_own_openings_verified": true,
+    "same_txid_all_openings": true,
+    "only_exported_own_fvk_read": true,
+    "export_setup_may_read_own_actor_spending_key": true,
+    "other_wallet_keys_or_ticket_pads_read": false,
+    "opening_and_negative_cases_seconds": 22.246798583000782,
+    "rejected": [
+      "flags-proof",
+      "auction-proof",
+      "certificate",
+      "wrong-key",
+      "trailing-tx",
+      "wrong-book"
+    ],
+    "invalid_public_proofs_and_certificate_rejected_before_key": true,
+    "six_row_proofs_and_chain_inclusion_verified_in_client": false
+  },
+  "public_substitutions": {
+    "scope": "funded public-only fast substitution refusals; no secret artifacts",
+    "rejected": [
+      "trailing-byte",
+      "binding-signature",
+      "identity",
+      "action-collision",
+      "certificate-signature",
+      "accepted-root",
+      "authority-key",
+      "authority-cutoff"
+    ],
+    "source_unchanged": true,
+    "seconds": 13.928752833002363
+  },
+  "http": {
+    "own_receipts_and_boundaries": {
+      "scope": "loopback receipt demo actual API/client integration",
+      "verified": [
+        {
+          "case": "positive",
+          "ticket": 0,
+          "won": true,
+          "refund": 50
+        },
+        {
+          "case": "positive",
+          "ticket": 1,
+          "won": true,
+          "refund": 50
+        },
+        {
+          "case": "positive",
+          "ticket": 2,
+          "won": true,
+          "refund": 50
+        },
+        {
+          "case": "positive",
+          "ticket": 3,
+          "won": false,
+          "refund": 100
+        }
+      ],
+      "http_rejections": [
+        "private-file",
+        "path-traversal",
+        "arbitrary-evidence",
+        "dns-rebinding",
+        "cross-origin-read",
+        "missing-origin",
+        "cross-origin-write",
+        "missing-token",
+        "wrong-token",
+        "wrong-content-type",
+        "arbitrary-path",
+        "unknown-action",
+        "boolean-ticket",
+        "unknown-ticket",
+        "extra-secret-field"
+      ],
+      "corrupt_proofs_rejected_before_key": 1,
+      "private_fields_served": false,
+      "browser_ui_checked_separately": true,
+      "six_output_memo_e2e_verified": true,
+      "seconds": 17.98981708399515
+    },
+    "public_only": {
+      "scope": "public-only canonical demo; no private identity fixtures",
+      "recipient_keys_included": false,
+      "own_opening_without_key_refused": true,
+      "proof_tamper_refused_before_key": true,
+      "http_rejections": [
+        "private-file",
+        "path-traversal",
+        "arbitrary-evidence",
+        "dns-rebinding",
+        "cross-origin-read",
+        "missing-origin",
+        "cross-origin-write",
+        "missing-token",
+        "wrong-token",
+        "wrong-content-type",
+        "arbitrary-path",
+        "unknown-action",
+        "boolean-ticket",
+        "unknown-ticket",
+        "extra-secret-field"
+      ],
+      "seconds": 1.169373083001119
+    },
+    "settlement_boundary": {
+      "scope": "public settlement API boundary checks; no extra proof verification run",
+      "rejected": [
+        "supplied-path",
+        "supplied-authority",
+        "supplied-key",
+        "cross-origin",
+        "wrong-session-token"
+      ],
+      "private_paths_or_supplied_keys_accepted": false,
+      "seconds": 0.010827457997947931
+    },
+    "full_settlement": {
+      "scope": "actual public-only same-run six-output memo verification",
+      "result": {
+        "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+        "transaction_bytes": 21790,
+        "native_proof_and_signatures_verified": true,
+        "actual_transaction_outputs_match": true,
+        "seconds": 108.023302208,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "acceptance_or_recipient_receipts_authenticated": true,
+        "private_openings_read": false,
+        "chain_funding_or_finality_verified": false,
+        "receipt_fixed_proof_verified": true,
+        "receipt_settlement_context_link_verified": true,
+        "verified_at_unix": 1791226863
+      },
+      "private_fields_served": false,
+      "no_proving_key_or_new_signature": true,
+      "seconds": 110.1117379999996
+    }
+  },
+  "resources": {
+    "samples": 185,
+    "sample_scope": "10-second root-process RSS and shared macOS/disk observations; not true peaks or owned-group resident size",
+    "max_root_rss_kib": 2000880,
+    "min_free_disk_bytes": 4902535168,
+    "min_mac_memory_free_percent": 33,
+    "max_system_swap_used_bytes": 17145266176,
+    "guard_limits_unchanged": true
+  },
+  "limitations": [
+    "Public testnet and independent operator hosts remain untested.",
+    "Maximum one semi-honest corrupt REP3 party; two colluders can reconstruct bids.",
+    "Two custody colluders can spend; operators know refunds/status.",
+    "No public funding/chain-inclusion ZK; RPC/birthday and admission authority trusted.",
+    "General advancing-chain/reorg and post-broadcast recovery unfinished.",
+    "Fixture client actors/book; no live browser bidder authentication/admission.",
+    "Larger Linux parallel and8/16/32-bid proofs unmeasured.",
+    "No mainnet funds or deployment/public release."
+  ],
+  "portable_boundary": {
+    "scope": "actual public bundle input boundary; no native row proving or private inputs",
+    "funded": true,
+    "rejected": [
+      "missing-proof",
+      "digest",
+      "external-mpc-path",
+      "uploaded-vk",
+      "symlink",
+      "cross-run-receipt",
+      "in-bundle-authority"
+    ],
+    "producer_checksums_are_not_authentication": true
+  },
+  "fresh_checkout_snapshot_without_local_state": true,
+  "browser_visual_check": {
+    "same_txid_details": true,
+    "own_win_refund": true,
+    "altered_proof_before_key_refused": true,
+    "previous_public_verification_explicitly_labeled": true,
+    "ignored_screenshot": ".local/funded-canonical-demo-20261005.jpg"
+  },
+  "validation": {
+    "previous_root_and_sdk_release_build_and_strict_all_target_clippy": true,
+    "previous_eleven_funded_preparation_substitutions_after_common_loader_change": true,
+    "current_python_compile_shell_syntax_js_syntax_git_diff_check": true
+  }
+}

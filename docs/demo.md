@@ -2,55 +2,66 @@
 
 ```sh
 ./demo.sh
-./verify.sh demo/artifacts/canonical-nu7-v1
+./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 \
+  --authority demo/authority/canonical-nu7-funded-v1.json
 ```
 
-Open `http://127.0.0.1:8877`. Both commands use the same recorded synthetic
-NU7 transaction `52555e25…151ab3b`: four committed bids, blinded-v2 private
-refund/winner delivery, four encrypted memos in the same six-output transaction,
-six output bindings, MPC proof, PCZT/FROST/native authorization and six decryptions.
-Its price is 50 zatoshi and three units sell. This tiny synthetic book is a demo;
-no public-testnet funding, admission certificate, DKG or chain inclusion is claimed.
-The earlier actual-funded NU6.3 regtest execution remains separate.
+Open `http://127.0.0.1:8877`. Both commands use the recorded actual-funded NU7
+transaction `47019e02…a211938`: four accepted deposits, authenticated final book,
+blinded-v2 delivery, four encrypted memos in the SAME six-output transaction,
+six native bindings, fixed MPC proof, existing2-of-3 DKG, Zebra acceptance,
+two controlled confirmations, six exact wallet scans and three Finalized journals.
+Price50zatoshi/sold3;21790bytes/30000fee. Fixture clients/tickets/terms and committed
+input proofs/shares remain local. This is controlled regtest, not public testnet.
 
-After pinned tools are built from [toolchains](toolchains.md), the verifier works
-from the committed 140 KB **public-only** bundle. It never needs a bid/witness/key,
-PCZT or funding journal. It snapshots bounded allowlisted public files, rewrites
-only its own internal MPC path, and invokes the compiled native/Halo2/C++ verifiers.
-Manifest checksums detect packaging damage; they are not producer authentication.
-Supplied VK bytes must equal a key reconstructed from our pinned circuit.
-Wrong/missing artifacts, external MPC paths, symlinks and cross-run contexts refuse.
+After building [pinned tools](toolchains.md), the154KB public-only bundle verifies
+without bids, keys, PCZT, witness or funding journal. The explicit authority contains
+public admission keys/conditions in a **separate** local setup file. This is demo
+registration configuration, not production service discovery. A verifier must obtain
+its intended auction authority independently; never use keys selected by a bundle.
+Admission certification is operator attestation, not public ZK proof of funding.
+Native/proof verification does not prove chain inclusion or public-chain finality.
 
-`./demo.sh` uses ignored synthetic recipient identities on this development machine.
-A fresh checkout automatically starts a **public-only** view when those identities
-are absent. It can show the recorded sealed book, verify settlement and reject a
-changed proof. It explicitly disables own receipt opening without a viewing key.
-No recipient key is shipped in Git. `./demo.sh --public-only` selects that view
-explicitly. Tool bootstrap/compilation is a prerequisite, not a claimed zero-install
-cryptographic verifier.
+The verifier snapshots bounded allowlisted files, invokes fixed native/Halo2/C++
+verifiers and matches actual commitments/action mapping. Packaging hashes detect
+damage, not authenticity. Supplied VK bytes must match keys derived from pinned
+circuits. Keys/private pads and recipient associations stay ignored under `.local`.
+
+`./demo.sh` uses four exported **own FVK** fixtures on this development machine.
+Their setup may read that actor's ordinary SK to derive FVK; the receipt client
+reads only the exported own FVK. All test identities remain on one host. A fresh
+checkout automatically starts a public-only view when the ignored run is absent.
+`./demo.sh --public-only` forces that view. It verifies settlement and rejects
+corrupt proofs, but refuses own receipt opening without a key. No keys ship in Git.
+The local server's recorded two confirmations are not a chain-inclusion proof.
 
 ## Functional story
 
-1. Four committed maximum bids remain sealed; the recorded price/units are public.
-2. Select a synthetic ticket and **Verify & open my result**. The fixed C++ flags
-   proof and fixed auction proof must pass and share the exact context/price/sold
-   before the client reads that one identity. It authenticates the native transaction,
-   decrypts the memo and checks ticket/root/refund/status. No other identity is copied.
-3. **Run tamper check** submits a real altered proof and refuses before key access.
-4. **Verify settlement** checks that same transaction's native authorization, six
-   row proofs, fixed MPC proof and receipt statement link using public files only.
+1. Four committed maximum bids remain secret-shared; recorded price/units are public.
+2. Select a fixture ticket and **Verify & open my result**. Both fixed C++ proofs,
+   exact context/price/sold and signed admission must pass before the own FVK is read.
+   The client verifies native authorization, decrypts its memo, checks the caller's
+   expected ticket/book and matches native amount to refund. No other identity copied.
+3. **Run tamper check** rejects an altered proof before key access/decryption.
+4. **Verify settlement** checks the SAME native transaction, six binding proofs,
+   fixed MPC/receipt proofs and signed accepted book under the configured authority.
 
-The UI separates clearing/own-result verification from settlement verification;
-showing the price does not pretend that funds have settled. Recorded and previous
-verification results are labeled. There is no fake bid form or live plaintext bid
-submission. Client proving/admission, registered identity authentication and chain
-delivery are unfinished.
+Receipt verification and full six-row settlement verification are separate stages.
+Recorded/previous results are labeled. There is no fake bid form, live browser
+admission or production bidder authentication. Selecting a ticket is not login.
+The server binds IPv4 loopback, serves only three static files and a same-origin/
+session-token bounded API. It exposes no keys, pads, raw memos, signing or RPC.
+All operators know refunds/status; two MPC colluders can reconstruct maximum bids.
 
-The server binds only to IPv4 loopback, serves three static files, and has a bounded
-same-origin/token API with one verification at a time. It serves no repo files,
-keys, masks or raw memos, and has no RPC/broadcast/signing operation. Selecting a
-ticket is not authentication. All synthetic actors remain on one computer and
-operators know refunds/status.
+The historical synthetic story remains reproducible separately:
+
+```sh
+./demo.sh --synthetic
+./verify.sh demo/artifacts/canonical-nu7-v1
+```
+
+That transaction52555e25…151ab3b has synthetic notes/dealer signing and no funding
+certificate or confirmations. Do not attribute it to the funded DKG run.
 
 ## Regenerate the synthetic run
 
@@ -62,7 +73,7 @@ python3 scripts/run_nu7_auction.py BOOK_RUN --name FRESH_NAME --receipt-memos
 python3 scripts/public_bundle.py .local/FRESH_NAME --export .local/FRESH_PUBLIC
 python3 scripts/check_canonical_receipts.py .local/FRESH_NAME .local/FRESH_PUBLIC
 ./verify.sh .local/FRESH_PUBLIC
-./demo.sh --run FRESH_NAME --bundle .local/FRESH_PUBLIC
+./demo.sh --synthetic --run FRESH_NAME --bundle .local/FRESH_PUBLIC
 ```
 
 Use new simple lowercase names; existing proofs/keys/journals are preserved. The
@@ -73,10 +84,11 @@ cannot be broadcast. This regeneration does not reproduce historical funded DKG.
 ## Actual checks
 
 ```sh
-python3 scripts/check_demo_http.py --canonical
-python3 scripts/check_demo_http.py --canonical --settlement-security-only
-python3 scripts/check_demo_http.py --canonical --settlement-only
-python3 scripts/check_public_boundary.py
+python3 scripts/check_demo_http.py --canonical --funded
+python3 scripts/check_demo_http.py --canonical --funded --settlement-security-only
+python3 scripts/check_demo_http.py --canonical --funded --settlement-only
+python3 scripts/check_funded_public.py demo/artifacts/canonical-nu7-funded-v1 demo/authority/canonical-nu7-funded-v1.json --name FRESH_CHECK_NAME
+python3 scripts/check_public_boundary.py --funded --authority demo/authority/canonical-nu7-funded-v1.json
 ```
 
 Four own receipts, 15 API/input refusals and a corrupt-proof refusal pass on the
@@ -86,7 +98,7 @@ by `scripts/replay_nu7_auction.py`; source artifacts remain unchanged.
 
 ## Proving latency
 
-The complete shared-host cold run took 1015.173s; independent public replay 99.323s,
+The historical synthetic shared-host cold run took1015.173s; independent public replay 99.323s,
 and HTTP public verification 101.076s. Key preparation 108.596s, sequential six
 proof/verify services 667.790s, native consensus proving 7.805s. Do not sum overlapping
 sub-scopes into a second total or compare them to an unrelated fixture as a controlled
@@ -129,3 +141,30 @@ fixed C++/SDK application replay, four threshold spends and six decryptions per 
 pass. Four own receipts and four substitutions per job also pass. Shared Mac
 paging prevents a controlled speedup claim. See
 [warm full evidence](../evidence/2026-10-05-warm-full-nu7-auctions.json).
+
+## Same funded run reproduction and measurements
+
+Follow [actual NU7 deposits/admission and settlement](regtest.md). Use fresh deposits
+and names: the completed four source notes are spent. Never reset their journals or
+re-sign with replacement bytes. The settlement driver accepts `--resume-prepared`
+for the exact unchanged PCZT/rows/memos and `--native-threads 1` scheduling. It is
+a controlled-tip experiment; advancing-chain and general post-broadcast recovery
+remain unfinished. Existing guards and cryptographic statements are unchanged.
+
+Export a completed run with `scripts/funded_public_bundle.py RUN --export BUNDLE`.
+Keep its admission manifest as a separate deliberately configured authority.
+`SDK funded-receipt-export RUN INDEX ACTOR_WALLET` sets up only that actor's FVK
+record. The own client is:
+
+```sh
+python3 scripts/open_funded_ticket.py EXPECTED_BOOK PUBLIC_BUNDLE TRUSTED_AUTHORITY OWN_FVK_RECORD INDEX --name FRESH_CLIENT_NAME
+python3 scripts/check_funded_receipts.py COMPLETED_RUN PUBLIC_BUNDLE TRUSTED_AUTHORITY
+```
+
+The current recovery took1847.653s including confirmation/scans: cold native key
+201.875s, six row services1295.846s, native consensus proof14.088s. Actual REP3
+witness1.423s/proof10.824s; public replay112.431s. Shared16GiB M1/one native thread;
+not isolated performance or a claimed speedup. The separately stopped190.563s
+run is preserved. No larger Linux2/3/6-way results are available. Exact public,
+client, HTTP, resource observations and limitations are in
+[funded canonical evidence](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).

@@ -6,29 +6,32 @@ A seller offers K identical units. Each funded ticket bids for one unit.
 Three REP3 nodes compute the result and its proof without reconstructing the
 maximum-bid list. Native Ironwood settlement uses a 2-of-3 FROST escrow.
 
-**One synthetic NU7 run now connects four private bids to the same six-output
-transaction and four encrypted ticket receipts.** Six Halo2 proofs bind private
-settlement rows to actual native commitments; fixed auction/receipt proofs are
-checked before four 2-of-3 FROST spends. All six recipients decrypt exact amounts.
-The public verifier checks the same transaction without bids, keys, PCZT or witness.
+**One actual funded NU7 run now connects deposits, certified bids, four encrypted
+receipts and six output bindings to the SAME DKG-authorized transaction.**
+Zebra accepts it, two controlled confirmations and six exact recipient scans pass,
+and all three durable journals finalize that transaction. Public native/Halo2/C++
+verification and each bidder's own memo client use the same tx47019e02…a211938.
 
 ```sh
 ./demo.sh
-./verify.sh demo/artifacts/canonical-nu7-v1
+./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 \
+  --authority demo/authority/canonical-nu7-funded-v1.json
 ```
 
-The committed public bundle is 140 KB. Build the [pinned tools](docs/toolchains.md)
-first. On this machine the browser can open its ignored synthetic identities;
-a fresh checkout uses a public-only view without including recipient keys.
-Both clearing/receipt and settlement verification refer to `52555e25…151ab3b`.
-[Demo instructions](docs/demo.md) distinguish recorded proving from live verification.
+The public bundle is154 KB and contains no keys, PCZT, witnesses or private pads.
+The admission authority is configured separately; never trust a key chosen by a
+supplied bundle. Build the [pinned tools](docs/toolchains.md) first. On this machine
+the browser can open ignored fixture viewing identities; a fresh checkout uses a
+public-only view. [Demo instructions](docs/demo.md) separate recorded proving,
+own-result verification, public verification and controlled chain confirmation.
+The earlier synthetic run remains available through `./demo.sh --synthetic` and
+`./verify.sh demo/artifacts/canonical-nu7-v1`.
 
-**Funded NU7 admission/DKG/chain confirmation is still unfinished.** The older
-fresh-v2 owned-regtest execution already demonstrates real local notes, DKG,
-signed acceptance/final-book receipts, node acceptance and two confirmations.
-That is a different transaction and must not be combined with this synthetic
-NU7 run to claim a funded latest E2E. No public-testnet/mainnet settlement or
-independent operator hosts are claimed.
+This is isolated **regtest on one host**, not public testnet. The book uses fixture
+clients/tickets/terms and existing committed input proofs/shares. Admission signatures
+attest checked funding; they are not a public ZK funding proof. Public transaction
+verification does not prove chain inclusion. No independent operator hosts or
+mainnet settlement is claimed. [Exact evidence](evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
 The old deterministic delivery commitment leaked two-candidate refunds; its
 privacy claim was withdrawn and an actual attack reproduced the leak. Current
@@ -36,12 +39,14 @@ v2 uses a fresh uniform mask plus an independent secret commitment blinder.
 See [attack and fix](docs/operator-fill-delivery.md). Plaintext fixture checks
 are correctness oracles, not privacy demonstrations.
 
-Cold same-run proving took 1015.173s on the shared 16 GiB Mac. Public-only replay
-99.323s; MPC proof 8.359s. PK preparation 108.596s and sequential native row
-proof/verification 667.790s dominate. A persistent-key worker is separately
-benchmarked; no 2-minute complete settlement or parallel speedup is asserted.
-See [submission draft](docs/submission-draft.md) for the product story, diagram,
-threat model, actual/unverified claims and 90–120s demo script.
+The one-thread same-PCZT recovery took1847.653s including controlled confirmation
+and scans. Six sequential native row services1295.846s dominate; REP3 witness1.423s
+and proof10.824s. Public-only replay112.431s. An earlier190.563s attempt stopped on
+the unchanged disk guard before signing/reservation and remains separately recorded.
+This shared16GiB Mac result is not an isolated speed comparison. The same-PK worker
+is already measured separately; no2-minute settlement or parallel speedup is asserted.
+See [submission draft](docs/submission-draft.md) for the story, threat model,
+verified/unverified claims and demo script.
 
 ## Project records
 

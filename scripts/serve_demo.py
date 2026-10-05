@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Loopback-only receipt demo running the actual fixed-proof/native client.
+"""Loopback-only recorded demo running the fixed-proof/native recipient client.
 
-All fixtures are synthetic. This is a local presentation of the completed
-one-input/four-output receipt component, not live admission or six-output E2E.
+Canonical synthetic and certified isolated-regtest runs are separate explicit
+configurations. This server does not submit bids, sign or broadcast transactions.
 No spending keys, viewing keys, masks or raw memos are served to the browser.
 """
 import argparse
@@ -39,7 +39,7 @@ class Demo:
         self.cases = {name: (ROOT / '.local' / path).resolve(strict=True) for name,path in cases.items()}
         local = (ROOT / '.local').resolve()
         if any(not p.is_relative_to(local) for p in self.cases.values()):
-            raise RuntimeError('Demo fixtures must be ignored synthetic checkpoints')
+            raise RuntimeError('Demo fixtures must be ignored controlled checkpoints')
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
         self.last_settlement = None
@@ -57,7 +57,9 @@ class Demo:
                     valid=len(identity['native_actions'])==6
                     if not self.public_only:
                         recorded=json.loads(private_read(path/'confirmed-summary.json',65536))
-                        valid=valid and recorded['full_node_accepted'] and recorded['canonical_confirmations']>=2                             and recorded['construction']['native']['txid']==identity['txid']
+                        valid = (valid and recorded['full_node_accepted']
+                            and recorded['canonical_confirmations'] >= 2
+                            and recorded['construction']['native']['txid'] == identity['txid'])
                 elif self.public_only:
                     identity=json.loads(private_read(path/'nu7-native-identity.json'))
                     summary={'txid':identity['txid'],'branch':identity['branch'],'fee':30000,
@@ -77,7 +79,7 @@ class Demo:
                 statement = private_read(path / 'proof-public/public-input0', 187*32)
                 valid = summary.get('synthetic_inputs') == 1 and summary.get('actions') == 4
             if len(statement) != 187*32 or (not self.funded and summary.get('chain_funding') is not False) or not valid:
-                raise RuntimeError('Demo accepts only the documented synthetic receipt component')
+                raise RuntimeError('Demo receipt statement or recorded execution scope differs')
             price = int.from_bytes(statement[177*32:178*32], 'big')
             sold = int.from_bytes(statement[178*32:179*32], 'big')
             cases.append({'id':name, 'price':price, 'sold':sold, 'units':3, 'tickets':4,

@@ -22,7 +22,7 @@
 
 10月5日の新SDK移行では、別のNU7隔離regtestで実入金とDKGエスクローからの署名済み送金を確認しました。
 さらに新規4入金から実memo復号、client proof／share検査、12枚の受付証、締切後の3者署名付きfinal rootまで通っています。
-この資金付き受付集合はまだFrozenで、同じ6出力のmemo精算・binding証明・chain確認への接続は未完了です。
+この資金付き受付集合は、後続の同じNU7取引で6出力memo精算・binding／MPC証明・DKG署名・chain確認まで完了しました。
 新SDKと旧SDKは、同じoff-chain claim／receipt／journalのソースを再利用し、native noteの正規バイトとcmxの一致を確認します。
 元の暗号回路・検証者は変更していません。資金のchain掲載は信頼するfull nodeで確認し、受付署名自体を公開ZK資金証明とは扱いません。
 詳細は [regtest.md](regtest.md) と [実測記録](../evidence/2026-10-05-nu7-funded-admission.json) を参照してください。
@@ -84,7 +84,8 @@ receiptをshielded memoで暗号化して運ぶ部品も、合成1入力・4出�
 開口の検証、全6出力の復号一致、26件の署名前拒否を確認しています。最新版の6行binding証明・native証明・FROST署名・6受取人の復号が、
 同一のNU7合成資金runで完走しました（tx52555e25…151ab3b、1015.173秒）。
 同じ取引の4受取証開口と公開replayも通っています。実入金／受付署名／DKG／chain掲載は
-このrunには含まず、以前の隔離regtest実行と混同しません。ネットワーク配送、
+この合成runには含みません。後続のtx47019e02…a211938では同じNU7取引に接続し、
+2回の制御されたconfirmation、6受取人のscan、公開replay／自分のmemo検証が通りました。ネットワーク配送、
 入札者本人の認証、資金付き価格0実行は未完了です。詳細と保証範囲は [operator-fill-delivery.md](operator-fill-delivery.md)
 を参照してください。以下の設計目標と、STATUS.mdの実証済み結果は区別します。
 
@@ -250,3 +251,16 @@ real threshold signatures. IO may authorize dummy zero-valued native actions.
 Existing synthetic finalizer/verifier refuse this distinct actual preparation
 scope. Do not interpret this as completed funded auction settlement. See
 `evidence/2026-10-05-nu7-funded-six-output-preparation.json`.
+
+## 同じ資金付きNU7取引の確認結果
+
+最新版のtx47019e02…a211938では、実note4本の受付集合、3者署名付きfinal root、
+blinded-v2の秘密配送、4受取証memo、6行native binding、共同MPC証明、既存2-of-3 DKG、
+native証明／署名が一つの取引に一致しました。Zebraの承認、2回の制御されたconfirmation、
+6受取人の正確なscan、原資4noteの消費、3journalのFinalizedも通っています。
+同じ公開bundleの鍵なし検証、4人分の自分のFVKだけによるmemo検証、改ざん拒否とブラウザも確認済みです。
+
+これは1台の端末・fixtureクライアント・隔離regtestです。受付署名は信頼する管理者のfunding attestationで、
+公開ZK資金証明ではありません。公開bundleの取引／証明検証自体はchain掲載を証明しません。
+公開testnet、別ホストの運営、malicious MPC、一般のreorg／broadcast後の自動復旧は未実証です。
+[実測・保証範囲](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json)を提出説明の基準にします。

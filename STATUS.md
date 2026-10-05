@@ -1,8 +1,48 @@
 # DarkCall status
 
-Updated: 2026-10-05 (certified actual-note NU7 six-output memo preparation passes; git HEAD is authoritative).
+Updated: 2026-10-05 (same actual-note certified NU7 memo auction confirmed; public/client/browser checks pass; git HEAD is authoritative).
 
 ## Current outcome
+
+**One actual funded NU7 transaction now completes the certified memo auction.**
+The exact prepared PCZT resumes unchanged as transaction47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938.
+Actual four accepted15100-zatoshi deposits → signed book/recipient authentication →
+blinded-v2 delivery/four encrypted refund memos → six fresh shared18 binding proofs →
+fixed committed REP3 proof → independent SDK application checks → four existing
+2-of-3 DKG spends → native authorization → Zebra acceptance → two controlled
+confirmations at112 → six exact canonical recipient scans → three journals Finalized.
+Escrow scanner confirms exactly four source notes spent and zero balance. No master
+SK/full ASK reconstructed; no recipient key read during construction. Price50/sold3,
+21790bytes/30000fee. Recovery1847.653s, native proof14.088s; one native Rayon thread.
+The stopped190.563s attempt remains separate and preserved. Same circuits/verifiers;
+no speedup claim. Public-only replay112.431s and full HTTP replay110.112s pass on the SAME transaction.
+Four own clients+six substitutions22.247s; eight public substitutions13.929s.
+Browser four openings/15 boundaries17.990s; public-only no-key view1.169s.
+Fixed proofs/accepted-book authentication happen before own FVK read. Default
+`./demo.sh` and `./verify.sh --funded ... --authority ...` now use this run.
+The153557-byte public bundle has19 artifacts+manifest, no private material; its
+trusted admission authority is a separate public setup file. Evidence:
+`evidence/2026-10-05-canonical-funded-nu7-memo-auction.json`.
+All operators/fixture actors remain on one host on isolated regtest, not public
+chain. Signed admission attests funding; it is not a public ZK funding proof.
+
+**Current local jobs.** No heavy prover/verifier runs remain. Recovery59400,
+public replay85667, public attacks6044, own-client96262 and HTTP77185/15526 completed
+and were consumed. Default funded UI PID20469/exec78615 listens only127.0.0.1:8877;
+log`.local/funded-canonical-demo-server-20261005.log`. Public-only test UI28293/
+85373 was stopped after its checks; old synthetic UI34999/45695 was stopped.
+Do not duplicate the server. NU7 node29342 at112; old6.3.0 node unchanged. Exact
+run`.local/nu7-funded-canonical-resumed-20261005`, original stopped preparation,
+private keys/journals/PCZT/witnesses/pads/resource observations are preserved.
+Only validated rebuildable compiler caches were removed. Guards stayed unchanged.
+
+Next: convergence/reproduction on a second machine and demo/submission polish.
+Public testnet, independent hosts, larger Linux concurrency and8/16/32 proofs are
+unfinished. Keep published claims limited to one-host controlled regtest; no new
+primitives or unrelated wallet/recovery scope merely to add code. Automation remains
+removed. Repo stays private; no external messages/release/deployment/submission.
+
+## Earlier component milestones
 
 **The accepted actual NU7 notes now form one six-output receipt PCZT.**
 Fresh blinded-v2 REP3 delivery and fixed C++ winner proof feed the four refund
@@ -11,11 +51,12 @@ accepted nullifiers,15100-per-input amounts,30000 fee and canonical V3 openings
 checked. Preparation9.118s; canonical node snapshot110 and all three original
 Frozen journals unchanged. Eleven request/recipient/source/witness/certificate/
 memo substitutions reject in3.566s; synthetic finalizer refuses actual scope.
-No native row proof, final settlement auction proof, real custody signatures,
-reservation or broadcast is claimed. Existing synthetic verification stays strict.
+At that preparation checkpoint, no native row proof, final settlement auction
+proof, real custody signatures/reservation/broadcast was claimed; the later
+completed run above supersedes its pending integration status. Existing synthetic verification stays strict.
 Root/new SDK release builds and strict all-target clippy pass. Evidence:
-`evidence/2026-10-05-nu7-funded-six-output-preparation.json`. Next connect unchanged
-bindings/MPC and proof-linked certified admission BEFORE actual DKG authorization.
+`evidence/2026-10-05-nu7-funded-six-output-preparation.json`. The later canonical
+run connects unchanged bindings/MPC and admission BEFORE actual DKG authorization.
 
 **Four fresh NU7 deposits now produce an authenticated frozen book.**
 Fresh local DKG escrow receives four actual15100zatoshi notes in a native NU7
@@ -37,8 +78,8 @@ The separate SDK lock retains all327 original packages/checksums and adds179
 for existing off-chain primitives. Selected-target inventories431/462 packages
 have no missing license declaration. See
 `evidence/2026-10-05-nu7-funded-admission.json`.
-These accepted notes are Frozen/unspent. Latest funded six-output memo settlement,
-binding/MPC/FROST, public replay and recipient delivery are still to connect.
+These accepted notes were Frozen/unspent at the admission checkpoint. They are
+now all spent/finalized by the exact certified six-output transaction above.
 Existing committed input proofs/shares use fixture tickets/terms on one host;
 this is controlled regtest, not public testnet or a public ZK funding proof.
 
@@ -126,29 +167,6 @@ public replay is disclosed; that replay was stopped to serialize heavy work and
 retained as `.local/canonical-nu7-public-attacks-20261005`, not a crypto failure.
 Only rebuildable `target/release/deps/*.rmeta` compiler metadata was deleted
 (1141971132bytes); all binaries/source/proofs/keys/journals were kept.
-
-**Current local jobs.** Exact prepared funded NU7 recovery is active, exec59400:
-`.local/nu7-funded-canonical-resumed-20261005.log` and resource JSONL. Source
-`.local/nu7-funded-canonical-20261005` stopped at190.563s when free disk fell below
-4GiB; no row completed, custody signature/reservation/broadcast occurred. Journals
-remain Frozen. Original tx effects47019e02…a211938, PCZT/memos/rows are preserved;
-recovery rechecks SAME bytes, canonical input snapshot and delivery before proving.
-Do not launch a duplicate prover. The retry uses ONE native Rayon thread and
-unchanged fixed circuits/statements/verifiers; no speed claim. Start10GiB/ongoing
-4GiB disk,8GiB root RSS/10%Mac memory guards are unchanged. Only2018817545bytes of
-validated rebuildable rmeta/rlib were removed; binaries/proofs/source/keys/journals
-remain. Private manifests are retained. Root and SDK release builds/strict clippy
-pass; dry prepared-PCZT checks pass without keys/reservation. Rebuilding exposed
-the already documented broken Homebrew protoc; pinned SDK's checked-in-generated
-fallback succeeds under the documented PATH. Root missing imports/needless borrows
-were fixed. UI PID34999 is still the earlier synthetic story. NU7 RPC29342 at110;
-old node unchanged. Public bundle/client/funded demo wiring is implemented but
-awaits actual funded completion; no completed funded E2E claim.
-
-Next high-value gap: same NU7 execution with actual funding, authenticated
-admission/final-book certificate, DKG and chain confirmation. Independent hosts,
-8/16/32-bid compiled proofs and larger-host concurrency
-are unfinished; same-PK full synthetic orchestration is demonstrated. Do not enlarge the crypto/wallet/recovery scope merely to add code.
 
 ## Prior component records (historical; current result above is authoritative)
 

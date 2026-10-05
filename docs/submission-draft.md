@@ -13,7 +13,8 @@ video publication and submission. No contest win probability is asserted.
 
 ```mermaid
 flowchart TD
-    A[Four client commitments and delivered REP3 shares] --> B[Three-party confidential clearing and proof]
+    M[Four actual deposits and signed accepted book] --> A[Client commitments and delivered REP3 shares]
+    A --> B[Three-party confidential clearing and proof]
     B --> C[Public price and sold units]
     B --> D[Private refunds and winner flags: blinded v2]
     D --> E[Four encrypted ticket receipt memos]
@@ -21,16 +22,18 @@ flowchart TD
     F --> G[Six fixed Halo2 native output-binding proofs]
     E --> H[Same six-output NU7 PCZT]
     G --> H
-    H --> I[Proof checks before 2-of-3 FROST]
+    H --> I[Certified proof checks before existing 2-of-3 DKG FROST]
     I --> J[Native Ironwood proof and authorized transaction]
-    J --> K[Each bidder decrypts own receipt]
+    J --> N[Full-node acceptance and two controlled confirmations]
+    N --> K[Six exact wallet scans and finalized journals]
+    J --> O[Each bidder decrypts own receipt]
     J --> L[Public-only transaction and auction verification]
 ```
 
-The graph describes the completed synthetic NU7 integration (transaction52555e25…151ab3b).
-Signed funded admission, DKG and chain confirmations are demonstrated on an
-older **separate** owned-regtest execution. They must not be attributed to this
-NU7 transaction until connected and measured on that same run.
+The graph describes one completed actual-funded NU7 execution, transaction
+47019e02…a211938. The same transaction is used by the public bundle, recipient
+clients and browser. All client fixtures/operators remain on one controlled host.
+The separate historical synthetic/dealer transaction remains available for comparison.
 
 ## Verified claims and remaining work
 
@@ -39,9 +42,9 @@ NU7 transaction until connected and measured on that same run.
 | Committed four-bid REP3 computation, standard C++ proof verification | Actual local processes; all parties on one host |
 | Fresh blinded-v2 refunds and separate zero-price winner flags | Actual proof/opening and substitution checks; CSPRNG assumptions remain |
 | Six row commitments bind native amounts, recipients, cmx and action indices | Fixed shared18 Halo2 circuit; native consensus does not enforce auction policy |
-| Fresh funded v2 auction, DKG, signed admission, six receipts, two confirmations | Owned isolated NU6.3 regtest; separate from latest synthetic NU7 execution |
-| Four memos inside latest six-output NU7 settlement | Passed in1015.173s; transaction52555e25…151ab3b, six recipient decryptions |
-| Same-run recipient/client/public replay/UI | Passed against the same transaction; public replay99.323s, four ticket openings15.828s |
+| Current funded NU7 auction, existing DKG, signed admission/final root, six scans, two confirmations | SAME tx47019e02…a211938 on isolated Zebra7.0.0-rc.0 regtest; not public chain |
+| Four encrypted receipt memos inside same funded six-output NU7 settlement | Exact prepared PCZT recovery1847.653s including chain/scans; no master SK/full ASK reconstructed |
+| Same-run recipient/client/public replay/UI | Public replay112.431s; four own clients+6 substitutions22.247s; funded HTTP/public-only views pass |
 | Public-testnet funding and confirmation | Not demonstrated |
 | Independent operator hosts, malicious MPC, production custody | Not demonstrated / not claimed |
 | 8/16/32-bid scaling | Not measured; compiled production demonstration remains four slots |
@@ -64,13 +67,17 @@ Native binding proves classical note commitments; ciphertext generation and
 rseed derivation are checked separately through the SDK/recipient, not constrained
 by this application circuit. Public verification authenticates transaction effects
 and proofs, not chain inclusion, spendability or public funding. Synthetic notes
-must never be broadcast. The NU7 gate uses a local trusted dealer; historical
-DKG does not convert it to a no-master-key setup.
+must never be broadcast. The funded NU7 gate reads only existing2-of-3 DKG packages, and no escrow master
+SK/full ASK is reconstructed. All packages remain on one computer; the bank and
+fixture recipient actors retain ordinary keys. The earlier synthetic gate uses
+a local dealer. Recipient setup may read its own ordinary SK to derive the exported
+FVK; the actual own-receipt client uses only that exported FVK. Funding provenance
+is attested by the separately configured admission authority, not proved by the bundle.
 
 ## 90–120 second demo script
 
 1. 0–15s: show four sealed bids and explain the single uniform price. Say that
-   this is a recorded synthetic run, not a live funded network auction.
+   this is a recorded actual-funded isolated regtest run, not a live public auction.
 2. 15–35s: select one demo ticket, run the fixed proof verifier, decrypt its
    own native memo and show win/loss plus refund. Point out the exact transaction ID.
 3. 35–50s: corrupt a proof; show refusal before recipient key access.
@@ -78,8 +85,9 @@ DKG does not convert it to a no-master-key setup.
    six output bindings, auction proof and receipt context. If verification exceeds
    the video length, show a clearly labeled recorded verification with its measured
    duration. Do not stage an artificial live success.
-5. 105–120s: show the two trust thresholds and remaining funding/admission/chain
-   integration. Provide the public verifier command and the actual latency table.
+5. 105–120s: show recorded local confirmations separately from public proof validity,
+   the two trust thresholds and remaining public-testnet/independent-host work.
+   Provide the verifier command and measured latency table.
 
 Canonical proofs can be generated beforehand; the demo must distinguish generation
 from verification. Current latency is measured on a shared16GiB development Mac,
@@ -88,20 +96,31 @@ parallel layout.
 
 ## Reproduction and release checklist
 
-`./demo.sh` starts the local canonical view when its ignored synthetic identity
-fixtures exist. `./verify.sh PUBLIC_BUNDLE` needs only public artifacts and the
-pinned compiled tools. Missing/wrong files and uploaded verification keys must
+`./demo.sh` starts the local canonical funded view; a fresh checkout without
+ignored identities switches to public-only. `./verify.sh --funded PUBLIC_BUNDLE
+--authority TRUSTED_AUTHORITY` needs public artifacts, explicit separate authority
+and pinned compiled tools. Missing/wrong files and uploaded verification keys must
 fail closed. The verifier does not discover authority keys in a supplied bundle.
 Tool bootstrap/build steps are in [toolchains](toolchains.md) and [demo](demo.md).
 
 Before release: replace pending rows with measured evidence; freeze the exact
 canonical bundle; reproduce on a second machine; record witness/prove/verify/memory
 and bytes; include license notices from [dependency inventory](dependencies.md).
-Complete public-testnet/funded integration or keep it explicitly as a limitation.
+Public-testnet/independent-host integration remains an explicit limitation.
 Confirm official submission requirements; publish only after human authorization.
 
 
 ## Measured latency and scale
+
+| Scope | Seconds / bytes | Interpretation |
+| --- | --- | --- |
+| Same prepared funded NU7 recovery incl. controlled confirmation/scans |1847.653s /21790bytes| Shared16GiB M1, one native thread;190.563s stopped attempt excluded |
+| Native key / six sequential row services in funded recovery |201.875s /1295.846s| Same circuits; paging, not isolated speed comparison |
+| Actual funded REP3 witness / proof |1.423s /10.824s| Three local parties;14656-byte proof |
+| Funded public-only replay / full HTTP replay |112.431s /110.112s| No private material; certificate under separate authority; no inclusion proof |
+| Four own clients plus six substitutions |22.247s| Own exported FVK only; proof/certificate refusal before key access |
+
+Historical synthetic/warm measurements remain separate:
 
 | Scope | Seconds / bytes | Interpretation |
 | --- | --- | --- |
@@ -119,7 +138,9 @@ Confirm official submission requirements; publish only after human authorization
 |2/3/6 workers|Not measured| Mac refuses parallel proving; sufficient Linux RAM required |
 |8/16/32 bids|Not measured| Current fixed auction/settlement verifiers have four slots/six rows |
 
-[Exact evidence](../evidence/2026-10-05-canonical-nu7-memo-auction.json) includes resource
+[Current exact evidence](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json)
+records the one funded run and its remaining limits.
+[Historical synthetic evidence](../evidence/2026-10-05-canonical-nu7-memo-auction.json) includes resource
 samples and verification scopes. Warm proof row0 also passes the independent
 public fixed verifier. An opt-in complete synthetic warm service now passes
 two distinct books; see [warm full evidence](../evidence/2026-10-05-warm-full-nu7-auctions.json).

@@ -12,6 +12,7 @@ import pathlib
 import subprocess
 import time
 from funded_public_bundle import snapshot
+from public_bundle import read_public
 from regtest_deposits import ROOT, ENV, private_read, private_write
 from regtest_nu7_funding import SDK
 from replay_nu7_auction import write_existing
@@ -29,8 +30,8 @@ def main():
         raise RuntimeError('Fresh ignored check name required')
     target=snapshot(args.bundle,args.authority,args.name)
     authority=target / 'trusted-authority.json'
-    original_authority=hashlib.sha256(private_read(args.authority)).hexdigest()
-    original_manifest=hashlib.sha256((args.bundle / 'bundle.json').read_bytes()).hexdigest()
+    original_authority=hashlib.sha256(read_public(args.authority.parent,args.authority.name,16384)).hexdigest()
+    original_manifest=hashlib.sha256(read_public(args.bundle,'bundle.json',16384)).hexdigest()
     start=time.monotonic()
     cases={
         'trailing-byte':('funded-nu7-transaction.bin',b'trailing data'),
@@ -73,8 +74,8 @@ def main():
             rejections.append(label)
         finally:
             write_existing(path,data)
-    if (hashlib.sha256(private_read(args.authority)).hexdigest()!=original_authority
-            or hashlib.sha256((args.bundle/'bundle.json').read_bytes()).hexdigest()!=original_manifest):
+    if (hashlib.sha256(read_public(args.authority.parent,args.authority.name,16384)).hexdigest()!=original_authority
+            or hashlib.sha256(read_public(args.bundle,'bundle.json',16384)).hexdigest()!=original_manifest):
         raise RuntimeError('Original authority or bundle changed')
     summary={'scope':'funded public-only fast substitution refusals; no secret artifacts',
         'rejected':rejections,'source_unchanged':True,'seconds':time.monotonic()-start}

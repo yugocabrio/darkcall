@@ -45,7 +45,7 @@ local trusted-dealer FROST. Three altered DKG setups reject before proof creatio
 
 Evidence: `../evidence/2026-10-05-nu7-funded-dkg-transfer.json`. This is a native
 funding/transfer gate. Four-bid admission and the accepted root are now demonstrated below; the
-latest same six-output memo settlement remains to connect. Historical funded
+latest same six-output memo settlement now completes below. Historical funded
 auction results below remain NU6.3 and must not be combined into a NU7 E2E claim.
 
 ## Fresh NU7 deposits, admission and final root
@@ -83,11 +83,10 @@ into the new SDK. Native decryption and canonical chain provenance remain separa
 requirements. A plaintext note supplied to intent validation is not funding
 proof. The root still tests its old native ciphertext adapter too.
 
-Evidence: `../evidence/2026-10-05-nu7-funded-admission.json`. The four new notes are
-Frozen/unspent and ready for the next connection. The latest six-output receipt
-memo settlement, fresh bindings/MPC/FROST, recipient scans and chain broadcast
-are still pending for this funded book. Do not add the old funded auction or the
-new synthetic demo to claim it is complete.
+Evidence: `../evidence/2026-10-05-nu7-funded-admission.json`. The four notes were
+Frozen/unspent at admission. The exact certified memo settlement now consumes
+all four in the same current-SDK transaction, recorded below. The old funded
+auction and synthetic demo remain separate historical evidence.
 
 ## Preserved NU6.3 reproduction
 
@@ -355,3 +354,54 @@ real threshold signatures. IO may authorize dummy zero-valued native actions.
 Existing synthetic finalizer/verifier refuse this distinct actual preparation
 scope. Do not interpret this as completed funded auction settlement. See
 `evidence/2026-10-05-nu7-funded-six-output-preparation.json`.
+
+## Same prepared NU7 transaction through authorization
+
+The opt-in `scripts/regtest_nu7_settlement.py` takes ESCROW, CURRENT_NOTES,
+MPC_BOOK, RECEIVER_OPENINGS and ADMISSION, plus exactly six distinct
+`--recipient-wallet WALLET` options and a fresh `--name`. It checks the current
+canonical source before proving. All six unchanged native row proofs and the
+fixed auction proof must link to the signed final book under the separately
+configured authority **before** any real DKG share is loaded or funds reserved.
+It then signs exactly four accepted spends, sends only to the owned NU7 node,
+records two controlled confirmations, scans the six exact recipients and
+finalizes the same transaction in all three durable journals.
+
+`--resume-prepared ORIGINAL_RUN --native-threads 1` preserves the original PCZT,
+six row openings, receipt memos and transaction effects. A fresh ignored output
+directory is required. The SDK replays canonical bytes, actual input witnesses,
+certified recipient commitments and original delivery before proving. Completed
+row proofs are verified before reuse. Failed or mismatched proofs are not silently
+replaced. Existing journal reservations must match the exact original digest.
+The native identity's `scope` string records the unsigned preparation snapshot;
+later authorization is established by verifying the actual serialized transaction,
+not by changing that identity string.
+
+This controlled-tip driver rejects a chain change during construction. General
+post-broadcast/reorg recovery on an advancing public chain is unfinished. Never
+start a replacement transaction just because the driver stopped: inspect its
+saved signed bytes, node status and all three journals first. Disk/memory guards
+remain active; the one-thread option changes scheduling, not circuit statements,
+verifiers or trust assumptions. Completion evidence is recorded in STATUS.md.
+
+## Confirmed canonical funded NU7 memo auction
+
+Transaction47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938
+completes the CURRENT same-run flow:4 accepted actual notes,3 final-book signatures,
+blinded-v2 delivery/four encrypted receipt memos,6 fresh native bindings, committed
+REP3 proof, independent certified application checks,4 existing-DKG spends, native
+proof/signatures, Zebra acceptance,2 controlled confirmations at112,6 exact
+recipient scans/canonical paths and3 Finalized journals. Escrow:4 notes spent/zero
+balance. Price50/sold3;21790bytes/30000fee. No master SK/full ASK reconstructed.
+
+An initial190.563s run stopped on the unchanged4GiB disk guard before reservation
+or signing. The original PCZT/row openings/memos/effects were preserved; recovery
+finishes the SAME transaction with one native thread in1847.653s including scans.
+This is a paging/recovery experiment on a shared16GiB M1, not a speedup claim.
+Full public replay112.431s, four own memo clients and six substitutions22.247s,
+eight public substitutions13.929s; default funded demo and full HTTP replay pass.
+Public bundle has no chain-inclusion proof; its admission authority is explicit
+and separate. Fixture book/keys/operators remain on one host. No public testnet,
+malicious MPC or advancing-chain/general post-broadcast recovery is demonstrated.
+See [canonical evidence](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json)
+and [demo](demo.md) for public-only and own-client reproduction.

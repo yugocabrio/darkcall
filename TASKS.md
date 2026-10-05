@@ -9,38 +9,32 @@ The15-minute automation is deleted at the human's request. Continue on direct
 requests. Converge on a Grand Prize submission; preserve exactly the current
 proof/security model and avoid unrelated recovery/wallet/cryptographic work.
 
-- [ ] One canonical current-v2 run: committed bids/admission, MPC, four receipt
-  memos in the same six-output NU7 transaction, bindings/FROST/native decryption,
-  public replay and own-ticket openings. Do not combine historical fixtures to
-  claim this is complete. Session69231 completes the synthetic NU7 subset at price50/sold3;
-  funded admission/DKG/chain inclusion still need the new-stack integration.
-  - [x] Separate official NU7 full node, actual matured native-note scanning,
-    bank funding of DKG escrow and actual DKG-source threshold spend with two
-    confirmations. Six scanner, three DKG-loader, four reconciliation and actual
-    witness refusals pass. This is a transfer gate, not the canonical auction.
-  - [x] Connect existing authenticated funding claims, client proof/share checks,
-    signed admission and final-book journals to actual new-SDK NU7 deposits.
-    - Fresh four-deposit DKG run accepted at110,12 durable receipts, three final
-      signatures after original cutoff.13 claim/encoding and8 certificate/authority
-      refusals;17+2 legacy and12 shared protocol tests pass. Source modules are
-      reused; no proof/circuit change. Current funded six-output settlement is pending.
-  - [x] Actual accepted notes/recipients produce a same six-output unsigned memo
-    PCZT:9.118s, eleven refusals, source Frozen journals unchanged. No real signing.
-  - [ ] Connect that funded preparation to unchanged native bindings/MPC/FROST,
-    full-node inclusion, public replay under separately trusted admission authority.
-    - Opt-in signing/public/client paths implemented; initial row0 run stopped
-      at190.563s on4GiB disk guard before reservations/signing. Same-PCZT
-      native/memo replay passes; exact-effects retry active with one native thread.
-      Original accepted notes/journals retained. No funded completion claim.
-- [x] One coherent recorded synthetic browser story using that exact same run/bundle.
-  - Four same-transaction own receipts, public replay and real tamper refusal pass;
-    live admission/funded NU7 remains unfinished.
+- [x] One canonical actual current-NU7/v2 funded run: authenticated4 deposits,
+  signed final root/recipients, blinded REP3 delivery, four encrypted receipt memos
+  in the SAME six-output transaction, fresh bindings/MPC, existing DKG FROST,
+  Zebra acceptance,2 controlled confirmations,6 exact scans/3 Finalized journals.
+  Same tx47019e02…a211938 in public replay, four own clients and browser.
+  - [x] Separate official NU7 full node and actual-note/DKG transfer migration.
+  - [x] Fresh actual four-deposit certified admission:13 claim/8 authority refusals.
+  - [x] Actual accepted notes → same6-output preparation:9.118s/11 substitutions.
+  - [x] Exact prepared PCZT recovery after disk guard stop:1847.653s/one thread;
+    original190.563s attempt preserved, no replacement transaction or weaker checks.
+  - [x] Same-run public-only replay112.431s,8 public substitutions13.929s.
+  - [x] Four own-FVK memo clients plus6 substitutions22.247s, invalid public proofs
+    and certificate reject BEFORE own identity read. No spending keys in client.
+  - [x] Default funded browser,4 receipts/15 HTTP gates17.990s, public-only view
+    without identities1.169s, full HTTP settlement110.112s, separate API boundaries.
+  - Fixture tickets/terms/proofs/shares remain on one host. Not public testnet,
+    malicious MPC, public ZK funding/inclusion or live browser admission.
+- [x] One coherent recorded browser story using that exact same run/bundle.
+  - Default `./demo.sh` uses certified actual NU7 run; `--synthetic` preserves the
+    old synthetic story. Public authority is configured separately from bundle.
 - [x] One-command demo and fail-closed public verification; fixed verifiers,
   portable public paths, no private material or bundle-discovered authority.
-- [x] One focused concrete adversarial review on the canonical NU7 run: eight
-  native/proof/action/layout refusals, four recipient substitutions, six portable
-  bundle path/key/cross-run refusals and15 API boundaries pass. No new exploit
-  found in this review; keep explicit unfunded/uncertified limitations.
+- [x] Focused same-funded-bundle review:8 native/certificate/authority refusals,
+  6 own-client substitutions,7 portable path/key/authority/context refusals,
+  15 HTTP boundaries and5 settlement API boundaries. No new exploit found here;
+  keep one-host/regtest/semi-honest/attested-funding limits explicit.
 - [ ] Profile cold keygen/prove/verify separately; warm the same PK across jobs,
   implement bounded row workers without relaxing verification. No6-way proving on
   this16GiB Mac.1/2/3/6 concurrency comparisons require sufficient measured hardware;
