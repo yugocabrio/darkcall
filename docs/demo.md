@@ -40,9 +40,13 @@ The local server's recorded two confirmations are not a chain-inclusion proof.
 [Local entry rehearsal](local-rehearsal.md) adds actual fresh client ZK input
 proofs, REP3 share-pair checks and signed synthetic acceptance before this
 recorded result. Create/share/bid/close operate on a new offline book. Its
-localhost helper sees typed demo bids; deposits are synthetic and no new clearing
-or native settlement runs. The screen explicitly switches to a different
-recorded auction. `--public-only` disables entry; the canonical verifier is unchanged.
+localhost helper sees typed demo bids; deposits are synthetic. Clear this auction
+runs fresh REP3 on those exact accepted shares, verifies the fixed proof against
+the signed book, then opens the accepted ticket's own outcome. A local capability
+gates opening; it is not production authentication or native memo delivery.
+No native settlement runs for the new book. The optional native example explicitly
+switches to a different recorded auction. `--public-only` disables entry;
+the canonical verifier is unchanged.
 
 ## Recorded settlement story
 

@@ -40,7 +40,7 @@ def render(output,font):
         scope=scene.get('execution','recorded')
         if scope not in ('entry','recorded'): raise RuntimeError('Unknown scene execution scope')
         identity=text(f'identity-{index}.txt',
-            'OFFLINE ENTRY  |  SYNTHETIC DEPOSITS  |  NOT SETTLED BY RECORDED TRANSACTION' if scope=='entry'
+            'FRESH LOCAL AUCTION  |  SYNTHETIC DEPOSITS  |  NO NATIVE PAYMENT SENT' if scope=='entry'
             else 'RECORDED FUNDED REGTEST TX  '+TXID)
         duration=scene['seconds']
         if type(duration)!=int or not 1<=duration<=30: raise RuntimeError('Unbounded scene duration')

@@ -611,6 +611,12 @@ input:focus {outline:1px solid var(--accent)}
 .recording-banner {color:var(--accent);border-top:1px solid var(--line);padding:24px 0;font:11px var(--mono);line-height:1.7}
 #acceptance-public {font-size:11px;max-height:260px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 #rehearsal-status {overflow-wrap:anywhere;font-size:13px;margin-top:24px}
+.fresh-clearing {border-top:1px solid var(--line);padding-top:32px;margin-top:32px}
+.fresh-clearing h3 {font-size:30px;margin:22px 0 14px}
+.fresh-clearing > .primary-button {max-width:340px;margin-top:24px}
+.fresh-clearing .result-box h3 {font-size:42px}
+.fresh-actions {display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:24px 0}
+#fresh-root {overflow-wrap:anywhere;font:11px var(--mono)}
 @media(max-width:700px) {
 .entry-actions {align-items:stretch;flex-direction:column;gap:8px}
 .rehearsal-panel {padding:22px 18px}
@@ -618,4 +624,5 @@ input:focus {outline:1px solid var(--accent)}
 .share-row {grid-template-columns:1fr}
 .share-row .secondary-button {justify-self:start}
 .room-summary,.close-row {align-items:flex-start;flex-direction:column}
+.fresh-actions {grid-template-columns:1fr}
 }

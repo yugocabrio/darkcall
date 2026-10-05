@@ -1,8 +1,60 @@
 # DarkCall status
 
-Updated: 2026-10-05 (working seller/bidder offline entry; fresh input proofs and signed admission; recorded settlement unchanged; git HEAD is authoritative).
+Updated: 2026-10-05 (same fresh browser book through certified REP3 clearing and own result; recorded native settlement remains separate; git HEAD is authoritative).
 
 ## Current outcome
+
+**The new seller/bidder book now clears itself.** Create → four actual input
+proofs/12 share checks →12 signed acceptances → real cutoff/3 final-book signatures
+→ existing three-party `delivery_flags4/v2` MPC → fixed C++ verification → own
+refund entitlement/winner status. This is the same new root/tickets/conditions,
+not a preset claim that an old proof applies. Canonical ticket sorting only
+renames shared input slots; each unchanged pair is rechecked against its original
+client statement and certificate commitments. Neither connection nor clearing
+reads plaintext bid-opening files. Exact first169 fields of the fresh statement
+are compared against the independently verified signed book before pad export.
+
+HTTP positive case (2 units/reserve10): price43/sold2, fresh clearing9.357s,
+REP3 proving3.471s. Zero-price case (3 units): price0/sold3, all refunds100 but
+three winners/one loser, clearing8.481s/proving3.468s. Each has4 fresh input proofs,
+12 pairs/12 acceptance/3 final-book signatures and four own-result checks against
+an independent plaintext fixture oracle (oracle is NOT the MPC demonstration).
+Wrong/foreign ticket capabilities refuse before worker start; public GET/copy
+contains none. Conditions/ticket/leaf/root substitutions and actual certificate
+signature corruption reject; bad proof/certificate stop BEFORE pads are exported.
+Completed clear is idempotent, incomplete clear is retained and stopped.
+
+Actual browser create/four seal/certify/clear/open/tamper passes for another fresh
+root: price43,2/2 sold,WON/refund entitlement57,8.5s displayed. Mobile390px has
+no horizontal overflow; viewport reset. New result is clearly marked synthetic,
+with no native payment sent. Helper sees typed demo maxima; local opening token
+is page/server memory only, lost on reload, not production authentication or
+native memo transport. All parties remain on one host. No native proof, payment,
+funding RPC or canonical source-note reuse is performed for these new books.
+
+**New110-second/10-scene video draft** shows the seller form, actual accepted
+fresh book, cutoff jump and fresh clearing/result, then explicitly switches to a
+DIFFERENT recorded funded native transaction. The fresh screenshots share root
+05d33db9…174d25; native scenes still refer only to47019e02…a211938. Edited stills,
+not a continuous live auction/proving recording. Rendered1311895bytes; fresh-result
+and switch frames visually checked. Ignored MP4:
+`.local/darkcall-same-book-clearing-draft-20261005.mp4`; prior drafts preserved.
+Evidence: `evidence/2026-10-05-fresh-browser-clearing.json`.
+
+Locked release build,23 existing Rust tests, strict all-target clippy, format,
+JS/Python syntax and diff check pass. Recorded verify/settlement methods remain
+AST-identical; circuits, separate authority and canonical bundle are unchanged.
+Two check-harness issues (hex signature representation and expected error422)
+were corrected; positive/zero suites fully pass. A default debug test build was
+interrupted after avoidable disk growth; release checks pass without deleting
+private checkpoints. Current server: PID63252/session73589, port8877, log
+`.local/fresh-clearing-demo-server-release-20261005.log`. No heavy proof job remains.
+
+Next useful work: review this same-book UX/video, visual polish and independent
+reproduction when another host is available. Fresh wallet/native settlement
+hookup is still separate work; do not claim that the new browser book is funded.
+
+## Earlier entry milestone (271a323; superseded clearing limitation below)
 
 **Seller → bidder entry now works before the recorded result.** New browser
 forms create bounded units/reserve/budget/cutoff, fresh conditions and three

@@ -2,21 +2,23 @@
 
 The localhost client helper sees typed demo bids. It generates the existing
 Noir ZK input proof and REP3 shares, then checks the proof/pairs before issuing
-three real signed receipts for explicitly synthetic funding. Never real bids,
+three signed synthetic receipts, followed by certified REP3 clearing. Never real bids,
 RPC, canonical wallet/funding, native signing or broadcast. Restart starts a
 new rehearsal namespace; ignored artifacts are retained, never auto-resumed.
 """
 import hashlib
+import hmac
 import json
 import os
 import pathlib
 import re
 import secrets
 import subprocess
+import sys
 import time
-from regtest_deposits import ROOT
-from regtest_resources import check, sample
-from run_mpc_gate import INPUT_TOOL, PLAIN, CLIENT_CIRCUIT, UPSTREAM, PIN
+from regtest_deposits import ROOT, private_read
+from regtest_resources import check, sample, guarded_json_call
+from run_mpc_gate import INPUT_TOOL, PLAIN, CLIENT_CIRCUIT, UPSTREAM, PIN, BIN
 from verify_external import BB, SOURCE, CRS, PIN as BB_PIN
 
 HELPER=ROOT/'target/release/examples/rehearsal_admission'
@@ -33,6 +35,7 @@ class Rehearsal:
     def __init__(self,lock,enabled=True):
         self.lock=lock
         self.enabled=enabled and all(p.is_file() for p in (HELPER,INPUT_TOOL,PLAIN,CLIENT_CIRCUIT,BB))
+        self.clearing_available=self.enabled and BIN.is_file()
         self.session=None; self.auctions={}
 
     def call(self,command,folder,label,secret_input=None,parse=False):
@@ -69,7 +72,10 @@ class Rehearsal:
             'cutoff_reached':int(time.time())>=a['closes_at_utc'],'authority':a['authority'],
             'condition_digest':a['digest'],'accepted_root':a['certificate']['accepted_root'] if a['certificate'] else None,
             'funding_scope':'offline-synthetic','client_helper_reads_demo_bid':True,
-            'chain_funding_verified':False,'fresh_clearing_or_settlement':False}
+            'chain_funding_verified':False,'fresh_clearing_or_settlement':a['clearing'] is not None,
+            'fresh_clearing_verified':a['clearing'] is not None,'native_settlement_started':False,
+            'clearing_available':self.clearing_available,'clearing':a['clearing'],
+            'clearing_stopped':a['clearing_failed']}
 
     def lookup(self,identifier):
         if type(identifier) is not str or not ID.fullmatch(identifier) or identifier not in self.auctions:
@@ -96,7 +102,9 @@ class Rehearsal:
         request={'condition_digest':list(digest),'units':units,'reserve':reserve,'budget':budget,'closes_at_utc':cutoff}
         initialized=self.call([HELPER,'init',path],path,'init',json.dumps(request).encode(),parse=True)
         a={'id':identifier,'units':units,'reserve':reserve,'budget':budget,'closes_at_utc':cutoff,
-            'digest':list(digest),'path':path,'authority':initialized['authority'],'receipts':[],'certificate':None,'poisoned':False}
+            'digest':list(digest),'path':path,'authority':initialized['authority'],'receipts':[],
+            'clients':[],'opening_tokens':{},'certificate':None,'poisoned':False,
+            'clearing':None,'clearing_run':None,'clearing_failed':False}
         self.auctions[identifier]=a
         return self.public(a)
 
@@ -127,7 +135,11 @@ class Rehearsal:
                 or result['native_settlement_started'] or result['ticket']!=ticket.hex()):
             a['poisoned']=True; raise RuntimeError('Incomplete rehearsal acceptance')
         a['receipts'].append(result)
-        return {**result,'auction':self.public(a),'ticket_number':i+1,'seconds':time.monotonic()-started}
+        a['clients'].append(folder)
+        opening_token=secrets.token_urlsafe(32)
+        a['opening_tokens'][ticket.hex()]=opening_token
+        return {**result,'opening_token':opening_token,'auction':self.public(a),
+                'ticket_number':i+1,'seconds':time.monotonic()-started}
 
     def close(self,value):
         if type(value) is not dict or set(value)!={'auction_id'}: raise ValueError('Expected auction ID')
@@ -141,10 +153,60 @@ class Rehearsal:
         a['certificate']=result
         return result
 
+    def worker(self,action,a,index=None):
+        folder=a['path']/('result-'+secrets.token_hex(8))
+        args=[sys.executable,str(ROOT/'scripts/rehearsal_clearing.py'),action,str(a['path']),str(folder)]
+        if a['clearing_run'] is not None: args+=['--run',str(a['clearing_run'])]
+        if index is not None: args+=['--index',str(index)]
+        result=guarded_json_call(args,cwd=ROOT,env={**os.environ,'RAYON_NUM_THREADS':'2'},timeout=600,
+            observations=a['path']/(folder.name+'-resources.jsonl'),interval=5)
+        return result,folder
+
+    def clear(self,value):
+        if type(value) is not dict or set(value)!={'auction_id'}: raise ValueError('Expected auction ID')
+        a=self.lookup(value['auction_id'])
+        if a['clearing'] is not None: return a['clearing']
+        if not self.clearing_available: raise ValueError('Pinned MPC tools required')
+        if a['clearing_failed']: raise ValueError('Incomplete clearing retained; start a new demo auction')
+        if a['poisoned'] or not a['certificate'] or len(a['clients'])!=4:
+            raise ValueError('Four complete acceptances and a certified closed book required')
+        try:
+            self.call([HELPER,'prepare-clearing',a['path']],a['path'],'prepare-clearing',
+                      json.dumps(list(map(str,a['clients']))).encode(),parse=True)
+            result,folder=self.worker('clear',a)
+            if (not result['fixed_cpp_proof_verified'] or not result['rep3_clearing_verified']
+                    or not result['certified_book_matches'] or result['certificate_signatures_verified']!=3
+                    or result['accepted_root']!=a['certificate']['accepted_root'] or result['native_settlement']):
+                raise RuntimeError('Fresh clearing did not match the certified book')
+            a['clearing_run']=pathlib.Path(json.loads(private_read(folder/'delivery-run.json'))['run'])
+            a['clearing']={**result,'auction_id':a['id']}
+            return a['clearing']
+        except Exception:
+            a['clearing_failed']=True
+            raise
+
+    def result(self,value):
+        if (type(value) is not dict or set(value)!={'auction_id','ticket','opening_token','action'}
+                or value['action'] not in ('open','tamper')):
+            raise ValueError('Expected an auction, own ticket, local opening capability and action')
+        a=self.lookup(value['auction_id'])
+        token=a['opening_tokens'].get(value['ticket']) if type(value['ticket']) is str else None
+        if (type(value['opening_token']) is not str or not re.fullmatch(r'[A-Za-z0-9_-]{43}',value['opening_token']) or token is None
+                or not hmac.compare_digest(token,value['opening_token'])):
+            raise PermissionError('Own ticket opening capability required')
+        if a['clearing'] is None: raise ValueError('Clear this certified book first')
+        tickets=[bytes(entry['ticket']).hex() for entry in a['certificate']['certificate']['endorsements'][0]['book']['entries']]
+        result,_=self.worker(value['action'],a,tickets.index(value['ticket']))
+        if value['action']=='open' and (result['accepted_root']!=a['certificate']['accepted_root']
+                or not result['fixed_cpp_proof_verified'] or not result['certified_book_matches']):
+            raise RuntimeError('Own result did not match the certified clearing')
+        return {**result,'ticket':value['ticket'],'auction_id':a['id']}
+
     def post(self,action,value):
         if not self.enabled: return 409,{'error':'Local input prover/admission helper required. Recorded verification remains available.'}
         if not self.lock.acquire(blocking=False): return 409,{'error':'Another local proof or verification is running'}
         try:
-            result={'create':self.create,'bid':self.bid,'close':self.close}[action](value)
+            try: result={'create':self.create,'bid':self.bid,'close':self.close,'clear':self.clear,'result':self.result}[action](value)
+            except PermissionError: return 403,{'error':'Own ticket opening capability required'}
             return 200,result
         finally: self.lock.release()

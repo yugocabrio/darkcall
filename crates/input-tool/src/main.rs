@@ -518,6 +518,29 @@ fn read_share(path: &Path) -> Result<Rep3SharedInput<Fr>> {
         .map_err(|_| "invalid share encoding".into())
 }
 
+// Slot labels are not part of a ticket's share commitment. Canonical book
+// ordering may rename these two keys; their shared field values stay unchanged.
+fn reindex_share(source: &Path, old: usize, new: usize, out: &Path) -> Result<()> {
+    if old >= 4 || new >= 4 {
+        return Err("four-ticket share index".into());
+    }
+    let map = read_share(source)?;
+    if map.len() != 2 {
+        return Err("unexpected share entries".into());
+    }
+    let renamed = BTreeMap::from([
+        (
+            format!("bid{new}"),
+            Rep3Type::Shared(shared(&map, &format!("bid{old}"))?),
+        ),
+        (
+            format!("salt{new}"),
+            Rep3Type::Shared(shared(&map, &format!("salt{old}"))?),
+        ),
+    ]);
+    write_private(out, &bincode::serialize(&renamed)?)
+}
+
 fn shared(map: &Rep3SharedInput<Fr>, key: &str) -> Result<rep3::Rep3PrimeFieldShare<Fr>> {
     match map.get(key) {
         Some(Rep3Type::Shared(value)) => Ok(*value),
@@ -711,6 +734,7 @@ fn fixture_reserve(out: &Path, values: [u64; 4], reserve: u64) -> Result<()> {
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
+        Some("reindex-share") if args.len()==5 => reindex_share(Path::new(&args[1]),args[2].parse()?,args[3].parse()?,Path::new(&args[4]))?,
         Some("prepare-one") if args.len()==2 => prepare_one(Path::new(&args[1]))?,
         Some("fixture") if args.len()==2 || args.len()==6 => {
             let values=if args.len()==6 {[args[2].parse()?,args[3].parse()?,args[4].parse()?,args[5].parse()?]} else {[90,70,60,50]};

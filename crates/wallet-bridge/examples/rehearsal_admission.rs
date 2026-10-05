@@ -17,7 +17,7 @@ use orchard::{
     value::NoteValue,
 };
 use rand::{RngCore, rngs::OsRng};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     fs,
@@ -36,7 +36,7 @@ struct Setup {
     budget: u64,
     closes_at_utc: u64,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct Book {
     condition_digest: [u8; 32],
@@ -387,6 +387,181 @@ fn close(out: &Path) -> Result<serde_json::Value> {
         serde_json::json!({"closed":true,"accepted_root":hex::encode(book.accepted_root),"certificate":c,"funding_scope":"offline-synthetic","fresh_clearing_or_settlement":false}),
     )
 }
+
+fn certified_book(out: &Path) -> Result<(Manifest, Certificate, Book)> {
+    let m = manifest(out)?;
+    let c: Certificate = serde_json::from_slice(&read(&out.join("final-certificate.json"))?)?;
+    c.verify(&m)?;
+    let b = &c.endorsements[0].book;
+    let decimal = |bytes: &[u8; 32]| -> Result<String> {
+        Ok(darkcall_input_tool::canonical_field(bytes)?.to_string())
+    };
+    let commitments = b
+        .entries
+        .each_ref()
+        .map(|e| decimal(&e.bid_commitment))
+        .into_iter()
+        .collect::<Result<Vec<_>>>()?
+        .try_into()
+        .map_err(|_| "four leaves")?;
+    let pairs = b
+        .entries
+        .iter()
+        .map(|e| {
+            e.pair_commitments
+                .each_ref()
+                .map(decimal)
+                .into_iter()
+                .collect::<Result<Vec<_>>>()?
+                .try_into()
+                .map_err(|_| "three pair commitments".into())
+        })
+        .collect::<Result<Vec<[String; 3]>>>()?
+        .try_into()
+        .map_err(|_| "four pairs")?;
+    let book = Book {
+        condition_digest: m.context.conditions_hash,
+        ids: b.entries.each_ref().map(|e| e.ticket),
+        active: [true; 4],
+        units: m.context.units,
+        reserve: m.context.reserve,
+        budget: m.context.budget,
+        processing_fee: m.context.processing_fee,
+        commitments,
+        pair_commitments: pairs,
+        root: decimal(&b.accepted_root)?,
+    };
+    Ok((m, c, book))
+}
+
+fn prepare_clearing(out: &Path) -> Result<serde_json::Value> {
+    let (m, _, book) = certified_book(out)?;
+    if now() < m.closes_at_utc {
+        return Err("cutoff not reached".into());
+    }
+    let mut input = Vec::new();
+    std::io::stdin().take(4097).read_to_end(&mut input)?;
+    if input.len() > 4096 {
+        return Err("bounded client paths".into());
+    }
+    let paths: [PathBuf; 4] = serde_json::from_slice(&input)?;
+    if paths.iter().any(|p| p.parent() != Some(out)) {
+        return Err("own auction client paths only".into());
+    }
+    let target = out.join("clearing-book");
+    fs::create_dir(&target)?;
+    write(&target.join("book.json"), &serde_json::to_vec(&book)?)?;
+    let mut used = [false; 4];
+    for (old, path) in paths.iter().enumerate() {
+        let source: Book = serde_json::from_slice(&read(&path.join("book.json"))?)?;
+        if source.active != std::array::from_fn(|i| i == old)
+            || source.condition_digest != book.condition_digest
+            || source.units != book.units
+            || source.reserve != book.reserve
+            || source.budget != book.budget
+            || source.processing_fee != book.processing_fee
+        {
+            return Err("client conditions differ from certified book".into());
+        }
+        let i = book
+            .ids
+            .iter()
+            .position(|id| *id == source.ids[old])
+            .ok_or("client ticket not certified")?;
+        if used[i]
+            || source.commitments[old] != book.commitments[i]
+            || source.pair_commitments[old] != book.pair_commitments[i]
+        {
+            return Err("client commitment/pairs differ from certificate".into());
+        }
+        used[i] = true;
+        let client = target.join(format!("client{i}"));
+        fs::create_dir(&client)?;
+        // Only public proof artifacts and existing share pairs. Never read
+        // Prover.toml, salts, plaintext bids or aggregate their openings.
+        for name in ["proof_plaindriver", "public_inputs_plaindriver"] {
+            write(&client.join(name), &read(&path.join(name))?)?;
+        }
+        for p in 0..3 {
+            checked(
+                Command::new(root().join("target/release/darkcall-input-tool"))
+                    .arg("reindex-share")
+                    .arg(path.join(format!("bidder{old}.toml.{p}.shared")))
+                    .arg(old.to_string())
+                    .arg(i.to_string())
+                    .arg(target.join(format!("bidder{i}.toml.{p}.shared"))),
+                &target.join(format!("reindex-{i}-{p}.log")),
+            )?;
+            checked(
+                Command::new(root().join("target/release/darkcall-input-tool"))
+                    .arg("check")
+                    .arg(target.join("book.json"))
+                    .arg(i.to_string())
+                    .arg(p.to_string())
+                    .arg(target.join(format!("bidder{i}.toml.{p}.shared")))
+                    .arg(client.join("public_inputs_plaindriver")),
+                &target.join(format!("check-{i}-{p}.log")),
+            )?;
+        }
+    }
+    Ok(
+        serde_json::json!({"prepared":true,"sorted_tickets":true,"pairs_checked":12,"maximum_bid_openings_read":false,"accepted_root":hex::encode(decimal_field_bytes(&book.root)?)}),
+    )
+}
+
+fn check_clearing(out: &Path, run: &Path) -> Result<serde_json::Value> {
+    let (m, c, book) = certified_book(out)?;
+    let data = read(&run.join("public-input0"))?;
+    if data.len() != 187 * 32 {
+        return Err("fixed delivery_flags4 statement required".into());
+    }
+    let fields: Vec<[u8; 32]> = data
+        .chunks_exact(32)
+        .map(|b| b.try_into().unwrap())
+        .collect();
+    for field in &fields {
+        darkcall_input_tool::canonical_field(field)?;
+    }
+    let scalar = |v: u64| {
+        let mut b = [0; 32];
+        b[24..].copy_from_slice(&v.to_be_bytes());
+        b
+    };
+    let mut expected = Vec::new();
+    expected.extend(book.condition_digest.map(|b| scalar(u64::from(b))));
+    for id in book.ids {
+        expected.extend(id.map(|b| scalar(u64::from(b))));
+    }
+    expected.extend([
+        scalar(u64::from(book.units)),
+        scalar(book.reserve),
+        scalar(book.budget),
+        scalar(book.processing_fee),
+    ]);
+    for value in &book.commitments {
+        expected.push(decimal_field_bytes(value)?);
+    }
+    expected.push(c.endorsements[0].book.accepted_root);
+    if fields[..169] != expected {
+        return Err("clearing does not match exact certified book".into());
+    }
+    let small = |bytes: [u8; 32]| -> Result<u64> {
+        if bytes[..24] != [0; 24] {
+            return Err("clearing output exceeds u64".into());
+        }
+        Ok(u64::from_be_bytes(bytes[24..].try_into()?))
+    };
+    let price = small(fields[177])?;
+    let sold = small(fields[178])?;
+    if price < m.context.reserve || price > m.context.budget || sold > u64::from(m.context.units) {
+        return Err("clearing result bounds".into());
+    }
+    Ok(
+        serde_json::json!({"certified_book_matches":true,"certificate_signatures_verified":3,
+        "accepted_root":hex::encode(c.endorsements[0].book.accepted_root),"price":price,"sold":sold,
+        "funding_scope":"offline-synthetic","native_settlement":false,"proof_must_be_verified_separately":true}),
+    )
+}
 fn main() -> Result<()> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     let value = match args.first().map(String::as_str) {
@@ -395,6 +570,10 @@ fn main() -> Result<()> {
             admit(Path::new(&args[1]), Path::new(&args[2]), args[3].parse()?)?
         }
         Some("close") if args.len() == 2 => close(Path::new(&args[1]))?,
+        Some("prepare-clearing") if args.len() == 2 => prepare_clearing(Path::new(&args[1]))?,
+        Some("check-clearing") if args.len() == 3 => {
+            check_clearing(Path::new(&args[1]), Path::new(&args[2]))?
+        }
         _ => return Err("init OUT | admit OUT BID_DIR INDEX | close OUT".into()),
     };
     println!("{}", value);

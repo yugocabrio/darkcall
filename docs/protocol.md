@@ -264,3 +264,18 @@ native証明／署名が一つの取引に一致しました。Zebraの承認、
 公開ZK資金証明ではありません。公開bundleの取引／証明検証自体はchain掲載を証明しません。
 公開testnet、別ホストの運営、malicious MPC、一般のreorg／broadcast後の自動復旧は未実証です。
 [実測・保証範囲](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json)を提出説明の基準にします。
+
+## 新規ブラウザbookのclearing（offline synthetic）
+
+sellerの新条件、4ticketの入力証明・共有ペア・受付署名、締切後の3者certificateから、
+同じbookを既存`delivery_flags4/v2`へ渡す導線が通りました。ticketのcanonical sortに合わせて
+共有mapのslot名だけを変更し、値は変更せず元のpublic input／共有commitmentで再検証します。
+通常C++で新しいREP3証明を検証し、そのpublic statementの先頭169fieldが署名済み
+conditions／ticket／terms／bid commitments／rootと完全一致した後に、本人ticketのpadを開きます。
+新規bookのprice43・2口とprice0・3口、各4人の結果、改ざん拒否を実測済みです。
+
+資金はunmined synthetic noteと模擬Observe/Confirmです。helperは入力した最大値を見ます。
+MPC接続時にはplain bid openingを読みませんが、operator-blindなbrowser admissionではありません。
+結果は返金予定額で、native送金やmemo配送は新規bookには未接続です。一時ticket権限は
+localページ／serverのメモリに置き、production loginとは呼びません。nativeのデモへは
+別bookに切り替えると明示します。[実測](../evidence/2026-10-05-fresh-browser-clearing.json)。

@@ -23,7 +23,7 @@
     <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">
       <div class="panel-top"><span class="eyebrow">START A PRIVATE MARKET</span><span class="recorded-label">LOCAL REHEARSAL</span></div>
       <h2 id="rehearsal-title">Create your auction.</h2>
-      <p class="rehearsal-scope">Fresh input proofs &amp; signed acceptances. Synthetic deposits; no chain funding.</p>
+      <p class="rehearsal-scope">Create, seal and clear your own auction. Synthetic deposits; no chain funding.</p>
       <form id="create-form" class="create-form">
         <label>Units<input id="create-units" type="number" min="1" max="3" step="1" value="3" required></label>
         <label>Reserve · zatoshi<input id="create-reserve" type="number" min="0" max="1000000" step="1" value="20" required></label>
@@ -46,9 +46,24 @@
         <button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed acceptance ↓</button>
         <details id="acceptance-details" class="advanced-details" hidden><summary>Acceptance details <span>+</span></summary><pre id="acceptance-public"></pre></details>
         <div class="close-row"><p id="close-status"></p><button id="close-auction" class="secondary-button" type="button">Certify closed book →</button></div>
+        <section class="fresh-clearing" aria-label="Clear this new auction">
+          <div class="panel-top"><span class="eyebrow">THIS AUCTION · FRESH PROOF</span><span class="recorded-label">LIVE LOCAL CLEARING</span></div>
+          <h3>Same book. Your outcome.</h3>
+          <p class="form-note">Compute the outcome from these accepted secret shares. Verify the proof before opening your own result.</p>
+          <button id="clear-auction" class="primary-button" type="button">Clear this auction <span>→</span></button>
+          <p id="clearing-status" class="check-result" aria-live="polite"></p>
+          <div id="fresh-outcome" hidden>
+            <div class="market-stats"><div><span>CLEARING PRICE</span><strong id="fresh-price">—</strong><small>zatoshi / unit</small></div><div><span>SOLD</span><strong id="fresh-sold">—</strong><small>units</small></div></div>
+            <div id="fresh-result" class="result-box" aria-live="polite"><h3>Still sealed.</h3><p>Open the ticket accepted in this browser session.</p></div>
+            <div class="fresh-actions"><button id="open-fresh-result" class="primary-button" type="button">Open this ticket’s result <span>↗</span></button><button id="tamper-fresh" class="secondary-button" type="button">Tamper with clearing proof →</button></div>
+            <p id="fresh-tamper-result" class="check-result" aria-live="polite"></p>
+            <p class="form-note">✓ Auction proof verified. Shielded settlement has not been constructed for this synthetic book.</p>
+            <details class="advanced-details"><summary>Fresh clearing details <span>+</span></summary><p id="fresh-proof-details"></p><p id="fresh-root"></p><p>The localhost helper sees demo inputs. Three semi-honest REP3 parties run on this PC; privacy assumes at most one is corrupt. The local ticket capability is kept in this page’s memory; reloading loses it. It is not a production login or an encrypted native memo.</p></details>
+          </div>
+        </section>
       </div>
       <p id="rehearsal-status" class="check-result" aria-live="polite"></p><p id="rehearsal-error" class="error" role="alert" hidden></p>
-      <div class="recording-transition"><h3>Next: clearing &amp; shielded settlement.</h3><p>Explore a completed, proof-backed auction below. It uses a different recorded book; your new demo bids are not settled by that transaction.</p><button id="continue-recording" class="secondary-button" type="button">View recorded clearing &amp; settlement →</button></div>
+      <div class="recording-transition"><h3>Explore a recorded native settlement.</h3><p>A separate funded auction shows shielded payments and encrypted native receipts. Its transaction does not settle the new book above.</p><button id="continue-recording" class="secondary-button" type="button">Explore recorded native settlement →</button></div>
     </section>
     <div id="recorded-demo" hidden>
     <p id="recording-banner" class="recording-banner">RECORDED AUCTION · These results belong to the recorded book, not the new rehearsal bids.</p>

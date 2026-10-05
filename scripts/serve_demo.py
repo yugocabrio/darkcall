@@ -3,7 +3,7 @@
 
 Canonical synthetic and certified isolated-regtest runs are separate explicit
 configurations. Rehearsal creates input proofs and signed synthetic acceptances;
-it never funds, clears, signs native transactions or broadcasts rehearsal bids.
+it also clears those exact shares with REP3. No native funding, signing or broadcast.
 No spending keys, viewing keys, masks or raw memos are served to the browser.
 """
 import argparse
@@ -272,7 +272,8 @@ def handler(demo, port):
             if (not self.allowed_host() or self.headers.get('Origin') != origin
                     or self.headers.get('X-DarkCall-Token') != demo.token):
                 return self.reply(403,{'error':'Same origin and session token required'})
-            rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close'}
+            rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close',
+                '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result'}
             if self.path not in ('/api/verify','/api/settlement',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
             try:
                 length = int(self.headers.get('Content-Length','0'))

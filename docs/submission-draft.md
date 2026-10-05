@@ -45,6 +45,7 @@ The separate historical synthetic/dealer transaction remains available for compa
 | Current funded NU7 auction, existing DKG, signed admission/final root, six scans, two confirmations | SAME tx47019e02…a211938 on isolated Zebra7.0.0-rc.0 regtest; not public chain |
 | Four encrypted receipt memos inside same funded six-output NU7 settlement | Exact prepared PCZT recovery1847.653s including chain/scans; no master SK/full ASK reconstructed |
 | Same-run recipient/client/public replay/UI | Public replay112.431s; four own clients+6 substitutions22.247s; funded HTTP/public-only views pass |
+| New browser book through actual REP3 clearing and own result | Same certified root; price43/2 sold and zero-price3 sold;8.48–9.36s clearing. Synthetic deposits; helper sees inputs; no new native payment |
 | Public-testnet funding and confirmation | Not demonstrated |
 | Independent operator hosts, malicious MPC, production custody | Not demonstrated / not claimed |
 | 8/16/32-bid scaling | Not measured; compiled production demonstration remains four slots |
@@ -78,17 +79,19 @@ is attested by the separately configured admission authority, not proved by the 
 
 The seller/bidder entry is a separate offline rehearsal, not a new funded
 execution. Its local helper sees typed demo maxima. Show that scope before input
-and state the switch to the different recorded book before any result. The prior
-result-only edited draft is preserved separately; the current110-second draft
-includes the new entry and the explicit recorded-book transition.
+and show its actual REP3 clearing/own result for the same certified book. State
+the switch to a different recorded book before showing native payment or memo
+receipts. Earlier edited drafts are preserved separately.
 
-1. 0–20s: create a local auction and seal a demo bid. Show fresh input proof,
-   share checks and signed acceptance; deposits are synthetic.
-2. 20–40s: explicitly switch to the different recorded funded regtest book;
+1. 0–40s: create a local auction, seal four demo bids, certify the cutoff book,
+   run fresh REP3 clearing, open your own result and tamper with its proof.
+   Show the same accepted root; synthetic deposits, no payment sent. A real
+   cutoff must elapse; an edited video labels that cut, not a shortened deadline.
+2. 40–60s: explicitly switch to the different recorded funded regtest book;
    explain its single uniform price. Select one example ticket, verify and decrypt its
    own native memo and show win/loss plus refund. Point out the exact transaction ID.
-3. 40–55s: corrupt a proof; show refusal before recipient key access.
-4. 55–105s: verify the **same** transaction's public bundle: native authorization,
+3. 60–70s: corrupt a native receipt proof; show refusal before recipient key access.
+4. 70–105s: verify the **same recorded** transaction's public bundle: native authorization,
    six output bindings, auction proof and receipt context. If verification exceeds
    the video length, show a clearly labeled recorded verification with its measured
    duration. Do not stage an artificial live success.

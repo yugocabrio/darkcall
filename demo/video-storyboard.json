@@ -1,66 +1,73 @@
 {
   "format": 1,
-  "scope": "Edited native browser stills: working fresh offline entry, explicit switch to a DIFFERENT recorded funded settlement; not a real-time auction or proof recording",
+  "scope": "Edited native browser stills: fresh synthetic same-book REP3 clearing and own result, then explicit switch to DIFFERENT recorded funded native settlement; not real-time proving",
   "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
   "scenes": [
     {
       "seconds": 12,
       "execution": "entry",
-      "title": "Create a private market.",
-      "image": "07-entry-create.jpg",
-      "caption": "Working local entry: fresh input ZK proofs and signed acceptances.\nSynthetic deposits; the localhost client helper sees typed demo bids."
+      "title": "Create your auction.",
+      "image": "12-fresh-create-form.png",
+      "caption": "Seller form: 2 units, reserve 10, budget 100; a real wall-clock cutoff.\nSynthetic deposits. The localhost helper sees typed demo bids."
+    },
+    {
+      "seconds": 12,
+      "execution": "entry",
+      "title": "Seal bids. Get signed acceptance.",
+      "image": "11-fresh-accepted.png",
+      "caption": "Four fresh input ZK proofs, 12 checked share pairs, 12 signed acceptances.\nThe public copy contains no bid opening, key or ticket capability."
+    },
+    {
+      "seconds": 8,
+      "execution": "entry",
+      "title": "One signed book. The exact same shares.",
+      "body": "The actual cutoff passes; three operators sign the final book.\nTickets are sorted canonically; share values stay unchanged.\nThe MPC public statement must match those exact tickets and root.\nNo plaintext bid-opening files are used to connect these stages.",
+      "caption": "Edited time jump: the real deadline was enforced.\nFresh root begins 05d33db9; it is not the recorded settlement root."
     },
     {
       "seconds": 14,
       "execution": "entry",
-      "title": "Seal a demo bid. Get signed acceptance.",
-      "image": "08-entry-accepted.jpg",
-      "caption": "Existing Noir input proof, three verified share pairs, three receipt signatures.\nNo maximum bid, secret opening or key is included in the public acceptance."
-    },
-    {
-      "seconds": 10,
-      "execution": "entry",
-      "title": "Close the accepted book at its real cutoff.",
-      "image": "09-entry-closed.jpg",
-      "caption": "Four complete tickets and three final-book signatures.\nFresh clearing has not run; this rehearsal does not spend funds."
+      "title": "Clear this auction. Open your own outcome.",
+      "image": "10-fresh-clearing.png",
+      "caption": "Actual REP3 + fixed C++ verification: 8.5s for this new book.\nPrice 43, sold 2; own refund entitlement 57. No payment sent."
     },
     {
       "seconds": 7,
       "execution": "recorded",
       "title": "Now switch to recorded settlement.",
-      "body": "A DIFFERENT completed auction follows.\nIts actual deposits, bids, clearing and payment are already recorded.\nThe new rehearsal bids do not select these winners or refunds.\nOne canonical transaction connects the recorded result and public proofs.",
+      "body": "Now inspect a DIFFERENT funded native auction.\nThe new local book above has not been settled.\nThis recorded example binds payments and memos to one transaction.\nIts winner/refund do not belong to the new local tickets.",
       "caption": "The browser labels this switch explicitly.\nOne-host isolated regtest, not a live hosted or public-testnet auction."
     },
     {
-      "seconds": 15,
+      "seconds": 13,
       "title": "The winner opens only their own receipt.",
       "image": "03-winner.jpg",
       "caption": "Fixed proofs and the signed book pass before the own viewing key is read.\nTicket 01 decrypts its native refund memo: won, refund 50 zatoshi.",
       "execution": "recorded"
     },
     {
-      "seconds": 12,
+      "seconds": 10,
       "title": "A changed proof is rejected.",
       "image": "05-tamper.jpg",
       "caption": "This screenshot follows an actual corrupted-proof check.\nThe fixed verifier rejects before reading the recipient key or decrypting.",
       "execution": "recorded"
     },
     {
-      "seconds": 14,
+      "seconds": 12,
       "title": "Six shielded outputs. The same transaction.",
       "image": "06-public-check.jpg",
       "caption": "Recorded public replay: 112.431 seconds; no private openings read.\nNative authorization, six bindings, MPC, receipt proof and accepted book pass.",
       "execution": "recorded"
     },
     {
-      "seconds": 12,
+      "seconds": 10,
       "title": "Funded, signed, confirmed on regtest.",
       "body": "4 actual deposits -> one accepted book -> 6 outputs\n2-of-3 DKG signing; no escrow master key reconstructed\nZebra acceptance + 2 controlled confirmations + exact wallet scans\nPublic proof validity and chain inclusion are separate checks.",
       "caption": "The public bundle is 153,557 bytes. Trust admission keys separately.\nFull funded recovery: 1847.653s on a shared 16GiB M1, one native thread.",
       "execution": "recorded"
     },
     {
-      "seconds": 14,
+      "seconds": 12,
       "title": "Know what you are trusting.",
       "body": "Bid privacy: at most 1 semi-honest corrupt REP3 party\nTwo colluders can reconstruct bids; two signers can move funds.\nOperators learn refunds and winning status.\nOne host / regtest; no public-testnet or Linux speedup claim.",
       "caption": "Source + public proofs + fixed replay command are ready for review.\nSecond-machine reproduction and independent operators remain unfinished.",

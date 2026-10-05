@@ -1,0 +1,221 @@
+{
+  "date": "2026-10-05",
+  "source_base": "271a32371cb01403e321659989e3ba945b0e45f4",
+  "scope": "Fresh synthetic browser book through actual same-book REP3 clearing and own result; recorded native payment remains separate",
+  "positive": {
+    "passed": true,
+    "scope": "fresh synthetic browser book; actual REP3 clearing; no native settlement",
+    "price": 43,
+    "sold": 2,
+    "own_results": [
+      {
+        "won": true,
+        "refund": 57
+      },
+      {
+        "won": true,
+        "refund": 57
+      },
+      {
+        "won": false,
+        "refund": 100
+      },
+      {
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "same_signed_root": "0de0aaf08c7f4b6f8df303a495baef52ce798a59346f91a786280c8c8e14c0d1",
+    "sorted_ticket_reindex": [
+      2,
+      3,
+      0,
+      1
+    ],
+    "client_proofs": 4,
+    "pair_checks": 12,
+    "acceptance_signatures": 12,
+    "final_book_signatures": 3,
+    "clearing": {
+      "accepted_root": "0de0aaf08c7f4b6f8df303a495baef52ce798a59346f91a786280c8c8e14c0d1",
+      "certificate_signatures_verified": 3,
+      "certified_book_matches": true,
+      "funding_scope": "offline-synthetic",
+      "native_settlement": false,
+      "price": 43,
+      "proof_must_be_verified_separately": true,
+      "sold": 2,
+      "fixed_cpp_proof_verified": true,
+      "rep3_clearing_verified": true,
+      "proof_generation_seconds": 3.471,
+      "seconds": 9.356686207996972,
+      "maximum_bid_openings_read": false,
+      "receipt_proof_version": "delivery_flags4/v2",
+      "proof_bytes": 14656,
+      "auction_id": "862f3bd82ae57287b5c37db6f2746de2"
+    },
+    "wrong_ticket_capabilities_rejected_before_worker": 2,
+    "linkage_substitutions_rejected": [
+      "conditions",
+      "ticket",
+      "leaf",
+      "root"
+    ],
+    "bad_certificate_rejected_before_pad_read": true,
+    "fixed_cpp_tamper_rejected_before_pad_read": true,
+    "public_get_contains_no_capabilities": true,
+    "idempotent_clear_reuses_verified_result": true,
+    "recorded_txid_unchanged": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "zero_price": false,
+    "seconds": 52.87223791699944
+  },
+  "zero_price": {
+    "passed": true,
+    "scope": "fresh synthetic browser book; actual REP3 clearing; no native settlement",
+    "price": 0,
+    "sold": 3,
+    "own_results": [
+      {
+        "won": false,
+        "refund": 100
+      },
+      {
+        "won": true,
+        "refund": 100
+      },
+      {
+        "won": true,
+        "refund": 100
+      },
+      {
+        "won": true,
+        "refund": 100
+      }
+    ],
+    "same_signed_root": "155eab49e388c3a3b1baf0a355d79b30640eb760370ad86cfe0c71c46c830adb",
+    "sorted_ticket_reindex": [
+      3,
+      2,
+      0,
+      1
+    ],
+    "client_proofs": 4,
+    "pair_checks": 12,
+    "acceptance_signatures": 12,
+    "final_book_signatures": 3,
+    "clearing": {
+      "accepted_root": "155eab49e388c3a3b1baf0a355d79b30640eb760370ad86cfe0c71c46c830adb",
+      "certificate_signatures_verified": 3,
+      "certified_book_matches": true,
+      "funding_scope": "offline-synthetic",
+      "native_settlement": false,
+      "price": 0,
+      "proof_must_be_verified_separately": true,
+      "sold": 3,
+      "fixed_cpp_proof_verified": true,
+      "rep3_clearing_verified": true,
+      "proof_generation_seconds": 3.468,
+      "seconds": 8.481457834001048,
+      "maximum_bid_openings_read": false,
+      "receipt_proof_version": "delivery_flags4/v2",
+      "proof_bytes": 14656,
+      "auction_id": "c0119c52e19f99d6ab90a0c143086be1"
+    },
+    "wrong_ticket_capabilities_rejected_before_worker": 2,
+    "linkage_substitutions_rejected": [
+      "conditions",
+      "ticket",
+      "leaf",
+      "root"
+    ],
+    "bad_certificate_rejected_before_pad_read": true,
+    "fixed_cpp_tamper_rejected_before_pad_read": true,
+    "public_get_contains_no_capabilities": true,
+    "idempotent_clear_reuses_verified_result": true,
+    "recorded_txid_unchanged": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "zero_price": true,
+    "seconds": 52.54289237500052
+  },
+  "browser": {
+    "actual_create_four_admissions_cutoff_and_fresh_clearing": true,
+    "auction_id": "7a6177f06861f0898a13ea21a82e78e2",
+    "accepted_root": "05d33db949266c5ae636d06e7ddb9b53bf7bfcecb6e8e7585d3d323e40174d25",
+    "price": 43,
+    "sold": 2,
+    "own_won": true,
+    "own_refund_entitlement": 57,
+    "fresh_clearing_seconds_displayed": 8.5,
+    "corrupted_proof_rejected_before_pad_read": true,
+    "copied_public_acceptance_contains_no_capability": true,
+    "mobile_width": 390,
+    "mobile_horizontal_overflow": false,
+    "temporary_viewport_reset": true,
+    "native_payment_sent": false,
+    "live_client_helper_sees_demo_maximum": true
+  },
+  "video": {
+    "passed": true,
+    "scope": "Edited native browser stills: fresh synthetic same-book REP3 clearing and own result, then explicit switch to DIFFERENT recorded funded native settlement; not real-time proving",
+    "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "seconds": 110,
+    "scenes": 10,
+    "width": 1920,
+    "height": 1080,
+    "audio": false,
+    "published": false,
+    "output": "/Users/yugo/zzzzzzcash/.local/darkcall-same-book-clearing-draft-20261005.mp4",
+    "video_bytes": 1311895,
+    "video_sha256": "96de1ea3e13c486b74abda2ccdd98000682524909d5abf45e6e3ff433bb91d44",
+    "image_sha256": {
+      "12-fresh-create-form.png": "1074429bab425101668297309ab195cd4c0579f1c679d805f0fdacf6357de6bd",
+      "11-fresh-accepted.png": "1e342e7ab3d0319a99895420df4790767261c3bfa384fcbe7879bda963af7172",
+      "10-fresh-clearing.png": "403980731655fee04d11c5342022df2b2aaeffd34476fbe38b5743f0195486f9",
+      "03-winner.jpg": "3ce9c7ac83e069b7d57de7ea4ccd0b5237b5db803d6217819b753c2248dd136f",
+      "05-tamper.jpg": "e16425f70e199488bcf92166425a6e5418c28985a34a41ba112d6c10067cd09d",
+      "06-public-check.jpg": "a285e080c77f3f9dde52b1420373e76a112b9b69dabbfa3feaa966702d72f8e9"
+    },
+    "private_material_read": false,
+    "proof_generation_in_video": false
+  },
+  "checks": {
+    "release_build": true,
+    "rust_tests": {
+      "input_tool": 4,
+      "wallet_bridge_library": 17,
+      "wallet_bridge_binary": 2
+    },
+    "strict_release_all_target_clippy": true,
+    "format": true,
+    "js_python_syntax": true,
+    "recorded_verify_settlement_AST_identical": true,
+    "cryptographic_circuits_and_canonical_bundle_unchanged": true
+  },
+  "pins": {
+    "co_snarks": "467a2abbad940d40ed78f38d424cc21920988976",
+    "barretenberg": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+    "noir": "1.0.0-rc.2"
+  },
+  "commands": [
+    "cargo build --offline --locked --release -p darkcall-input-tool -p darkcall-wallet-bridge --bin darkcall-input-tool --example rehearsal_admission",
+    "python3 -B scripts/check_rehearsal_clearing.py --output .local/rehearsal-clearing-positive-verified-20261005.json",
+    "python3 -B scripts/check_rehearsal_clearing.py --zero --output .local/rehearsal-clearing-zero-verified-20261005.json",
+    "cargo test --offline --locked --release -p darkcall-input-tool -p darkcall-wallet-bridge",
+    "cargo clippy --offline --locked --release -p darkcall-input-tool -p darkcall-wallet-bridge --all-targets -- -D warnings",
+    "node --check demo/app.js",
+    "cargo fmt --all -- --check",
+    "python3 -B scripts/render_demo_video.py --output .local/darkcall-same-book-clearing-draft-20261005.mp4"
+  ],
+  "failed_attempts": [
+    "First integration check reached valid MPC/own-results/tamper but harness treated a hex signature as an integer array; fixed.",
+    "Second harness expected503 for invalid certificate; actual fixed server error is422, with no pad export. Fixed check, positive and zero complete suites pass.",
+    "Default debug-profile tests were interrupted after extra disk use; locked release tests pass. No private checkpoints removed."
+  ],
+  "limits": [
+    "Synthetic unmined deposits and fabricated funding observations, not chain funding",
+    "Local helper sees demo maximums; all actors are on one host",
+    "Semi-honest REP3, at most one corrupt party; two colluders can recover bids",
+    "Local in-memory ticket capability; no production login or private browser witness generation",
+    "New books have no native settlement, payment, encrypted memo or chain confirmation",
+    "Video is an edited still-image narrative; seller form illustration and verified fresh screenshots, not continuous live proving"
+  ]
+}

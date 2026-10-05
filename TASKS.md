@@ -17,12 +17,30 @@ native security conditions. Fresh client commitments/shares/acceptance can be
 real while settlement transitions explicitly to a DIFFERENT recorded book.
 The localhost helper sees typed demo bids; funding is explicitly synthetic.
 
+Latest continuity priority: the newly accepted book now runs the EXISTING REP3
+clearing circuit and opens its own result. Native payment still uses a separate
+recorded auction. Do not replace fresh random tickets/commitments with an implied
+same-root preset or redesign cryptography.
+
+- [x] Same-book fresh browser clearing: canonical reindex of unchanged share
+  values, exact signed root/conditions/tickets, actual3-party REP3 flags proof,
+  fixed C++ verification and per-ticket opening after proof/certificate gates.
+  Positive price43/2 sold and zero-price3 sold pass, four own results each,
+  capability/statement/certificate/proof refusals and idempotent clearing.
+  Browser WON/refund entitlement57, tamper and mobile390px pass.
+- [x] Update the edited video to110s/10 scenes: fresh same-book result before
+  explicit switch to a DIFFERENT funded native example. Visually checked.
+- [ ] Human review of current same-book story and video; polish the visible
+  interaction. Independent host reproduction/performance remains host-dependent.
+  Fresh wallet/native payment and production private admission are not complete.
+
 - [x] Actual seller create/share and bidder input proof/share/receipt entry, plus
   cutoff/four-ticket final-book certification. Four fresh input proofs/12 pair
   checks/12 receipt signatures/3 endorsements;17 rejection cases, pre-admission
   proof/share/context substitutions leave journals unchanged. Actual browser
   create/seal/copy, local join, mobile390px and recorded receipt/tamper pass.
-  New entry does not run MPC clearing, native funding, signing or settlement.
+  Earlier271a323 entry did not run clearing; the checked item above now connects
+  actual same-book MPC. Native funding/signing/settlement remain separate.
 - [x] Adapt the video/storyboard to include seller → bidder entry and explicit
   different-recorded-book transition. Latest110s/9-scene edited draft shows three
   native entry screens, a switch card and existing recorded verification/trust.
