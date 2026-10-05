@@ -1,8 +1,23 @@
 # DarkCall status
 
-Updated: 2026-10-05 02:40 UTC.
+Updated: 2026-10-05 02:58 UTC.
 
 ## Current outcome
+
+**The isolated NU7 compatibility gate passes without changing the working
+NU6.3 workspace.** New pinned native SDK: synthetic NU7 v6 PCZT → full private-
+field checks → native proof → existing 2-of-3 FROST via canonical bytes → exact
+recipient decryptions and public native verification. Total 6.884s, native proof
+3.112s, 9,166 bytes/two actions; one-share, digest, branch, trailing-byte and
+binding-signature changes reject. The live HTTPS endpoint testnet.zec.rocks now
+passes testnet genesis/NU7 identity and actual compact-to-Ironwood-frontier
+reconstruction at 4466153. The new SDK also verifies the old confirmed four-funded
+auction's public native transaction (1.405s), rejecting treating it as NU7.
+Evidence: evidence/2026-10-05-nu7-compatibility.json. No public funding/broadcast,
+no application binding migration yet. Standalone lockfile and 277-package declared
+license inventory preserve all working old SDK pins/chain/wallets. See
+tools/nu7-compat/README.md. Next: DKG escrow setup, then funded NU7 and live-chain
+freshness/reorg support; do not override the old application's branch guard.
 
 **The four-funded native auction passed on the actual isolated chain.** Confirmed
 native deposits → authenticated client/proof/share admission → durable receipts
@@ -113,14 +128,17 @@ binding, root equivocation after restart, malformed MPC inputs and reorg pauses.
 Selected core/input/native/wallet regressions pass (33); strict workspace all-target
 clippy and Python syntax checks pass.
 
-Next highest priority: isolate NU7-aware native SDK compatibility and preserve
-this old-branch reproduction; improve escrow setup beyond the retained trusted-
-dealer master key, then add cancellation/restart recovery and client UI. Public
+Next highest priority: improve escrow setup beyond the retained trusted-dealer
+master key; the isolated NU7 compatibility gate now passes. Keep the old-branch
+reproduction while implementing funded NU7 and live-chain freshness, then
+cancellation/restart recovery and client UI. Public
 source research identifies 77190ad9 as NU7, activated at 4465026; a new live probe
 at 4466083 confirms the branch mismatch with the old SDK. Do not relax native
 branch guards. Selected regressions pass (34), receipt transport tests and strict
 workspace all-target clippy pass; the read-only diagnosis compiles and was probed.
-Dependency inventory records 430 selected-target packages and explicit pins.
+Dependency inventory records 430 main-workspace packages and 277 standalone NU7
+packages with explicit pins/no missing declared licenses. Strict standalone all-
+target release clippy and upgrade/genesis boundary test pass.
 
 ## Measurements and evidence
 

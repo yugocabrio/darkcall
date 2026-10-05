@@ -33,8 +33,9 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Actual isolated regtest equivalent passes: matured native funding, canonical
     witnesses, 2-of-3 FROST, full-node acceptance, two confirmations and exact
     recipient scan. Standard public testnet uses upstream NU7 at 4465026; our pinned native
-    stack lacks branch 77190ad9. Isolated NU7 PCZT/FROST/scanner compatibility and
-    an explicit pin migration are next; retain the successful old-branch gate.
+    stack lacks branch 77190ad9. Isolated new-SDK NU7 PCZT/FROST/proof/decryption, read-only native frontier
+    reconstruction and old native transaction replay now pass. Auction/native
+    binding migration and real public funding/spending remain; preserve the old gate.
     This gate is a transfer, not the funded auction; trusted-dealer master key is
     retained. A second valid spend of the same note is rejected by the node.
 - [x] P0.6 Prove one private settlement row binds to a native note commitment.
@@ -48,6 +49,13 @@ autonomously, incorporate later human/ChatGPT reviews.
     and decrypted: 21,790 bytes, standard fee 30,000. Other supported counts remain.
 
 ## Priority 1 · integration
+
+- [ ] Replace retained escrow master signing key with DKG-generated 2-of-3 shares.
+  - Bank/client spending keys are normal owned wallets; only the shared escrow
+    setup is in scope. Validate native FVK compatibility and real threshold spend.
+- [ ] Migrate auction native stack to NU7 after isolated compatibility checks.
+  - Standalone synthetic native gate and live tree reconstruction pass; root
+    Cargo.lock, native binding dependencies and isolated NU6.3 chain are preserved.
 
 - [ ] Canonical auction conditions, ticket IDs, accepted roots and settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.

@@ -1,0 +1,91 @@
+{
+  "scope": "isolated SDK compatibility; working NU6.3 workspace unchanged; no public funding/broadcast",
+  "recorded_utc": "2026-10-05T02:57:02.560471+00:00",
+  "sdk_commit": "9c5705f56517c040c50f96d29f1ff15a9383f3e0",
+  "orchard": "0.16.0",
+  "existing_frost_commit": "ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead",
+  "standalone_cargo_lock_sha256": "176bd50b744820663c33ff4f047b21661b08e37f0a289befc75c420b0372668e",
+  "synthetic_native_gate": {
+    "actions": 2,
+    "binding_signature_change_rejected": true,
+    "branch": "77190ad9",
+    "broadcast": false,
+    "chain_funding": false,
+    "changed_sighash_rejected": true,
+    "expiry_height": 4465267,
+    "fee": 10000,
+    "height": 4465027,
+    "native_proof_and_signatures_verified": true,
+    "old_branch_rejected": true,
+    "one_share_rejected": true,
+    "pczt_fvks_preserved": true,
+    "proof_seconds": 3.112082375,
+    "real_threshold_spends": 1,
+    "recipients_decrypted": 2,
+    "scope": "isolated NU7 synthetic native PCZT/FROST compatibility; no auction binding or chain funding",
+    "setup": "local trusted dealer; no DKG",
+    "threshold": "2-of-3",
+    "total_seconds": 6.883692041,
+    "trailing_byte_rejected": true,
+    "transaction_bytes": 9166,
+    "version": 6
+  },
+  "live_read_only_probe": {
+    "branch_id": "77190ad9",
+    "broadcast": false,
+    "chain_funding": false,
+    "endpoint": "https://testnet.zec.rocks:443",
+    "frontier_validation_scope": "trusted provider continuity and SDK commitments; no consensus or SPV validation",
+    "genesis": "05a60a92d99d85997cce3b87616c089f6124d7342af37106edc76126334a2c38",
+    "ironwood_actions_in_tip": 1,
+    "ironwood_active": true,
+    "ironwood_compact_frontier_reconstructed": true,
+    "ironwood_tree_encoding_bytes": 386,
+    "ironwood_tree_size_reported": 486050,
+    "lightwallet_protocol_version": "v0.5.0",
+    "lightwalletd_git_commit": "c22ca9ba67676e61cd8ee107538ffd9a77799bab",
+    "lightwalletd_version": "v0.5.4",
+    "network": "Zcash standard testnet",
+    "nu7_active": true,
+    "scope": "read-only lightwalletd identification; provider trusted, no consensus validation",
+    "tip_hash": "00005a1fbe5dc72af5fb891259af1d1a25f33b83cb2e8ad40ae9e9196d3ef66e",
+    "tip_height": 4466153
+  },
+  "old_native_public_replay": {
+    "bytes": 21790,
+    "chain_inclusion_verified": false,
+    "native_proof_and_signatures_verified": true,
+    "private_inputs_read": false,
+    "scope": "new SDK verification of existing NU6.3 public native transaction; no application-proof verification",
+    "seconds": 1.404635292,
+    "txid": "9d16a088186749dba179df1330fa8a7da6a9343473671c08a381fcdb91fc54da",
+    "wrong_branch_rejected": true
+  },
+  "build_environment": {
+    "target": "aarch64-apple-darwin",
+    "jobs": 2,
+    "native_run_rayon_threads": 4,
+    "sdk_source_modified": false,
+    "protobuf": "SDK checked-in generated Rust; PATH omitted broken Homebrew protoc",
+    "initial_error": "protoc29.1 referenced missing libabsl_die_if_null.2407.0.0.dylib; no system installation modified"
+  },
+  "checks": {
+    "release_build": true,
+    "strict_network_boundary_unit_test": true,
+    "strict_clippy": true,
+    "main_dependency_inventory_unchanged": true
+  },
+  "commands": [
+    "PATH=/Users/yugo/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo build --release --locked --manifest-path tools/nu7-compat/Cargo.toml",
+    "RAYON_NUM_THREADS=4 .deps/nu7-compat-target/release/darkcall-nu7-compat synthetic-native",
+    ".deps/nu7-compat-target/release/darkcall-nu7-compat probe-testnet https://testnet.zec.rocks:443",
+    "RAYON_NUM_THREADS=4 .deps/nu7-compat-target/release/darkcall-nu7-compat verify-old-native .local/regtest-auction4-public-20261005/regtest-transaction.bin"
+  ],
+  "remaining": [
+    "No NU7 auction/output-binding migration yet",
+    "No real standard-testnet funds, native Merkle witnesses, spend/broadcast or confirmation",
+    "Regtest unchanged-tip guard cannot be used for live advancing chain",
+    "DKG and independent custody not demonstrated",
+    "Synthetic expiry240 is coverage, not finalized wallet expiry/rescan policy"
+  ]
+}
