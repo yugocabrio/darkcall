@@ -16,7 +16,7 @@ security acceptance unchanged; put technical/trust details behind disclosures.
 
 - [x] Produce a committed-source review kit, validate its exclusions and public
   links, and start its extracted public-only browser with no private identities.
-  - Revision34f6654:400 committed source files,1139444-byte archive; same-host
+  - Revision61337e8:411 committed source files,1309909-byte archive; same-host
     extraction/public-only page passes. No Git/runtime/dependency/key export.
     Missing own identity refuses409; missing compiled tools report incomplete
     prerequisites. This is not second-machine or cryptographic reproduction.

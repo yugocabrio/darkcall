@@ -43,12 +43,16 @@ both unchanged locks. It reads no private runtime or node and starts no proof.
 helpers embed their build directory: rebuild at the final location. Current SDK
 README now distinguishes the completed funded run from historical components.
 No new proof, signature, circuit or public trust root is introduced. Actual
-revision34f6654 kit export/audit and fresh public-only extraction pass:400 source
-files,1,139,444bytes, no dependencies/private identities/Git metadata copied.
+revision61337e8 kit export/audit and fresh public-only extraction pass:411 source
+files,1,309,909bytes, no dependencies/private identities/Git metadata copied.
 Missing identity refuses409; absent compiled tools report incomplete prerequisites.
 This is same-host packaging smoke, not cryptographic/second-machine reproduction.
-Latest UI source will be exported after its commit. Second-machine/Linux access
-is still unprovided. Optional hardware question is pending. Automation
+This kit includes the simplified UI and screenshot/storyboard/renderer sources.
+Its exact archive digest and0.253s smoke scope are recorded in
+`evidence/2026-10-05-committed-review-kit.json`; the evidence commit is later than
+the packaged source revision to avoid a self-referential archive digest.
+Second-machine/Linux access is still unprovided. Optional hardware question is
+pending. Automation
 remains removed; no public release/deployment/submission is performed.
 
 **One actual funded NU7 transaction now completes the certified memo auction.**

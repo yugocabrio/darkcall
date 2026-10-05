@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-05",
+  "scope": "Committed source packaging and same-machine extracted public-only smoke",
+  "source_revision": "61337e850ceab5301906fbb7549acf2cc41cdbef",
+  "package": {
+    "passed": true,
+    "commit": "61337e850ceab5301906fbb7549acf2cc41cdbef",
+    "source_files": 411,
+    "canonical": {
+      "authority": "demo/authority/canonical-nu7-funded-v1.json",
+      "authority_sha256": "d5f06a09867dafefc1908228efb76a903fa7fc0c8c1ee06a14002e9b0ddbb32e",
+      "bundle": "demo/artifacts/canonical-nu7-funded-v1",
+      "chain_inclusion_verified": false,
+      "proofs_cryptographically_verified": false,
+      "public_bundle_bytes": 153557,
+      "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938"
+    },
+    "integrity_only": true,
+    "second_machine_reproduction": false,
+    "private_runtime_included": false,
+    "archive": ".local/review-kit-61337e8.tar.gz",
+    "archive_sha256": "201b512c15eda41023f0adee3d15d3f2de51f72ab78d04f602dc1f636aa3fe4b",
+    "archive_bytes": 1309909,
+    "published": false
+  },
+  "extracted_smoke": {
+    "passed": true,
+    "scope": "same-host extracted source/public-only smoke; no cryptographic replay",
+    "commit": "61337e850ceab5301906fbb7549acf2cc41cdbef",
+    "archive_sha256": "201b512c15eda41023f0adee3d15d3f2de51f72ab78d04f602dc1f636aa3fe4b",
+    "source_files": 411,
+    "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "static_files_served": 3,
+    "own_receipt_without_identity_refused": true,
+    "missing_tools_reported": true,
+    "private_runtime_or_dependencies_copied": false,
+    "second_machine_reproduction": false,
+    "proofs_cryptographically_verified": false,
+    "seconds": 0.25309054099489003
+  },
+  "commands": [
+    "python3 -B scripts/review_kit.py create --output .local/review-kit-61337e8.tar.gz",
+    "python3 -B scripts/check_review_kit.py .local/review-kit-61337e8.tar.gz --expected-commit 61337e850ceab5301906fbb7549acf2cc41cdbef"
+  ],
+  "limitations": [
+    "Archive manifest detects damage; it is not producer authentication or cryptographic verification",
+    "No private runtime, dependencies or Git metadata copied",
+    "Missing identity refuses; absent tools require explicit pinned bootstrap",
+    "This fresh directory is on the same Mac; no independent-machine claim",
+    "No publication, external upload or contest submission"
+  ]
+}
