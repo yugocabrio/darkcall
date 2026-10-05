@@ -10,6 +10,7 @@ darkcall-auction-core = { path = "../auction-core" }
 darkcall-output-binding = { path = "../output-binding" }
 darkcall-bn254-emulation = { path = "../bn254-emulation" }
 darkcall-settlement-types = { path = "../settlement-types" }
+darkcall-wallet-bridge = { path = "../wallet-bridge" }
 group = "=0.13.0"
 ff = "=0.13.1"
 incrementalmerkletree = "=0.8.2"

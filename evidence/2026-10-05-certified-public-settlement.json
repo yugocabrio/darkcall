@@ -1,0 +1,43 @@
+{
+  "scope": "Synthetic admission certificates linked to the demonstrated public-only MPC/native settlement; not chain funding",
+  "base_commit": "86efe25",
+  "commands": [
+    "cargo build --release --locked -p darkcall-native-gate -p darkcall-wallet-bridge --bins --examples -j 2",
+    "target/release/examples/synthetic_certificate .local/mpc-auction4-20261004T231421Z/book.json .local/public-private-delivery-20261005/mpc-public/public-input0 .local/synthetic-certified-book-20261005",
+    "python3 scripts/replay_certified_bundle.py .local/public-private-delivery-20261005 .local/synthetic-certified-book-20261005/final-book-certificate.json .local/synthetic-certified-book-20261005/manifest.json --name certified-public-private-delivery-20261005",
+    "cargo test --release --locked -p darkcall-auction-core -p darkcall-input-tool -p darkcall-native-gate -p darkcall-wallet-bridge -j 2",
+    "cargo clippy --release --locked --workspace --all-targets -j 2 -- -D warnings",
+    "python3 -m py_compile scripts/replay_public_bundle.py scripts/replay_certified_bundle.py"
+  ],
+  "results": {
+    "funding_ciphertexts_decrypted": 4,
+    "client_claim_signatures_verified": 4,
+    "operator_receipt_signatures": 12,
+    "final_book_signatures": 3,
+    "receipt_inclusion_and_exact_mpc_root_recipients": "passed",
+    "native_consensus_proof_and_signatures": "passed",
+    "six_native_row_proofs": "passed",
+    "normal_cpp_barretenberg_proof": "passed",
+    "public_replay_seconds": 125.697454459,
+    "transaction_bytes": 21790,
+    "txid": "4b78bda144f5fb1ce3a7fceeebd9825e29907850940f82e0389cfa00d8055d61",
+    "wallet_tests": 15,
+    "selected_regression_tests": 33,
+    "strict_workspace_clippy": "passed",
+    "tampering_rejected": ["operator signature", "duplicate operator", "accepted intent", "bid commitment", "accepted root", "refund receiver", "trusted cutoff"],
+    "tampering_rejection_seconds_range": [0.003, 0.005],
+    "restart_final_book_equivocation_omission_reorg_and_canonical_field_checks": "passed in unit gates"
+  },
+  "private_source_openings_read": false,
+  "private_journals_copied_or_read_by_public_verifier": false,
+  "keys_persisted_by_example": false,
+  "limitations": [
+    "Funding notes, chain observations and confirmations in admission fixture are fabricated.",
+    "This certificate authenticates operator acceptance, not a public proof of funding.",
+    "Original native transaction was signed before the new receipts/certificates; funded pre-FROST enforcement remains.",
+    "Fresh test authority manifest is supplied explicitly; production verifiers need independently trusted auction configuration.",
+    "Live admission must verify canonical unspent funding, client proofs, delivered shares and the declared cutoff.",
+    "Supported book is exactly four active tickets in canonical order.",
+    "No network funding, broadcast, finality, independent hosts or deployed service demonstrated."
+  ]
+}

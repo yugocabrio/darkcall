@@ -1155,6 +1155,7 @@ dependencies = [
  "darkcall-bn254-emulation",
  "darkcall-output-binding",
  "darkcall-settlement-types",
+ "darkcall-wallet-bridge",
  "ff 0.13.1",
  "group",
  "incrementalmerkletree",
@@ -1213,6 +1214,7 @@ name = "darkcall-wallet-bridge"
 version = "0.1.0"
 dependencies = [
  "darkcall-auction-core",
+ "darkcall-input-tool",
  "ed25519-dalek",
  "hex",
  "incrementalmerkletree",

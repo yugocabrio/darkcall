@@ -13,7 +13,7 @@ const DOMAIN: &[u8] = b"DarkCall/accepted-receipt/v1\0";
 /// All three distinct application keys endorse one payload. Never accept this
 /// identity list from an untrusted receipt. It belongs in auction configuration.
 pub struct Operators {
-    keys: [VerifyingKey; 3],
+    pub(crate) keys: [VerifyingKey; 3],
 }
 impl Operators {
     pub fn new(bytes: [[u8; 32]; 3]) -> Result<Self> {
@@ -33,7 +33,7 @@ impl Operators {
             keys: keys.try_into().map_err(|_| "operator count")?,
         })
     }
-    fn context_hash(&self, context: &Context) -> Result<[u8; 32]> {
+    pub(crate) fn context_hash(&self, context: &Context) -> Result<[u8; 32]> {
         if context.format != 1 || context.hash_rule.len() > 128 || context.hash_rule.is_empty() {
             return Err("unsupported receipt context".into());
         }
@@ -53,7 +53,8 @@ impl Operators {
         Ok(Sha256::digest(bytes).into())
     }
 }
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Payload {
     pub context_hash: [u8; 32],
     pub ticket: [u8; 32],
@@ -65,7 +66,7 @@ pub struct Payload {
     pub intent_digest: [u8; 32],
 }
 impl Payload {
-    fn message(&self) -> Vec<u8> {
+    pub(crate) fn message(&self) -> Vec<u8> {
         let mut bytes = DOMAIN.to_vec();
         bytes.extend(self.context_hash);
         bytes.extend(self.ticket);
@@ -151,6 +152,7 @@ impl Receipt {
 }
 /// Three matching endorsements. Complete deadline-book/root certification and
 /// omission detection against the actual MPC statement remain a separate step.
+#[derive(Clone)]
 pub struct AcceptedReceipt {
     receipts: [Receipt; 3],
 }

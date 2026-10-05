@@ -1,48 +1,18 @@
 //! Synthetic fixture creator and node-side validation of committed REP3 inputs.
 //! No real bids, keys or shares should be placed in the Git repository.
 use ark_bn254::Fr;
-use ark_ff::{Field, PrimeField};
+use ark_ff::PrimeField;
 use bincode::Options;
 use co_noir_types::{Rep3SharedInput, Rep3Type};
+use darkcall_input_tool::{domain, hash, limbs};
 use darkcall_settlement_types::{
     NativeBatchStatement, NativeContext, Role, Row, link_four_bid_statements,
 };
-use mpc_core::gadgets::poseidon2::{POSEIDON2_BN254_T4_PARAMS, Poseidon2};
 use mpc_core::protocols::rep3;
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, fs, path::Path, str::FromStr};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
-
-fn hash(input: &[Fr]) -> Fr {
-    let permutation = Poseidon2::<Fr, 4, 5>::new(&POSEIDON2_BN254_T4_PARAMS);
-    let mut state = [Fr::from(0); 4];
-    state[3] = Fr::from(input.len() as u64) * Fr::from(2).pow([64]);
-    for chunk in input.chunks_exact(3) {
-        for i in 0..3 {
-            state[i] += chunk[i];
-        }
-        permutation.permutation_in_place(&mut state);
-    }
-    let remainder = input.chunks_exact(3).remainder();
-    for (i, value) in remainder.iter().enumerate() {
-        state[i] += value;
-    }
-    permutation.permutation(&state)[0]
-}
-
-fn domain(text: &[u8]) -> Fr {
-    assert!(text.len() < 31);
-    Fr::from_be_bytes_mod_order(text)
-}
-
-fn limbs(bytes: &[u8; 32]) -> [Fr; 4] {
-    std::array::from_fn(|i| {
-        Fr::from(u64::from_be_bytes(
-            bytes[i * 8..(i + 1) * 8].try_into().unwrap(),
-        ))
-    })
-}
 
 #[derive(Clone, Serialize, Deserialize)]
 struct Book {
@@ -91,15 +61,13 @@ impl Book {
         })
     }
     fn context(&self) -> Fr {
-        let mut fields = vec![domain(b"DarkCall/ctx/v1")];
-        fields.extend(limbs(&self.condition_digest));
-        fields.extend([
-            Fr::from(self.units),
-            Fr::from(self.reserve),
-            Fr::from(self.budget),
-            Fr::from(self.processing_fee),
-        ]);
-        hash(&fields)
+        darkcall_input_tool::context(
+            &self.condition_digest,
+            self.units,
+            self.reserve,
+            self.budget,
+            self.processing_fee,
+        )
     }
 
     fn leaf(&self, id: &[u8; 32], bid: u64, salt: Fr) -> Fr {
@@ -123,17 +91,13 @@ impl Book {
     }
 
     fn root(&self) -> Result<Fr> {
-        let mut fields = vec![
-            domain(b"DarkCall/accepted/v1"),
+        let fields = self.commitments.each_ref().map(|x| canonical_field(x));
+        let fields = fields.into_iter().collect::<Result<Vec<_>>>()?;
+        Ok(darkcall_input_tool::root(
             self.context(),
-            Fr::from(4),
-            Fr::from(self.active.iter().filter(|x| **x).count() as u64),
-        ];
-        fields.extend(self.active.map(|x| Fr::from(u64::from(x))));
-        for x in &self.commitments {
-            fields.push(Fr::from_str(x).map_err(|_| "invalid commitment")?);
-        }
-        Ok(hash(&fields))
+            self.active,
+            fields.try_into().map_err(|_| "commitment count")?,
+        ))
     }
 
     fn public_toml(&self) -> Result<String> {

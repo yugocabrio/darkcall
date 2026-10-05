@@ -566,10 +566,22 @@ fn main() -> Result<()> {
     if args.len() == 2 && args[0] == "--verify-integrated" {
         println!(
             "{}",
-            serde_json::to_string_pretty(&integration::verify_public(std::path::Path::new(
-                &args[1]
-            ))?)
+            serde_json::to_string_pretty(&integration::verify_public(
+                std::path::Path::new(&args[1]),
+                None
+            )?)
             .map_err(|e| error("public summary", e))?
+        );
+        return Ok(());
+    }
+    if args.len() == 3 && args[0] == "--verify-certified-integrated" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&integration::verify_public(
+                std::path::Path::new(&args[1]),
+                Some(std::path::Path::new(&args[2]))
+            )?)
+            .map_err(|e| error("certified public summary", e))?
         );
         return Ok(());
     }

@@ -86,6 +86,9 @@ setup; a receipt must never supply its own authority.
 
 These signatures attest operator acceptance. They do not replace client proofs,
 prove canonical funding, certify the complete deadline book or authenticate the
-actual MPC/native bundle yet. All three signatures are required; this shares the
-REP3 computation's availability requirement. Final-root certification and exact
-public-statement linkage are the next implementation step.
+actual MPC/native bundle by themselves. All three signatures are required; this
+shares the REP3 computation's availability requirement. The implemented
+[final-book certificate](accepted-root.md) now binds the complete frozen roster
+and receiver commitments to actual MPC public bytes and the native public replay.
+Its measured admission is synthetic; live funding/client-proof/cutoff checks and
+pre-FROST enforcement remain.

@@ -15,9 +15,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 BIN = ROOT / 'target/release/darkcall-native-gate'
 
 
-def run(directory, expected_error=None):
+def run(directory, expected_error=None, authority=None):
     start = time.monotonic()
-    result = subprocess.run([str(BIN), '--verify-integrated', str(directory)],
+    command = ([str(BIN), '--verify-certified-integrated', str(directory), str(authority)]
+               if authority is not None else [str(BIN), '--verify-integrated', str(directory)])
+    result = subprocess.run(command,
                             cwd=ROOT, capture_output=True, text=True, timeout=600,
                             env={**__import__('os').environ, 'RAYON_NUM_THREADS': '2'})
     if expected_error is not None:
@@ -30,18 +32,14 @@ def run(directory, expected_error=None):
     return json.loads(result.stdout)
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('source', type=pathlib.Path)
-    parser.add_argument('--name', required=True)
-    args = parser.parse_args()
-    if not args.name or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in args.name):
+def copy_bundle(source_path, name):
+    if not name or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in name):
         raise RuntimeError('Expected a simple unused local name')
-    source = args.source.resolve()
+    source = source_path.resolve()
     local = ROOT / '.local'
     if not source.is_relative_to(local.resolve()):
         raise RuntimeError('Only ignored offline synthetic artifacts are supported')
-    dest = local / args.name
+    dest = local / name
     dest.mkdir(mode=0o700)
     mpc = dest / 'mpc-public'
     mpc.mkdir()
@@ -56,6 +54,15 @@ def main():
         shutil.copyfile(original_mpc / name, mpc / name)
     result['run'] = str(mpc)
     (dest / 'mpc-result.json').write_text(json.dumps(result) + '\n')
+    return source, dest
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('source', type=pathlib.Path)
+    parser.add_argument('--name', required=True)
+    args = parser.parse_args()
+    source, dest = copy_bundle(args.source, args.name)
     # A separate directory proves replay does not require accidental reads of
     # masks/decoded fills/native openings in the original integration folder.
     summary = {'public_only_replay': run(dest), 'private_artifacts_copied': False,

@@ -248,6 +248,19 @@ pub(crate) fn synthetic_verified_claim() -> VerifiedClaim {
 }
 
 #[cfg(test)]
+pub(crate) fn synthetic_verified_claim_for(
+    ticket: [u8; 32],
+    instructions: Instructions,
+) -> VerifiedClaim {
+    let (note, mut memo, key, _, mut expected) = tests::fixture();
+    memo.ticket = ticket;
+    expected.ticket = ticket;
+    let id = orchard::note::ExtractedNoteCommitment::from(note.commitment()).to_bytes();
+    let claim = Claim::sign(&memo, id, instructions, &key).unwrap();
+    verify_note(&note, &memo.encode().unwrap(), &expected, &claim).unwrap()
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use orchard::{

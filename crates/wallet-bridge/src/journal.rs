@@ -83,6 +83,9 @@ pub enum Event {
         ticket: [u8; 32],
         digest: [u8; 32],
     },
+    LockFinalBook {
+        digest: [u8; 32],
+    },
 }
 impl Event {
     fn apply(&self, ledger: &mut Ledger) -> Result<()> {
@@ -135,6 +138,14 @@ impl Event {
                 }
                 Ok(())
             }
+            Self::LockFinalBook { .. } => {
+                if ledger.phase() != Phase::Frozen {
+                    return Err(
+                        "final book requires frozen funding without a reconciliation pause".into(),
+                    );
+                }
+                Ok(())
+            }
         };
         result.map_err(|e| fail("funding transition", format!("{e:?}")))
     }
@@ -154,6 +165,16 @@ pub struct Journal {
     poisoned: bool,
     context: Context,
     receipt_locks: BTreeMap<[u8; 32], [u8; 32]>,
+    final_book_lock: Option<[u8; 32]>,
+}
+fn apply_final_book_lock(action: &Event, lock: &mut Option<[u8; 32]>) -> Result<()> {
+    if let Event::LockFinalBook { digest } = action {
+        if lock.is_some_and(|previous| previous != *digest) {
+            return Err("final accepted book is already fixed".into());
+        }
+        *lock = Some(*digest);
+    }
+    Ok(())
 }
 fn apply_receipt_lock(action: &Event, locks: &mut BTreeMap<[u8; 32], [u8; 32]>) -> Result<()> {
     if let Event::LockReceipt { ticket, digest } = action {
@@ -240,6 +261,7 @@ impl Journal {
         }
         let mut sequence = 0u64;
         let mut receipt_locks = BTreeMap::new();
+        let mut final_book_lock = None;
         for line in lines {
             let record: Record =
                 serde_json::from_slice(line).map_err(|e| fail("journal record", e))?;
@@ -249,6 +271,7 @@ impl Journal {
             }
             record.action.apply(&mut ledger)?;
             apply_receipt_lock(&record.action, &mut receipt_locks)?;
+            apply_final_book_lock(&record.action, &mut final_book_lock)?;
         }
         Ok(Self {
             file,
@@ -258,6 +281,7 @@ impl Journal {
             poisoned: false,
             context: expected.clone(),
             receipt_locks,
+            final_book_lock,
         })
     }
     pub fn phase(&self) -> Phase {
@@ -268,6 +292,12 @@ impl Journal {
     }
     pub fn registration(&self, ticket: &[u8; 32]) -> Option<&Registration> {
         self.ledger.registration(ticket)
+    }
+    pub fn registrations(&self) -> impl Iterator<Item = &Registration> {
+        self.ledger.registrations()
+    }
+    pub(crate) fn receipt_lock(&self, ticket: &[u8; 32]) -> Option<&[u8; 32]> {
+        self.receipt_locks.get(ticket)
     }
     pub fn refund_queue(
         &self,
@@ -286,6 +316,8 @@ impl Journal {
         action.apply(&mut next)?;
         let mut receipt_locks = self.receipt_locks.clone();
         apply_receipt_lock(&action, &mut receipt_locks)?;
+        let mut final_book_lock = self.final_book_lock;
+        apply_final_book_lock(&action, &mut final_book_lock)?;
         let mut encoded = serde_json::to_vec(&Record { sequence, action })
             .map_err(|e| fail("journal encoding", e))?;
         encoded.push(b'\n');
@@ -305,6 +337,7 @@ impl Journal {
             .map_err(|e| fail("sync funding transition", e))?;
         self.ledger = next;
         self.receipt_locks = receipt_locks;
+        self.final_book_lock = final_book_lock;
         self.sequence = sequence;
         self.bytes = length;
         self.poisoned = false;

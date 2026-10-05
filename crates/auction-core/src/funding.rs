@@ -95,6 +95,9 @@ impl Ledger {
     pub fn registration(&self, ticket: &TicketId) -> Option<&Registration> {
         self.tickets.get(ticket)
     }
+    pub fn registrations(&self) -> impl Iterator<Item = &Registration> {
+        self.tickets.values()
+    }
     /// Idempotent scan replay; a same-note observation with changed value/block
     /// must go through explicit reorg handling, never overwrite accepted funding.
     pub fn observe(&mut self, observed: Observation) -> Result<Disposition, Error> {

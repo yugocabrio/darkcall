@@ -80,8 +80,13 @@ autonomously, incorporate later human/ChatGPT reviews.
 - [ ] Signed acceptance receipts and consistent final root.
   - Three distinct application Ed25519 keys endorse identical authenticated
     instructions. Per-ticket fsynced locks reject equivocation after restart.
-    Final deadline root, omission detection and linkage to actual MPC public
-    inputs remain; this is operator attestation, not a public funding proof.
+    All-three final certificates now check complete frozen local funding and
+    locked receipts, persist a final-book signature lock, detect omitted receipts
+    and match all accepted entries/root and six recipient commitments to actual
+    MPC public inputs. Certified public-only native/MPC replay passes (125.697s),
+    with seven changed authority/signature/intent/book/root/recipient cases rejected.
+    Live funding/client-proof/deadline admission and pre-FROST receipt enforcement
+    remain; this is operator attestation, not a public funding proof.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.
   - Actual four-input/FROST transaction passed all six native/MPC row checks,
     signing/extraction and recipient decryption. First run uses oracle fixture

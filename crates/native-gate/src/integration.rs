@@ -314,7 +314,7 @@ impl ApprovedPlan {
 
 /// Replay against transaction bytes and public proofs only. Input-note existence
 /// and finality still require a node; fabricated anchors are valid offline only.
-pub fn verify_public(directory: &Path) -> Result<serde_json::Value> {
+pub fn verify_public(directory: &Path, authority: Option<&Path>) -> Result<serde_json::Value> {
     use darkcall_output_binding::poseidon_rows::verify_set;
     use orchard::{
         bundle::BatchValidator,
@@ -346,6 +346,45 @@ pub fn verify_public(directory: &Path) -> Result<serde_json::Value> {
         }
         fs::read(path).map_err(|e| fail("public file read", e))
     };
+    let result: serde_json::Value = serde_json::from_slice(&read("mpc-result.json", 4096)?)
+        .map_err(|e| fail("MPC result parse", e))?;
+    let mpc = PathBuf::from(result["run"].as_str().ok_or("MPC run path missing")?)
+        .canonicalize()
+        .map_err(|e| fail("MPC public path", e))?;
+    if !mpc.starts_with(root.join(".local")) || result["hash_rule"] != HASH_RULE {
+        return Err("unexpected public MPC path/hash".into());
+    }
+    let input_path = mpc.join("public-input0");
+    if fs::metadata(&input_path)
+        .map_err(|e| fail("MPC input metadata", e))?
+        .len()
+        != 232 * 32
+    {
+        return Err("wrong MPC statement size".into());
+    }
+    let encoded = fs::read(input_path).map_err(|e| fail("MPC public inputs", e))?;
+    if let Some(authority) = authority {
+        use darkcall_wallet_bridge::final_book::{Certificate, Manifest};
+        if fs::metadata(authority)
+            .map_err(|e| fail("trusted manifest metadata", e))?
+            .len()
+            > 32768
+        {
+            return Err("trusted manifest too large".into());
+        }
+        // The manifest is an explicit external trust input. It must NOT be
+        // automatically discovered in an untrusted proof/receipt bundle.
+        let manifest: Manifest = serde_json::from_slice(
+            &fs::read(authority).map_err(|e| fail("trusted manifest read", e))?,
+        )
+        .map_err(|e| fail("trusted manifest parse", e))?;
+        let certificate: Certificate =
+            serde_json::from_slice(&read("final-book-certificate.json", 131072)?)
+                .map_err(|e| fail("final-book certificate parse", e))?;
+        certificate
+            .verify_statement(&encoded, &manifest)
+            .map_err(|e| fail("certified MPC acceptance", e))?;
+    }
     let bytes = read("synthetic-transaction.bin", 1000000)?;
     let mut cursor = std::io::Cursor::new(&bytes);
     let tx = Transaction::read(&mut cursor, BranchId::Nu6_3)
@@ -392,14 +431,6 @@ pub fn verify_public(directory: &Path) -> Result<serde_json::Value> {
         return Err("native proof or spend/binding signatures invalid".into());
     }
     verify_set(&statement, &proofs).map_err(|e| fail("public native row proofs", e))?;
-    let result: serde_json::Value = serde_json::from_slice(&read("mpc-result.json", 4096)?)
-        .map_err(|e| fail("MPC result parse", e))?;
-    let mpc = PathBuf::from(result["run"].as_str().ok_or("MPC run path missing")?)
-        .canonicalize()
-        .map_err(|e| fail("MPC public path", e))?;
-    if !mpc.starts_with(root.join(".local")) || result["hash_rule"] != HASH_RULE {
-        return Err("unexpected public MPC path/hash".into());
-    }
     let label = format!(
         "external-replay-{}",
         std::time::SystemTime::now()
@@ -407,19 +438,50 @@ pub fn verify_public(directory: &Path) -> Result<serde_json::Value> {
             .map_err(|e| fail("clock", e))?
             .as_millis()
     );
+    // Verify the exact bytes already authenticated above. External verification
+    // must not reopen a potentially replaced public-input file from the source
+    // and then check its proof against another statement. Snapshot PUBLIC data
+    // only into a new private local directory; no witnesses/keys are copied.
+    let snapshot = root.join(".local").join(&label);
+    fs::create_dir(&snapshot).map_err(|e| fail("public verification snapshot", e))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(&snapshot, fs::Permissions::from_mode(0o700))
+            .map_err(|e| fail("snapshot permissions", e))?;
+    }
+    fs::write(snapshot.join("public-input0"), &encoded)
+        .map_err(|e| fail("snapshot statement", e))?;
+    for name in [
+        "vk",
+        "proof.0",
+        "tampered-price",
+        "tampered-plan",
+        "tampered-row",
+    ] {
+        let path = mpc.join(name);
+        if fs::metadata(&path)
+            .map_err(|e| fail("MPC artifact metadata", e))?
+            .len()
+            > 1_048_576
+        {
+            return Err("MPC public artifact too large".into());
+        }
+        fs::write(
+            snapshot.join(name),
+            fs::read(path).map_err(|e| fail("MPC snapshot read", e))?,
+        )
+        .map_err(|e| fail("MPC snapshot write", e))?;
+    }
     checked(
         Command::new("python3")
             .arg(root.join("scripts/verify_external.py"))
-            .arg(&mpc)
+            .arg(&snapshot)
             .args(["--circuit", "settlement_poseidon4", "--output-label"])
             .arg(label),
         &directory.join("public-external-replay.log"),
     )?;
     // Recheck correspondence between the MPC row words and actual tx commitments.
-    let encoded = fs::read(mpc.join("public-input0")).map_err(|e| fail("MPC public inputs", e))?;
-    if encoded.len() != 232 * 32 {
-        return Err("wrong MPC statement size".into());
-    }
     let mut hashes = [[0u32; 8]; 6];
     for (i, field) in encoded[184 * 32..].chunks_exact(32).enumerate() {
         if field[..28] != [0; 28] {
@@ -430,7 +492,7 @@ pub fn verify_public(directory: &Path) -> Result<serde_json::Value> {
     link_four_bid_statements(&hashes, &statement.bindings(), &actual)
         .map_err(|_| "MPC/public transaction mismatch")?;
     Ok(
-        serde_json::json!({"scope":"public-only offline transaction/application-proof replay","private_openings_read":false,"native_proof_and_signatures_verified":true,"native_row_proofs_verified":true,"normal_cpp_auction_proof_verified":true,"actual_transaction_outputs_match":true,"hash_rule":HASH_RULE,"txid":tx.txid().to_string(),"transaction_bytes":bytes.len(),"chain_funding_or_finality_verified":false,"acceptance_or_recipient_receipts_authenticated":false,"seconds":started.elapsed().as_secs_f64()}),
+        serde_json::json!({"scope":"public-only offline transaction/application-proof replay","private_openings_read":false,"native_proof_and_signatures_verified":true,"native_row_proofs_verified":true,"normal_cpp_auction_proof_verified":true,"actual_transaction_outputs_match":true,"hash_rule":HASH_RULE,"txid":tx.txid().to_string(),"transaction_bytes":bytes.len(),"chain_funding_or_finality_verified":false,"acceptance_or_recipient_receipts_authenticated":authority.is_some(),"acceptance_authentication_scope":"all-three operator attestation; not a public funding proof","seconds":started.elapsed().as_secs_f64()}),
     )
 }
 

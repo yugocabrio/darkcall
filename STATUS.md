@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-05 00:28 UTC.
+Updated: 2026-10-05 00:50 UTC.
 
 ## Current outcome
 
@@ -13,13 +13,18 @@ verified the transaction, and decrypted all six recipients. Total 1167.489s;
 21,790 bytes, 4 inputs / 6 outputs, standard fee 30,000.
 
 **Funding notes and anchors are fabricated. Never broadcast these transactions.**
-This is an offline synthetic gate, not a chain-funded auction. Acceptance and
-recipient receipts are not authenticated. All REP3 processes run on one Mac.
+This is an offline synthetic gate, not a chain-funded auction. The original signed
+run predates receipt authentication; the later certified public replay authenticates
+accepted instructions/recipients under an explicit test manifest. All REP3
+processes run on one Mac.
 
-Latest pushed milestone before current changes: 1bd72df. Current work adds native
-compact-note scanning/witnesses, authenticated funding claims and durable
-three-operator acceptance receipts. These libraries are not yet wired to a live
-funded auction or the public MPC/native bundle.
+Reference commits: 1bd72df (private-delivery native settlement) and 86efe25
+(scanner, claims and durable receipts). Use git log -1 / origin/main for the
+current head. The new all-three final-book certificate now links exact accepted
+entries and all six recipient commitments to the actual MPC public statement.
+Certified public-only native/MPC replay passed in 125.697s with seven altered
+signature/authority/book/recipient cases rejected. Funding admission remains
+synthetic; this is not a chain-funded auction or a public proof of funding.
 
 ## Active jobs and next action
 
@@ -38,19 +43,26 @@ funded auction or the public MPC/native bundle.
   total across core/input/native/wallet). Strict release all-target workspace
   clippy passed (64300 consumed). Python public bundle script compiles.
 
-New library gates: 13 wallet tests pass, including genuine V3 compact ciphertext
+New library gates: 15 wallet tests pass, including genuine V3 compact ciphertext
 decryption and witness updates; an actual PCZT-built full funding ciphertext with
 encrypted client-intent memo; three matching Ed25519 receipts with a persisted
 per-ticket signature lock. These tests use synthetic inputs and do not establish
-chain funding, client-proof admission or final accepted-root authentication.
+chain funding or client-proof admission. The two new final-book tests check
+complete local funding/receipt matching, omission detection, cutoff/authority
+binding, root equivocation after restart, malformed MPC inputs and reorg pauses.
+Selected core/input/native/wallet regressions pass (33); strict workspace all-target
+clippy and Python syntax checks pass.
 
-Next highest priority: certify the complete frozen accepted root and bind receipts
-and refund commitments to the actual MPC public statement. Continue identifying
-a usable native Ironwood test chain and wire scanner observations to persistent
-reservations/finality. The human has no alternative endpoint to supply.
+Next highest priority: usable native Ironwood chain funding. Public endpoint probes
+remain blocked. Docker is now running; inspect a pinned official Zebra regtest
+binary for a small isolated chain, with loopback-only RPC and bounded resources.
+The human has no alternative endpoint to supply. Wire scanner observations,
+authenticated claims and receipt admission to actual funding and signer checks.
 The 15-minute heartbeat is recovery; continue active work across milestones.
-No native prover or network probe is currently running. Continue scanner/receipt
-implementation while resolving the provider branch mismatch; do not relax checks.
+No native prover or public endpoint probe is currently running. Certified replay
+16498 completed/consumed, artifacts .local/certified-public-private-delivery-20261005.
+Synthetic receipt gate is .local/synthetic-certified-book-20261005; its journals
+are private and its fresh keys were not persisted. Do not relax branch checks.
 
 ## Measurements and evidence
 
@@ -103,7 +115,11 @@ separate checks. Application proofs are not native consensus rules.
   restart and excludes concurrent local writers. The new in-memory native scanner
   decrypts Ironwood notes and builds spend paths; live RPC/persistence/reorg wiring
   remains. Signed receipt issuance locks exact authenticated instructions before
-  signing, but complete final-root/actual MPC linkage remains.
+  signing. All-three final certificates now require the complete frozen local
+  roster and previously locked receipts, lock the final book before signing,
+  and bind the exact MPC root/book/refund and configured seller/operator
+  commitments. These are operator attestations of admission, not funding proofs.
+  Public replay takes trusted configuration as an explicit external input.
 
 ## Trust and unfinished guarantees
 
@@ -115,8 +131,8 @@ with four eligible bids and three units, the sole loser's maximum equals the
 public K+1 price. Zero-price winner flags still need private delivery.
 
 Unfinished: actual chain funding, canonical witnesses, broadcast/finality,
-persistent wallet scanning/reorg recovery, signed acceptance and recipient records,
-authoritative root, cancellation transactions, deployed independent hosts, UI,
+persistent wallet scanning/reorg recovery, live admission/signing with the new
+signed receipts/root, cancellation transactions, deployed independent hosts, UI,
 independent reproduction, benchmark scale and submission requirements. No public
 release, mainnet funds, deployed service or contest submission is authorized.
 
