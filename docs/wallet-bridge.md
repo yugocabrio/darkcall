@@ -44,8 +44,48 @@ Private directory/file permissions, regular-file shape, single-link metadata and
 no-follow opening guard against accidental exposure or symlink reuse.
 
 This journal is local crash recovery. It is not an authenticated funding proof,
-operator receipt, protection against a malicious administrator editing storage,
+protection against a malicious administrator editing storage,
 or a distributed agreement protocol. The caller must validate canonical-chain
 observations, funding confirmations, client proofs and delivered shares before
 appending the corresponding events. Wallet scanning, Merkle witnesses, finality,
-reorg recovery after preparation and signed acceptance are still separate work.
+reorg recovery after preparation remain separate work.
+
+## Native scanning and authenticated claims
+
+The new `scanner::Scanner` consumes explicitly selected test-chain compact
+blocks from a checked initial tree before the scanning birthday. It decrypts
+native V3 Ironwood ciphertexts with the escrow viewing key, appends every output
+commitment, updates owned-note witnesses and detects owned nullifiers. Malformed
+blocks, noncontiguous hashes and inconsistent tree sizes fail without advancing
+the cursor. Check the resulting anchor against the provider's tree snapshot.
+This is an in-memory library: retained-block recovery, durable cursor/witnesses,
+RPC synchronization, finality and reorg/spent-funding reconciliation are not wired.
+The provider and initial checkpoint remain trusted; it does not validate consensus.
+
+`claim` authenticates the client instructions for an actual full Ironwood output.
+The encrypted 512-byte deposit memo contains network genesis, conditions, ticket,
+a fresh application Ed25519 key and a fresh private nonce. A strict client
+signature covers the memo digest, actual cmx, bid commitment, three delivered-pair
+commitments and refund receiver commitment. Another person knowing a public cmx
+cannot use it to substitute their instructions. The verifier decrypts the actual
+full output and checks exact context, amount and version. The caller must first
+check that transaction/output corresponds to canonical confirmed unspent funding,
+and independently verify client ZK proofs and delivered-share pairs. A valid
+claim alone does not admit a bid or prove funding to the public.
+
+## Signed application acceptance
+
+`receipt` uses three distinct trusted application identities, separate from
+native FROST custody keys. Each operator checks its accepted registration against
+the verified claim and fsyncs a payload lock before signing. Restart can reissue
+the identical signature; it cannot endorse different instructions for that ticket.
+Three matching strict signatures form an accepted receipt. Public payloads expose
+opaque tickets/commitments and an intent digest, not funding cmx, nonce, amount,
+address openings or viewing keys. Configure identities from trusted auction
+setup; a receipt must never supply its own authority.
+
+These signatures attest operator acceptance. They do not replace client proofs,
+prove canonical funding, certify the complete deadline book or authenticate the
+actual MPC/native bundle yet. All three signatures are required; this shares the
+REP3 computation's availability requirement. Final-root certification and exact
+public-statement linkage are the next implementation step.

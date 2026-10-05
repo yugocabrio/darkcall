@@ -7,11 +7,21 @@ license.workspace = true
 
 [dependencies]
 darkcall-auction-core = { path = "../auction-core" }
+ed25519-dalek = "=2.2.0"
 hex = "=0.4.3"
 libc = "=0.2.190"
+incrementalmerkletree = "=0.8.2"
+orchard = "=0.15.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+sha2 = "=0.10.9"
 tokio = { version = "=1.53.1", features = ["macros", "rt-multi-thread"] }
 tonic = { version = "=0.14.2", default-features = false, features = ["transport", "tls-webpki-roots", "tls-ring"] }
-zcash_client_backend = { version = "=0.24.0-rc.1", default-features = false, features = ["lightwalletd-tonic-transport", "lightwalletd-tonic-tls-webpki-roots"] }
+zcash_client_backend = { version = "=0.24.0-rc.1", default-features = false, features = ["orchard", "lightwalletd-tonic-transport", "lightwalletd-tonic-tls-webpki-roots"] }
+zcash_note_encryption = "=0.4.2"
+zcash_primitives = "=0.29.0"
 zcash_protocol = "=0.10.0"
+
+[dev-dependencies]
+pczt = { version = "=0.8.0-rc.1", features = ["zcp-builder", "io-finalizer"] }
+rand = "0.8"

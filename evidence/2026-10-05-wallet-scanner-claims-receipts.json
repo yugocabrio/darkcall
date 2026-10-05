@@ -1,0 +1,39 @@
+{
+  "scope": "Offline synthetic wallet library gates; no chain funding or broadcast",
+  "base_commit": "1bd72df",
+  "commands": [
+    "cargo test --release --locked -p darkcall-wallet-bridge -j 2",
+    "cargo test --release --locked -p darkcall-auction-core -p darkcall-input-tool -p darkcall-native-gate -p darkcall-wallet-bridge -j 2",
+    "cargo clippy --release --locked --workspace --all-targets -j 2 -- -D warnings",
+    "cargo fmt --all -- --check"
+  ],
+  "results": {
+    "wallet_library_tests": 11,
+    "wallet_cli_tests": 2,
+    "selected_regression_tests": 31,
+    "strict_workspace_clippy": "passed",
+    "format_check": "passed",
+    "compact_v3_decryption_witness_update_and_owned_spend_detection": "passed",
+    "malformed_blocks_do_not_partially_advance_scanner": "passed",
+    "noncanonical_legacy_tree_frontiers_rejected": "passed",
+    "full_pczt_built_encrypted_deposit_memo_and_claim": "passed; effects-only synthetic funding transaction",
+    "claim_substitution_foreign_key_network_amount_and_field_aliases": "rejected",
+    "three_matching_operator_receipts": "passed",
+    "receipt_payload_lock_survives_restart": "passed",
+    "conflicting_payload_duplicate_quorum_reorg_revocation": "rejected"
+  },
+  "new_pin": {
+    "ed25519_dalek": "2.2.0",
+    "license": "BSD-3-Clause",
+    "purpose": "strict application claim/acceptance signatures; separate from native FROST keys"
+  },
+  "limitations": [
+    "Scanner uses a trusted provider/checkpoint and is not a consensus verifier.",
+    "Scanner persistence, RPC sync, finality and reorg/spent-funding reconciliation are not wired.",
+    "Funding claim authenticates intent; chain inclusion, unspentness, client ZK and delivered-share checks remain independent admission requirements.",
+    "Receipt signatures attest operator acceptance, not a public proof of funding.",
+    "Complete frozen root, omission detection and actual MPC/native public bundle authentication remain.",
+    "All tests use synthetic funding; no network funds received or transaction broadcast."
+  ],
+  "private_artifacts_committed": false
+}

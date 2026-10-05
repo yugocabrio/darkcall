@@ -7,7 +7,7 @@ use darkcall_auction_core::{
 };
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeMap, BTreeSet},
     fs::{self, File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
     path::Path,
@@ -79,6 +79,10 @@ pub enum Event {
     Finalize {
         effects: [u8; 32],
     },
+    LockReceipt {
+        ticket: [u8; 32],
+        digest: [u8; 32],
+    },
 }
 impl Event {
     fn apply(&self, ledger: &mut Ledger) -> Result<()> {
@@ -123,6 +127,14 @@ impl Event {
             ),
             Self::Broadcast { effects } => ledger.mark_broadcast(effects),
             Self::Finalize { effects } => ledger.mark_finalized(effects),
+            Self::LockReceipt { ticket, .. } => {
+                if ledger.phase() == Phase::ReorgPaused || ledger.registration(ticket).is_none() {
+                    return Err(
+                        "receipt requires an accepted ticket without a reconciliation pause".into(),
+                    );
+                }
+                Ok(())
+            }
         };
         result.map_err(|e| fail("funding transition", format!("{e:?}")))
     }
@@ -140,6 +152,17 @@ pub struct Journal {
     sequence: u64,
     bytes: u64,
     poisoned: bool,
+    context: Context,
+    receipt_locks: BTreeMap<[u8; 32], [u8; 32]>,
+}
+fn apply_receipt_lock(action: &Event, locks: &mut BTreeMap<[u8; 32], [u8; 32]>) -> Result<()> {
+    if let Event::LockReceipt { ticket, digest } = action {
+        if locks.get(ticket).is_some_and(|previous| previous != digest) {
+            return Err("accepted receipt contents are already fixed for this ticket".into());
+        }
+        locks.insert(*ticket, *digest);
+    }
+    Ok(())
 }
 impl Journal {
     /// The parent directory must already be private and remain excluded from
@@ -216,6 +239,7 @@ impl Journal {
             );
         }
         let mut sequence = 0u64;
+        let mut receipt_locks = BTreeMap::new();
         for line in lines {
             let record: Record =
                 serde_json::from_slice(line).map_err(|e| fail("journal record", e))?;
@@ -224,6 +248,7 @@ impl Journal {
                 return Err("funding journal sequence gap or reordering".into());
             }
             record.action.apply(&mut ledger)?;
+            apply_receipt_lock(&record.action, &mut receipt_locks)?;
         }
         Ok(Self {
             file,
@@ -231,10 +256,18 @@ impl Journal {
             sequence,
             bytes: bytes.len() as u64,
             poisoned: false,
+            context: expected.clone(),
+            receipt_locks,
         })
     }
     pub fn phase(&self) -> Phase {
         self.ledger.phase()
+    }
+    pub fn context(&self) -> &Context {
+        &self.context
+    }
+    pub fn registration(&self, ticket: &[u8; 32]) -> Option<&Registration> {
+        self.ledger.registration(ticket)
     }
     pub fn refund_queue(
         &self,
@@ -251,6 +284,8 @@ impl Journal {
             .ok_or("journal sequence overflow")?;
         let mut next = self.ledger.clone();
         action.apply(&mut next)?;
+        let mut receipt_locks = self.receipt_locks.clone();
+        apply_receipt_lock(&action, &mut receipt_locks)?;
         let mut encoded = serde_json::to_vec(&Record { sequence, action })
             .map_err(|e| fail("journal encoding", e))?;
         encoded.push(b'\n');
@@ -269,6 +304,7 @@ impl Journal {
             .sync_all()
             .map_err(|e| fail("sync funding transition", e))?;
         self.ledger = next;
+        self.receipt_locks = receipt_locks;
         self.sequence = sequence;
         self.bytes = length;
         self.poisoned = false;

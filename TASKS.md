@@ -70,12 +70,18 @@ autonomously, incorporate later human/ChatGPT reviews.
     deposits, reorg pauses, settlement/cancellation reservation and empty auction.
     Durable fsynced private journal now passes restart, concurrent lock, truncated
     tail, symlink, reorg pause and refund retention checks. Persistent wallet
-    scanning/finality and authenticated receipts remain.
+    scanning/finality remain. Native compact scanner and encrypted funding memo
+    claim authentication now pass synthetic ciphertext tests. They are not yet
+    connected to live RPC, persistent scanner replay or client-proof admission.
 - [x] Deliver private refund amounts from MPC without opening maximum bids.
   - Fresh private field masks, mask commitments and normal C++ verification
     passed. Operators learn individual refunds; values stay out of public proofs.
 - [ ] Deliver winner flags for zero-price auctions before supporting that full flow.
 - [ ] Signed acceptance receipts and consistent final root.
+  - Three distinct application Ed25519 keys endorse identical authenticated
+    instructions. Per-ticket fsynced locks reject equivocation after restart.
+    Final deadline root, omission detection and linkage to actual MPC public
+    inputs remain; this is operator attestation, not a public funding proof.
 - [ ] MPC result → settlement commitment → PCZT → proof checks → native signing.
   - Actual four-input/FROST transaction passed all six native/MPC row checks,
     signing/extraction and recipient decryption. First run uses oracle fixture

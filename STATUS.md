@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-04 23:54 UTC.
+Updated: 2026-10-05 00:28 UTC.
 
 ## Current outcome
 
@@ -16,8 +16,10 @@ verified the transaction, and decrypted all six recipients. Total 1167.489s;
 This is an offline synthetic gate, not a chain-funded auction. Acceptance and
 recipient receipts are not authenticated. All REP3 processes run on one Mac.
 
-Latest pushed milestone before current changes: 0407d28. Current work adds a public-only artifact bundle,
-transaction tampering checks, a read-only network probe and durable funding journal.
+Latest pushed milestone before current changes: 1bd72df. Current work adds native
+compact-note scanning/witnesses, authenticated funding claims and durable
+three-operator acceptance receipts. These libraries are not yet wired to a live
+funded auction or the public MPC/native bundle.
 
 ## Active jobs and next action
 
@@ -36,9 +38,16 @@ transaction tampering checks, a read-only network probe and durable funding jour
   total across core/input/native/wallet). Strict release all-target workspace
   clippy passed (64300 consumed). Python public bundle script compiles.
 
-Next highest priority: identify a usable native Ironwood test chain, receive actual
-funding notes, construct canonical witnesses and connect wallet observations to
-persistent reservations/finality. Signed acceptance/recipient records remain.
+New library gates: 13 wallet tests pass, including genuine V3 compact ciphertext
+decryption and witness updates; an actual PCZT-built full funding ciphertext with
+encrypted client-intent memo; three matching Ed25519 receipts with a persisted
+per-ticket signature lock. These tests use synthetic inputs and do not establish
+chain funding, client-proof admission or final accepted-root authentication.
+
+Next highest priority: certify the complete frozen accepted root and bind receipts
+and refund commitments to the actual MPC public statement. Continue identifying
+a usable native Ironwood test chain and wire scanner observations to persistent
+reservations/finality. The human has no alternative endpoint to supply.
 The 15-minute heartbeat is recovery; continue active work across milestones.
 No native prover or network probe is currently running. Continue scanner/receipt
 implementation while resolving the provider branch mismatch; do not relax checks.
@@ -90,8 +99,11 @@ separate checks. Application proofs are not native consensus rules.
   mutation are rejected in the applicable gates.
 - Private funding ledger rejects duplicate note/ticket reuse, records wrong/late/
   unaccepted deposits, pauses frozen books after reorg and reserves accepted inputs
-  once for settlement or cancellation. New fsynced journal preserves this across
-  restart and excludes concurrent local writers; no wallet scanner is wired yet.
+  once for settlement or cancellation. Fsynced journal preserves this across
+  restart and excludes concurrent local writers. The new in-memory native scanner
+  decrypts Ironwood notes and builds spend paths; live RPC/persistence/reorg wiring
+  remains. Signed receipt issuance locks exact authenticated instructions before
+  signing, but complete final-root/actual MPC linkage remains.
 
 ## Trust and unfinished guarantees
 
