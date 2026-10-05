@@ -22,6 +22,7 @@ pub struct Integration {
     pub delivery: Delivery,
     pub receiver_openings: Option<PathBuf>,
     pub funding_is_synthetic: bool,
+    pub native_proof_source: Option<PathBuf>,
 }
 
 pub struct Delivery {
@@ -50,7 +51,12 @@ fn secret_write(path: &Path, bytes: &[u8]) -> Result<()> {
         .open(path)
         .map_err(|e| fail("create private fixture", e))?;
     file.write_all(bytes)
-        .map_err(|e| fail("write private fixture", e))
+        .map_err(|e| fail("write private fixture", e))?;
+    file.sync_all()
+        .map_err(|e| fail("sync private fixture", e))?;
+    fs::File::open(path.parent().ok_or("private fixture parent")?)
+        .and_then(|f| f.sync_all())
+        .map_err(|e| fail("sync fixture directory", e))
 }
 
 fn checked(command: &mut Command, log: &Path) -> Result<()> {
@@ -187,6 +193,7 @@ impl Integration {
             delivery,
             receiver_openings: None,
             funding_is_synthetic: true,
+            native_proof_source: None,
         })
     }
 
@@ -219,30 +226,57 @@ impl Integration {
                 .map_err(|e| fail("statement serialization", e))?,
         )
         .map_err(|e| fail("write statement", e))?;
+        fs::File::open(self.directory.join("native-public.json"))
+            .and_then(|f| f.sync_all())
+            .map_err(|e| fail("sync statement", e))?;
+        fs::File::open(&self.directory)
+            .and_then(|f| f.sync_all())
+            .map_err(|e| fail("sync row checkpoint directory", e))?;
         eprintln!("Integrated native row key generation started");
         let key_start = Instant::now();
         let prover = RowProver::new().map_err(|e| fail("native row key", e))?;
         let key_seconds = key_start.elapsed().as_secs_f64();
         let mut times = Vec::new();
+        let mut reused = 0;
         for i in 0..6 {
             eprintln!("Integrated native row {i} proof started");
             let t = Instant::now();
             let opening =
                 binding_from_note(&rows[i], &notes[i]).map_err(|e| fail("native opening", e))?;
             let public = row_public(&statement, i).map_err(|e| fail("native statement", e))?;
-            let proof = prover
-                .prove(opening, &public)
-                .map_err(|e| fail("native row proof", e))?;
-            fs::write(
-                self.directory.join(format!("native-binding-proof-{i}")),
-                proof,
-            )
-            .map_err(|e| fail("write row proof", e))?;
+            let previous = self
+                .native_proof_source
+                .as_ref()
+                .map(|p| p.join(format!("native-binding-proof-{i}")));
+            let proof = if let Some(path) = previous.filter(|p| p.exists()) {
+                let proof = crate::regtest_spend::read_private(&path, 65536)?;
+                // Existing bytes are never accepted merely because a file is
+                // present. Reverify under our trusted circuit and exact current
+                // row/cmx/index; reject altered/partial proofs without fallback.
+                prover
+                    .verify(&proof, &public)
+                    .map_err(|e| fail("resumed native row proof", e))?;
+                reused += 1;
+                eprintln!("Integrated native row {i} existing proof reverified");
+                proof
+            } else {
+                prover
+                    .prove(opening, &public)
+                    .map_err(|e| fail("native row proof", e))?
+            };
+            let proof_path = self.directory.join(format!("native-binding-proof-{i}"));
+            fs::write(&proof_path, proof).map_err(|e| fail("write row proof", e))?;
+            fs::File::open(&proof_path)
+                .and_then(|f| f.sync_all())
+                .map_err(|e| fail("sync row proof", e))?;
+            fs::File::open(&self.directory)
+                .and_then(|f| f.sync_all())
+                .map_err(|e| fail("sync row directory", e))?;
             times.push(t.elapsed().as_secs_f64());
         }
         // Release the large proving key before independent public verification.
         drop(prover);
-        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false});
+        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"reused_native_row_proofs":reused,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false});
         fs::write(
             self.directory.join("native-proof-summary.json"),
             serde_json::to_vec_pretty(&summary).map_err(|e| fail("summary encode", e))?,

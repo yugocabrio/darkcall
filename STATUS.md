@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-05 07:20 UTC.
+Updated: 2026-10-05 07:34 UTC.
 
 ## Current outcome
 
@@ -34,20 +34,33 @@ prior construction did not checkpoint them until all application proofs passed.
 
 The new code checkpoints the exact private built PCZT BEFORE row proving, as
 well as the approved private PCZT before reservation. The early checkpoint is
-unapproved and cannot authorize signing. Automatic unsigned-PCZT/partial-proof
-resume remains unfinished. An immutable ignored driver checkpoint also binds
+unapproved and cannot authorize signing. Pre-reservation built-PCZT/partial-proof resume is now implemented;
+post-reservation Prepared-stage recovery remains unfinished. An immutable ignored driver checkpoint also binds
 source snapshot, original recipients, authority and certificate for signed
 recovery. No keys, notes or checkpoint data are committed.
 
-Recovery DKG settlement rerun: session 83499, log .local/dkg-auction4-recovery2.log.
-Source .local/regtest-dkg-deposit4-20261005, escrow same-name-escrow, book
-.local/mpc-auction4-20261004T231421Z, new output
-.local/regtest-dkg-auction4-recovery2-20261005. Original funding/cutoff/receipts/DKG
-packages remain. Keep node height 112 unchanged until this gate finishes; inspect
+For the actual built-stage recovery gate, the recovery2 prover was deliberately
+terminated after two durable verified rows while all three journals remained
+Frozen. This was a controlled process interruption, not a second PC crash.
+Its exact private PCZT/output openings and immutable driver input checkpoint
+remain. The new --resume-built path uses those SAME effects/notes/row salts,
+rechecks canonical funding/authority/recipients, repeats private refund MPC and
+verifies each existing row proof against our trusted circuit/actual commitment.
+Only missing rows are generated. Substituting a cached row amount in a new
+isolated clone rejected BEFORE proving/reservation. A planned separate other-
+funding-PCZT negative experiment could not run because the historical gate has
+no prepared-PCZT file; no success is claimed for that missing-fixture case.
+Selected native tests 4 pass, strict selected all-target release clippy passes,
+and all 10 Python reconciliation/resource tests pass.
+
+Active exact built-stage DKG resume: session 97091, log .local/dkg-auction4-resumed.log.
+Source partial native construction .local/regtest-dkg-auction4-recovery2-20261005;
+new output .local/regtest-dkg-auction4-resumed-20261005. Command adds --resume-built
+regtest-dkg-auction4-recovery2-20261005. Original deposit/cutoff/receipts/DKG data
+are unchanged. Keep node height 112 unchanged until this gate finishes. Inspect
 the log/session before starting another native prover. No DKG spend/broadcast
-success claimed yet. Recorded legitimate RSS motivates an 8 GiB root-prover
-ceiling on this 16 GiB host, with separate 4 GiB disk and 10% system-memory guards.
-Observations stay ignored. These thresholds do not diagnose/guarantee host safety.
+or complete built/signed recovery success claimed yet. Observations stay ignored;
+8 GiB root-prover, 4 GiB disk and 10% system-memory guards remain enabled.
 
 Signed-transaction restart reconciliation is now implemented behind
 scripts/regtest_settlement.py --resume-signed: validate immutable original source

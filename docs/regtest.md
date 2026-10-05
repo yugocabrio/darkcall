@@ -163,8 +163,20 @@ Do not reset funding, change the cutoff/root, or release reserved notes.
 
 New construction records an immutable ignored recovery input checkpoint and an
 unapproved exact private PCZT before row proving. Approved PCZT is separately
-fsynced before reservation. Automatic unsigned-PCZT/partial-proof continuation
-is still unfinished; those files preserve the exact data for that next gate.
+fsynced before reservation. Pre-reservation continuation now uses the built checkpoint and verifies existing
+row proofs under the trusted circuit against the exact native cmxs/row/context.
+All three journals must still be Frozen. Prepared-stage continuation remains
+unfinished and must not be treated as permission to unlock inputs.
+
+```sh
+python3 scripts/regtest_settlement.py ORIGINAL_DEPOSIT_RUN ORIGINAL_MPC_BOOK_RUN --name FRESH_RESUMED_NAME --resume-built ORIGINAL_PARTIAL_NAME
+```
+
+The PCZT's pending real nullifiers must match exactly the four accepted source
+notes; native version, pool shape, fee, recovered outputs, row fields and original
+input checkpoint are rechecked. Existing row proofs are cryptographically verified,
+not trusted because their files exist. Missing rows alone are generated. Changed
+or truncated proofs fail closed; they are not silently overwritten.
 
 For a complete signed construction, use the SAME existing settlement name:
 

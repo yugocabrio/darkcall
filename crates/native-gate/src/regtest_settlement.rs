@@ -30,6 +30,38 @@ pub fn build(
     admission: &Path,
     name: &str,
 ) -> Result<serde_json::Value> {
+    build_from(escrow, notes, book, receivers, admission, name, None)
+}
+
+pub fn resume_built(
+    escrow: &Path,
+    notes: &Path,
+    book: &Path,
+    receivers: &Path,
+    admission: &Path,
+    name: &str,
+    source: &Path,
+) -> Result<serde_json::Value> {
+    build_from(
+        escrow,
+        notes,
+        book,
+        receivers,
+        admission,
+        name,
+        Some(source),
+    )
+}
+
+fn build_from(
+    escrow: &Path,
+    notes: &Path,
+    book: &Path,
+    receivers: &Path,
+    admission: &Path,
+    name: &str,
+    source: Option<&Path>,
+) -> Result<serde_json::Value> {
     let start = Instant::now();
     let dkg = [
         "private-full-viewing-key.bin",
@@ -185,6 +217,10 @@ pub fn build(
         return Err("MPC book differs from certified admission".into());
     }
     integration.funding_is_synthetic = false;
+    let source = source
+        .map(|p| p.canonicalize().map_err(|e| error("built source", e)))
+        .transpose()?;
+    integration.native_proof_source = source.clone();
     integration.receiver_openings = Some(
         receivers
             .canonicalize()
@@ -203,6 +239,10 @@ pub fn build(
             orchard_pool_bundle_type: BundleType::DEFAULT,
         },
     );
+    let expected_nullifiers: std::collections::BTreeSet<_> = funding
+        .iter()
+        .map(|(note, _)| note.nullifier(&fvk).to_bytes())
+        .collect();
     for (note, path) in funding {
         builder
             .add_ironwood_spend::<Infallible>(fvk.clone(), note, path)
@@ -230,20 +270,66 @@ pub fn build(
             )
             .map_err(|e| error("settlement output", e))?;
     }
-    let parts = builder
-        .build_for_pczt(OsRng, &FeeRule::standard())
-        .map_err(|e| error("funded PCZT", e))?;
-    let indices: [usize; 6] =
-        std::array::from_fn(|i| parts.ironwood_meta.output_action_index(i).unwrap());
-    let pczt =
-        IoFinalizer::new(Creator::build_from_parts(parts.pczt_parts).ok_or("funded creator")?)
-            .finalize_io()
-            .map_err(|e| error("funded IO", e))?;
+    let (pczt, indices) = if let Some(source) = &source {
+        let pczt = pczt::Pczt::parse(&read_private(
+            &source.join("private-built-settlement.pczt"),
+            1_000_000,
+        )?)
+        .map_err(|e| error("built PCZT checkpoint", e))?;
+        let pending: std::collections::BTreeSet<_> = pczt
+            .ironwood()
+            .actions()
+            .iter()
+            .filter(|a| a.spend().spend_auth_sig().is_none())
+            .map(|a| *a.spend().nullifier())
+            .collect();
+        if pending != expected_nullifiers
+            || pending.len() != 4
+            || pczt
+                .ironwood()
+                .actions()
+                .iter()
+                .filter(|a| a.spend().spend_auth_sig().is_none())
+                .count()
+                != 4
+        {
+            return Err("built checkpoint inputs differ from exact reserved funding notes".into());
+        }
+        let old: darkcall_settlement_types::NativeBatchStatement =
+            serde_json::from_slice(&read_private(&source.join("native-public.json"), 32768)?)
+                .map_err(|e| error("built output mapping", e))?;
+        if old.action_indices.iter().any(|i| *i >= 6)
+            || old
+                .action_indices
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != 6
+        {
+            return Err("built checkpoint output mapping is not a permutation".into());
+        }
+        (pczt, old.action_indices.map(|i| i as usize))
+    } else {
+        let parts = builder
+            .build_for_pczt(OsRng, &FeeRule::standard())
+            .map_err(|e| error("funded PCZT", e))?;
+        let indices: [usize; 6] =
+            std::array::from_fn(|i| parts.ironwood_meta.output_action_index(i).unwrap());
+        let pczt =
+            IoFinalizer::new(Creator::build_from_parts(parts.pczt_parts).ok_or("funded creator")?)
+                .finalize_io()
+                .map_err(|e| error("funded IO", e))?;
+        (pczt, indices)
+    };
     let effects = pczt
         .clone()
         .into_effects()
         .map_err(|e| error("funded effects", e))?;
     if effects.version() != TxVersion::V6
+        || effects.consensus_branch_id() != zcash_protocol::consensus::BranchId::Nu6_3
+        || effects.transparent_bundle().is_some()
+        || effects.sapling_bundle().is_some()
+        || effects.orchard_bundle().is_some()
         || effects
             .ironwood_bundle()
             .ok_or("funded bundle")?
@@ -254,8 +340,26 @@ pub fn build(
         return Err("funded shape/version mismatch".into());
     }
     let bundle = effects.ironwood_bundle().unwrap();
+    if i64::from(bundle.value_balance()) != fee as i64 {
+        return Err("built native transaction fee differs from certified plan".into());
+    }
     let mut output_notes = Vec::new();
     let mut rows = Vec::new();
+    let old_rows = source
+        .as_ref()
+        .map(|p| -> Result<Vec<Row>> {
+            let encoded: Vec<Vec<u8>> =
+                serde_json::from_slice(&read_private(&p.join("native-private-rows.json"), 16384)?)
+                    .map_err(|e| error("built private rows", e))?;
+            if encoded.len() != 6 {
+                return Err("built private row count".into());
+            }
+            encoded
+                .iter()
+                .map(|bytes| Row::decode(bytes).map_err(|e| error("built row codec", e)))
+                .collect()
+        })
+        .transpose()?;
     for i in 0..6 {
         let (note, address, _) = bundle
             .recover_output_with_ovk(indices[i], &ovk)
@@ -267,7 +371,11 @@ pub fn build(
             return Err("outgoing native ciphertext differs from certified plan".into());
         }
         let mut salt = [0; 32];
-        OsRng.fill_bytes(&mut salt);
+        if let Some(old) = &old_rows {
+            salt = old[i].salt;
+        } else {
+            OsRng.fill_bytes(&mut salt);
+        }
         rows.push(Row {
             conditions: c.conditions_hash,
             accepted_root: accepted.accepted_root,
@@ -290,6 +398,11 @@ pub fn build(
             salt,
         });
         output_notes.push(note);
+    }
+    if let Some(old) = &old_rows
+        && rows.iter().zip(old).any(|(a, b)| a.encode() != b.encode())
+    {
+        return Err("built checkpoint row differs from certified recipient/amount/context".into());
     }
     let message: [u8; 32] = v6_signature_hash(
         &effects,

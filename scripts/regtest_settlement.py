@@ -14,7 +14,7 @@ from regtest_deposits import (ADMIT, NATIVE, ENV, private_read, private_write, c
                              verify_note, capture)
 from regtest_funding import tree
 from regtest_resources import guarded_json_call
-from regtest_recovery import create_checkpoint, recover_signed
+from regtest_recovery import create_checkpoint, load_checkpoint, recover_signed
 
 
 def confirm_receipts(deposit, notes, directory, construction, confirmed, resumed=False,
@@ -71,6 +71,8 @@ def main():
     parser.add_argument('--name', required=True)
     parser.add_argument('--resume-signed', action='store_true',
                         help='Reverify and reconcile the exact existing signed transaction; no reconstruction/unlocking')
+    parser.add_argument('--resume-built', metavar='SOURCE_NAME',
+                        help='Resume an unapproved built PCZT and verify existing row proofs while all journals remain Frozen')
     args = parser.parse_args()
     if not args.name or len(args.name) > 50 or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in args.name):
         raise RuntimeError('Expected a fresh simple local run name')
@@ -82,11 +84,19 @@ def main():
     admission = deposit.parent / (name + '-admission')
     inputs = deposit.parent / (name + '-inputs')
     if args.resume_signed:
+        if args.resume_built:
+            raise RuntimeError('Choose exactly one recovery stage')
         directory, construction, notes, confirmed, reconciliation = recover_signed(deposit, args.book_run, args.name)
         print(json.dumps(confirm_receipts(deposit, notes, directory, construction, confirmed,
                                          resumed=True, reconciliation=reconciliation), indent=2), flush=True)
         return
     snapshot = status()
+    source = None
+    if args.resume_built:
+        source_checkpoint, _ = load_checkpoint(deposit, args.book_run, args.resume_built)
+        if source_checkpoint['tip'] != snapshot['tip']:
+            raise RuntimeError('Unapproved native checkpoint chain changed; explicit reconciliation required')
+        source = ROOT / '.local' / args.resume_built
     notes_path = escrow / f'private-notes-{snapshot["blocks"]}.json'
     notes = json.loads(notes_path.read_text())
     initial = tree(verify_snapshot(notes, snapshot))
@@ -107,9 +117,11 @@ def main():
         raise RuntimeError('Substituted receiver was not rejected before proving/signing')
     bad_path.unlink()
     create_checkpoint(deposit, args.book_run, args.name, snapshot)
-    construction = guarded_json_call(
-        [str(NATIVE), '--regtest-settlement', *map(str, (escrow, notes_path, args.book_run,
-                                                       receivers_path, admission, args.name))],
+    command = [str(NATIVE), '--regtest-resume-built' if source else '--regtest-settlement',
+               *map(str, (escrow, notes_path, args.book_run, receivers_path, admission, args.name))]
+    if source:
+        command.append(str(source))
+    construction = guarded_json_call(command,
         cwd=ROOT, env=ENV, timeout=3600,
         observations=ROOT / '.local' / (args.name + '-resources.jsonl'))
     directory = ROOT / '.local' / args.name

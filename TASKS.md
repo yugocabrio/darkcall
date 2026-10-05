@@ -127,7 +127,10 @@ autonomously, incorporate later human/ChatGPT reviews.
     for the same reserved digest, rejecting substitutions and skipped stages.
     Native construction stores a private verified PCZT before reservation.
     Early unapproved PCZT now checkpoints exact output openings before proving;
-    automatic unsigned-PCZT/partial-proof resume remains. Signed native recovery
+    pre-reservation exact built-PCZT/partial-proof resume is implemented and
+    running against a deliberately interrupted two-proof actual DKG construction.
+    Cached rows are reverified; changed amount rejects before reservation.
+    Approved Prepared-stage recovery remains. Signed native recovery
     is implemented and unit-tested, including canonical bytes, original input
     checkpoint, exact journal reservations, RPC-error distinction, existing
     broadcasts/confirmations and fresh SDK receipt/nullifier reconciliation;

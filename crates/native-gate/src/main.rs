@@ -568,6 +568,22 @@ fn gate(
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() == 8 && args[0] == "--regtest-resume-built" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&regtest_settlement::resume_built(
+                std::path::Path::new(&args[1]),
+                std::path::Path::new(&args[2]),
+                std::path::Path::new(&args[3]),
+                std::path::Path::new(&args[4]),
+                std::path::Path::new(&args[5]),
+                &args[6],
+                std::path::Path::new(&args[7]),
+            )?)
+            .map_err(|e| error("built resume summary", e))?
+        );
+        return Ok(());
+    }
     if args.len() == 2 && args[0] == "--regtest-dkg-init" {
         println!(
             "{}",

@@ -1,0 +1,31 @@
+{
+  "scope": "pre-reservation exact native built-stage resume implementation; funded completion pending",
+  "recorded_utc": "2026-10-05T07:35:23.504113+00:00",
+  "controlled_process_interruption": true,
+  "completed_native_rows_at_interruption": 2,
+  "private_built_pczt_and_input_checkpoint_preserved": true,
+  "all_three_journals_frozen_before_resume": true,
+  "same_chain_height": 112,
+  "source_private_files_mutated": false,
+  "actual_clone_changed_cached_row_amount_rejected_before_proving_or_reservation": true,
+  "other_funding_pczt_negative": {
+    "passed": false,
+    "reason": "Historical completed gate predates private prepared-PCZT checkpoint; file absent",
+    "cryptographic_failure": false
+  },
+  "resume_checks": {
+    "pending_native_nullifiers_match_exact_four_accepted_notes": true,
+    "version_pool_action_shape_and_native_fee_checked": true,
+    "exact_original_native_output_openings_and_row_salts_used": true,
+    "existing_native_row_proofs_reverified_under_fixed_trusted_circuit": true,
+    "missing_rows_only_proved": true,
+    "new_private_refund_mpc_and_full_certified_proof_validation_before_signing": true
+  },
+  "selected_native_tests_pass": 4,
+  "strict_selected_all_target_release_clippy": true,
+  "python_reconciliation_resource_tests_pass": 10,
+  "funded_resume_complete": false,
+  "post_reservation_prepared_resume_implemented": false,
+  "no_guarantee_downgrade": true,
+  "private_files_committed": false
+}
