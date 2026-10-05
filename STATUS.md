@@ -1,78 +1,62 @@
 # DarkCall status
 
-Updated: 2026-10-05 07:34 UTC.
+Updated: 2026-10-05 07:53 UTC.
 
 ## Current outcome
 
-**Local DKG escrow funding/admission now passes; full DKG settlement is running.**
-Three-party pinned RedPallas DKG creates matching 2-of-3 packages and an independent
-native FVK without an escrow SpendingKey/full ASK. All three two-party quorums
-verify; one-share/digest/operator substitutions reject. Separate private packages
-are fsynced and reloaded before publishing readiness; view-only scanner/admission
-reject incomplete setup or master-key aliases. Four actual native deposits into
-this escrow passed canonical witness checks, four client proofs/12 delivered
-pairs, 12 durable receipts and all-three post-cutoff final-book certification.
-This is still one host holding all three shares, not independent operator security.
-Evidence: evidence/2026-10-05-dkg-regtest-admission.json. Native/wallet regressions
-21 pass; strict all-target workspace release clippy passes. Verified private PCZT
-is now durably checkpointed before funding reservation; automatic resume remains.
+**The funded local-DKG native auction now passes after exact partial-proof recovery.**
+Original four confirmed deposits/receipts → same saved private built PCZT/row salts
+→ two existing row proofs reverified, four missing rows generated → private MPC
+and certified/native output checks → four 2-of-3 DKG threshold spends → actual
+native proof/full-node acceptance → two controlled confirmations → all six exact
+wallet receipts and all four consumed escrow notes → three finalized journals.
+No escrow SpendingKey/full ASK generated/read/reconstructed by this path. All
+three key shares and every REP3 node remain on one Mac, not independent custody.
 
-The human's PC reboot interrupted the previous funded DKG run at native row 0,
-BEFORE a private prepared PCZT, funding reservation or signed transaction. Its
-partial ignored artifacts remain intact. Docker/pinned Zebra restarted against
-existing state at height 112, with the identical tip and all four funding blocks,
-transactions and commitments canonical. The mempool is empty; all three journals
-replay through Freeze/LockFinalBook without Prepare/Broadcast/Finalize.
+Transaction 89547f42484258df9958dd2775018a4665c3888363c26a99aacd0e5abb97b859;
+4 inputs / 6 outputs, 21,790 bytes, fee 30,000, price 20/sold 3. Resumed construction
+886.077s, application 867.097s, native consensus proof 9.247s. This excludes the
+initial two native rows; it is not a cold benchmark or a DKG speedup comparison.
+Exact private PCZT bytes, canonical rows and all native cmxs equal the interrupted
+source. Max sampled root RSS 2,731,920 KiB, min free disk 18,042,916,864 bytes,
+min reported memory headroom 33% (10-second sampling, not exact peak).
+Evidence: evidence/2026-10-05-dkg-funded-resumed-auction.json.
 
-The first monitored recovery stopped at 472.081s after three successful native
-row proofs: the conservative 6 GiB RSS guard rejected a 6.135 GiB transient while
-macOS reported 70% memory headroom and disk still had 24.61 GiB. This is a resource
-policy stop, not a failed cryptographic proof. All journals remain Frozen and no
-transaction/checkpoint reservation or broadcast was produced. Those partial
-artifacts cannot be reused without the original native output openings; the
-prior construction did not checkpoint them until all application proofs passed.
+Completed/consumed: exact built resume session 97091, log .local/dkg-auction4-resumed.log.
+Output .local/regtest-dkg-auction4-resumed-20261005; original partial source
+.local/regtest-dkg-auction4-recovery2-20261005 preserved. Node is now at height
+114 with tip c3237c7c8a97a5bc3311c5cdbb8a926300b579cfadab0ab4cea32aa9593c4d2d.
+Do not reset wallets/chain or recreate original funding/receipts/cutoff.
 
-The new code checkpoints the exact private built PCZT BEFORE row proving, as
-well as the approved private PCZT before reservation. The early checkpoint is
-unapproved and cannot authorize signing. Pre-reservation built-PCZT/partial-proof resume is now implemented;
-post-reservation Prepared-stage recovery remains unfinished. An immutable ignored driver checkpoint also binds
-source snapshot, original recipients, authority and certificate for signed
-recovery. No keys, notes or checkpoint data are committed.
+Public-only certified replay completed/consumed (13748) in 114.527s: native
+transaction/signatures, six row proofs, normal C++ MPC and all-three certificate
+verify without bids, keys, private openings, masks or PCZT. Seven changed
+certificate/authority/book/recipient cases reject. Public bundle
+.local/regtest-dkg-auction4-public-20261005; log .local/dkg-certified-public-replay.log.
 
-For the actual built-stage recovery gate, the recovery2 prover was deliberately
-terminated after two durable verified rows while all three journals remained
-Frozen. This was a controlled process interruption, not a second PC crash.
-Its exact private PCZT/output openings and immutable driver input checkpoint
-remain. The new --resume-built path uses those SAME effects/notes/row salts,
-rechecks canonical funding/authority/recipients, repeats private refund MPC and
-verifies each existing row proof against our trusted circuit/actual commitment.
-Only missing rows are generated. Substituting a cached row amount in a new
-isolated clone rejected BEFORE proving/reservation. A planned separate other-
-funding-PCZT negative experiment could not run because the historical gate has
-no prepared-PCZT file; no success is claimed for that missing-fixture case.
-Selected native tests 4 pass, strict selected all-target release clippy passes,
-and all 10 Python reconciliation/resource tests pass.
+Active signed-finalized restart reconciliation: session 73183, log
+.local/dkg-signed-recovery.log. Command uses --resume-signed with existing name
+regtest-dkg-auction4-resumed-20261005. It must preserve tx bytes, node height 114,
+all recipient openings and all three journals, with no re-send/re-mine/re-sign.
+Complete signed-reconciliation result remains pending.
 
-Active exact built-stage DKG resume: session 97091, log .local/dkg-auction4-resumed.log.
-Source partial native construction .local/regtest-dkg-auction4-recovery2-20261005;
-new output .local/regtest-dkg-auction4-resumed-20261005. Command adds --resume-built
-regtest-dkg-auction4-recovery2-20261005. Original deposit/cutoff/receipts/DKG data
-are unchanged. Keep node height 112 unchanged until this gate finishes. Inspect
-the log/session before starting another native prover. No DKG spend/broadcast
-or complete built/signed recovery success claimed yet. Observations stay ignored;
-8 GiB root-prover, 4 GiB disk and 10% system-memory guards remain enabled.
+PC reboot audit and controlled resource stops remain in separate evidence.
+The first rebooted run had no native output checkpoint/reservation/signature;
+6 GiB guard later stopped three proved rows at a 6.135 GiB transient. The current
+8 GiB root RSS/4 GiB disk/10% system-memory guards completed successfully. They
+do not prove host crash cause or guarantee stability. A separate intentional
+process interruption after two rows exercised the exact built checkpoint.
+Changed cached amount/row rejects before reservation; cached scans replay actual
+SDK ciphertext/witnesses and compare the entire freshly derived result.
 
-Signed-transaction restart reconciliation is now implemented behind
-scripts/regtest_settlement.py --resume-signed: validate immutable original source
-and exact journal reservation; publicly reverify certificate/MPC/native proofs
-and actual signed bytes; distinguish a missing tx from RPC outage; never recreate
-notes/effects or re-send a confirmed tx; mine only remaining controlled blocks;
-re-decrypt recipients and reconcile original spent nullifiers before idempotent
-finalization. Actual end-to-end signed recovery is pending the active DKG run.
-Ten Python resource/reconciliation tests pass, selected native/wallet regressions
-22 pass, strict selected all-target release clippy passes. Actual SDK repeated
-scan re-decrypts all four retained DKG deposits and rejects a changed cached
-amount in a new isolated clone without modifying source files.
+Partial Prepare/Broadcast/Finalize fan-out now preflights all local journals and
+continues only the identical effects and purpose. Existing Prepared reservations
+may resume through the same built PCZT; complete signed transactions must use
+signed reconciliation. No note unlock/reset/replacement exists. Selected native/
+core/wallet regression tests 35 pass, strict selected all-target release clippy
+passes, and 11 Python checkpoint/reconciliation/resource tests pass. Prepared-
+stage native integration still needs a separate controlled gate. General live
+reorg/expiry/cancellation remain unfinished.
 
 **The isolated NU7 compatibility gate passes without changing the working
 NU6.3 workspace.** New pinned native SDK: synthetic NU7 v6 PCZT → full private-
@@ -170,7 +154,7 @@ signature/authority/book/recipient cases rejected. Funding admission in that his
 synthetic; the newer actual-regtest admission is recorded above. Its operator
 endorsements still are not a public funding proof.
 
-## Active jobs and next action
+## Prior jobs and historical measurements
 
 - Native private-delivery integration session 99380 completed with exit 0 and was
   consumed. Source book: .local/mpc-auction4-20261004T231421Z. Native artifacts:
@@ -198,8 +182,8 @@ binding, root equivocation after restart, malformed MPC inputs and reorg pauses.
 Selected core/input/native/wallet regressions pass (33); strict workspace all-target
 clippy and Python syntax checks pass.
 
-Next highest priority: finish the already funded local-DKG native settlement
-and public replay, then signed-transaction restart reconciliation. The isolated
+Next highest priority: complete DKG public replay/signed restart reconciliation,
+then funded NU7/native application compatibility and recovery. The isolated
 NU7 compatibility gate now passes. Keep the old-branch
 reproduction while implementing funded NU7 and live-chain freshness, then
 cancellation/restart recovery and client UI. Public

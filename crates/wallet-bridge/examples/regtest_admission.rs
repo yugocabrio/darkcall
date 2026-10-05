@@ -122,6 +122,15 @@ fn main() -> Result<()> {
         // flags leave this command, never note IDs or reservation contents.
         let journals = (0..3)
             .map(|i| {
+                if !out
+                    .join(format!("private-node-{i}.jsonl"))
+                    .try_exists()
+                    .map_err(|e| e.to_string())?
+                {
+                    return Err(
+                        "missing existing operator journal; no audit reset permitted".into(),
+                    );
+                }
                 Journal::open(
                     &out.join(format!("private-node-{i}.jsonl")),
                     &manifest.context,
@@ -150,11 +159,27 @@ fn main() -> Result<()> {
             _ => return Err("expected broadcast or finalize".into()),
         };
         let mut written = 0;
-        for i in 0..3 {
-            let mut journal = Journal::open(
-                &out.join(format!("private-node-{i}.jsonl")),
-                &manifest.context,
-            )?;
+        let mut journals = (0..3)
+            .map(|i| {
+                if !out
+                    .join(format!("private-node-{i}.jsonl"))
+                    .try_exists()
+                    .map_err(|e| e.to_string())?
+                {
+                    return Err(
+                        "missing existing operator journal; no outcome reset permitted".into(),
+                    );
+                }
+                Journal::open(
+                    &out.join(format!("private-node-{i}.jsonl")),
+                    &manifest.context,
+                )
+            })
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        for j in &journals {
+            j.outcome_needed(effects, finalized)?;
+        }
+        for journal in &mut journals {
             written += usize::from(journal.record_transaction_outcome(effects, finalized)?);
         }
         println!(

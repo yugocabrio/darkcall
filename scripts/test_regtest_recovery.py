@@ -111,6 +111,30 @@ class RecoveryTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'differs from current canonical'):
                     deposits.capture(wallet, initial, snapshot)
 
+    def test_immutable_recovery_inputs_reject_changed_recipient_before_chain_calls(self):
+        import pathlib
+        import tempfile
+        import regtest_deposits as deposits
+        with tempfile.TemporaryDirectory() as directory:
+            root=pathlib.Path(directory)
+            local=root/'.local'; local.mkdir(mode=0o700)
+            deposit=local/'deposit'; deposit.mkdir(mode=0o700)
+            book=local/'book'; book.mkdir(mode=0o700)
+            for suffix in ('-escrow','-inputs','-admission'):
+                (local/('deposit'+suffix)).mkdir(mode=0o700)
+            for p in recovery.inputs(deposit,112).values():
+                deposits.private_write(p,{'synthetic_checkpoint_test':True})
+            snapshot={'genesis':recovery.GENESIS,'blocks':112,'tip':'original',
+                      'consensus':{'chaintip':recovery.BRANCH}}
+            with patch.object(recovery,'ROOT',root), patch.object(deposits,'ROOT',root), \
+                 patch.object(recovery,'rpc') as rpc:
+                recovery.create_checkpoint(deposit,book,'settlement',snapshot)
+                recipient=recovery.inputs(deposit,112)['receivers']
+                recipient.write_text('{"substituted_receiver":true}\n')
+                with self.assertRaisesRegex(RuntimeError,'funding/recipients/authority/certificate changed'):
+                    recovery.load_checkpoint(deposit,book,'settlement')
+                rpc.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

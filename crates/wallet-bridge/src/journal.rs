@@ -290,6 +290,38 @@ impl Journal {
     pub fn reserved_effects(&self) -> Option<[u8; 32]> {
         self.ledger.reserved_effects()
     }
+    /// Preflight exact same-purpose reservation across all local journals before
+    /// writing any of them. This never releases or replaces an existing note.
+    pub fn reservation_needed(&self, effects: [u8; 32], cancellation: bool) -> Result<bool> {
+        if self.poisoned {
+            return Err("journal write previously failed; restart/recovery required".into());
+        }
+        let purpose = if cancellation {
+            Purpose::Cancellation
+        } else {
+            Purpose::Settlement
+        };
+        match self.phase() {
+            Phase::Frozen if self.registrations().next().is_some() => Ok(true),
+            Phase::Prepared
+                if self.ledger.reserved_effects() == Some(effects)
+                    && self.ledger.reserved_purpose() == Some(purpose) =>
+            {
+                Ok(false)
+            }
+            _ => Err("reservation cannot substitute effects/purpose or reset funding stage".into()),
+        }
+    }
+    pub fn reserve_transaction(&mut self, effects: [u8; 32], cancellation: bool) -> Result<bool> {
+        if !self.reservation_needed(effects, cancellation)? {
+            return Ok(false);
+        }
+        self.append(Event::Prepare {
+            effects,
+            cancellation,
+        })?;
+        Ok(true)
+    }
     /// Reconcile a caller-verified broadcast/finality observation after a crash
     /// between operator journal writes. Repeats for the exact reserved digest
     /// are no-ops. Different digests and skipped stages still fail closed.
@@ -298,16 +330,28 @@ impl Journal {
         effects: [u8; 32],
         finalized: bool,
     ) -> Result<bool> {
+        if !self.outcome_needed(effects, finalized)? {
+            return Ok(false);
+        }
+        self.append(if finalized {
+            Event::Finalize { effects }
+        } else {
+            Event::Broadcast { effects }
+        })?;
+        Ok(true)
+    }
+    pub fn outcome_needed(&self, effects: [u8; 32], finalized: bool) -> Result<bool> {
+        if self.poisoned {
+            return Err("journal write previously failed; restart/recovery required".into());
+        }
         if self.ledger.reserved_effects() != Some(effects) {
             return Err("outcome differs from reserved transaction".into());
         }
         match (self.phase(), finalized) {
-            (Phase::Prepared, false) => self.append(Event::Broadcast { effects })?,
-            (Phase::Broadcast, true) => self.append(Event::Finalize { effects })?,
-            (Phase::Broadcast, false) | (Phase::Finalized, _) => return Ok(false),
-            _ => return Err("outcome cannot skip or reset funding stages".into()),
+            (Phase::Prepared, false) | (Phase::Broadcast, true) => Ok(true),
+            (Phase::Broadcast, false) | (Phase::Finalized, _) => Ok(false),
+            _ => Err("outcome cannot skip or reset funding stages".into()),
         }
-        Ok(true)
     }
     pub fn context(&self) -> &Context {
         &self.context
@@ -470,6 +514,42 @@ mod tests {
             Journal::open(&f.journal(), &context()).unwrap().phase(),
             Phase::Finalized
         );
+    }
+    #[test]
+    fn partial_reservations_repeat_only_exact_effects_and_purpose() {
+        let f = Fixture::new();
+        let paths: [_; 3] = std::array::from_fn(|i| f.path.join(format!("reserve-{i}.jsonl")));
+        let effects = [5; 32];
+        for path in &paths {
+            let mut j = Journal::open(path, &context()).unwrap();
+            fund(&mut j);
+            j.append(Event::Freeze).unwrap();
+        }
+        Journal::open(&paths[0], &context())
+            .unwrap()
+            .reserve_transaction(effects, false)
+            .unwrap();
+        let mut writes = 0;
+        for path in &paths {
+            let mut j = Journal::open(path, &context()).unwrap();
+            if j.phase() == Phase::Prepared {
+                assert!(j.reservation_needed([6; 32], false).is_err());
+                assert!(j.reservation_needed(effects, true).is_err());
+            }
+            writes += usize::from(j.reserve_transaction(effects, false).unwrap());
+            let before = fs::metadata(path).unwrap().len();
+            assert!(!j.reserve_transaction(effects, false).unwrap());
+            j.poisoned = true;
+            assert!(j.reserve_transaction(effects, false).is_err());
+            assert!(j.record_transaction_outcome(effects, false).is_err());
+            j.poisoned = false;
+            assert!(j.reserve_transaction(effects, true).is_err());
+            assert!(j.reserve_transaction([6; 32], false).is_err());
+            assert_eq!(fs::metadata(path).unwrap().len(), before);
+            j.record_transaction_outcome(effects, false).unwrap();
+            assert!(j.reserve_transaction(effects, false).is_err());
+        }
+        assert_eq!(writes, 2);
     }
     #[test]
     fn partial_operator_outcomes_resume_once_without_reset_or_substitution() {

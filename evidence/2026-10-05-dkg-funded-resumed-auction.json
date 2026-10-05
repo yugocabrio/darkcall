@@ -1,0 +1,208 @@
+{
+  "scope": "actual funded isolated-regtest local-DKG auction after exact built-PCZT partial-proof resume",
+  "construction": {
+    "application_proof_seconds": 867.096786958,
+    "broadcast": false,
+    "chain_funding": "actual SDK-scanned notes; provenance checked by Python driver",
+    "changed_recipient_outputs_effects_rejected": true,
+    "client_spending_keys_read": false,
+    "escrow_full_ask_derived_or_reconstructed": false,
+    "escrow_master_key_read": false,
+    "fee": 30000,
+    "fills_from_plaintext_oracle_fixture": false,
+    "funding_observations_fabricated": false,
+    "funding_reservations_fsynced_before_signing": true,
+    "independent_custody_hosts": false,
+    "inputs": 4,
+    "maximum_bids_read": false,
+    "native_bindings_and_cpp_mpc_verified": true,
+    "native_proof_and_signatures_verified": true,
+    "outputs": 6,
+    "price": 20,
+    "private_refund_delivery_verified": true,
+    "proof_seconds": 9.246576041,
+    "scope": "actual isolated regtest certified four-input native auction construction",
+    "setup": "local three-participant DKG; all shares on one host; no escrow master key",
+    "signed_root_and_recipients_checked_before_frost": true,
+    "sold": 3,
+    "source_inputs_match_all_three_durable_journals": true,
+    "threshold": "2-of-3",
+    "total_seconds": 886.076825417,
+    "transaction_bytes": 21790,
+    "txid": "89547f42484258df9958dd2775018a4665c3888363c26a99aacd0e5abb97b859"
+  },
+  "substituted_receiver_rejected_before_proving": true,
+  "full_node_accepted": true,
+  "canonical_confirmations": 2,
+  "recipients": [
+    {
+      "role": "refund",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "refund",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "refund",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "refund",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "seller",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    },
+    {
+      "role": "operator",
+      "exact_private_amount_verified": true,
+      "native_note_decrypted": true,
+      "native_path_matches_node": true
+    }
+  ],
+  "all_six_exact_private_amounts_verified": true,
+  "escrow_actual_spent_notes": 4,
+  "three_durable_journals_finalized": true,
+  "maximum_bids_read": false,
+  "public_only_replay_pending": false,
+  "finality_scope": "two controlled-regtest confirmations, not public-chain finality",
+  "setup": "local three-participant DKG; all shares on one host; no escrow master key",
+  "escrow_master_key_read": false,
+  "escrow_full_ask_derived_or_reconstructed": false,
+  "independent_custody_hosts": false,
+  "resumed_exact_signed_transaction": false,
+  "reconciliation": null,
+  "finalize_record": {
+    "chain_check": "caller must verify actual canonical inclusion",
+    "journal_events_written": 3,
+    "recorded_in_three_durable_journals": "finalize",
+    "unchanged_operator_records": 0
+  },
+  "private_witnesses_or_keys_committed": false,
+  "recorded_utc": "2026-10-05T07:53:32.465678+00:00",
+  "built_resume": {
+    "controlled_process_interruption": true,
+    "same_built_pczt_bytes": true,
+    "same_canonical_private_rows": true,
+    "same_native_commitments": true,
+    "reused_existing_rows_reverified": 2,
+    "new_rows_generated": 4,
+    "original_real_deposits_and_receipts_reused": true
+  },
+  "native_binding_profile": {
+    "book_context_supplied": true,
+    "delivery_run": "mpc-delivery4-20261005T073307Z",
+    "fills_from_plaintext_oracle_fixture": false,
+    "funding_proven": false,
+    "hash_rule": "bn254-poseidon2-packed-row-v1",
+    "key_seconds": 123.924243042,
+    "native_custody_signature_verified": false,
+    "price": 20,
+    "private_fill_delivery_verified": true,
+    "proof_verified": true,
+    "reused_native_row_proofs": 2,
+    "row_proof_and_verify_seconds": [
+      0.511662875,
+      0.504946792,
+      148.170848125,
+      136.306635542,
+      169.718359834,
+      159.662219166
+    ],
+    "rows": 6,
+    "seconds": 738.897946041,
+    "sold": 3,
+    "synthetic_inputs": false
+  },
+  "mpc_proof_seconds": 9.979,
+  "resource_observations": {
+    "interval_seconds": 10,
+    "max_sampled_root_prover_resident_kib": 2731920,
+    "min_sampled_free_disk_bytes": 18042916864,
+    "min_mac_reported_free_memory_percent": 33,
+    "not_exact_peak_rss": true,
+    "completed": true
+  },
+  "benchmark_scope": "Resumed completion timing excludes initial two row proofs and repeats key generation; single shared Mac, not isolated cold benchmark.",
+  "signed_finalized_transaction_restart_pending": true,
+  "limitations": [
+    "All DKG shares and all REP3 nodes on one host; no independent custody/privacy demonstration",
+    "At most one semi-honest corrupt REP3 party; two colluding parties break bid privacy and custody",
+    "Tiny fixture budgets/tickets, bank batches deposits, no independent client funding",
+    "Additional binding classical; ZIP 2005 rseed/ciphertext correctness checked separately by native consensus, outgoing recovery and exact recipient scans",
+    "Two controlled regtest confirmations through trusted full-node RPC; not public-chain/SPV finality",
+    "Standard NU7 public-testnet funding/broadcast, cancellation, general wallet/reorg support and UI remain"
+  ],
+  "public_only_replay": {
+    "source": "regtest-dkg-auction4-resumed-20261005",
+    "directory": "regtest-dkg-auction4-public-20261005",
+    "public_only_replay": {
+      "acceptance_authentication_scope": "all-three operator attestation; not a public funding proof",
+      "acceptance_or_recipient_receipts_authenticated": true,
+      "actual_transaction_outputs_match": true,
+      "chain_funding_or_finality_verified": false,
+      "hash_rule": "bn254-poseidon2-packed-row-v1",
+      "native_proof_and_signatures_verified": true,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "private_openings_read": false,
+      "scope": "public-only transaction/application-proof replay; chain inclusion checked separately",
+      "seconds": 114.527231083,
+      "transaction_bytes": 21790,
+      "txid": "89547f42484258df9958dd2775018a4665c3888363c26a99aacd0e5abb97b859"
+    },
+    "trusted_manifest_supplied_explicitly": true,
+    "funding_journals_or_private_openings_copied": false,
+    "chain_funding_or_finality_verified": false,
+    "tampering": {
+      "operator_signature": {
+        "rejected": true,
+        "seconds": 0.004,
+        "reason": "certified MPC acceptance"
+      },
+      "duplicate_operator": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "accepted_intent": {
+        "rejected": true,
+        "seconds": 0.004,
+        "reason": "certified MPC acceptance"
+      },
+      "bid_commitment": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "accepted_root": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "refund_receiver": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      },
+      "trusted_auction_cutoff": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "certified MPC acceptance"
+      }
+    },
+    "passed": true
+  }
+}

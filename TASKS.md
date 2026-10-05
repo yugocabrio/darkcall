@@ -50,12 +50,14 @@ autonomously, incorporate later human/ChatGPT reviews.
 
 ## Priority 1 · integration
 
-- [ ] Replace retained escrow master signing key with DKG-generated 2-of-3 shares.
+- [x] Replace retained escrow master signing key with local DKG-generated 2-of-3 shares.
   - Bank/client spending keys are normal owned wallets; only the shared escrow
     setup is in scope. Local DKG/FVK, all three two-party quorums, durable
     packages and actual four-deposit certified admission pass. Full funded
-    native DKG settlement is rerunning after the PC reboot; its existing funding
-    and receipts were verified intact. Independent operator hosts remain separate.
+    native DKG settlement now passes with four actual funded inputs, six exact
+    recipient wallets, full-node confirmations and three finalized journals.
+    Exact built-PCZT recovery reused two verified rows after controlled process
+    interruption. All shares remain local; independent operator hosts are separate.
 - [ ] Migrate auction native stack to NU7 after isolated compatibility checks.
   - Standalone synthetic native gate and live tree reconstruction pass; root
     Cargo.lock, native binding dependencies and isolated NU6.3 chain are preserved.
@@ -130,7 +132,8 @@ autonomously, incorporate later human/ChatGPT reviews.
     pre-reservation exact built-PCZT/partial-proof resume is implemented and
     running against a deliberately interrupted two-proof actual DKG construction.
     Cached rows are reverified; changed amount rejects before reservation.
-    Approved Prepared-stage recovery remains. Signed native recovery
+    Exact same-purpose Prepared-stage reservations are now recoverable in code
+    and unit tests; a separate full native Prepared-stage gate remains. Signed native recovery
     is implemented and unit-tested, including canonical bytes, original input
     checkpoint, exact journal reservations, RPC-error distinction, existing
     broadcasts/confirmations and fresh SDK receipt/nullifier reconciliation;

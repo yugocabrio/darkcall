@@ -97,6 +97,9 @@ impl Ledger {
     pub fn reserved_effects(&self) -> Option<[u8; 32]> {
         self.transaction.as_ref().map(|t| t.0)
     }
+    pub fn reserved_purpose(&self) -> Option<Purpose> {
+        self.transaction.as_ref().map(|t| t.1)
+    }
     pub fn registration(&self, ticket: &TicketId) -> Option<&Registration> {
         self.tickets.get(ticket)
     }

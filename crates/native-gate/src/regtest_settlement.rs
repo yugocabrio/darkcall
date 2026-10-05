@@ -8,7 +8,7 @@ use crate::regtest_spend::{
 use darkcall_input_tool::{context, receiver_commitment};
 use darkcall_wallet_bridge::{
     final_book::{Certificate, Manifest},
-    journal::{Event, Journal},
+    journal::Journal,
 };
 use serde::Deserialize;
 use std::{
@@ -180,7 +180,9 @@ fn build_from(
             let other = j
                 .registration(&entry.ticket)
                 .ok_or("operator omitted funded ticket")?;
-            if j.phase() != darkcall_auction_core::funding::Phase::Frozen
+            if (j.phase() != darkcall_auction_core::funding::Phase::Frozen
+                && !(source.is_some()
+                    && j.phase() == darkcall_auction_core::funding::Phase::Prepared))
                 || j.registrations().count() != 4
                 || other.note != reg.note
                 || other.bid_commitment != entry.bid_commitment
@@ -220,6 +222,13 @@ fn build_from(
     let source = source
         .map(|p| p.canonicalize().map_err(|e| error("built source", e)))
         .transpose()?;
+    if let Some(p) = &source
+        && p.join("regtest-transaction.bin")
+            .try_exists()
+            .map_err(|e| error("signed source check", e))?
+    {
+        return Err("complete signed transaction exists; use signed reconciliation".into());
+    }
     integration.native_proof_source = source.clone();
     integration.receiver_openings = Some(
         receivers
@@ -420,6 +429,12 @@ fn build_from(
         .try_into()
         .unwrap();
     let app_start = Instant::now();
+    // A resume may follow a crash between the three Prepare writes or during
+    // native consensus proving. Only exactly the same effects AND settlement
+    // purpose may continue; never reset a reservation or replace a transaction.
+    for j in &journals {
+        j.reservation_needed(message, false)?;
+    }
     // Persist the exact native output openings BEFORE expensive row proofs.
     // This is an unapproved construction, not permission to reserve/sign.
     // It allows a future exact-proof resume without creating new cmxs/rho/rseed.
@@ -487,10 +502,7 @@ fn build_from(
         .and_then(|parent| parent.sync_all())
         .map_err(|e| error("settlement checkpoint parent sync", e))?;
     for j in &mut journals {
-        j.append(Event::Prepare {
-            effects: message,
-            cancellation: false,
-        })?;
+        j.reserve_transaction(message, false)?;
     }
     let proof_start = Instant::now();
     let pczt = Prover::new(pczt)

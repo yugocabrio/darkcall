@@ -202,3 +202,32 @@ The first monitored rerun reached three verified rows before a conservative
 The next measured run uses one prover with an 8 GiB root RSS ceiling and separate
 4 GiB disk/10% macOS memory-headroom guards. Observations are private/ignored.
 These are operational limits, not a hardware-crash guarantee or weakened proof.
+
+## Actual funded DKG built-stage recovery result
+
+The source four native deposits and certified book survived the PC reboot. A
+subsequent controlled process interruption after two row proofs left an exact
+private built PCZT and all three Frozen journals. `--resume-built` reconstructed
+the SAME PCZT bytes, canonical private rows and native output commitments,
+reverified the two existing proofs and generated only the four missing rows.
+All application checks passed, four DKG 2-of-3 signatures and a native consensus
+proof succeeded, and Zebra confirmed the resulting tx at height 114. Six wallets
+decrypted exact payments/refunds and escrow detected all four spent notes; all
+three journals finalized. No escrow SpendingKey/full ASK was generated, read or
+reconstructed by this setup. All key shares still reside on one host.
+
+Tx: 89547f42484258df9958dd2775018a4665c3888363c26a99aacd0e5abb97b859.
+21,790 bytes; fee 30,000. Resumed construction 886.077s (excludes original two
+row proofs), native consensus proof 9.247s. Public-only certified replay passed
+in 114.527s and rejected seven modified certificate/authority/book cases.
+Evidence: ../evidence/2026-10-05-dkg-funded-resumed-auction.json.
+
+The new exact-reservation helper also accepts a crash between Prepare writes or
+during native consensus proving, provided effects AND purpose remain identical.
+A different digest, settlement/cancellation substitution, poisoned handle or
+later-stage reset is rejected. Outcome fan-out preflights all three journals
+before writing. These Prepared-stage conditions pass unit tests; the actual
+funded built-stage run above started from Frozen. A separate full Prepared-stage
+integration gate remains. If complete signed bytes exist, use --resume-signed
+instead of constructing/signing again. General live-chain reorg/expiry recovery
+remains outside these controlled-chain paths.

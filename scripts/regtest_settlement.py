@@ -97,6 +97,8 @@ def main():
         if source_checkpoint['tip'] != snapshot['tip']:
             raise RuntimeError('Unapproved native checkpoint chain changed; explicit reconciliation required')
         source = ROOT / '.local' / args.resume_built
+        if (source / 'regtest-transaction.bin').exists():
+            raise RuntimeError('Complete signed transaction exists; use --resume-signed instead of signing again')
     notes_path = escrow / f'private-notes-{snapshot["blocks"]}.json'
     notes = json.loads(notes_path.read_text())
     initial = tree(verify_snapshot(notes, snapshot))
