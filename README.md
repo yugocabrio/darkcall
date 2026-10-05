@@ -108,3 +108,10 @@ use the original key. The guards preserve checkpoints on failure.
 The generated cross-language check, `target/release/examples/cross_noir UNUSED_LOCAL_NAME`,
 compares the independent Rust oracle to pinned Noir ACVM constraints. Its 77 valid
 and seven invalid cases are plaintext regressions, not MPC or ZK proof evidence.
+
+The [local receipt demo](docs/demo.md) presents positive/zero-price results and
+calls the actual fixed-proof/native decryption client from a loopback browser.
+Run `python3 scripts/serve_demo.py` when the ignored synthetic receipt fixtures
+are present. It uses the separate four-output receipt component; the newest
+six-output memo flow is prepared but not fully proved/signed. New bidder
+admission, independent identities and public chain delivery remain unfinished.

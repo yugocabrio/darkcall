@@ -4,6 +4,29 @@ Updated: 2026-10-05 (latest receipt/client measurements recorded; git HEAD is au
 
 ## Current outcome
 
+**The first local browser receipt/verifier UI works with actual proofs.**
+`python3 scripts/serve_demo.py` is running at http://127.0.0.1:8877, PID63042,
+exec session32486; log .local/browser-demo-20261005.log. Check this process/port
+before launching another server. It is loopback-only and serves no repo/private
+files. The API runs the existing actual recipient command and returns only own
+status/refund plus public verification flags. No keys/pads/raw memos are served.
+Four positive/zero winner/loser openings,15 HTTP/input refusals and two corrupt
+proof refusals before reading the recipient key pass in9.743s. Native consensus
+authentication is real; chain inclusion and six-output settlement are not claimed.
+Browser verification displays "You won a unit" and refund50; tamper check visibly
+rejects before key access. Narrow responsive layout also inspected; screenshots
+are ignored under .local. The demo intentionally has no plaintext bid submission.
+It uses the existing separate four-output synthetic memo transfers and says so
+in the UI. All synthetic identities remain on one computer; choosing a ticket
+is not bidder authentication. No external deployment/publication occurred.
+Receipt/settlement statement equality also passes against the existing actual
+zero-price six-row MPC statement, in .local/six-memo-zero-link-20261005; this is
+a public statement-link check, not proof of the new memo transaction. Historical
+non-memo NU7 pre-sign regression also passes all seven cases in0.105s.
+No heavy prover is running. Next: registered client/admission/settlement views,
+exact prepared NU7 proof resumption when10GiB initial disk headroom is available,
+and advancing-chain memo delivery. Preserve historical funding/journals/keys.
+
 **Four receipt memos now belong to the same six-output NU7 prepared PCZT.**
 Positive-price50/sold3 preparation completes in9.300s; price0/sold3 in7.937s.
 Each runs fresh actual REP3 winner/refund delivery, normal fixed C++ verification,

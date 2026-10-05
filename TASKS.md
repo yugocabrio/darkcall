@@ -256,6 +256,11 @@ autonomously, incorporate later human/ChatGPT reviews.
 ## Priority 2 · presentation and reproducibility
 
 - [ ] Bidder, seller and verifier UI with accurate trust/receipt states.
+  - First local receipt/verifier UI is implemented with actual fixed C++/native
+    recipient verification, positive/zero demo identities and real corrupt-proof
+    refusal. Four winner/loser API cases,15 HTTP/input rejections and two proof
+    refusals before key access pass. No browser keys/pads or fake bid submission.
+    Live admission, bidder authentication, seller and full settlement views remain.
 - [ ] Four-bid repeatable demo, including intentionally rejected tampering.
 - [ ] Benchmark four bids, then attempt 32 without weakening the guarantees.
 - [ ] Threat model, dependency/license inventory and independent reproduction.

@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-05",
+  "scope": "loopback synthetic receipt UI; separate transfer, not six-output memo settlement",
+  "command": "python3 scripts/serve_demo.py",
+  "validation_command": "python3 scripts/check_demo_http.py",
+  "api_checks": {
+    "scope": "loopback receipt demo actual API/client integration",
+    "verified": [
+      {
+        "case": "positive",
+        "ticket": 0,
+        "won": true,
+        "refund": 50
+      },
+      {
+        "case": "positive",
+        "ticket": 3,
+        "won": false,
+        "refund": 100
+      },
+      {
+        "case": "zero",
+        "ticket": 0,
+        "won": true,
+        "refund": 100
+      },
+      {
+        "case": "zero",
+        "ticket": 3,
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "http_rejections": [
+      "private-file",
+      "path-traversal",
+      "arbitrary-evidence",
+      "dns-rebinding",
+      "cross-origin-read",
+      "missing-origin",
+      "cross-origin-write",
+      "missing-token",
+      "wrong-token",
+      "wrong-content-type",
+      "arbitrary-path",
+      "unknown-action",
+      "boolean-ticket",
+      "unknown-ticket",
+      "extra-secret-field"
+    ],
+    "corrupt_proofs_rejected_before_key": 2,
+    "private_fields_served": false,
+    "browser_ui_checked_separately": true,
+    "six_output_memo_e2e_verified": false,
+    "seconds": 9.743076999999175
+  },
+  "browser_checks": {
+    "actual_positive_winner_refund_50_rendered": true,
+    "actual_corrupt_proof_rejection_rendered": true,
+    "narrow_layout_inspected": true,
+    "external_deployment": false
+  },
+  "statement_link_check": {
+    "scope": "receipt/settlement public statement link only; existing actual zero-price settlement proof; new memo transaction not proven",
+    "result": {
+      "fixed_cpp_receipt_proof_verified": true,
+      "four_ticket_openings_verified": true,
+      "refund_amounts_match_request": true,
+      "settlement_statement_link_checked": true,
+      "viewing_or_spending_keys_read": false
+    }
+  },
+  "historical_non_memo_presign_regression": {
+    "scope": "unsigned synthetic NU7 pre-sign input attack checks; no binding proof",
+    "tampering": {
+      "missing-proofs": {
+        "rejected": true,
+        "expected_reason": "NU7 application proof rejected before FROST signing"
+      },
+      "amount-substitution": {
+        "rejected": true,
+        "expected_reason": "NU7 prepared output substituted"
+      },
+      "reused-action": {
+        "rejected": true,
+        "expected_reason": "NU7 recipient index collision"
+      },
+      "receiver-substitution": {
+        "rejected": true,
+        "expected_reason": "prepared output cannot decrypt"
+      },
+      "effects-substitution": {
+        "rejected": true,
+        "expected_reason": "NU7 prepared effects changed"
+      },
+      "unknown-key-schema": {
+        "rejected": true,
+        "expected_reason": "strict NU7 auction schema rejected"
+      },
+      "pczt-trailing-byte": {
+        "rejected": true,
+        "expected_reason": "NU7 PCZT parse"
+      }
+    },
+    "passed": true,
+    "native_application_proof_generated": false,
+    "transaction_emitted": false,
+    "broadcast": false,
+    "seconds": 0.10457412500545615
+  },
+  "limitations": [
+    "synthetic recipient identities stored on one host",
+    "operators know results/refunds",
+    "no browser private bid proving/admission",
+    "new six-output memo transaction is prepared, not fully proved/signed",
+    "no chain inclusion verification"
+  ]
+}

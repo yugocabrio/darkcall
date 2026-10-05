@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""Actual loopback demo API checks, including key-before-proof refusal.
+
+Synthetic fixtures only. HTTP checks do not prove MPC transport security or
+independent operator separation. Responses are recursively checked for secrets.
+"""
+import argparse
+import http.client
+import json
+import time
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--port', type=int, default=8877)
+    args = parser.parse_args()
+    host = '127.0.0.1:' + str(args.port)
+    origin = 'http://' + host
+    start = time.monotonic()
+
+    def call(method, path, body=None, headers=None):
+        connection = http.client.HTTPConnection('127.0.0.1',args.port,timeout=120)
+        try:
+            connection.request(method,path,body,headers or {})
+            response = connection.getresponse()
+            data = response.read(100000)
+            if response.getheader('Cache-Control') != 'no-store': raise RuntimeError('Missing private response cache rule')
+            if response.getheader('X-Frame-Options') != 'DENY': raise RuntimeError('Missing frame isolation')
+            return response.status, data
+        finally: connection.close()
+
+    status,raw = call('GET','/api/state')
+    if status != 200: raise RuntimeError('Demo state unavailable')
+    state = json.loads(raw)
+    headers = {'Origin':origin,'Content-Type':'application/json','X-DarkCall-Token':state['csrf']}
+    denied = []
+    for label,path,extra,expected in [
+        ('private-file','/.local/private-recipient-0.json',{},404),
+        ('path-traversal','/../.local/private-recipient-0.json',{},404),
+        ('arbitrary-evidence','/api/evidence/../wallet',{},404),
+        ('dns-rebinding','/api/state',{'Host':'attacker.invalid'},403),
+        ('cross-origin-read','/api/state',{'Origin':'https://attacker.invalid'},403)]:
+        if call('GET',path,headers=extra)[0] != expected: raise RuntimeError('Missing HTTP rejection: '+label)
+        denied.append(label)
+    payload = json.dumps({'case':'positive','ticket':0,'action':'verify'})
+    for label,extra,expected in [
+        ('missing-origin',{'Origin':''},403),('cross-origin-write',{'Origin':'https://attacker.invalid'},403),
+        ('missing-token',{'X-DarkCall-Token':''},403),('wrong-token',{'X-DarkCall-Token':'invalid'},403),
+        ('wrong-content-type',{'Content-Type':'text/plain'},400)]:
+        if call('POST','/api/verify',payload,{**headers,**extra})[0] != expected: raise RuntimeError('Missing HTTP rejection: '+label)
+        denied.append(label)
+    for label,payload in [
+        ('arbitrary-path',{'case':'../../wallet','ticket':0,'action':'verify'}),
+        ('unknown-action',{'case':'positive','ticket':0,'action':'sign'}),
+        ('boolean-ticket',{'case':'positive','ticket':True,'action':'verify'}),
+        ('unknown-ticket',{'case':'positive','ticket':4,'action':'verify'}),
+        ('extra-secret-field',{'case':'positive','ticket':0,'action':'verify','viewing_key':'unused'})]:
+        if call('POST','/api/verify',json.dumps(payload),headers)[0] != 400: raise RuntimeError('Missing input rejection: '+label)
+        denied.append(label)
+    forbidden = {'viewing_key','spend','spending_key','refund_pad','winner_pad','masks','blind','pczt','memo','private_path'}
+    def clean(value):
+        if isinstance(value,dict):
+            if forbidden.intersection(value): raise RuntimeError('Private field leaked in API response')
+            for item in value.values(): clean(item)
+        elif isinstance(value,list):
+            for item in value: clean(item)
+    clean(state)
+    verified = []
+    for name,index,won,refund in [('positive',0,True,50),('positive',3,False,100),('zero',0,True,100),('zero',3,False,100)]:
+        status,data = call('POST','/api/verify',json.dumps({'case':name,'ticket':index,'action':'verify'}),headers)
+        value = json.loads(data)
+        if (status != 200 or value['won'] != won or value['refund'] != refund
+                or not value['fixed_cpp_ticket_proof_verified'] or not value['native_proof_and_signatures_verified']
+                or not value['own_ticket_opening_verified'] or value['six_output_auction_settlement_verified']
+                or value['chain_inclusion_verified']):
+            raise RuntimeError('Actual receipt API result differs from scoped fixture')
+        clean(value)
+        verified.append({'case':name,'ticket':index,'won':won,'refund':refund})
+    for name in ('positive','zero'):
+        status,data = call('POST','/api/verify',json.dumps({'case':name,'ticket':0,'action':'tamper'}),headers)
+        value = json.loads(data)
+        if status != 200 or not value['rejected'] or value['key_read'] or value['memo_decrypted']:
+            raise RuntimeError('HTTP corrupted-proof gate did not preserve recipient secrecy')
+        clean(value)
+    print(json.dumps({'scope':'loopback receipt demo actual API/client integration',
+        'verified':verified,'http_rejections':denied,'corrupt_proofs_rejected_before_key':2,
+        'private_fields_served':False,'browser_ui_checked_separately':True,
+        'six_output_memo_e2e_verified':False,'seconds':time.monotonic()-start},indent=2))
+
+
+if __name__ == '__main__':
+    main()
