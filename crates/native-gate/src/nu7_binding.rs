@@ -14,6 +14,13 @@ const SDK: &str = "9c5705f56517c040c50f96d29f1ff15a9383f3e0";
 const SCOPE: &str =
     "one new-SDK synthetic native output binds to BN254 row; no auction admission/funding";
 
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SharedPublic {
+    layout: String,
+    statement: Public,
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Opening {
@@ -95,6 +102,66 @@ pub fn prove(directory: &Path, name: &str) -> Result<serde_json::Value> {
     {
         return Err("expected fresh simple ignored binding name".into());
     }
+    let (binding, public) = prepare(&directory)?;
+    let inputs = public.inputs()?;
+    let parent = directory.parent().ok_or("ignored output parent")?;
+    let output = parent.join(name);
+    fs::create_dir(&output).map_err(|_| "compatibility output exists or cannot be created")?;
+    use std::os::unix::fs::PermissionsExt;
+    fs::set_permissions(&output, fs::Permissions::from_mode(0o700))
+        .map_err(|_| "private output permissions")?;
+    eprintln!("Existing native binding key generation for new-SDK output started");
+    let key_start = Instant::now();
+    let prover = RowProver::new().map_err(|e| error("trusted native row key", e))?;
+    let key_seconds = key_start.elapsed().as_secs_f64();
+    let proof_start = Instant::now();
+    let proof = prover
+        .prove(binding, &inputs)
+        .map_err(|e| error("NU7 output row proof", e))?;
+    let proof_seconds = proof_start.elapsed().as_secs_f64();
+    for i in [0, 8, 9] {
+        let mut changed = inputs.clone();
+        changed[i] += pallas::Base::ONE;
+        if prover.verify(&proof, &changed).is_ok() {
+            return Err("changed hash/cmx/index accepted".into());
+        }
+    }
+    write_private(&output.join("native-binding-proof"), &proof)?;
+    write_private(
+        &output.join("nu7-row-public.json"),
+        &serde_json::to_vec(&public).map_err(|_| "public row encoding")?,
+    )?;
+    Ok(
+        serde_json::json!({"scope":SCOPE,"new_sdk_native_output_opening":true,"working_binding_circuit_unchanged":true,
+        "native_cmx_matches":true,"proof_verified":true,"proof_bytes":proof.len(),"changed_hash_cmx_index_rejected":true,
+        "changed_amount_recipient_rejected_before_proving":true,"native_consensus_proof_verified_here":false,
+        "auction_plan_connected":false,"chain_funding":false,"broadcast":false,"key_seconds":key_seconds,
+        "proof_seconds":proof_seconds,"seconds":started.elapsed().as_secs_f64()}),
+    )
+}
+
+pub fn verify(directory: &Path) -> Result<serde_json::Value> {
+    let start = Instant::now();
+    let directory = local(directory)?;
+    // Only public inputs and proof; private-native-outputs/row are not read.
+    let public: Public = serde_json::from_slice(&read_private(
+        &directory.join("nu7-row-public.json"),
+        16384,
+    )?)
+    .map_err(|_| "public compatibility row schema")?;
+    let proof = read_private(&directory.join("native-binding-proof"), 65536)?;
+    verify_one(&proof, &public.inputs()?)
+        .map_err(|e| error("public new-output binding proof", e))?;
+    Ok(
+        serde_json::json!({"scope":SCOPE,"public_only_native_row_proof_verified":true,"private_openings_read":false,
+        "native_consensus_verified_here":false,"transaction_cmx_mapping_verified_here":false,
+        "auction_plan_connected":false,"broadcast":false,"seconds":start.elapsed().as_secs_f64()}),
+    )
+}
+
+// Both layouts derive precisely the same byte-linked witness and public inputs.
+// Nothing in this helper writes private openings or keys.
+fn prepare(directory: &Path) -> Result<(darkcall_output_binding::sha::Binding, Public)> {
     let data: Input = serde_json::from_slice(&read_private(
         &directory.join("private-native-outputs.json"),
         16384,
@@ -158,13 +225,6 @@ pub fn prove(directory: &Path, name: &str) -> Result<serde_json::Value> {
         cmx: opening.cmx,
         action_index: opening.action_index,
     };
-    let inputs = public.inputs()?;
-    let parent = directory.parent().ok_or("ignored output parent")?;
-    let output = parent.join(name);
-    fs::create_dir(&output).map_err(|_| "compatibility output exists or cannot be created")?;
-    use std::os::unix::fs::PermissionsExt;
-    fs::set_permissions(&output, fs::Permissions::from_mode(0o700))
-        .map_err(|_| "private output permissions")?;
     let mut changed = row.clone();
     changed.amount = changed.amount.checked_add(1).ok_or("amount overflow")?;
     if binding_from_note(&changed, &note).is_ok() {
@@ -175,54 +235,129 @@ pub fn prove(directory: &Path, name: &str) -> Result<serde_json::Value> {
     if binding_from_note(&changed, &note).is_ok() {
         return Err("changed row recipient accepted".into());
     }
-    eprintln!("Existing native binding key generation for new-SDK output started");
-    let key_start = Instant::now();
-    let prover = RowProver::new().map_err(|e| error("trusted native row key", e))?;
-    let key_seconds = key_start.elapsed().as_secs_f64();
-    let proof_start = Instant::now();
-    let proof = prover
-        .prove(
-            binding_from_note(&row, &note).map_err(|e| error("byte-derived native witness", e))?,
-            &inputs,
-        )
-        .map_err(|e| error("NU7 output row proof", e))?;
-    let proof_seconds = proof_start.elapsed().as_secs_f64();
+    let binding =
+        binding_from_note(&row, &note).map_err(|e| error("byte-derived native witness", e))?;
+    Ok((binding, public))
+}
+
+pub fn shared_mock(directory: &Path) -> Result<serde_json::Value> {
+    use darkcall_output_binding::poseidon_rows::{K, SHARED_LAYOUT, shared_mock_satisfied};
+    use group::Curve;
+    let start = Instant::now();
+    let directory = local(directory)?;
+    let (binding, public) = prepare(&directory)?;
+    let inputs = public.inputs()?;
+    let check = |witness, inputs: Vec<pallas::Base>| -> Result<bool> {
+        shared_mock_satisfied(witness, inputs).map_err(|e| error("shared layout mock synthesis", e))
+    };
+    if !check(binding.clone(), inputs.clone())? {
+        return Err("shared layout correct native output constraints fail".into());
+    }
+    let mut amount = binding.clone();
+    amount.value = amount.value.map(|v| v + 1);
+    if check(amount, inputs.clone())? {
+        return Err("shared mock amount change accepted".into());
+    }
+    let mut recipient = binding.clone();
+    recipient.gd = recipient
+        .gd
+        .map(|p| (p * pallas::Scalar::from(2)).to_affine());
+    if check(recipient, inputs.clone())? {
+        return Err("shared mock valid recipient change accepted".into());
+    }
     for i in [0, 8, 9] {
-        let mut changed = inputs.clone();
-        changed[i] += pallas::Base::ONE;
-        if prover.verify(&proof, &changed).is_ok() {
-            return Err("changed hash/cmx/index accepted".into());
+        let mut altered = inputs.clone();
+        altered[i] += pallas::Base::ONE;
+        if check(binding.clone(), altered)? {
+            return Err("shared mock public hash/cmx/index change accepted".into());
         }
     }
-    write_private(&output.join("native-binding-proof"), &proof)?;
-    write_private(
-        &output.join("nu7-row-public.json"),
-        &serde_json::to_vec(&public).map_err(|_| "public row encoding")?,
-    )?;
     Ok(
-        serde_json::json!({"scope":SCOPE,"new_sdk_native_output_opening":true,"working_binding_circuit_unchanged":true,
-        "native_cmx_matches":true,"proof_verified":true,"proof_bytes":proof.len(),"changed_hash_cmx_index_rejected":true,
-        "changed_amount_recipient_rejected_before_proving":true,"native_consensus_proof_verified_here":false,
-        "auction_plan_connected":false,"chain_funding":false,"broadcast":false,"key_seconds":key_seconds,
-        "proof_seconds":proof_seconds,"seconds":started.elapsed().as_secs_f64()}),
+        serde_json::json!({"scope":"new-SDK V3 native output bytes in experimental shared-column MockProver only",
+        "layout":SHARED_LAYOUT,"k":K,"correct_constraints_satisfied":true,
+        "changed_amount_recipient_hash_cmx_index_rejected":true,"actual_proof_generated":false,
+        "native_consensus_verified_here":false,"auction_plan_connected":false,"broadcast":false,
+        "working_circuit_changed":false,"seconds":start.elapsed().as_secs_f64()}),
     )
 }
 
-pub fn verify(directory: &Path) -> Result<serde_json::Value> {
+pub fn prove_shared(directory: &Path, name: &str) -> Result<serde_json::Value> {
+    use darkcall_output_binding::poseidon_rows::{SHARED_LAYOUT, SharedRowProver};
     let start = Instant::now();
     let directory = local(directory)?;
-    // Only public inputs and proof; private-native-outputs/row are not read.
-    let public: Public = serde_json::from_slice(&read_private(
-        &directory.join("nu7-row-public.json"),
+    if name.is_empty()
+        || name.len() > 50
+        || !name
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+    {
+        return Err("fresh ignored shared binding name required".into());
+    }
+    let (binding, statement) = prepare(&directory)?;
+    let inputs = statement.inputs()?;
+    let target = directory
+        .parent()
+        .ok_or("ignored output parent")?
+        .join(name);
+    use std::os::unix::fs::DirBuilderExt;
+    fs::DirBuilder::new()
+        .mode(0o700)
+        .create(&target)
+        .map_err(|_| "shared binding target exists")?;
+    eprintln!("Experimental shared18 native key generation started");
+    let key_start = Instant::now();
+    let prover = SharedRowProver::new().map_err(|e| error("trusted shared row key", e))?;
+    let key_seconds = key_start.elapsed().as_secs_f64();
+    eprintln!("Experimental shared18 native proof generation started");
+    let proof_start = Instant::now();
+    let proof = prover
+        .prove(binding, &inputs)
+        .map_err(|e| error("shared native row proof", e))?;
+    let proof_seconds = proof_start.elapsed().as_secs_f64();
+    for i in [0, 8, 9] {
+        let mut altered = inputs.clone();
+        altered[i] += pallas::Base::ONE;
+        if prover.verify(&proof, &altered).is_ok() {
+            return Err("shared proof hash/cmx/index change accepted".into());
+        }
+    }
+    write_private(&target.join("shared-native-binding-proof"), &proof)?;
+    write_private(
+        &target.join("shared-row-public.json"),
+        &serde_json::to_vec(&SharedPublic {
+            layout: SHARED_LAYOUT.into(),
+            statement,
+        })
+        .map_err(|_| "shared public statement encoding")?,
+    )?;
+    Ok(
+        serde_json::json!({"scope":SCOPE,"layout":SHARED_LAYOUT,"actual_proof_generated":true,
+        "proof_verified":true,"proof_bytes":proof.len(),"key_seconds":key_seconds,"proof_seconds":proof_seconds,
+        "changed_hash_cmx_index_rejected":true,"working_circuit_changed":false,
+        "native_consensus_verified_here":false,"auction_plan_connected":false,"broadcast":false,
+        "seconds":start.elapsed().as_secs_f64()}),
+    )
+}
+
+pub fn verify_shared(directory: &Path) -> Result<serde_json::Value> {
+    use darkcall_output_binding::poseidon_rows::{SHARED_LAYOUT, verify_shared_one};
+    let start = Instant::now();
+    let directory = local(directory)?;
+    let public: SharedPublic = serde_json::from_slice(&read_private(
+        &directory.join("shared-row-public.json"),
         16384,
     )?)
-    .map_err(|_| "public compatibility row schema")?;
-    let proof = read_private(&directory.join("native-binding-proof"), 65536)?;
-    verify_one(&proof, &public.inputs()?)
-        .map_err(|e| error("public new-output binding proof", e))?;
+    .map_err(|_| "strict shared public statement")?;
+    if public.layout != SHARED_LAYOUT {
+        return Err("untrusted shared circuit identity".into());
+    }
+    let proof = read_private(&directory.join("shared-native-binding-proof"), 65536)?;
+    verify_shared_one(&proof, &public.statement.inputs()?)
+        .map_err(|e| error("fixed shared row verification", e))?;
     Ok(
-        serde_json::json!({"scope":SCOPE,"public_only_native_row_proof_verified":true,"private_openings_read":false,
-        "native_consensus_verified_here":false,"transaction_cmx_mapping_verified_here":false,
+        serde_json::json!({"scope":SCOPE,"layout":SHARED_LAYOUT,"public_only_native_row_proof_verified":true,
+        "private_openings_read":false,"native_consensus_verified_here":false,"transaction_cmx_mapping_verified_here":false,
+        "changed_public_hash_cmx_index_and_proof_rejected":true,
         "auction_plan_connected":false,"broadcast":false,"seconds":start.elapsed().as_secs_f64()}),
     )
 }

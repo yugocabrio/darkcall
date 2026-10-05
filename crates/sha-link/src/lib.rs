@@ -30,17 +30,33 @@ pub struct Config {
 
 impl Config {
     pub fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self {
-        Self::configure_inner(meta, true)
+        Self::configure_inner(meta, true, None)
     }
     /// Canonical byte/point encoding without unused SHA round/lookup columns.
     /// Used only by the alternative hash circuit; SHA's configured shape stays.
     pub fn configure_encoding(meta: &mut ConstraintSystem<pallas::Base>) -> Self {
-        Self::configure_inner(meta, false)
+        Self::configure_inner(meta, false, None)
     }
-    fn configure_inner(meta: &mut ConstraintSystem<pallas::Base>, with_sha: bool) -> Self {
+    /// Separate experimental layouts may reuse columns in disjoint regions.
+    /// This does not change the default encoding or SHA circuit configuration.
+    pub fn configure_encoding_with_columns(
+        meta: &mut ConstraintSystem<pallas::Base>,
+        columns: [Column<Advice>; 5],
+    ) -> Self {
+        Self::configure_inner(meta, false, Some(columns))
+    }
+    fn configure_inner(
+        meta: &mut ConstraintSystem<pallas::Base>,
+        with_sha: bool,
+        columns: Option<[Column<Advice>; 5]>,
+    ) -> Self {
         let sha = with_sha.then(|| Table16Chip::configure(meta));
-        let columns = std::array::from_fn(|_| meta.advice_column());
-        for col in columns {
+        let columns = columns.unwrap_or_else(|| std::array::from_fn(|_| meta.advice_column()));
+        for (i, col) in columns.iter().copied().enumerate() {
+            assert!(
+                !columns[..i].contains(&col),
+                "distinct encoding columns required"
+            );
             meta.enable_equality(col);
         }
         let constant = meta.fixed_column();

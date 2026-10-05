@@ -59,7 +59,19 @@ pub struct Config {
 impl Config {
     pub fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self {
         let columns = std::array::from_fn(|_| meta.advice_column());
-        for col in columns {
+        Self::configure_with_columns(meta, columns)
+    }
+    /// Explicit experimental layout using the same gates, tables and synthesis.
+    /// Supplied columns must be distinct; other gadgets may share disjoint rows.
+    pub fn configure_with_columns(
+        meta: &mut ConstraintSystem<pallas::Base>,
+        columns: [Column<Advice>; 18],
+    ) -> Self {
+        for (i, col) in columns.iter().copied().enumerate() {
+            assert!(
+                !columns[..i].contains(&col),
+                "distinct integer columns required"
+            );
             meta.enable_equality(col);
         }
         let fixed = meta.fixed_column();

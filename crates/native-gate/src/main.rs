@@ -577,6 +577,35 @@ fn main() -> Result<()> {
         );
         return Ok(());
     }
+    if args.len() == 1 && args[0] == "--shared-binding-circuit-profile" {
+        println!(
+            "{}",
+            darkcall_output_binding::poseidon_rows::shared_circuit_profile()
+                .map_err(|e| error("shared circuit profile", e))?
+        );
+        return Ok(());
+    }
+    if args.len() == 2 && args[0] == "--nu7-shared-binding-mock" {
+        println!(
+            "{}",
+            nu7_binding::shared_mock(std::path::Path::new(&args[1]))?
+        );
+        return Ok(());
+    }
+    if args.len() == 3 && args[0] == "--nu7-shared-output-binding" {
+        println!(
+            "{}",
+            nu7_binding::prove_shared(std::path::Path::new(&args[1]), &args[2])?
+        );
+        return Ok(());
+    }
+    if args.len() == 2 && args[0] == "--verify-nu7-shared-output-binding" {
+        println!(
+            "{}",
+            nu7_binding::verify_shared(std::path::Path::new(&args[1]))?
+        );
+        return Ok(());
+    }
     if args.len() == 3 && args[0] == "--nu7-output-binding" {
         println!(
             "{}",

@@ -69,7 +69,12 @@ autonomously, incorporate later human/ChatGPT reviews.
     mapping checks pass; nine malformed public/private byte cases reject.
     Existing-circuit new-output proof hit the disk guard twice during keygen;
     no completed application proof. Preserve sources and avoid identical retries
-    without capacity; investigate a separately identified compact layout.
+    without capacity. Separate shared18 layout preserves the original configuration
+    fingerprint and canonical/native constraints; actual new-output MockProver and
+    five tamper cases pass. Actual shared18 SNARK
+    and public-only new-native/row replay now pass (221.541s / 107.893s); one
+    synthetic output only. Preserve working33 trusted verifier and original funded
+    artifacts; full NU7 auction/wallet funding and live-chain freshness remain.
 
 - [x] Canonical four-ticket conditions/IDs, certified accepted root and six settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.

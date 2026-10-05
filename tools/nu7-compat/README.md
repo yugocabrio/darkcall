@@ -90,3 +90,40 @@ the source exports and actual funded chain/journals were retained. See
 `evidence/2026-10-05-nu7-binding-resource-stop.json` and
 `evidence/2026-10-05-nu7-byte-input-checks.json`. No third identical heavy attempt
 on the same constrained storage, no relaxed binding or branch validation.
+
+
+## Explicit experimental shared-column layout
+
+The separately identified `experimental-shared18-native-row-v1` circuit reuses
+18 advice columns across disjoint native/encoding/BN254 regions, instead of 33.
+It uses exactly the same gates, lookup tables, synthesis, canonical byte packing
+and cross-region copy constraints. Existing funded statements and their original
+trusted VK remain on the working33 circuit. A configuration fingerprint regression
+checks the original layout has not changed. Both variants use K17 and degree9.
+The 8x extended domain remains; column count alone is not a memory benchmark.
+
+```sh
+python3 scripts/run_nu7_output_binding.py .local/NEW_EXPORT_NAME --name SHARED_MOCK_NAME --shared-mock
+# At least 10 GiB initial disk, all normal runtime guards, one heavy proof only:
+python3 scripts/run_nu7_output_binding.py .local/NEW_EXPORT_NAME --name SHARED_PROOF_NAME --shared-proof
+# Only after an actual shared proof exists; caller explicitly chooses fixed VK:
+python3 scripts/replay_nu7_bound_output.py .local/NEW_EXPORT_NAME .local/SHARED_PROOF_NAME --name SHARED_REPLAY_NAME --shared-layout
+```
+
+Shared proof files have distinct names and a strict public layout wrapper. The
+public native SDK compares the nested statement with actual serialized actions;
+the explicit shared verifier chooses a hardcoded trusted circuit. A proof cannot
+supply an arbitrary circuit/key. MockProver passed the correct new-SDK output and
+rejected altered amount, recipient point, digest, cmx and index in 57.485s; this
+is constraint testing, not a SNARK or reduced PK/proving memory demonstration.
+The actual key/proof run is recorded in STATUS.md and separate evidence.
+
+
+The explicit shared18 actual proof now passes: 9,504 bytes, 115.076s key,
+104.009s proof/initial verify, 221.541s total. Public-only new-native/row replay
+passes in 107.893s; hash/cmx/index/proof and native txid/action mapping changes
+reject. This is one synthetic-context output, not a funded NU7 auction or full
+SDK migration. Original working33 new-output proof remains resource-limited.
+Shared host load changed: these observations establish completion, not controlled
+memory/latency improvement. Used swap peaked at a sampled 12.31GB; min free disk
+was 4.96GB. See `evidence/2026-10-05-shared-binding-layout.json`.

@@ -23,6 +23,10 @@ use pasta_curves::pallas;
 pub const DOMAIN: &[u8; 16] = b"DarkCall/row/v1\0";
 type SinConfig = SinsemillaConfig<OrchardHashDomains, OrchardCommitDomains, OrchardFixedBases>;
 type SinChip = SinsemillaChip<OrchardHashDomains, OrchardCommitDomains, OrchardFixedBases>;
+type NativeEncodingColumns = (
+    [Column<halo2_proofs::plonk::Advice>; 10],
+    [Column<halo2_proofs::plonk::Advice>; 5],
+);
 #[derive(Clone)]
 pub struct Config {
     advice: [Column<halo2_proofs::plonk::Advice>; 10],
@@ -56,7 +60,16 @@ fn assign(
 }
 impl Config {
     fn configure_hash(meta: &mut ConstraintSystem<pallas::Base>, with_sha: bool) -> Config {
-        let advice = std::array::from_fn(|_| meta.advice_column());
+        Self::configure_hash_columns(meta, with_sha, None)
+    }
+    fn configure_hash_columns(
+        meta: &mut ConstraintSystem<pallas::Base>,
+        with_sha: bool,
+        shared: Option<NativeEncodingColumns>,
+    ) -> Config {
+        let advice = shared
+            .map(|(native, _)| native)
+            .unwrap_or_else(|| std::array::from_fn(|_| meta.advice_column()));
         for col in advice {
             meta.enable_equality(col);
         }
@@ -81,6 +94,8 @@ impl Config {
         let ecc = EccChip::<OrchardFixedBases>::configure(meta, advice, fixed, range);
         let sha = if with_sha {
             ShaConfig::configure(meta)
+        } else if let Some((_, encoding)) = shared {
+            ShaConfig::configure_encoding_with_columns(meta, encoding)
         } else {
             ShaConfig::configure_encoding(meta)
         };
@@ -248,33 +263,70 @@ impl Circuit<pallas::Base> for PoseidonBinding {
     fn synthesize(
         &self,
         config: Self::Config,
-        mut layouter: impl Layouter<pallas::Base>,
+        layouter: impl Layouter<pallas::Base>,
     ) -> Result<(), Error> {
-        SinChip::load(config.native.sin.clone(), &mut layouter)?;
-        config.native.sha.load(&mut layouter)?;
-        config.bn.load(&mut layouter)?;
-        let (words, cmx) = self.0.synthesize_words(
-            &config.native,
-            layouter.namespace(|| "native row cells"),
-            0,
-        )?;
-        let mut bytes = Vec::new();
-        for word in &words {
-            let mut part = config.native.sha.word_bytes(&mut layouter, word)?;
-            part.reverse();
-            bytes.extend(part);
-        }
-        let mut packed = Vec::new();
-        for chunk in bytes.chunks(30) {
-            packed.push(config.bn.pack_bytes(&mut layouter, chunk)?);
-        }
-        let packed = packed.try_into().map_err(|_| Error::Synthesis)?;
-        let digest = config.bn.hash_eight(&mut layouter, &packed)?;
-        for (i, word) in config.bn.words(&mut layouter, &digest)?.iter().enumerate() {
-            layouter.constrain_instance(word.cell(), config.native.instance, i)?;
-        }
-        layouter.constrain_instance(cmx.cell(), config.native.instance, 8)
+        synthesize_poseidon(&self.0, config, layouter)
     }
+}
+
+/// Experimental distinct circuit/VK: 18 advice columns reused by disjoint
+/// native, encoding and integer regions. Not the default settlement circuit.
+#[derive(Clone, Default)]
+pub struct SharedPoseidonBinding(pub Binding);
+impl Circuit<pallas::Base> for SharedPoseidonBinding {
+    type Config = PoseidonConfig;
+    type FloorPlanner = SimpleFloorPlanner;
+    fn without_witnesses(&self) -> Self {
+        Self::default()
+    }
+    fn configure(meta: &mut ConstraintSystem<pallas::Base>) -> Self::Config {
+        let columns: [_; 18] = std::array::from_fn(|_| meta.advice_column());
+        let native = Config::configure_hash_columns(
+            meta,
+            false,
+            Some((
+                columns[..10].try_into().unwrap(),
+                columns[..5].try_into().unwrap(),
+            )),
+        );
+        let bn = darkcall_bn254_emulation::Config::configure_with_columns(meta, columns);
+        PoseidonConfig { native, bn }
+    }
+    fn synthesize(
+        &self,
+        config: Self::Config,
+        layouter: impl Layouter<pallas::Base>,
+    ) -> Result<(), Error> {
+        synthesize_poseidon(&self.0, config, layouter)
+    }
+}
+
+fn synthesize_poseidon(
+    binding: &Binding,
+    config: PoseidonConfig,
+    mut layouter: impl Layouter<pallas::Base>,
+) -> Result<(), Error> {
+    SinChip::load(config.native.sin.clone(), &mut layouter)?;
+    config.native.sha.load(&mut layouter)?;
+    config.bn.load(&mut layouter)?;
+    let (words, cmx) =
+        binding.synthesize_words(&config.native, layouter.namespace(|| "native row cells"), 0)?;
+    let mut bytes = Vec::new();
+    for word in &words {
+        let mut part = config.native.sha.word_bytes(&mut layouter, word)?;
+        part.reverse();
+        bytes.extend(part);
+    }
+    let mut packed = Vec::new();
+    for chunk in bytes.chunks(30) {
+        packed.push(config.bn.pack_bytes(&mut layouter, chunk)?);
+    }
+    let packed = packed.try_into().map_err(|_| Error::Synthesis)?;
+    let digest = config.bn.hash_eight(&mut layouter, &packed)?;
+    for (i, word) in config.bn.words(&mut layouter, &digest)?.iter().enumerate() {
+        layouter.constrain_instance(word.cell(), config.native.instance, i)?;
+    }
+    layouter.constrain_instance(cmx.cell(), config.native.instance, 8)
 }
 
 /// A fixed-count native proof binds every row. Canonical row ordering and the

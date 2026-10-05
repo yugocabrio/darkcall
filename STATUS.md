@@ -1,17 +1,50 @@
 # DarkCall status
 
-Updated: 2026-10-05 08:59 UTC.
+Updated: 2026-10-05 09:23 UTC.
 
 ## Current outcome
 
-The new-SDK synthetic output → working binding prover hit the 4 GiB disk guard
+**The separate shared18 NU7-output binding proof and public-only replay pass.**
+The exact new-SDK synthetic V3 output bytes now produce a trusted shared-layout
+Halo2 proof linked to the actual serialized NU7 native cmx/index. Proof 9,504
+bytes; key 115.076s, proof+initial verify 104.009s, complete run 221.541s. Altered
+hash/cmx/index rejects. Six MockProver runs reject amount, valid recipient point
+and public-input substitutions (57.485s). Shared layout uses 18 advice columns
+instead of 33, same canonical byte/integer/native/copy constraints and K17/degree9.
+The original configuration fingerprint remains exactly
+22fe5ec710bd191052c1b208e84f70c84f3612a2b8d4aae3e57654b1fa1bd4cd.
+Existing funded statements continue on that original trusted circuit/VK.
+
+Public replay (107.893s) freezes only four public files, no note openings, private
+row salts, masks, keys or PCZT. The new SDK verifies native proof/signatures and
+actual cmx/index mapping; the separate explicit shared verifier independently
+verifies the fixed row circuit and rejects altered hash/cmx/index/proof. Changed
+cmx/index/txid mapping rejects; wrong layout and extra private public-row fields
+reject. This is a single synthetic-context output, not certified auction/chain
+funding or public broadcast. It does not migrate the full wallet/auction SDK.
+
+Completed/consumed: shared mock 45752, shared proof 78357, public replay 17290;
+logs .local/nu7-shared-{mock,proof,replay}-20261005.log. Max sampled proof RSS
+1,291,536 KiB; min free disk 4,963,872,768 bytes; max sampled used swap
+12,309,558,722 bytes. Host workload changed (reported memory headroom 34% -> 70%):
+no controlled memory/latency improvement claim. The measured swap growth during
+key/proving corroborates transient disk loss. All normal runtime guards stayed;
+no other host work was stopped. Evidence: evidence/2026-10-05-shared-binding-layout.json.
+Original funded transaction plus all six original working33 row proofs and normal
+C++ auction proof also reverify after the layout refactor (111.190s, public-only,
+no fresh certificate check/chain inclusion). Regression 58048 completed/consumed.
+Layout configuration regression and strict selected/standalone all-target clippy
+pass. Next: preserve old reproduction, connect full NU7 auction/wallet path and
+live-chain freshness. Zero-price winner-delivery circuit checks are also underway.
+
+The original working33 new-SDK output binding experiment hit the 4 GiB disk guard
 twice during key/proof generation: 210.430s at two Rayon threads, then 341.850s
 at one thread despite 10 GiB initial disk/59% reported memory headroom. Both owned
 provers are stopped/consumed (2525/11285); no completed new-output row proof and
 no complete public binding replay. Logs .local/nu7-output-binding.log and
 .local/nu7-output-binding-singlethread.log; private exports/source are preserved.
 Evidence: evidence/2026-10-05-nu7-binding-resource-stop.json. Do not repeat the same
-heavy keygen without more capacity; next old-layout gate needs at least 16 GiB
+heavy keygen without more capacity; a future original-layout gate needs at least 16 GiB
 initial disk headroom and all runtime guards. No proof/guard/branch downgrade.
 
 Implemented separate byte export/public-only mapping replay and existing-circuit
@@ -20,8 +53,7 @@ Native NU7 proof/signatures/decryptions/export pass (12.042s). Public tx-cmx/ind
 matching and nine public/private malformed mapping/opening cases reject; this
 preflight is not an application ZK proof. Evidence:
 evidence/2026-10-05-nu7-byte-input-checks.json. Original funded chain/journals are
-unchanged. Next independent task: inspect native circuit resource costs and test
-a separately identified memory-saving layout; preserve existing proof verification.
+unchanged. The separate shared-layout result is above; full NU7 application migration remains.
 
 Static native layout profile (no private input/SRS/proof allocation): K17, 33
 advice columns, degree 9 and 8x extended domain (2^20 rows). This is not a memory

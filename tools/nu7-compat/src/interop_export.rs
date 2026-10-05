@@ -145,8 +145,16 @@ pub fn verify(directory: &Path, row: Option<&Path>) -> Result<serde_json::Value>
     }
     if let Some(path) = row {
         // Only public row inputs; no private-native-outputs file is opened.
-        let value: serde_json::Value = serde_json::from_slice(&read_public(path, 16384)?)
+        let mut value: serde_json::Value = serde_json::from_slice(&read_public(path, 16384)?)
             .map_err(|_| "public binding statement")?;
+        if value.get("layout").is_some() {
+            let wrapper = value.as_object().ok_or("shared public wrapper")?;
+            if wrapper.len() != 2 || !wrapper.contains_key("statement") ||
+                value["layout"] != "experimental-shared18-native-row-v1" {
+                return Err("unsupported shared public circuit identity".into());
+            }
+            value = value["statement"].clone();
+        }
         let minimal = ["action_index", "cmx", "branch", "txid"];
         let full = [
             "format",

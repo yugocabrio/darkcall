@@ -1,0 +1,166 @@
+{
+  "working": {
+    "advice_columns": 33,
+    "blinding_factors": 5,
+    "configured_system_sha256": "22fe5ec710bd191052c1b208e84f70c84f3612a2b8d4aae3e57654b1fa1bd4cd",
+    "constraint_degree": 9,
+    "extended_domain_factor": 8,
+    "fixed_columns_before_selector_compression": 18,
+    "instance_columns": 1,
+    "k": 17,
+    "layout": "working-33-column-v1",
+    "proof_generated": false,
+    "scope": "static native row circuit profile, not measured memory or a proof",
+    "witness_or_private_files_read": false,
+    "working_circuit_changed": false
+  },
+  "shared": {
+    "advice_columns": 18,
+    "blinding_factors": 5,
+    "configured_system_sha256": "cd1512e5d7db7d417d98ab7bb5d80591c51b36f6592008f16a57b60b4686e9d7",
+    "constraint_degree": 9,
+    "extended_domain_factor": 8,
+    "fixed_columns_before_selector_compression": 18,
+    "instance_columns": 1,
+    "k": 17,
+    "layout": "experimental-shared18-native-row-v1",
+    "proof_generated": false,
+    "scope": "static native row circuit profile, not measured memory or a proof",
+    "witness_or_private_files_read": false,
+    "working_circuit_changed": false
+  },
+  "recorded_utc": "2026-10-05T09:19:18.572551+00:00",
+  "mock": {
+    "actual_proof_generated": false,
+    "auction_plan_connected": false,
+    "broadcast": false,
+    "changed_amount_recipient_hash_cmx_index_rejected": true,
+    "correct_constraints_satisfied": true,
+    "k": 17,
+    "layout": "experimental-shared18-native-row-v1",
+    "native_consensus_verified_here": false,
+    "scope": "new-SDK V3 native output bytes in experimental shared-column MockProver only",
+    "seconds": 57.485286167,
+    "working_circuit_changed": false
+  },
+  "mock_max_sampled_rss_kib": 675792,
+  "mock_min_sampled_disk_bytes": 10915471360,
+  "mock_swap_growth_bytes": 0,
+  "actual_proof_completed": true,
+  "proof": {
+    "actual_proof_generated": true,
+    "auction_plan_connected": false,
+    "broadcast": false,
+    "changed_hash_cmx_index_rejected": true,
+    "key_seconds": 115.07640175,
+    "layout": "experimental-shared18-native-row-v1",
+    "native_consensus_verified_here": false,
+    "proof_bytes": 9504,
+    "proof_seconds": 104.008729041,
+    "proof_verified": true,
+    "scope": "one new-SDK synthetic native output binds to BN254 row; no auction admission/funding",
+    "seconds": 221.540624042,
+    "working_circuit_changed": false
+  },
+  "proof_resource_samples": {
+    "interval_seconds": 10,
+    "initial": {
+      "elapsed_seconds": 0.001,
+      "free_disk_bytes": 10906349568,
+      "system_memory_free_percent": 40,
+      "system_swap_used_bytes": 6113260994
+    },
+    "max_sampled_rss_kib": 1291536,
+    "min_sampled_disk_bytes": 4963872768,
+    "max_sampled_swap_used_bytes": 12309558722,
+    "min_reported_memory_headroom_percent": 34,
+    "exact_peak_footprint_measured": false,
+    "controlled_workload_comparison": false
+  },
+  "public_mapping_wrapper_preflight": {
+    "scope": "strict public shared-layout wrapper/mapping preflight; no SNARK verification",
+    "positive_mapping": {
+      "actual_serialized_cmx_mapping_verified": true,
+      "broadcast": false,
+      "chain_funding_or_inclusion_verified": false,
+      "native_proof_and_signatures_verified": true,
+      "private_openings_read": false,
+      "public_row_compared_to_actual_output": true,
+      "row_proof_verified_here": false,
+      "scope": "public-only NU7 native proof/signature/output mapping check; row proof verified separately by working circuit",
+      "txid": "e921382133a7332b6ab84b2eb773664beee8a5395fc03649a2313d268c4fc083"
+    },
+    "wrong_layout_rejected": true,
+    "private_field_rejected": true
+  },
+  "scope": "Single actual new-SDK synthetic V3 output bound to BN254 row by separately identified shared18 Halo2 proof; no auction admission/funding/broadcast.",
+  "replay_completed": true,
+  "old_layout_proof_files_and_funded_journals_modified": false,
+  "replay": {
+    "scope": "public-only native NU7 transaction and single explicitly selected row binding; synthetic funding",
+    "shared_layout": true,
+    "passed": true,
+    "native": {
+      "actual_serialized_cmx_mapping_verified": true,
+      "broadcast": false,
+      "chain_funding_or_inclusion_verified": false,
+      "native_proof_and_signatures_verified": true,
+      "private_openings_read": false,
+      "public_row_compared_to_actual_output": true,
+      "row_proof_verified_here": false,
+      "scope": "public-only NU7 native proof/signature/output mapping check; row proof verified separately by working circuit",
+      "txid": "e921382133a7332b6ab84b2eb773664beee8a5395fc03649a2313d268c4fc083"
+    },
+    "row": {
+      "auction_plan_connected": false,
+      "broadcast": false,
+      "changed_public_hash_cmx_index_and_proof_rejected": true,
+      "layout": "experimental-shared18-native-row-v1",
+      "native_consensus_verified_here": false,
+      "private_openings_read": false,
+      "public_only_native_row_proof_verified": true,
+      "scope": "one new-SDK synthetic native output binds to BN254 row; no auction admission/funding",
+      "seconds": 100.817527875,
+      "transaction_cmx_mapping_verified_here": false
+    },
+    "mapping_tampering": {
+      "cmx": {
+        "rejected": true,
+        "reason": "binding row differs from actual serialized native output"
+      },
+      "action_index": {
+        "rejected": true,
+        "reason": "binding row differs from actual serialized native output"
+      },
+      "txid": {
+        "rejected": true,
+        "reason": "binding row differs from actual serialized native output"
+      }
+    },
+    "public_files_copied": 4,
+    "private_openings_keys_pczt_copied": false,
+    "seconds": 107.8933186250033,
+    "auction_plan_connected": false,
+    "chain_funding_or_finality_verified": false,
+    "broadcast": false
+  },
+  "configuration_regression_passed": true,
+  "selected_strict_clippy_passed": true,
+  "original_live_chain_or_funding_modified": false,
+  "performance_limitation": "Shared host workload changed during the run; column count is reduced, but no controlled peak-memory/time comparison with working33 is established. Ten-second RSS is not actual footprint. Old layout stopped twice, so this is completion of a separate experimental gate, not a measured speedup.",
+  "original_working33_six_row_funded_public_regression": {
+    "acceptance_authentication_scope": "all-three operator attestation; not a public funding proof",
+    "acceptance_or_recipient_receipts_authenticated": false,
+    "actual_transaction_outputs_match": true,
+    "chain_funding_or_finality_verified": false,
+    "hash_rule": "bn254-poseidon2-packed-row-v1",
+    "native_proof_and_signatures_verified": true,
+    "native_row_proofs_verified": true,
+    "normal_cpp_auction_proof_verified": true,
+    "private_openings_read": false,
+    "scope": "public-only transaction/application-proof replay; chain inclusion checked separately",
+    "seconds": 111.190345084,
+    "transaction_bytes": 21790,
+    "txid": "89547f42484258df9958dd2775018a4665c3888363c26a99aacd0e5abb97b859"
+  }
+}
