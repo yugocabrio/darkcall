@@ -15,6 +15,22 @@ and public bundle share transaction52555e25…151ab3b. Run `./demo.sh` or
 [measured evidence](../../evidence/2026-10-05-canonical-nu7-memo-auction.json).
 The older component experiments below do not add funding/DKG/confirmation to it.
 
+## Actual local NU7 funding and DKG transfer
+
+The new `regtest-scan` and `regtest-transfer` commands now handle actual native
+notes from a separate pinned Zebra7.0.0-rc.0 node. The Python driver verifies
+canonical full-node provenance before building or broadcasting, obtains two
+controlled confirmations and checks exact recipient/source reconciliation.
+Bank→DKG and a subsequent DKG-source spend both pass; the DKG spend reads no
+master escrow key. All participants still run locally, and the bank is an
+ordinary retained-key wallet. Scanner RPC/birthday remain trusted.
+
+See [commands and limits](../../docs/regtest.md) and
+[actual evidence](../../evidence/2026-10-05-nu7-funded-dkg-transfer.json).
+This is the transfer migration gate; it does not yet connect actual funding,
+signed admission/final root or chain confirmation to the synthetic auction above.
+The old node/SDK and both Rust locks remain unchanged.
+
 The native SDK is pinned to librustzcash
 `9c5705f56517c040c50f96d29f1ff15a9383f3e0`: protocol 0.11.0-pre.0, primitives
 0.31.0-pre.0, PCZT 0.10.0-pre.0 and backend 0.25.0-pre.0. Its testnet rules

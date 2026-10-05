@@ -1,8 +1,26 @@
 # DarkCall status
 
-Updated: 2026-10-05 (latest receipt/client measurements recorded; git HEAD is authoritative).
+Updated: 2026-10-05 (NU7 actual funding/DKG transfer recorded; git HEAD is authoritative).
 
 ## Current outcome
+
+**Actual NU7 funding and DKG spending pass on a separate full node.**
+Official Zebra7.0.0-rc.0 activates branch77190ad9 at height2 on its own regtest,
+RPC29342; old6.3.0 state/port29332 are unchanged. Two matured native coinbase
+notes are scanned at104, with canonical Merkle paths and416666666zatoshi total.
+An actual bank note funds the local DKG escrow, then that escrow spends its
+actual received note with its existing2-of-3 packages and no master spending key.
+Both native transactions pass Zebra acceptance, two controlled confirmations,
+separate exact recipient scans and source-note/balance reconciliation:
+6bed5d9a…9a8b3f2c /6f761fa0…0e298a1; native proofs5.337s/5.002s.
+The scanner refuses six branch/genesis/continuity/tree/encoding/cache changes;
+altered actual witnesses reject before signing, three DKG package/readiness
+changes reject before proving, and four reconciliation substitutions reject.
+This is the necessary transfer migration gate, NOT the four-bid auction:
+no new accepted book, MPC bindings, six-output memos or funded canonical E2E.
+All DKG shares are on this host; the bank retains its ordinary spending key.
+Node RPC/birthday are trusted, not an SPV proof; public testnet is not used.
+See `evidence/2026-10-05-nu7-funded-dkg-transfer.json` and `docs/regtest.md`.
 
 **One fixed PK now completes two distinct NU7 memo auctions.**
 Opt-in warm full orchestration passes positive-price and zero-price books, using
@@ -71,12 +89,13 @@ retained as `.local/canonical-nu7-public-attacks-20261005`, not a crypto failure
 Only rebuildable `target/release/deps/*.rmeta` compiler metadata was deleted
 (1141971132bytes); all binaries/source/proofs/keys/journals were kept.
 
-**Current local jobs.** Warm measurement is complete. NU7 actual-note migration is
-being implemented/checked separately from this warm milestone. A separate pinned official
-Zebra7.0.0-rc.0 node uses29342 and its own state; the old6.3.0 node is untouched.
-It activated branch77190ad9 at height2; ordinary bank funding/scanning
-now passes at104. SDK threshold transfer/DKG reload is currently compiling
-(session26960, .local/nu7-transfer-build-20261005.log); do not duplicate.
+**Current local jobs.** Warm measurement and NU7 actual-note migration gate are
+complete; no heavy prover/compiler remains running. New node
+darkcall-zebra-regtest-nu7-700rc0 is idle at108 on29342 with its own state;
+the old6.3.0 node is untouched. SDK release build/strict clippy/fmt and Python
+checks pass; no lock or dependency changes. Transfer build26960, clippy21904,
+bank send7832 and DKG spend43138 all finished and were consumed; do not duplicate.
+Private wallet captures/keys remain ignored; retain them for the next integration.
 Local canonical demo remains PID34999,
 exec session45695 at http://127.0.0.1:8877; log
 .local/canonical-demo-v2-server-20261005.log. Temporary public-only test server

@@ -71,8 +71,8 @@ pub(crate) fn synthetic_note(
     }
 }
 pub(crate) struct ThresholdKeys {
-    packages: BTreeMap<frost::Identifier, frost::keys::KeyPackage>,
-    public: frost::keys::PublicKeyPackage,
+    pub(crate) packages: BTreeMap<frost::Identifier, frost::keys::KeyPackage>,
+    pub(crate) public: frost::keys::PublicKeyPackage,
 }
 
 pub(crate) fn split_key(sk: &SpendingKey, rng: &mut OldOsRng) -> Result<ThresholdKeys> {

@@ -14,6 +14,14 @@ proof/security model and avoid unrelated recovery/wallet/cryptographic work.
   public replay and own-ticket openings. Do not combine historical fixtures to
   claim this is complete. Session69231 completes the synthetic NU7 subset at price50/sold3;
   funded admission/DKG/chain inclusion still need the new-stack integration.
+  - [x] Separate official NU7 full node, actual matured native-note scanning,
+    bank funding of DKG escrow and actual DKG-source threshold spend with two
+    confirmations. Six scanner, three DKG-loader, four reconciliation and actual
+    witness refusals pass. This is a transfer gate, not the canonical auction.
+  - [ ] Connect existing authenticated funding claims, client proof/share checks,
+    signed admission and final-book journals to actual new-SDK NU7 deposits.
+  - [ ] Use those accepted notes/recipients for the same six-output memo PCZT,
+    unchanged native bindings/MPC/FROST, full-node inclusion and public replay.
 - [x] One coherent recorded synthetic browser story using that exact same run/bundle.
   - Four same-transaction own receipts, public replay and real tamper refusal pass;
     live admission/funded NU7 remains unfinished.

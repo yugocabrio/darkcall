@@ -1,5 +1,55 @@
 # Actual isolated native chain gate
 
+## Separate NU7 actual-note migration gate
+
+The latest current-SDK native transfer is demonstrated on a separate official
+Zebra7.0.0-rc.0 regtest, branch77190ad9 from height2. It uses its own state and
+loopback port29342; the working NU6.3 chain below is preserved. Both nodes are
+controlled local networks, not public testnet. Do not cross their captures,
+wallet birthdays, branch identifiers or transactions.
+
+```sh
+python3 scripts/regtest_nu7_node.py prepare
+python3 scripts/regtest_nu7_node.py start
+python3 scripts/regtest_nu7_node.py mine 2
+python3 scripts/regtest_nu7_funding.py --name nu7-bank-new
+target/release/darkcall-native-gate --regtest-dkg-init nu7-dkg-new
+python3 scripts/regtest_nu7_transfer.py .local/nu7-bank-new .local/nu7-bank-new/private-nu7-notes-104.json .local/nu7-dkg-new --name nu7-bank-to-dkg-new
+target/release/examples/regtest_wallet init .local/nu7-recipient-new
+python3 scripts/regtest_nu7_transfer.py .local/nu7-dkg-new .local/nu7-dkg-new/private-nu7-notes-106.json .local/nu7-recipient-new --name nu7-dkg-spend-new
+```
+
+Build the root initializer/wallet example below and the locked separate SDK using
+`tools/nu7-compat/README.md`. Use fresh names and actual reported heights;
+104/106 only apply to a fresh chain. Existing wallets/state are never reset.
+Before each transfer the driver checks node genesis/branch, canonical funding
+block/tx/cmx, maturity/confirmations and current Merkle anchor, then rejects an
+altered path before proving. It refuses chain changes during this controlled
+construction. Two generated confirmations are followed by exact recipient scans,
+source nullifier consumption and source balance reconciliation. This static-tip
+driver is unsuitable for an advancing public chain without further work.
+
+The SDK scanner replays actual canonical serialized NU7 transactions, decrypts
+native outputs and reconstructs every owned witness against the final node tree.
+It does not validate consensus or block PoW independently: RPC and birthday are
+trusted. Cached openings are freshly rederived and compared, never blindly
+trusted. Six actual capture/cache mutations reject without changing the source.
+
+The two measured transactions are9166bytes each, fee10000zatoshi. Bank→DKG
+funds1000000zatoshi in9.410s (native proof5.337s); DKG→recipient pays500000 in
+8.666s (proof5.002s). The second reloads existing pinned2-of-3 DKG packages,
+validating participant IDs, group/FVK, threshold and secret/public share
+correspondence. It reads no escrow master spending key. All three shares still
+reside on one host. The first bank transfer uses its ordinary retained key and
+local trusted-dealer FROST. Three altered DKG setups reject before proof creation.
+
+Evidence: `../evidence/2026-10-05-nu7-funded-dkg-transfer.json`. This is a native
+funding/transfer gate. The latest funded four-bid admission, accepted root and
+same six-output memo settlement are not connected yet. Historical funded
+auction results below remain NU6.3 and must not be combined into a NU7 E2E claim.
+
+## Preserved NU6.3 reproduction
+
 The pinned Zebra 6.3.0 ARM Linux binary runs in Docker with two CPUs, 2 GiB,
 no public peers, persistent ignored state and host RPC only at 127.0.0.1:29332.
 The driver checks the regtest genesis and NU6.3 branch 37a5165b before mutations.

@@ -1,0 +1,255 @@
+{
+  "date": "2026-10-05",
+  "base_git_head": "02e6417",
+  "scope": "actual NU7 native funding and DKG threshold transfer on a separate owned regtest; NOT the four-bid auction",
+  "node": {
+    "version": "7.0.0-rc.0",
+    "release": "https://github.com/ZcashFoundation/zebra/releases/tag/v7.0.0-rc.0",
+    "archive_sha256": "59adbb7d3e19c0fb7370eeca628787973ee347e421700a36e3b8dbde5c0b86c4",
+    "branch": "77190ad9",
+    "activation_height": 2,
+    "rpc": "127.0.0.1:29342",
+    "docker_image": "ubuntu@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55",
+    "resource_limits": {
+      "cpus": 2,
+      "memory_bytes": 2147483648
+    },
+    "old_node_or_state_modified": false,
+    "licenses_retained_in_verified_archive": [
+      "LICENSE-APACHE",
+      "LICENSE-MIT"
+    ]
+  },
+  "commands": [
+    "python3 scripts/regtest_nu7_node.py prepare",
+    "python3 scripts/regtest_nu7_node.py start",
+    "python3 scripts/regtest_nu7_node.py mine 2",
+    "python3 scripts/regtest_nu7_funding.py --name nu7-bank-20261005",
+    "target/release/darkcall-native-gate --regtest-dkg-init nu7-escrow-dkg-20261005",
+    "python3 scripts/regtest_nu7_transfer.py .local/nu7-bank-20261005 .local/nu7-bank-20261005/private-nu7-notes-104.json .local/nu7-escrow-dkg-20261005 --name nu7-bank-to-dkg-20261005",
+    "target/release/examples/regtest_wallet init .local/nu7-dkg-recipient-20261005",
+    "python3 scripts/regtest_nu7_transfer.py .local/nu7-escrow-dkg-20261005 .local/nu7-escrow-dkg-20261005/private-nu7-notes-106.json .local/nu7-dkg-recipient-20261005 --name nu7-dkg-spend-20261005"
+  ],
+  "funding": {
+    "scope": "actual matured native NU7 funding; separate isolated regtest",
+    "node": {
+      "scope": "separate isolated NU7 regtest; not public testnet",
+      "genesis": "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327",
+      "blocks": 104,
+      "tip": "b2c99243a126bf42b970ba4e0e48b6c66a41547a2ce831e3f17ac9fd301f8bd6",
+      "consensus": {
+        "chaintip": "77190ad9",
+        "nextblock": "77190ad9"
+      },
+      "nu7_height": 2,
+      "rpc": "http://127.0.0.1:29342",
+      "zebra_version": "7.0.0-rc.0"
+    },
+    "scan": {
+      "all_native_paths_match_node_tree": true,
+      "balance_zatoshi": 416666666,
+      "decrypted_unspent_native_notes": 2,
+      "funding_observations_fabricated": false,
+      "height": 104,
+      "keys_openings_or_memos_logged": false,
+      "native_consensus_source": "pinned local full node, not scanner/SPV proof",
+      "scope": "actual isolated NU7 notes from trusted local Zebra; not public testnet",
+      "spent_native_notes": 0
+    },
+    "two_coinbase_notes_mature": true,
+    "public_testnet": false,
+    "dkg_escrow": false,
+    "auction_settlement": false,
+    "ordinary_bank_key_only": true,
+    "old_regtest_changed": false
+  },
+  "dkg_initialization": {
+    "directory": "nu7-escrow-dkg-20261005",
+    "escrow_full_ask_reconstructed": false,
+    "escrow_master_spending_key_generated": false,
+    "independent_participant_transport": false,
+    "native_fvk_valid": true,
+    "persisted_key_packages_reloaded": true,
+    "private_key_material_logged": false,
+    "scope": "local three-participant DKG escrow initialization; all shares on one host",
+    "threshold": "2-of-3"
+  },
+  "bank_to_dkg": {
+    "scope": "actual isolated NU7 threshold transfer, not auction settlement",
+    "construction": {
+      "branch": "77190ad9",
+      "broadcast": false,
+      "chain_provenance_checked_by_this_binary": false,
+      "changed_digest_rejected": true,
+      "dkg_source": false,
+      "genesis": "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327",
+      "inputs": 1,
+      "mpc_settlement_binding": false,
+      "native_proof_and_signatures_verified": true,
+      "one_share_rejected": true,
+      "outputs": 2,
+      "planned_fee": 10000,
+      "proof_seconds": 5.336688041,
+      "recipient_amount": 1000000,
+      "recipients_decrypted": 2,
+      "scope": "actual-note isolated NU7 threshold transfer; not auction settlement",
+      "seconds": 9.410203792,
+      "setup": "ordinary bank key, local trusted dealer",
+      "source_master_key_read": true,
+      "threshold": "2-of-3",
+      "transaction_bytes": 9166,
+      "txid": "6bed5d9ab36d09bf54ab795096772c74b59a810c2a4a2b623d58b0e79a8b3f2c"
+    },
+    "full_node_accepted": true,
+    "canonical_confirmations": 2,
+    "recipient_scan": {
+      "all_native_paths_match_node_tree": true,
+      "balance_zatoshi": 1000000,
+      "decrypted_unspent_native_notes": 1,
+      "funding_observations_fabricated": false,
+      "height": 106,
+      "keys_openings_or_memos_logged": false,
+      "native_consensus_source": "pinned local full node, not scanner/SPV proof",
+      "scope": "actual isolated NU7 notes from trusted local Zebra; not public testnet",
+      "spent_native_notes": 0
+    },
+    "source_scan": {
+      "all_native_paths_match_node_tree": true,
+      "balance_zatoshi": 415656666,
+      "decrypted_unspent_native_notes": 2,
+      "funding_observations_fabricated": false,
+      "height": 106,
+      "keys_openings_or_memos_logged": false,
+      "native_consensus_source": "pinned local full node, not scanner/SPV proof",
+      "scope": "actual isolated NU7 notes from trusted local Zebra; not public testnet",
+      "spent_native_notes": 1
+    },
+    "altered_witness_rejected": true,
+    "old_regtest_changed": false,
+    "public_testnet": false,
+    "mpc_auction_or_admission": false,
+    "finality_scope": "two controlled local confirmations; not public-chain finality"
+  },
+  "dkg_source_spend": {
+    "scope": "actual isolated NU7 threshold transfer, not auction settlement",
+    "construction": {
+      "branch": "77190ad9",
+      "broadcast": false,
+      "chain_provenance_checked_by_this_binary": false,
+      "changed_digest_rejected": true,
+      "dkg_source": true,
+      "genesis": "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327",
+      "inputs": 1,
+      "mpc_settlement_binding": false,
+      "native_proof_and_signatures_verified": true,
+      "one_share_rejected": true,
+      "outputs": 2,
+      "planned_fee": 10000,
+      "proof_seconds": 5.002225459,
+      "recipient_amount": 500000,
+      "recipients_decrypted": 2,
+      "scope": "actual-note isolated NU7 threshold transfer; not auction settlement",
+      "seconds": 8.666379958,
+      "setup": "existing local DKG packages; all shares on one host",
+      "source_master_key_read": false,
+      "threshold": "2-of-3",
+      "transaction_bytes": 9166,
+      "txid": "6f761fa059a1f421fa65a5bd5970617e01f30240500adf713bd4e39d90e298a1"
+    },
+    "full_node_accepted": true,
+    "canonical_confirmations": 2,
+    "recipient_scan": {
+      "all_native_paths_match_node_tree": true,
+      "balance_zatoshi": 500000,
+      "decrypted_unspent_native_notes": 1,
+      "funding_observations_fabricated": false,
+      "height": 108,
+      "keys_openings_or_memos_logged": false,
+      "native_consensus_source": "pinned local full node, not scanner/SPV proof",
+      "scope": "actual isolated NU7 notes from trusted local Zebra; not public testnet",
+      "spent_native_notes": 0
+    },
+    "source_scan": {
+      "all_native_paths_match_node_tree": true,
+      "balance_zatoshi": 490000,
+      "decrypted_unspent_native_notes": 1,
+      "funding_observations_fabricated": false,
+      "height": 108,
+      "keys_openings_or_memos_logged": false,
+      "native_consensus_source": "pinned local full node, not scanner/SPV proof",
+      "scope": "actual isolated NU7 notes from trusted local Zebra; not public testnet",
+      "spent_native_notes": 1
+    },
+    "altered_witness_rejected": true,
+    "old_regtest_changed": false,
+    "public_testnet": false,
+    "mpc_auction_or_admission": false,
+    "finality_scope": "two controlled local confirmations; not public-chain finality"
+  },
+  "scan_checks": {
+    "scope": "actual isolated NU7 node capture replay and six input/cache refusals",
+    "canonical_replay": {
+      "all_native_paths_match_node_tree": true,
+      "balance_zatoshi": 416666666,
+      "decrypted_unspent_native_notes": 2,
+      "funding_observations_fabricated": false,
+      "height": 104,
+      "keys_openings_or_memos_logged": false,
+      "native_consensus_source": "pinned local full node, not scanner/SPV proof",
+      "scope": "actual isolated NU7 notes from trusted local Zebra; not public testnet",
+      "spent_native_notes": 0
+    },
+    "rejected": [
+      "branch",
+      "genesis",
+      "block-link",
+      "tree-size",
+      "trailing-tx",
+      "cached-amount"
+    ],
+    "original_wallet_unchanged": true,
+    "private_test_copies_committed": false,
+    "chain_consensus_verified_by_scanner": false,
+    "seconds": 0.1258349170020665
+  },
+  "dkg_loader_checks": {
+    "scope": "new SDK DKG byte-loader failures using copied historical local packages; no proof/sign/broadcast",
+    "rejected": [
+      "package-alias",
+      "master-alias",
+      "incomplete"
+    ],
+    "original_keys_or_journals_changed": false,
+    "private_copies_committed": false
+  },
+  "source_reconciliation_rechecks": {
+    "scope": "reconciliation rechecks on actual confirmed NU7 captures; no new broadcast",
+    "passed": [
+      "nu7-bank-to-dkg-20261005",
+      "nu7-dkg-spend-20261005"
+    ],
+    "rejected": [
+      "nu7-bank-to-dkg-20261005:retained-source",
+      "nu7-bank-to-dkg-20261005:balance",
+      "nu7-dkg-spend-20261005:retained-source",
+      "nu7-dkg-spend-20261005:balance"
+    ]
+  },
+  "checks": {
+    "release_build": true,
+    "locked_strict_clippy": true,
+    "rustfmt": true,
+    "python_compile": true,
+    "root_lock_changed": false,
+    "sdk_lock_changed": false
+  },
+  "initial_compile_failure": "Incremental Merkle path requires a native MerkleHash leaf, not direct NoteCommitment conversion. Fixed with explicit extracted-cmx leaf; locked release and clippy pass.",
+  "limitations": [
+    "Controlled PoW-disabled isolated regtest, not standard/public testnet.",
+    "All DKG shares are on one host; no independent operator transport/security claim.",
+    "The source bank uses an ordinary owned spending key and local dealer split; the later DKG spend reads no master spending key.",
+    "Scanner trusts the full-node RPC and its birthday; it does not independently verify consensus or SPV.",
+    "Four funded bids, authenticated admission, latest six receipt memos, bindings and settlement remain to be connected in ONE NU7 run.",
+    "This transfer gate is not durable auction custody/recovery and performs no MPC/row binding."
+  ]
+}

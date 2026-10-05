@@ -30,6 +30,7 @@ changing the lock or downloading platform dependencies.
 | ark-bn254 | 0.6.0 | MIT OR Apache-2.0 |
 | ed25519-dalek | 2.2.0 | BSD-3-Clause |
 | Zebra node | 6.3.0 | MIT OR Apache-2.0; both official archive LICENSE files retained |
+| Separate NU7 Zebra node | 7.0.0-rc.0 | MIT OR Apache-2.0; both official archive LICENSE files retained |
 
 Source declarations are from the resolved package manifests. Compiler and node
 workspace declarations are also confirmed in the pinned [Noir source](https://github.com/noir-lang/noir/blob/v1.0.0-rc.2/Cargo.toml)
@@ -66,3 +67,14 @@ statements, commitments and public verification-key comparison bytes. It contain
 no viewing/spending key, PCZT, witness, plaintext maximum bid, delivery pad or
 blinder. Those verifier keys are compared to our pinned compiled circuit and
 never treated as bundle-provided trust anchors.
+
+The separate NU7 regtest uses the official
+[Zebra7.0.0-rc.0 release](https://github.com/ZcashFoundation/zebra/releases/tag/v7.0.0-rc.0).
+The ARM Linux archive is SHA256
+`59adbb7d3e19c0fb7370eeca628787973ee347e421700a36e3b8dbde5c0b86c4`,
+with `LICENSE-APACHE` and `LICENSE-MIT` retained in the verified archive.
+Container image is
+`ubuntu@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55`.
+This separate node adds no Rust dependency or lock change; archive/source notices
+are additional to the Cargo inventories. Full commands and resource limits are in
+`evidence/2026-10-05-nu7-funded-dkg-transfer.json`.
