@@ -4,6 +4,29 @@ Updated: 2026-10-05 (latest receipt/client measurements recorded; git HEAD is au
 
 ## Current outcome
 
+**One fixed PK now completes two distinct NU7 memo auctions.**
+Opt-in warm full orchestration passes positive-price and zero-price books, using
+one key generation and12 fresh row proofs. Verified clearing events:13.032s and
+8.163s; settlement completes901.704s and823.613s after each request. Native/FROST,
+normal fixed C++ proofs, independent SDK application replay and all six exact
+recipient decryptions pass. Transaction731c2410…ad4e35d2 /26675832…871f754d.
+One cold initialization122.447s: parameters92.015s, VK13.077s, PK17.355s. Six
+sequential row services661.788s /583.039s; row create/verify are timed separately.
+This is shared16GiB M1 paging, not a controlled speed comparison or2-minute claim.
+Synthetic/local dealer only; no new funded admission, DKG or chain inclusion.
+Driver89932/group89935/session6557 completed and were consumed; no duplicate run.
+Fresh warm transaction public-only replay passes105.867s. Both books have four
+own-memo openings and four substitutions passing17.021s/18.967s.
+The original cold/cache paths and circuit/verifier/statements are preserved.
+Mac2-way refuses before key allocation; larger Linux concurrency is unmeasured.
+Guards10GiB start/4GiB disk/8GiB owned-group RSS/10%Mac memory stayed unchanged.
+Sampled owned-group RSS3.10GiB, minimum disk4.63GiB/memory33%, maximum swap15.74GiB;
+10-second observations are not true peak physical memory. See
+`evidence/2026-10-05-warm-full-nu7-auctions.json`.
+Only3093 rebuildable .rmeta/.rlib compiler cache files (3031265271bytes) were removed
+after prior checks; binaries/source/proofs/keys/journals retained. Manifest stays
+ignored in .local/warm-auction-compiler-cleanup-20261005.json.
+
 **One current synthetic NU7 auction now includes the full six-output receipt flow.**
 The run `.local/canonical-nu7-memos-20261005` completes at price50/sold3:
 committed private bids → fresh blinded-v2 refund/winner delivery → four encrypted
@@ -39,8 +62,8 @@ per proof; one key generation, zero signing approvals. The second fresh proof
 replaces only row0 in a copied public bundle and passes the independent fixed
 public verifier in103.105s. Requesting2-way concurrency on the Mac refuses
 before key allocation.2/3/6 routing is compiled but not benchmarked on sufficient
-Linux hardware. The full auction orchestrator still uses its original cold path;
-there is no measured2-minute settlement or claimed parallel speedup.
+Linux hardware. The original command retains its cold path; an opt-in full warm service now
+passes both books above. No2-minute settlement or parallel speedup is measured.
 Resource samples are every10s, not true peaks; warm max sampled RSS4064256KiB,
 minimum disk7869779968bytes and memory34%. Short initial overlap with an independent
 public replay is disclosed; that replay was stopped to serialize heavy work and
@@ -48,7 +71,13 @@ retained as `.local/canonical-nu7-public-attacks-20261005`, not a crypto failure
 Only rebuildable `target/release/deps/*.rmeta` compiler metadata was deleted
 (1141971132bytes); all binaries/source/proofs/keys/journals were kept.
 
-**All heavy jobs are complete.** Local canonical demo remains PID34999,
+**Current local jobs.** Warm measurement is complete. NU7 actual-note migration is
+being implemented/checked separately from this warm milestone. A separate pinned official
+Zebra7.0.0-rc.0 node uses29342 and its own state; the old6.3.0 node is untouched.
+It activated branch77190ad9 at height2; ordinary bank funding/scanning
+now passes at104. SDK threshold transfer/DKG reload is currently compiling
+(session26960, .local/nu7-transfer-build-20261005.log); do not duplicate.
+Local canonical demo remains PID34999,
 exec session45695 at http://127.0.0.1:8877; log
 .local/canonical-demo-v2-server-20261005.log. Temporary public-only test server
 PID35061/session42429 was stopped; no duplicate server is needed. Automation
@@ -60,8 +89,8 @@ under its existing lock; no missing declared license. See
 
 Next high-value gap: same NU7 execution with actual funding, authenticated
 admission/final-book certificate, DKG and chain confirmation. Independent hosts,
-8/16/32-bid compiled proofs, larger-host concurrency and warm-worker orchestration
-are unfinished. Do not enlarge the crypto/wallet/recovery scope merely to add code.
+8/16/32-bid compiled proofs and larger-host concurrency
+are unfinished; same-PK full synthetic orchestration is demonstrated. Do not enlarge the crypto/wallet/recovery scope merely to add code.
 
 ## Prior component records (historical; current result above is authoritative)
 

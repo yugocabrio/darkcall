@@ -114,9 +114,13 @@ Confirm official submission requirements; publish only after human authorization
 | Public-only replay |99.323s| No private material; includes fixed native verifier setup |
 | Warm worker initialization |111.984s| One persistent same-circuit PK |
 | Warm row0 jobs |82.310s /92.506s| Fresh proofs, same statement; no full-auction latency claim |
+|Warm full service: two books|901.704s /823.613s| One PK,12 fresh rows; clearing13.032s/8.163s |
+|Warm full service initialization|122.447s| Params92.015s/VK13.077s/PK17.355s before job requests |
 |2/3/6 workers|Not measured| Mac refuses parallel proving; sufficient Linux RAM required |
 |8/16/32 bids|Not measured| Current fixed auction/settlement verifiers have four slots/six rows |
 
 [Exact evidence](../evidence/2026-10-05-canonical-nu7-memo-auction.json) includes resource
 samples and verification scopes. Warm proof row0 also passes the independent
-public fixed verifier; production orchestration has not been switched to it.
+public fixed verifier. An opt-in complete synthetic warm service now passes
+two distinct books; see [warm full evidence](../evidence/2026-10-05-warm-full-nu7-auctions.json).
+The ordinary command still uses its cold path; neither timing is a production benchmark.

@@ -1,7 +1,13 @@
-//! Local pipe-only warmed row prover. Same circuit/key/statements as the native
-//! gate. No network listener, signing keys, MPC inputs or implicit approvals.
+//! Local pipe-only warmed row prover, plus a separately selected synthetic NU7
+//! auction service. Same circuit/key/statements as the native gate. The row-only
+//! mode has no signing capability; auction mode retains independent SDK replay
+//! before synthetic threshold signing. Neither mode exposes a network listener.
 use crate::{Result, nu7_auction, regtest_spend::write_private};
-use darkcall_output_binding::poseidon_rows::{LayoutProver, RowLayout, row_public};
+use darkcall_output_binding::{
+    poseidon_rows::{LayoutProver, RowLayout, row_public},
+    sha::Binding,
+};
+use darkcall_settlement_types::NativeBatchStatement;
 use serde::Deserialize;
 use std::{
     io::{BufRead, Read, Write},
@@ -16,14 +22,22 @@ struct Job {
     name: String,
     rows: Vec<usize>,
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AuctionJob {
+    book: PathBuf,
+    name: String,
+}
+fn valid_name(name: &str) -> bool {
+    !name.is_empty()
+        && name.len() <= 50
+        && name
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+}
 impl Job {
     fn validate(&self) -> Result<()> {
-        if self.name.is_empty()
-            || self.name.len() > 50
-            || !self
-                .name
-                .bytes()
-                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+        if !valid_name(&self.name)
             || self.rows.is_empty()
             || self.rows.len() > 6
             || self.rows.iter().any(|i| *i >= 6)
@@ -83,14 +97,71 @@ fn emit(value: &serde_json::Value) -> Result<()> {
         .map_err(|_| "worker pipe closed".into())
 }
 
+/// Emit only the already-public verified clearing result, never refunds, winner
+/// bits, receiver identifiers, masks or openings. Settlement is still pending.
+pub(crate) fn clearing(name: &str, price: u64, sold: u32) -> Result<()> {
+    emit(
+        &serde_json::json!({"stage":"clearing_verified","job":name,"price":price,"sold":sold,
+        "fixed_cpp_delivery_proof_verified":true,"six_output_settlement_verified":false,
+        "chain_funding":false,"broadcast":false}),
+    )
+}
+
+/// Fresh independent rows only. No proof cache, approval, signer or VK import.
+/// Both the pipe-only row service and full synthetic auction use this operation.
+pub(crate) fn prove_rows(
+    prover: &LayoutProver,
+    workers: usize,
+    statement: &NativeBatchStatement,
+    bindings: &[Binding],
+    rows: &[usize],
+    output: &std::path::Path,
+) -> Result<Vec<serde_json::Value>> {
+    capacity(workers)?;
+    if bindings.len() != 6
+        || rows.is_empty()
+        || rows.len() > 6
+        || rows.iter().any(|i| *i >= 6)
+        || rows.iter().collect::<std::collections::BTreeSet<_>>().len() != rows.len()
+    {
+        return Err("bounded distinct native proof rows required".into());
+    }
+    let mut results = Vec::new();
+    for batch in rows.chunks(workers) {
+        let completed = std::thread::scope(|scope| {
+            let handles = batch.iter().map(|i| {
+                let opening = bindings[*i].clone();
+                let public = row_public(statement, *i).map_err(|_| "worker public statement")?;
+                let path = output.join(format!("native-binding-proof-{i}"));
+                Ok(scope.spawn(move || -> Result<serde_json::Value> {
+                    let row_start = Instant::now();
+                    eprintln!("Warm native row {i} proof started");
+                    let proof = prover.shared_prove_profiled(opening, &public).map_err(|_| "worker fixed proof/verification failed")?;
+                    write_private(&path, &proof.proof)?;
+                    eprintln!("Warm native row {i} proof and fixed verification complete");
+                    Ok(serde_json::json!({"row":i,"proof_bytes":proof.proof.len(),
+                        "proof_create_seconds":proof.create_seconds,"proof_verify_seconds":proof.verify_seconds,
+                        "proof_and_verify_seconds":row_start.elapsed().as_secs_f64()}))
+                }))
+            }).collect::<Result<Vec<_>>>()?;
+            handles
+                .into_iter()
+                .map(|handle| handle.join().map_err(|_| "worker thread failed")?)
+                .collect::<Result<Vec<_>>>()
+        })?;
+        results.extend(completed);
+    }
+    Ok(results)
+}
+
 pub fn run(workers: usize) -> Result<()> {
     capacity(workers)?;
     let started = Instant::now();
-    let prover =
-        LayoutProver::new(RowLayout::Shared18).map_err(|_| "worker fixed key preparation")?;
+    let (prover, key_phases) =
+        LayoutProver::shared_profiled().map_err(|_| "worker fixed key preparation")?;
     emit(
         &serde_json::json!({"ready":true,"layout":RowLayout::Shared18.id(),"workers":workers,
-        "cold_key_seconds":started.elapsed().as_secs_f64(),"proving_key_generated":true}),
+        "cold_key_seconds":started.elapsed().as_secs_f64(),"key_phases":key_phases,"proving_key_generated":true}),
     )?;
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
@@ -122,32 +193,53 @@ pub fn run(workers: usize) -> Result<()> {
             .create(&output)
             .map_err(|_| "preserve existing worker job")?;
         let job_start = Instant::now();
-        let mut results = Vec::new();
-        for batch in job.rows.chunks(workers) {
-            let completed = std::thread::scope(|scope| {
-                let handles = batch.iter().map(|i| {
-                    let opening = bindings[*i].clone();
-                    let public = row_public(&statement, *i).map_err(|_| "worker public statement")?;
-                    let prover = &prover;
-                    let path = output.join(format!("native-binding-proof-{i}"));
-                    Ok(scope.spawn(move || -> Result<serde_json::Value> {
-                        let row_start = Instant::now();
-                        let proof = prover.prove(opening, &public).map_err(|_| "worker fixed proof/verification failed")?;
-                        write_private(&path, &proof)?;
-                        Ok(serde_json::json!({"row":i,"proof_bytes":proof.len(),"proof_and_verify_seconds":row_start.elapsed().as_secs_f64()}))
-                    }))
-                }).collect::<Result<Vec<_>>>()?;
-                handles
-                    .into_iter()
-                    .map(|handle| handle.join().map_err(|_| "worker thread failed")?)
-                    .collect::<Result<Vec<_>>>()
-            })?;
-            results.extend(completed);
-        }
+        let results = prove_rows(&prover, workers, &statement, &bindings, &job.rows, &output)?;
         emit(
             &serde_json::json!({"completed":true,"job":job.name,"rows":results,"workers":workers,
             "proving_key_generated":false,"same_fixed_verifier":true,"seconds":job_start.elapsed().as_secs_f64(),
             "native_signatures_or_auction_approval_created":false}),
+        )?;
+    }
+    Ok(())
+}
+
+/// Separate opt-in synthetic auction service. Unlike the row-only service this
+/// calls the SDK finalizer, which independently verifies the full application
+/// before threshold signing fabricated notes. Never accepts funding or keys.
+pub fn run_auctions(workers: usize) -> Result<()> {
+    capacity(workers)?;
+    let started = Instant::now();
+    let (prover, key_phases) =
+        LayoutProver::shared_profiled().map_err(|_| "auction worker fixed key preparation")?;
+    emit(
+        &serde_json::json!({"ready":true,"scope":"synthetic NU7 auction worker; no chain funding",
+        "layout":RowLayout::Shared18.id(),"workers":workers,
+        "cold_key_seconds":started.elapsed().as_secs_f64(),"key_phases":key_phases,"proving_key_generated":true}),
+    )?;
+    let stdin = std::io::stdin();
+    let mut input = stdin.lock();
+    loop {
+        let mut bytes = Vec::new();
+        let count = input
+            .by_ref()
+            .take(4097)
+            .read_until(b'\n', &mut bytes)
+            .map_err(|_| "auction worker pipe read")?;
+        if count == 0 {
+            break;
+        }
+        if count > 4096 || bytes.last() != Some(&b'\n') {
+            return Err("auction worker request exceeds bounded JSON line".into());
+        }
+        let job: AuctionJob =
+            serde_json::from_slice(&bytes).map_err(|_| "strict auction worker job schema")?;
+        if !valid_name(&job.name) {
+            return Err("fresh simple auction worker name required".into());
+        }
+        let result = nu7_auction::run_warm(&job.book, &job.name, &prover, workers)?;
+        emit(
+            &serde_json::json!({"completed":true,"job":job.name,"workers":workers,
+            "proving_key_generated":false,"result":result}),
         )?;
     }
     Ok(())
@@ -183,6 +275,10 @@ mod tests {
                 .is_err()
         );
         assert!(capacity(0).is_err());
+        assert!(
+            serde_json::from_str::<AuctionJob>(r#"{"book":"x","name":"a","funding":"external"}"#)
+                .is_err()
+        );
         if !cfg!(target_os = "linux") {
             assert!(capacity(2).is_err());
             assert!(capacity(6).is_err());

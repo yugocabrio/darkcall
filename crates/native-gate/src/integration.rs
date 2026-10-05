@@ -365,6 +365,39 @@ impl Integration {
         actual: [[u8; 32]; 6],
         effects_digest: [u8; 32],
     ) -> Result<ApprovedPlan> {
+        self.prove_and_check_inner(rows, notes, actual, effects_digest, None)
+    }
+
+    pub(crate) fn prove_and_check_warm(
+        &self,
+        rows: &[Row; 6],
+        notes: &[Note; 6],
+        actual: [[u8; 32]; 6],
+        effects_digest: [u8; 32],
+        prover: &LayoutProver,
+        workers: usize,
+    ) -> Result<ApprovedPlan> {
+        // Do not extend existing funded/cache recovery behavior implicitly.
+        // The opt-in NU7 worker constructs this exact fixed synthetic layout.
+        if !self.funding_is_synthetic
+            || self.layout != RowLayout::Shared18
+            || !matches!(prover, LayoutProver::Shared(_))
+            || self.native_proof_source.is_some()
+        {
+            return Err("warm worker requires fresh synthetic shared18 rows".into());
+        }
+        crate::row_worker::capacity(workers)?;
+        self.prove_and_check_inner(rows, notes, actual, effects_digest, Some((prover, workers)))
+    }
+
+    fn prove_and_check_inner(
+        &self,
+        rows: &[Row; 6],
+        notes: &[Note; 6],
+        actual: [[u8; 32]; 6],
+        effects_digest: [u8; 32],
+        warm: Option<(&LayoutProver, usize)>,
+    ) -> Result<ApprovedPlan> {
         let start = Instant::now();
         let statement = NativeBatchStatement {
             row_hashes: rows
@@ -427,9 +460,16 @@ impl Integration {
         } else {
             0.0
         };
-        eprintln!("Integrated native row key preparation started");
+        eprintln!(
+            "Integrated native row key: {}",
+            if warm.is_some() {
+                "reuse already warmed fixed PK"
+            } else {
+                "cold/cache preparation"
+            }
+        );
         let key_start = Instant::now();
-        let prover = if cached.is_some() {
+        let prover = if cached.is_some() || warm.is_some() {
             None
         } else {
             Some(LayoutProver::new(self.layout).map_err(|e| fail("native row key", e))?)
@@ -437,53 +477,83 @@ impl Integration {
         let key_seconds = key_start.elapsed().as_secs_f64();
         let mut times = Vec::new();
         let mut reused = 0;
-        for i in 0..6 {
-            eprintln!("Integrated native row {i} proof started");
-            let t = Instant::now();
-            let opening =
-                binding_from_note(&rows[i], &notes[i]).map_err(|e| fail("native opening", e))?;
-            let public = row_public(&statement, i).map_err(|e| fail("native statement", e))?;
-            let previous = self
-                .native_proof_source
-                .as_ref()
-                .map(|p| p.join(format!("native-binding-proof-{i}")));
-            let proof = if let Some(proofs) = &cached {
-                reused += 1;
-                proofs[i].clone()
-            } else if let Some(path) = previous.filter(|p| p.exists()) {
-                let proof = crate::regtest_spend::read_private(&path, 65536)?;
-                // Existing bytes are never accepted merely because a file is
-                // present. Reverify under our trusted circuit and exact current
-                // row/cmx/index; reject altered/partial proofs without fallback.
-                prover
+        let mut warm_row_profiles = None;
+        if let Some((prover, workers)) = warm {
+            let openings = (0..6)
+                .map(|i| {
+                    binding_from_note(&rows[i], &notes[i]).map_err(|e| fail("native opening", e))
+                })
+                .collect::<Result<Vec<_>>>()?;
+            let measurements = crate::row_worker::prove_rows(
+                prover,
+                workers,
+                &statement,
+                &openings,
+                &[0, 1, 2, 3, 4, 5],
+                &self.directory,
+            )?;
+            times = measurements
+                .iter()
+                .map(|v| {
+                    v["proof_and_verify_seconds"]
+                        .as_f64()
+                        .ok_or_else(|| "native row timing".into())
+                })
+                .collect::<Result<Vec<_>>>()?;
+            warm_row_profiles = Some(measurements);
+        } else {
+            for i in 0..6 {
+                eprintln!("Integrated native row {i} proof started");
+                let t = Instant::now();
+                let opening = binding_from_note(&rows[i], &notes[i])
+                    .map_err(|e| fail("native opening", e))?;
+                let public = row_public(&statement, i).map_err(|e| fail("native statement", e))?;
+                let previous = self
+                    .native_proof_source
                     .as_ref()
-                    .ok_or("missing native prover")?
-                    .verify(&proof, &public)
-                    .map_err(|e| fail("resumed native row proof", e))?;
-                reused += 1;
-                eprintln!("Integrated native row {i} existing proof reverified");
-                proof
-            } else {
-                prover
-                    .as_ref()
-                    .ok_or("missing native prover")?
-                    .prove(opening, &public)
-                    .map_err(|e| fail("native row proof", e))?
-            };
-            let proof_path = self.directory.join(format!("native-binding-proof-{i}"));
-            fs::write(&proof_path, proof).map_err(|e| fail("write row proof", e))?;
-            fs::File::open(&proof_path)
-                .and_then(|f| f.sync_all())
-                .map_err(|e| fail("sync row proof", e))?;
-            fs::File::open(&self.directory)
-                .and_then(|f| f.sync_all())
-                .map_err(|e| fail("sync row directory", e))?;
-            times.push(t.elapsed().as_secs_f64());
+                    .map(|p| p.join(format!("native-binding-proof-{i}")));
+                let proof = if let Some(proofs) = &cached {
+                    reused += 1;
+                    proofs[i].clone()
+                } else if let Some(path) = previous.filter(|p| p.exists()) {
+                    let proof = crate::regtest_spend::read_private(&path, 65536)?;
+                    // Existing bytes are never accepted merely because a file is
+                    // present. Reverify under our trusted circuit and exact current
+                    // row/cmx/index; reject altered/partial proofs without fallback.
+                    prover
+                        .as_ref()
+                        .ok_or("missing native prover")?
+                        .verify(&proof, &public)
+                        .map_err(|e| fail("resumed native row proof", e))?;
+                    reused += 1;
+                    eprintln!("Integrated native row {i} existing proof reverified");
+                    proof
+                } else {
+                    prover
+                        .as_ref()
+                        .ok_or("missing native prover")?
+                        .prove(opening, &public)
+                        .map_err(|e| fail("native row proof", e))?
+                };
+                let proof_path = self.directory.join(format!("native-binding-proof-{i}"));
+                fs::write(&proof_path, proof).map_err(|e| fail("write row proof", e))?;
+                fs::File::open(&proof_path)
+                    .and_then(|f| f.sync_all())
+                    .map_err(|e| fail("sync row proof", e))?;
+                fs::File::open(&self.directory)
+                    .and_then(|f| f.sync_all())
+                    .map_err(|e| fail("sync row directory", e))?;
+                times.push(t.elapsed().as_secs_f64());
+            }
         }
-        // Release the large proving key before independent public verification.
+        // Cold mode releases its owned PK before independent replay. A warm
+        // service retains the borrowed PK; its group-level guard also measures
+        // SDK/MPC descendants while that key remains resident.
         let proving_key_generated = prover.is_some();
         drop(prover);
-        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"layout":self.layout.id(),"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"reused_native_row_proofs":reused,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"private_winner_flags_verified":self.delivery.winners.is_some(),"delivery_rule":self.delivery.rule(),"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false,"proving_key_generated":proving_key_generated,"cached_set_verify_seconds":cached_set_verify_seconds});
+        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"layout":self.layout.id(),"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"reused_native_row_proofs":reused,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"private_winner_flags_verified":self.delivery.winners.is_some(),"delivery_rule":self.delivery.rule(),"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false,"proving_key_generated":proving_key_generated,"cached_set_verify_seconds":cached_set_verify_seconds,
+            "warm_proving_key_reused":warm.is_some(),"row_workers":warm.map_or(1, |(_, workers)| workers),
+            "warm_row_profiles":warm_row_profiles});
         fs::write(
             self.directory.join("native-proof-summary.json"),
             serde_json::to_vec_pretty(&summary).map_err(|e| fail("summary encode", e))?,

@@ -4,7 +4,7 @@ use super::*;
 use crate::regtest_spend::{read_private, write_private};
 use darkcall_bn254_emulation::poseidon::{digest_words, pack_row, reference};
 use darkcall_output_binding::poseidon_rows::{
-    HASH_RULE, RowLayout, binding_from_note, read_layout, verify_set_for_layout,
+    HASH_RULE, LayoutProver, RowLayout, binding_from_note, read_layout, verify_set_for_layout,
 };
 use darkcall_settlement_types::{NativeBatchStatement, link_four_bid_statements};
 use serde::{Deserialize, Serialize};
@@ -201,8 +201,34 @@ pub fn run_with_memos(
     prove: bool,
     receipts: bool,
 ) -> Result<serde_json::Value> {
+    run_inner(book, name, prove, receipts, None)
+}
+
+/// Same six-output statement/signing checks, with a caller-owned fixed PK.
+/// This opt-in service is synthetic only; independent SDK application replay is
+/// retained before signing and never trusts a worker's success message alone.
+pub(crate) fn run_warm(
+    book: &Path,
+    name: &str,
+    prover: &LayoutProver,
+    workers: usize,
+) -> Result<serde_json::Value> {
+    crate::row_worker::capacity(workers)?;
+    run_inner(book, name, true, true, Some((prover, workers)))
+}
+
+fn run_inner(
+    book: &Path,
+    name: &str,
+    prove: bool,
+    receipts: bool,
+    warm: Option<(&LayoutProver, usize)>,
+) -> Result<serde_json::Value> {
     let start = Instant::now();
     let integration = Integration::new_with_receipts(book, name, RowLayout::Shared18, receipts)?;
+    if warm.is_some() {
+        crate::row_worker::clearing(name, integration.delivery.price, integration.delivery.sold)?;
+    }
     let directory = &integration.directory;
     write_private(&directory.join("nu7-auction-request.json"), &serde_json::to_vec(&serde_json::json!({
         "format":1,"scope":SCOPE,"sdk":SDK,"branch":"77190ad9","amounts":integration.delivery.amounts,"receipt_memos":receipts
@@ -298,12 +324,23 @@ pub fn run_with_memos(
         );
     }
     let application_start = Instant::now();
-    let approval = integration.prove_and_check(
-        &rows,
-        &notes,
-        identity.native_actions,
-        identity.effects_digest,
-    )?;
+    let approval = if let Some((prover, workers)) = warm {
+        integration.prove_and_check_warm(
+            &rows,
+            &notes,
+            identity.native_actions,
+            identity.effects_digest,
+            prover,
+            workers,
+        )?
+    } else {
+        integration.prove_and_check(
+            &rows,
+            &notes,
+            identity.native_actions,
+            identity.effects_digest,
+        )?
+    };
     approval.check(&identity.native_actions, &identity.effects_digest)?;
     let mut changed = identity.effects_digest;
     changed[0] ^= 1;
@@ -324,6 +361,7 @@ pub fn run_with_memos(
         "private_winner_flags_verified":integration.delivery.winners.is_some(),"maximum_bids_read":false,
         "price":integration.delivery.price,"sold":integration.delivery.sold,"layout":integration.layout.id(),
         "application_seconds":application_seconds,"seconds":start.elapsed().as_secs_f64(),
+        "warm_proving_key_reused":warm.is_some(),"row_workers":warm.map_or(1, |(_, workers)| workers),
         "acceptance_or_recipient_receipts_authenticated":false,"chain_funding":false,"broadcast":false}),
     )
 }

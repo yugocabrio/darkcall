@@ -96,8 +96,36 @@ speedup. See the benchmark evidence for 10-second resource samples, not true pea
 persistent shared18-PK experiment. It prepares one key and makes fresh proofs for
 repeated jobs. It does not generate a signing approval. On this Mac concurrency 1
 is enforced; 2/3/6 require sufficient measured Linux RAM and all resource guards.
-The full auction orchestrator still uses its existing cold path; the standalone
+The original full auction command still uses its cold path; the standalone
 worker's timing does not establish a 2-minute end-to-end settlement. Its measured
 cold key was111.984s and two fresh row0 jobs82.310s/92.506s. A warm-produced proof
 also passes the independent fixed public verifier in103.105s. Full auction worker
-orchestration and larger-host concurrency remain unfinished.
+orchestration now passes two distinct complete synthetic auctions with ONE PK.
+Larger-host concurrency remains unmeasured.
+
+The complete synthetic memo path can use one warmed shared18 key:
+
+```sh
+python3 scripts/run_warm_auctions.py --workers 1 \
+  --job .local/COMMITTED_BOOK fresh-warm-auction-1 \
+  --job .local/OTHER_COMMITTED_BOOK fresh-warm-auction-2
+```
+
+The service prepares the key once before reading auction requests. Its bounded
+local JSON pipe can also be kept ready before a book closes. This wrapper sends
+jobs only after the ready/previous completion event, preserves10GiB initial disk
+headroom and applies the existing8GiB resident guard to the whole owned group.
+Each job independently executes fresh v2 delivery, all six proofs, actual MPC,
+fixed C++ verification and native application replay before synthetic signing.
+An early `clearing_verified` event reveals only the public price/sold and marks
+settlement pending; final price/sold must match it. Key params/VK/PK and row proof
+creation/verification have separate timers. No RPC/funding/imported keys are
+accepted. The original row-only worker still has no signing capability.
+
+Measured warm full service: initialization122.447s (parameters92.015s, VK13.077s,
+PK17.355s), then positive/zero jobs901.704s/823.613s. Early clearing13.032s/8.163s
+is fixed-proof checked and explicitly precedes settlement. Twelve fresh row proofs,
+fixed C++/SDK application replay, four threshold spends and six decryptions per job
+pass. Four own receipts and four substitutions per job also pass. Shared Mac
+paging prevents a controlled speedup claim. See
+[warm full evidence](../evidence/2026-10-05-warm-full-nu7-auctions.json).

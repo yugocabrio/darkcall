@@ -30,7 +30,10 @@ proof/security model and avoid unrelated recovery/wallet/cryptographic work.
   - Pipe-only same-PK jobs pass: key111.984s, fresh proofs82.310s/92.506s.
     Independent fixed public verification of a warm-produced proof passes.
     Cold full-run key108.596s/six proof-services667.790s. Mac2-way request
-    refuses before key allocation. Full auction worker orchestration/larger-host
+    refuses before key allocation. Opt-in full auction orchestration now
+    passes two distinct books with ONE PK and12 fresh row proofs. Key122.447s
+    (params92.015/VK13.077/PK17.355); clearing13.032s/8.163s, full settlement
+    901.704s/823.613s, row services661.788s/583.039s. No2-minute claim. Larger-host
     concurrency and8/16/32-bid proof shapes remain unimplemented/unmeasured.
 - [ ] Scaling measurements4/8/16/32 without weakening guarantees; exact failures
   are useful results. Submission draft now: product, diagram, threat model,

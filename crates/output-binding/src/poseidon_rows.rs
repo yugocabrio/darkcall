@@ -214,7 +214,28 @@ pub enum LayoutProver {
     Working(RowProver),
     Shared(SharedRowProver),
 }
+pub struct ProfiledRowProof {
+    pub proof: Vec<u8>,
+    pub create_seconds: f64,
+    pub verify_seconds: f64,
+}
 impl LayoutProver {
+    /// Instrument the same fixed shared18 key construction, without importing or
+    /// serializing a key. Circuit, parameters and public statements are unchanged.
+    pub fn shared_profiled() -> Result<(Self, serde_json::Value)> {
+        let (prover, timing) = SharedRowProver::new_profiled()?;
+        Ok((Self::Shared(prover), timing))
+    }
+    pub fn shared_prove_profiled(
+        &self,
+        binding: Binding,
+        public: &[pallas::Base],
+    ) -> Result<ProfiledRowProof> {
+        match self {
+            Self::Shared(prover) => prover.prove_profiled(binding, public),
+            Self::Working(_) => Err("profiled worker requires fixed shared18 layout".into()),
+        }
+    }
     pub fn new(layout: RowLayout) -> Result<Self> {
         Ok(match layout {
             RowLayout::Working33 => Self::Working(RowProver::new()?),
@@ -236,13 +257,36 @@ impl LayoutProver {
 }
 impl SharedRowProver {
     pub fn new() -> Result<Self> {
+        Ok(Self::new_profiled()?.0)
+    }
+    fn new_profiled() -> Result<(Self, serde_json::Value)> {
+        let started = std::time::Instant::now();
         let params = Params::new(K);
+        let params_seconds = started.elapsed().as_secs_f64();
         let empty = SharedPoseidonBinding::default();
+        let vk_start = std::time::Instant::now();
         let vk = keygen_vk(&params, &empty)?;
+        let vk_seconds = vk_start.elapsed().as_secs_f64();
+        let pk_start = std::time::Instant::now();
         let pk = keygen_pk(&params, vk, &empty)?;
-        Ok(Self { params, pk })
+        let pk_seconds = pk_start.elapsed().as_secs_f64();
+        Ok((
+            Self { params, pk },
+            serde_json::json!({
+                "params_seconds":params_seconds,"vk_seconds":vk_seconds,"pk_seconds":pk_seconds,
+                "total_seconds":started.elapsed().as_secs_f64()
+            }),
+        ))
     }
     pub fn prove(&self, binding: Binding, public: &[pallas::Base]) -> Result<Vec<u8>> {
+        Ok(self.prove_profiled(binding, public)?.proof)
+    }
+    fn prove_profiled(
+        &self,
+        binding: Binding,
+        public: &[pallas::Base],
+    ) -> Result<ProfiledRowProof> {
+        let started = std::time::Instant::now();
         let mut transcript = Blake2bWrite::<_, vesta::Affine, Challenge255<_>>::init(Vec::new());
         create_proof(
             &self.params,
@@ -253,8 +297,14 @@ impl SharedRowProver {
             &mut transcript,
         )?;
         let proof = transcript.finalize();
+        let create_seconds = started.elapsed().as_secs_f64();
+        let verify_start = std::time::Instant::now();
         self.verify(&proof, public)?;
-        Ok(proof)
+        Ok(ProfiledRowProof {
+            proof,
+            create_seconds,
+            verify_seconds: verify_start.elapsed().as_secs_f64(),
+        })
     }
     pub fn verify(&self, proof: &[u8], public: &[pallas::Base]) -> Result<()> {
         if proof.len() > 65536 || public.len() != 10 {

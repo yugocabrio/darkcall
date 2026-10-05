@@ -2,7 +2,18 @@
 
 This standalone Cargo workspace preserves the successful NU6.3 application's
 manifest, lockfile, binaries, wallets and isolated chain. It is an experiment
-toward supporting public testnet, not a migration of the auction implementation.
+toward supporting public testnet. Synthetic auction integration is complete;
+actual funded admission/DKG/chain execution still needs the new-stack migration.
+
+## Current completed auction
+
+The six-output synthetic NU7 auction now includes four encrypted ticket receipts,
+six fresh shared18 binding proofs, committed REP3 clearing, fixed C++ verification,
+2-of-3 FROST and exact recipient decryption in one transaction. The browser/client
+and public bundle share transaction52555e25…151ab3b. Run `./demo.sh` or
+`./verify.sh demo/artifacts/canonical-nu7-v1`; see [demo](../../docs/demo.md) and
+[measured evidence](../../evidence/2026-10-05-canonical-nu7-memo-auction.json).
+The older component experiments below do not add funding/DKG/confirmation to it.
 
 The native SDK is pinned to librustzcash
 `9c5705f56517c040c50f96d29f1ff15a9383f3e0`: protocol 0.11.0-pre.0, primitives
@@ -83,17 +94,17 @@ effects before 2-of-3 signing. Both SDKs exchange bytes only, not field/group
 types; the root lock and historical working33 verifier are unchanged. A public
 replay command is provided by `scripts/replay_nu7_auction.py`.
 
-**The complete new adapter and its public replay are not yet demonstrated.**
-The full run was refused before launching by the unchanged 10 GiB initial-disk
+**Historical preparation-only attempt:** the first full run was refused before
+launching by the unchanged 10 GiB initial-disk
 guard (6.94 GiB free, 5.95 GiB used swap). Preserve the prepared checkpoints and
-run the full gate only after capacity changes. Seven actual unsigned pre-sign
+the later completed canonical run had sufficient capacity. Seven actual unsigned pre-sign
 attack cases pass, including refusing absent application proofs, changed
 amount/receiver/effects/index, unknown fields and trailing PCZT bytes. The
 upstream decoder accepted trailing data, so this persisted-request adapter
 requires exact canonical round-trip bytes. See
 `evidence/2026-10-05-nu7-six-output-preparation.json`.
 
-Public-chain funding, DKG migration, authenticated bidder/receiver receipts,
+Public-chain funding, DKG migration, authenticated funded admission,
 live-chain freshness and finality remain separate unfinished work. No broadcast
 operation is added here.
 
@@ -142,8 +153,8 @@ It does not copy note openings, wallets or private row salts. This is one synthe
 output with a synthetic context, not certified auction admission or public funding.
 
 Native export/signatures/decryptions and preflight byte/tampering checks passed.
-**The new-output binding proof and complete public replay remain unfinished:**
-resource guards stopped key/proof generation at 210.430s (two threads) and 341.850s
+**Historical working33 attempts:** resource guards stopped key/proof generation
+at 210.430s (two threads) and 341.850s
 (one thread), with sampled free disk below 4 GiB. No proof bytes were produced;
 the source exports and actual funded chain/journals were retained. See
 `evidence/2026-10-05-nu7-binding-resource-stop.json` and
