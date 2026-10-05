@@ -1,8 +1,36 @@
 # DarkCall status
 
-Updated: 2026-10-05 08:23 UTC.
+Updated: 2026-10-05 08:59 UTC.
 
 ## Current outcome
+
+The new-SDK synthetic output → working binding prover hit the 4 GiB disk guard
+twice during key/proof generation: 210.430s at two Rayon threads, then 341.850s
+at one thread despite 10 GiB initial disk/59% reported memory headroom. Both owned
+provers are stopped/consumed (2525/11285); no completed new-output row proof and
+no complete public binding replay. Logs .local/nu7-output-binding.log and
+.local/nu7-output-binding-singlethread.log; private exports/source are preserved.
+Evidence: evidence/2026-10-05-nu7-binding-resource-stop.json. Do not repeat the same
+heavy keygen without more capacity; next old-layout gate needs at least 16 GiB
+initial disk headroom and all runtime guards. No proof/guard/branch downgrade.
+
+Implemented separate byte export/public-only mapping replay and existing-circuit
+binding commands. Selected/root and standalone all-target release clippy pass.
+Native NU7 proof/signatures/decryptions/export pass (12.042s). Public tx-cmx/index
+matching and nine public/private malformed mapping/opening cases reject; this
+preflight is not an application ZK proof. Evidence:
+evidence/2026-10-05-nu7-byte-input-checks.json. Original funded chain/journals are
+unchanged. Next independent task: inspect native circuit resource costs and test
+a separately identified memory-saving layout; preserve existing proof verification.
+
+Static native layout profile (no private input/SRS/proof allocation): K17, 33
+advice columns, degree 9 and 8x extended domain (2^20 rows). This is not a memory
+measurement. Sampled post-stop macOS swap is about 6 GiB; free disk returned to
+11 GiB while .local remains 42 MiB. Transient swap is the likely disk-loss cause,
+but no contemporaneous swap series proves exact attribution. Resource sampling
+now records used swap; five resource tests pass. Keep existing trusted layout
+and investigate a separately identified shared-column variant. Evidence:
+evidence/2026-10-05-native-binding-static-profile.json.
 
 **The funded local-DKG native auction now passes after exact partial-proof recovery.**
 Original four confirmed deposits/receipts → same saved private built PCZT/row salts

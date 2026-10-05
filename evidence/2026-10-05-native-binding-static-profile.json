@@ -1,0 +1,18 @@
+{
+  "advice_columns": 33,
+  "blinding_factors": 5,
+  "constraint_degree": 9,
+  "extended_domain_factor": 8,
+  "fixed_columns_before_selector_compression": 18,
+  "instance_columns": 1,
+  "k": 17,
+  "proof_generated": false,
+  "scope": "static working native row circuit profile, not measured memory or a proof",
+  "witness_or_private_files_read": false,
+  "working_circuit_changed": false,
+  "recorded_utc": "2026-10-05T08:59:12.578192+00:00",
+  "source": "Pinned halo2_proofs 0.3.5 EvaluationDomain::new: quotient degree = constraint degree - 1, extended domain covers n * quotient degree.",
+  "working_domain_rows": 131072,
+  "extended_domain_rows": 1048576,
+  "measured_memory_bytes": null
+}

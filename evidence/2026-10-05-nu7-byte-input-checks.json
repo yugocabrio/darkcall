@@ -1,0 +1,57 @@
+{
+  "recorded_utc": "2026-10-05T08:35:57.969267+00:00",
+  "scope": "new-SDK public native cmx/index mapping and malformed private opening preflight; no completed application proof",
+  "native_public_mapping": {
+    "actual_serialized_cmx_mapping_verified": true,
+    "broadcast": false,
+    "chain_funding_or_inclusion_verified": false,
+    "native_proof_and_signatures_verified": true,
+    "private_openings_read": false,
+    "public_row_compared_to_actual_output": true,
+    "row_proof_verified_here": false,
+    "scope": "public-only NU7 native proof/signature/output mapping check; row proof verified separately by working circuit",
+    "txid": "e921382133a7332b6ab84b2eb773664beee8a5395fc03649a2313d268c4fc083"
+  },
+  "tampering": {
+    "cmx": {
+      "rejected": true,
+      "before_private_openings_read": true
+    },
+    "action_index": {
+      "rejected": true,
+      "before_private_openings_read": true
+    },
+    "txid": {
+      "rejected": true,
+      "before_private_openings_read": true
+    },
+    "private_amount": {
+      "rejected": true,
+      "before_key_generation": true
+    },
+    "private_recipient": {
+      "rejected": true,
+      "before_key_generation": true
+    },
+    "private_rho": {
+      "rejected": true,
+      "before_key_generation": true
+    },
+    "private_branch": {
+      "rejected": true,
+      "before_key_generation": true
+    },
+    "private_unknown_field": {
+      "rejected": true,
+      "before_key_generation": true
+    },
+    "private_field_in_public_row": {
+      "rejected": true,
+      "reason": "strict public field whitelist"
+    }
+  },
+  "row_proof_generated": false,
+  "private_material_committed": false,
+  "source_untouched": true,
+  "public_reader_bounds_read_before_allocation": true
+}

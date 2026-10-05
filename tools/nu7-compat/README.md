@@ -60,3 +60,33 @@ absolute PATH blindly.
 
 Keep the separate lockfile. Actual measurements and any limitations belong in
 the repository's evidence directory after running these gates.
+
+## Actual new-SDK output bytes and existing binding circuit (unfinished proof)
+
+```sh
+.deps/nu7-compat-target/release/darkcall-nu7-compat synthetic-native-export NEW_EXPORT_NAME
+.deps/nu7-compat-target/release/darkcall-nu7-compat verify-export .local/NEW_EXPORT_NAME
+# Heavy old-layout proof: at least 16 GiB initial free disk on the current host.
+# Keep resource guards; both previous runs stopped below 4 GiB, not proof failure.
+python3 scripts/run_nu7_output_binding.py .local/NEW_EXPORT_NAME --name NEW_BINDING_NAME
+# Requires an actually completed native-binding-proof first:
+python3 scripts/replay_nu7_bound_output.py .local/NEW_EXPORT_NAME .local/NEW_BINDING_NAME --name NEW_PUBLIC_REPLAY_NAME
+```
+
+Exports use new 0700 directories and 0600 fsynced files under ignored `.local`.
+Only native note opening bytes are private; no keys or PCZT are exported. The old
+SDK reconstructs a V3 note from canonical bytes for the existing trusted row
+circuit. It cannot parse NU7 consensus. Public replay freezes four public files:
+the new SDK verifies the actual native proof/signatures/commitment mapping, and
+the working SDK independently verifies the row proof under its fixed circuit.
+It does not copy note openings, wallets or private row salts. This is one synthetic
+output with a synthetic context, not certified auction admission or public funding.
+
+Native export/signatures/decryptions and preflight byte/tampering checks passed.
+**The new-output binding proof and complete public replay remain unfinished:**
+resource guards stopped key/proof generation at 210.430s (two threads) and 341.850s
+(one thread), with sampled free disk below 4 GiB. No proof bytes were produced;
+the source exports and actual funded chain/journals were retained. See
+`evidence/2026-10-05-nu7-binding-resource-stop.json` and
+`evidence/2026-10-05-nu7-byte-input-checks.json`. No third identical heavy attempt
+on the same constrained storage, no relaxed binding or branch validation.

@@ -1,0 +1,56 @@
+{
+  "recorded_utc": "2026-10-05T08:34:53.571987+00:00",
+  "scope": "first new-SDK synthetic native output to working binding-circuit gate; host-resource stop before completion",
+  "passed": false,
+  "native_sdk_export_proof_signatures_and_recipient_decryptions_passed": true,
+  "actual_native_row_proof_passed": false,
+  "public_binding_replay_run": false,
+  "stage": "trusted native row key/proof generation; no completed row proof file",
+  "reason": "sampled free disk below 4 GiB guard; own prover stopped, private artifacts retained",
+  "last_observation": {
+    "elapsed_seconds": 210.43,
+    "free_disk_bytes": 3648536576,
+    "prover_resident_kib": 376976,
+    "system_memory_free_percent": 34
+  },
+  "initial_observation": {
+    "elapsed_seconds": 0.001,
+    "free_disk_bytes": 11266711552,
+    "system_memory_free_percent": 48
+  },
+  "max_sampled_prover_resident_kib": 704448,
+  "min_mac_reported_free_percent": 32,
+  "resource_cause_proven": false,
+  "shared_host_other_work_stopped": false,
+  "funding_wallets_or_journals_modified": false,
+  "curve_field_or_binding_guarantee_changed": false,
+  "native_funding": "fabricated; never broadcast",
+  "retry_policy": "No third identical key/proof run on constrained storage. Future old-layout gate requires at least 16 GiB initial disk headroom; runtime 4 GiB disk/8 GiB RSS/10% memory guards remain. Investigate a separate circuit layout without changing the working trusted circuit or guarantees.",
+  "single_thread_retry": {
+    "passed": false,
+    "rayon_threads": 1,
+    "initial_observation": {
+      "elapsed_seconds": 0.0,
+      "free_disk_bytes": 11187212288,
+      "system_memory_free_percent": 59
+    },
+    "last_observation": {
+      "elapsed_seconds": 341.85,
+      "free_disk_bytes": 3892203520,
+      "prover_resident_kib": 452752,
+      "system_memory_free_percent": 34
+    },
+    "max_sampled_prover_resident_kib": 601520,
+    "min_reported_mac_memory_headroom": 33,
+    "native_row_proof_generated": false,
+    "reason": "Same 4 GiB disk guard stopped owned prover at 341.850s; no completed row proof. Original chain/journals/exports retained."
+  },
+  "post_stop_host_observation": {
+    "free_disk_bytes": 11309400064,
+    "system_memory_free_percent": 41,
+    "system_swap_used_bytes": 6282280960
+  },
+  "post_stop_observed_utc": "2026-10-05T08:59:12.556172+00:00",
+  "disk_explanation": "Transient memory-pressure swap is the likely cause: disk headroom returned after the owned prover stopped, workspace execution data is 42 MiB, and current macOS swap is about 6 GiB. No contemporaneous swap series exists for the two failed gates; exact attribution is not established.",
+  "resource_sampler_now_records_swap": true
+}

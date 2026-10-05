@@ -10,6 +10,14 @@ import regtest_resources as resources
 
 
 class ResourceTests(unittest.TestCase):
+    def test_swap_observation_is_used_bytes_not_total_allocation(self):
+        self.assertEqual(resources.swap_used_bytes(
+            'vm.swapusage: total = 7168.00M used = 6117.31M free = 1050.69M (encrypted)'),
+            int(6117.31 * 1024 ** 2))
+        self.assertEqual(resources.swap_used_bytes('used = 1.5G'), 1610612736)
+        with self.assertRaisesRegex(RuntimeError, 'swap observation'):
+            resources.swap_used_bytes('used = unavailable')
+
     def test_limits_and_supported_missing_platform_metrics(self):
         resources.check({'free_disk_bytes': resources.MIN_FREE_BYTES})
         for value in ({'free_disk_bytes': 0},
@@ -47,6 +55,18 @@ class ResourceTests(unittest.TestCase):
                     cwd=path, env=os.environ, timeout=5, observations=path / 'success')
             self.assertEqual(result, {'ok': True})
             self.assertTrue(json.loads((path / 'success').read_text().splitlines()[-1])['completed'])
+
+    def test_stronger_gate_preflight_never_starts_child_or_creates_metrics(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory)
+            with patch.object(resources, 'sample', return_value={'free_disk_bytes': resources.MIN_FREE_BYTES}), \
+                 patch.object(resources.subprocess, 'Popen') as child:
+                with self.assertRaisesRegex(RuntimeError, 'initial disk headroom'):
+                    resources.guarded_json_call(['unused'], cwd=path, env=os.environ,
+                        timeout=1, observations=path / 'metrics',
+                        minimum_start_disk_bytes=16 * 1024 ** 3)
+            child.assert_not_called()
+            self.assertFalse((path / 'metrics').exists())
 
 
 if __name__ == '__main__':

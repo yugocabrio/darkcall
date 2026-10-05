@@ -43,8 +43,11 @@ autonomously, incorporate later human/ChatGPT reviews.
     changed row hash/cmx and amount/recipient checks rejected tampering.
     Prototype Pallas hash is not connected to the BN254 auction plan. Classical
     binding only; ZIP 2005 rseed derivation/ciphertext correctness not constrained.
-- [ ] P0.7 Reject amount, recipient and transaction substitution; measure runtime and memory.
-- [ ] P0.8 Confirm planned padding, action count, bytes and fee in the native builder.
+- [x] P0.7 Four-bid amount/recipient/effects/signature/transaction substitution rejects; measured runtime and sampled resources.
+  - Actual funded DKG auction and public-only replay passed; 10-second root RSS,
+    disk and reported macOS headroom sampled. Resumed/cold/shared-host timing
+    scopes are explicit; these are not true peak-memory or independent benchmarks.
+- [x] P0.8 Confirm the supported four-input/six-output shape, bytes and fee.
   - Four-input/six-output regular and two-zero-row transactions proved, verified,
     and decrypted: 21,790 bytes, standard fee 30,000. Other supported counts remain.
 
@@ -62,12 +65,16 @@ autonomously, incorporate later human/ChatGPT reviews.
   - Standalone synthetic native gate and live tree reconstruction pass; root
     Cargo.lock, native binding dependencies and isolated NU6.3 chain are preserved.
     Seven new-to-old native V3 encoding/commitment/nullifier/psi/rcm_v3 byte cases
-    pass without shared Rust types; actual new-SDK output-binding proof is next.
+    pass without shared Rust types. New-SDK native output export and public cmx
+    mapping checks pass; nine malformed public/private byte cases reject.
+    Existing-circuit new-output proof hit the disk guard twice during keygen;
+    no completed application proof. Preserve sources and avoid identical retries
+    without capacity; investigate a separately identified compact layout.
 
-- [ ] Canonical auction conditions, ticket IDs, accepted roots and settlement rows.
+- [x] Canonical four-ticket conditions/IDs, certified accepted root and six settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.
 - [ ] Cross-language generated fixtures and committed-input circuit equivalence.
-- [ ] Shared auction/native row commitment encoding with fully constrained hash links.
+- [x] Shared four-bid/six-output commitment encoding with constrained Poseidon/native hash links.
   - Canonical 224-byte SHA-256 format, linked Halo2 SHA and actual native row proof
     passed. Six-row Noir plan circuit compiles/tests pass. Complete MPC hash proof
     passed on the same private row using ARM AES-enabled coNoir (574.499s proof
@@ -75,7 +82,8 @@ autonomously, incorporate later human/ChatGPT reviews.
     Integrated six-row SHA plan/native execution and normal C++ verification
     passed: 1654.925s MPC proof, about 1.12GB peak RSS per party. Native fixture
     is output-only. The later six-row Poseidon/native path binds an actual
-    four-input/FROST synthetic transaction; real funding still remains.
+    four-input/FROST synthetic transaction. Actual funded DKG settlement and
+    public-only verification also pass; SHA remains an older measured reference.
 - [x] Compare BN254 Poseidon2 emulation in Pallas against the demonstrated SHA bridge.
   - Human supplied a performance review on Oct 4. Keep the working SHA path as
     a baseline; measure fully constrained non-native arithmetic before adopting
@@ -88,14 +96,13 @@ autonomously, incorporate later human/ChatGPT reviews.
     808.534s including key/proof/verification/adversarial checks; MPC 8.170s versus
     SHA 1654.925s. Both normal C++ proofs and all six native bindings passed.
     Initial native run had memory pressure; measurements are single-host.
-- [ ] Funding ledger and one-note/one-ticket enforcement.
-  - Private in-memory ledger tests pass: duplicate funding, wrong/late/unaccepted
-    deposits, reorg pauses, settlement/cancellation reservation and empty auction.
-    Durable fsynced private journal now passes restart, concurrent lock, truncated
-    tail, symlink, reorg pause and refund retention checks. Persistent wallet
-    scanning/finality remain. Native compact scanner and encrypted funding memo
-    claim authentication now pass synthetic ciphertext tests. They are not yet
-    connected to live RPC, persistent scanner replay or client-proof admission.
+- [x] Four-ticket durable funding ledger and one-note/one-ticket enforcement on controlled regtest.
+  - Duplicate/wrong/late deposits, note reuse, reservation/cancellation conflicts,
+    reorg pauses, locks, truncated tails and receipt retention pass selected tests.
+    Actual RPC captures → SDK ciphertext/witness/nullifier scanning → client/pair
+    proofs → durable signed admission → exact native reservation/confirmed receipts
+    pass. Restart compares the whole actual re-derived scan, not cached balances.
+    General advancing public-chain wallet/reorg handling remains separate work.
 - [x] Deliver private refund amounts from MPC without opening maximum bids.
   - Fresh private field masks, mask commitments and normal C++ verification
     passed. Operators learn individual refunds; values stay out of public proofs.
@@ -111,7 +118,8 @@ autonomously, incorporate later human/ChatGPT reviews.
     Four actual-regtest deposits now pass client-proof/pair admission before the
     real wall-clock cutoff, durable signed receipts and post-cutoff certification.
     Private wire receipts reload and reverify all signatures. Pre-FROST enforcement
-    is in the active funded run; independent operators and broader recovery remain.
+    passes before FROST in the actual funded DKG run; independent operator hosts
+    and general live-chain recovery remain.
     These signatures attest admission, not a public funding proof.
 - [x] Four-ticket MPC result → settlement commitment → PCZT → proof checks → native signing.
   - Actual four-input/FROST transaction passed all six native/MPC row checks,
@@ -120,7 +128,8 @@ autonomously, incorporate later human/ChatGPT reviews.
     actual six outputs, FROST/native proofs and all recipient decryptions (1167.489s).
     Public-only replay passed for both runs. Separate public bundle replay passes
     without private files and rejects transaction signature/trailing bytes/action
-    metadata changes. Funded chain integration and receipt authentication remain.
+    metadata changes. Actual controlled-chain DKG funding and authenticated
+    admission/receipt checks also pass; public NU7 funding remains separate.
 - [x] Seller payment and refunds in one native transaction on actual isolated regtest.
 - [x] Six recipient wallets confirm amounts; public verification checks transaction identity.
   - Actual isolated chain confirms all six payments and consumption of all four

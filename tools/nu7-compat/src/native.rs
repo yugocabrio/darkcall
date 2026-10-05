@@ -138,7 +138,7 @@ fn threshold_signature(
     Ok(Signature::from(bytes))
 }
 
-fn verify_bytes(
+pub(crate) fn verify_bytes(
     bytes: &[u8],
     branch: BranchId,
     rng: &mut impl rand::CryptoRng,
@@ -183,6 +183,14 @@ pub fn verify_old(path: &str) -> Result<serde_json::Value> {
 }
 
 pub fn gate() -> Result<serde_json::Value> {
+    gate_inner(None)
+}
+
+pub fn gate_export(name: &str) -> Result<serde_json::Value> {
+    gate_inner(Some(crate::interop_export::create(name)?))
+}
+
+fn gate_inner(export: Option<std::path::PathBuf>) -> Result<serde_json::Value> {
     let start = Instant::now();
     let mut rng = rand::rng();
     let mut old_rng = OldOsRng;
@@ -341,6 +349,7 @@ pub fn gate() -> Result<serde_json::Value> {
         return Err("native-only v6 txid/sighash mismatch".into());
     }
     let bundle = tx.ironwood_bundle().ok_or("Ironwood missing")?;
+    let mut openings = Vec::new();
     for i in 0..2 {
         let (note, address, _) = bundle
             .decrypt_output_with_key(indices[i], &receivers[i].to_ivk(Scope::External))
@@ -353,6 +362,9 @@ pub fn gate() -> Result<serde_json::Value> {
         {
             return Err("recipient note mismatch".into());
         }
+        openings.push(serde_json::json!({"action_index":indices[i],"recipient":address.to_raw_address_bytes().to_vec(),
+            "amount":note.value().inner(),"rho":note.rho().to_bytes(),"rseed":note.rseed().as_bytes(),
+            "cmx":bundle.actions()[indices[i]].cmx().to_bytes()}));
     }
     let mut bytes = Vec::new();
     tx.write(&mut bytes).map_err(|e| error("serialize", e))?;
@@ -370,8 +382,36 @@ pub fn gate() -> Result<serde_json::Value> {
     if verify_bytes(&changed, BranchId::Nu7, &mut rng).is_ok() {
         return Err("binding signature change accepted".into());
     }
+    if let Some(directory) = &export {
+        let identity = serde_json::json!({"format":1,"scope":"synthetic NU7 output-byte interoperability",
+            "sdk":crate::interop_export::SDK,"branch":"77190ad9","txid":tx.txid().to_string()});
+        let mut private = identity.clone();
+        private["outputs"] = openings.clone().into();
+        let mut public = identity;
+        public["native_actions"] = bundle
+            .actions()
+            .iter()
+            .map(|a| a.cmx().to_bytes())
+            .collect::<Vec<_>>()
+            .into();
+        public["outputs"] = openings
+            .iter()
+            .map(|v| serde_json::json!({"action_index":v["action_index"],"cmx":v["cmx"]}))
+            .collect::<Vec<_>>()
+            .into();
+        crate::interop_export::write(&directory.join("synthetic-nu7-transaction.bin"), &bytes)?;
+        crate::interop_export::write(
+            &directory.join("private-native-outputs.json"),
+            &serde_json::to_vec(&private).map_err(|_| "private output encoding")?,
+        )?;
+        crate::interop_export::write(
+            &directory.join("public-output-map.json"),
+            &serde_json::to_vec(&public).map_err(|_| "public map encoding")?,
+        )?;
+        crate::interop_export::verify(directory, None)?;
+    }
     Ok(
-        serde_json::json!({"scope":"isolated NU7 synthetic native PCZT/FROST compatibility; no auction binding or chain funding","chain_funding":false,"broadcast":false,"branch":"77190ad9","height":u32::from(height),"expiry_height":u32::from(tx.expiry_height()),"version":6,"actions":2,"real_threshold_spends":real_spends,"recipients_decrypted":2,"threshold":"2-of-3","setup":"local trusted dealer; no DKG","native_proof_and_signatures_verified":true,"one_share_rejected":true,"changed_sighash_rejected":true,"old_branch_rejected":true,"trailing_byte_rejected":true,"binding_signature_change_rejected":true,"pczt_fvks_preserved":true,"transaction_bytes":bytes.len(),"fee":10_000,"proof_seconds":proof_seconds,"total_seconds":start.elapsed().as_secs_f64()}),
+        serde_json::json!({"scope":"isolated NU7 synthetic native PCZT/FROST compatibility; no auction binding or chain funding","chain_funding":false,"broadcast":false,"branch":"77190ad9","height":u32::from(height),"expiry_height":u32::from(tx.expiry_height()),"version":6,"actions":2,"real_threshold_spends":real_spends,"recipients_decrypted":2,"threshold":"2-of-3","setup":"local trusted dealer; no DKG","native_proof_and_signatures_verified":true,"one_share_rejected":true,"changed_sighash_rejected":true,"old_branch_rejected":true,"trailing_byte_rejected":true,"binding_signature_change_rejected":true,"pczt_fvks_preserved":true,"transaction_bytes":bytes.len(),"fee":10_000,"proof_seconds":proof_seconds,"private_byte_export":export.is_some(),"total_seconds":start.elapsed().as_secs_f64()}),
     )
 }
 

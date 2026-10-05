@@ -22,6 +22,14 @@ MAX_RESIDENT_KIB = 8 * 1024 ** 2
 MIN_MAC_FREE_PERCENT = 10
 
 
+def swap_used_bytes(text):
+    """Parse macOS's used swap, separately from resident process memory."""
+    match = re.search(r'\bused\s*=\s*([\d.]+)([KMG])', text)
+    if match is None:
+        raise RuntimeError('Unrecognized macOS swap observation')
+    return int(float(match[1]) * {'K': 1024, 'M': 1024 ** 2, 'G': 1024 ** 3}[match[2]])
+
+
 def sample(directory, pid=None):
     result = {'free_disk_bytes': shutil.disk_usage(directory).free}
     if pid is not None:
@@ -38,6 +46,11 @@ def sample(directory, pid=None):
         if match is None:
             raise RuntimeError('Unrecognized memory headroom observation')
         result['system_memory_free_percent'] = int(match[1])
+        swap = subprocess.run(['/usr/sbin/sysctl', 'vm.swapusage'],
+                              capture_output=True, text=True, timeout=5)
+        if swap.returncode != 0:
+            raise RuntimeError('Could not observe macOS swap usage')
+        result['system_swap_used_bytes'] = swap_used_bytes(swap.stdout)
     return result
 
 
@@ -68,10 +81,13 @@ def stop(process):
     process.wait()
 
 
-def guarded_json_call(command, *, cwd, env, timeout, observations, interval=10):
+def guarded_json_call(command, *, cwd, env, timeout, observations, interval=10,
+                      minimum_start_disk_bytes=MIN_FREE_BYTES):
     observations = pathlib.Path(observations)
     initial = sample(cwd)
     check(initial)  # Do not launch a proof when the host is already constrained.
+    if initial['free_disk_bytes'] < minimum_start_disk_bytes:
+        raise RuntimeError('Proof not launched: insufficient initial disk headroom for this measured gate')
     fd = os.open(observations, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
     started = time.monotonic()
     with os.fdopen(fd, 'w') as metrics, tempfile.TemporaryFile() as output:

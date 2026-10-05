@@ -6,7 +6,8 @@ use group::{Curve, GroupEncoding};
 use halo2_proofs::{
     circuit::Value,
     plonk::{
-        Circuit, ProvingKey, SingleVerifier, create_proof, keygen_pk, keygen_vk, verify_proof,
+        Circuit, ConstraintSystem, ProvingKey, SingleVerifier, create_proof, keygen_pk, keygen_vk,
+        verify_proof,
     },
     poly::commitment::Params,
     transcript::{Blake2bRead, Blake2bWrite, Challenge255},
@@ -21,6 +22,34 @@ use rand::rngs::OsRng;
 pub const K: u32 = 17;
 pub const HASH_RULE: &str = "bn254-poseidon2-packed-row-v1";
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+/// Public static circuit metadata only; no witness, SRS, key or proof allocation.
+pub fn circuit_profile() -> Result<serde_json::Value> {
+    let mut meta = ConstraintSystem::<pallas::Base>::default();
+    PoseidonBinding::configure(&mut meta);
+    let description = format!("{:?}", meta.pinned());
+    let count = |name: &str| -> Result<usize> {
+        let prefix = format!("{name}: ");
+        Ok(description
+            .split_once(&prefix)
+            .ok_or("pinned circuit metadata changed")?
+            .1
+            .split(|c: char| !c.is_ascii_digit())
+            .next()
+            .ok_or("column count missing")?
+            .parse()?)
+    };
+    let degree = meta.degree();
+    // EvaluationDomain::new in pinned Halo2 extends to cover (degree - 1) * n.
+    let extension = (degree - 1).next_power_of_two();
+    Ok(
+        serde_json::json!({"scope":"static working native row circuit profile, not measured memory or a proof",
+        "k":K,"constraint_degree":degree,"extended_domain_factor":extension,
+        "advice_columns":count("num_advice_columns")?,"fixed_columns_before_selector_compression":count("num_fixed_columns")?,
+        "instance_columns":count("num_instance_columns")?,"blinding_factors":meta.blinding_factors(),
+        "proof_generated":false,"witness_or_private_files_read":false,"working_circuit_changed":false}),
+    )
+}
 
 /// Read native note opening from the exact output; no independently supplied
 /// amount or recipient enters the native commitment computation.
@@ -144,5 +173,24 @@ pub fn verify_set(statement: &NativeBatchStatement, proofs: &[Vec<u8>]) -> Resul
             &mut transcript,
         )?;
     }
+    Ok(())
+}
+
+/// Single-row compatibility replay under the fixed circuit, with no private note.
+/// The caller must compare cmx/index with an independently verified native tx.
+pub fn verify_one(proof: &[u8], public: &[pallas::Base]) -> Result<()> {
+    if proof.len() > 65536 || public.len() != 10 {
+        return Err("expected one bounded row proof and ten public inputs".into());
+    }
+    let params = Params::new(K);
+    let vk = keygen_vk(&params, &PoseidonBinding::default())?;
+    let mut transcript = Blake2bRead::<_, vesta::Affine, Challenge255<_>>::init(proof);
+    verify_proof(
+        &params,
+        &vk,
+        SingleVerifier::new(&params),
+        &[&[public]],
+        &mut transcript,
+    )?;
     Ok(())
 }

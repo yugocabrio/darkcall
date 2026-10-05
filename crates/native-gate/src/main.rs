@@ -4,6 +4,7 @@
 //! This plaintext oracle fixture is not an MPC-to-settlement binding proof.
 mod custody;
 mod integration;
+mod nu7_binding;
 mod regtest_deposits;
 mod regtest_settlement;
 mod regtest_spend;
@@ -568,6 +569,33 @@ fn gate(
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() == 1 && args[0] == "--native-binding-circuit-profile" {
+        println!(
+            "{}",
+            darkcall_output_binding::poseidon_rows::circuit_profile()
+                .map_err(|e| error("circuit profile", e))?
+        );
+        return Ok(());
+    }
+    if args.len() == 3 && args[0] == "--nu7-output-binding" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&nu7_binding::prove(
+                std::path::Path::new(&args[1]),
+                &args[2]
+            )?)
+            .map_err(|_| "binding summary")?
+        );
+        return Ok(());
+    }
+    if args.len() == 2 && args[0] == "--verify-nu7-output-binding" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&nu7_binding::verify(std::path::Path::new(&args[1]))?)
+                .map_err(|_| "binding replay summary")?
+        );
+        return Ok(());
+    }
     if args.len() == 8 && args[0] == "--regtest-resume-built" {
         println!(
             "{}",
