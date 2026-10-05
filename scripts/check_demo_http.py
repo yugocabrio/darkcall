@@ -17,6 +17,7 @@ def main():
     parser.add_argument('--settlement-only', action='store_true')
     parser.add_argument('--canonical',action='store_true')
     parser.add_argument('--public-only',action='store_true')
+    parser.add_argument('--funded',action='store_true')
     args = parser.parse_args()
     host = '127.0.0.1:' + str(args.port)
     origin = 'http://' + host
@@ -49,7 +50,7 @@ def main():
             raise RuntimeError('Public settlement API verification did not pass')
         if args.canonical and (value['txid'] != state['cases'][0]['txid']
                 or not value['receipt_fixed_proof_verified'] or not value['receipt_settlement_context_link_verified']
-                or value['acceptance_or_recipient_receipts_authenticated']):
+                or value['acceptance_or_recipient_receipts_authenticated'] != args.funded):
             raise RuntimeError('Canonical settlement scope/receipt transaction differs')
         forbidden = {'viewing_key','spending_key','refund_pad','winner_pad','pczt','witness','private_path'}
         if forbidden.intersection(value): raise RuntimeError('Private field in settlement response')

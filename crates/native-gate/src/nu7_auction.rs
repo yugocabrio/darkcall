@@ -1,12 +1,13 @@
 //! Auction proof adapter for the separately pinned NU7 SDK. All cross-version
 //! values are canonical bytes; this working SDK never parses a NU7 transaction.
 use super::*;
+use crate::integration::checked;
 use crate::regtest_spend::{read_private, write_private};
 use darkcall_bn254_emulation::poseidon::{digest_words, pack_row, reference};
 use darkcall_output_binding::poseidon_rows::{
     HASH_RULE, LayoutProver, RowLayout, binding_from_note, read_layout, verify_set_for_layout,
 };
-use darkcall_settlement_types::{NativeBatchStatement, link_four_bid_statements};
+use darkcall_settlement_types::{NativeBatchStatement, NativeContext, link_four_bid_statements};
 use serde::{Deserialize, Serialize};
 use std::{
     fs,
@@ -32,12 +33,15 @@ struct Identity {
 }
 impl Identity {
     fn validate(&self) -> Result<()> {
+        self.validate_scope(SCOPE)
+    }
+    fn validate_scope(&self, scope: &str) -> Result<()> {
         // Shielded-only v6 sighash equals the raw txid. NU7 adapter rejects
         // transparent and other-pool bundles before producing this identity.
         let mut reversed = self.effects_digest;
         reversed.reverse();
         if self.format != 1
-            || self.scope != SCOPE
+            || self.scope != scope
             || self.sdk != SDK
             || self.branch != "77190ad9"
             || self.txid != hex::encode(reversed)
@@ -207,6 +211,7 @@ pub fn prepare_funded(
     receivers: &Path,
     admission: &Path,
     name: &str,
+    prove: bool,
 ) -> Result<serde_json::Value> {
     use darkcall_wallet_bridge::final_book::{Certificate, Manifest};
     let started = Instant::now();
@@ -230,6 +235,10 @@ pub fn prepare_funded(
     integration.funding_is_synthetic = false;
     integration.receiver_openings = Some(receivers.clone());
     let directory = &integration.directory;
+    write_private(
+        &directory.join("final-book-certificate.json"),
+        &serde_json::to_vec(&certificate).map_err(|_| "funded certificate encoding")?,
+    )?;
     write_private(
         &directory.join("nu7-auction-request.json"),
         &serde_json::to_vec(&serde_json::json!({
@@ -260,6 +269,7 @@ pub fn prepare_funded(
         return Err("funded NU7 native identity mismatch".into());
     }
     let mut rows = Vec::new();
+    let mut notes = Vec::new();
     let mut used = [false; 6];
     for (i, opening) in data.outputs.iter().enumerate() {
         let index = opening.action_index as usize;
@@ -324,7 +334,9 @@ pub fn prepare_funded(
         binding_from_note(&row, &note)
             .map_err(|_| "funded canonical row recipient/amount mismatch")?;
         rows.push(row);
+        notes.push(note);
     }
+    let notes: [_; 6] = notes.try_into().map_err(|_| "funded notes count")?;
     let rows: [_; 6] = rows.try_into().map_err(|_| "funded rows count")?;
     let statement = NativeBatchStatement {
         row_hashes: rows
@@ -348,6 +360,31 @@ pub fn prepare_funded(
         &directory.join("nu7-funded-expected-native-public.json"),
         &serde_json::to_vec(&statement).unwrap(),
     )?;
+    if prove {
+        let approval = integration.prove_and_check(
+            &rows,
+            &notes,
+            identity.native_actions,
+            identity.effects_digest,
+        )?;
+        approval.check(&identity.native_actions, &identity.effects_digest)?;
+        let encoded = read_private(&approval.mpc.join("public-input0"), 232 * 32)?;
+        certificate.verify_statement(&encoded, &manifest)?;
+        let native = checked_sdk("finalize-funded-auction", directory)?;
+        if native["txid"] != identity.txid
+            || native["threshold_spends"] != 4
+            || native["dkg_source"] != true
+            || native["master_spending_key_read"] != false
+        {
+            return Err("funded final SDK identity/setup mismatch".into());
+        }
+        return Ok(
+            serde_json::json!({"scope":"actual isolated NU7 certified six-output auction construction; not broadcast",
+            "prepared":prepared,"native":native,"same_pczt_transaction":true,"blinded_v2_mpc_delivery_verified":true,
+            "accepted_root_and_recipients_proof_linked":true,"price":integration.delivery.price,"sold":integration.delivery.sold,
+            "maximum_bids_read":false,"seconds":started.elapsed().as_secs_f64(),"broadcast":false}),
+        );
+    }
     Ok(
         serde_json::json!({"scope":FUNDED_PREPARATION,"prepared":prepared,"price":integration.delivery.price,
         "sold":integration.delivery.sold,"maximum_bids_read":false,"blinded_v2_mpc_delivery_verified":true,
@@ -364,6 +401,233 @@ pub fn run_with_memos(
     receipts: bool,
 ) -> Result<serde_json::Value> {
     run_inner(book, name, prove, receipts, None)
+}
+
+/// Resume one unchanged unsigned funded transaction after a resource stop.
+/// Original artifacts/journals remain intact; changed effects are never chosen.
+pub fn resume_funded(book: &Path, source: &Path, name: &str) -> Result<serde_json::Value> {
+    use darkcall_wallet_bridge::final_book::{Certificate, Manifest};
+    let started = Instant::now();
+    let source = local(source)?;
+    let book = local(book)?;
+    if name.is_empty()
+        || name.len() > 50
+        || !name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+    {
+        return Err("fresh funded resume name required".into());
+    }
+    let directory = root().join(".local").join(name);
+    use std::os::unix::fs::DirBuilderExt;
+    fs::DirBuilder::new()
+        .mode(0o700)
+        .create(&directory)
+        .map_err(|_| "fresh funded resume directory")?;
+    for (file, limit) in [
+        ("nu7-funded-request.json", 32768),
+        ("nu7-auction-request.json", 4096),
+        ("nu7-native-identity.json", 16384),
+        ("nu7-prepared.pczt", 1_000_000),
+        ("private-nu7-auction-outputs.json", 32768),
+        ("context.json", 16384),
+        ("receipt-book.json", 16384),
+        ("final-book-certificate.json", 131072),
+        ("native-layout.json", 4096),
+        ("ticket-0.memo", 512),
+        ("ticket-1.memo", 512),
+        ("ticket-2.memo", 512),
+        ("ticket-3.memo", 512),
+    ] {
+        write_private(
+            &directory.join(file),
+            &read_private(&source.join(file), limit)?,
+        )?;
+    }
+    fs::DirBuilder::new()
+        .mode(0o700)
+        .create(directory.join("receipt-proof-public"))
+        .map_err(|_| "funded resume receipt directory")?;
+    for file in [
+        "vk",
+        "proof.0",
+        "public-input0",
+        "tampered-price",
+        "tampered-root",
+        "tampered-cipher",
+        "tampered-winner",
+    ] {
+        write_private(
+            &directory.join("receipt-proof-public").join(file),
+            &read_private(&source.join("receipt-proof-public").join(file), 1_048_576)?,
+        )?;
+    }
+    let request: serde_json::Value = json(&directory, "nu7-funded-request.json", 32768)?;
+    let admission = local(Path::new(
+        request["admission"]
+            .as_str()
+            .ok_or("funded admission path")?,
+    ))?;
+    let manifest: Manifest = json(&admission, "manifest.json", 16384)?;
+    let certificate: Certificate = json(&directory, "final-book-certificate.json", 131072)?;
+    certificate.verify(&manifest)?;
+    let prepared = checked_sdk("check-funded-prepared", &directory)?;
+    let identity: Identity = json(&directory, "nu7-native-identity.json", 16384)?;
+    identity.validate_scope(FUNDED_PREPARATION)?;
+    if prepared["txid"] != identity.txid {
+        return Err("funded resume native identity differs".into());
+    }
+    let context: NativeContext = json(&directory, "context.json", 16384)?;
+    if context.conditions != manifest.context.conditions_hash
+        || context.accepted_root != certificate.endorsements[0].book.accepted_root
+        || context.ticket_ids
+            != certificate.endorsements[0]
+                .book
+                .entries
+                .each_ref()
+                .map(|e| e.ticket)
+    {
+        return Err("funded resume context differs from certified acceptance".into());
+    }
+    let result: serde_json::Value = json(&source, "delivery-result.json", 4096)?;
+    let run = local(Path::new(
+        result["run"].as_str().ok_or("funded delivery path")?,
+    ))?;
+    checked(
+        Command::new("python3")
+            .arg(root().join("scripts/verify_external.py"))
+            .arg(&run)
+            .args([
+                "--circuit",
+                "delivery_flags4",
+                "--output-label",
+                &format!("funded-resume-{}", std::process::id()),
+            ]),
+        &directory.join("resumed-delivery-proof.log"),
+    )?;
+    checked(
+        Command::new(root().join("target/release/darkcall-input-tool"))
+            .arg("flags-result")
+            .arg(book.join("book.json"))
+            .arg(run.join("plan/masks.json"))
+            .arg(run.join("plan/winner-masks.json"))
+            .arg(run.join("public-input0"))
+            .arg(directory.join("private-resumed-delivery.json")),
+        &directory.join("resumed-delivery-opening.log"),
+    )?;
+    let delivery = crate::integration::Delivery::from_opening(
+        &json(&directory, "private-resumed-delivery.json", 4096)?,
+        run,
+        true,
+    )?;
+    if serde_json::json!(delivery.amounts) != request["amounts"] {
+        return Err("resumed private delivery differs from actual outputs".into());
+    }
+    let encoded: [Vec<u8>; 6] = json(&source, "native-private-rows.json", 32768)?;
+    let data: Openings = json(&directory, "private-nu7-auction-outputs.json", 32768)?;
+    if data.scope != FUNDED_PREPARATION || data.txid != identity.txid || data.outputs.len() != 6 {
+        return Err("funded resume opening identity differs".into());
+    }
+    let mut rows = Vec::new();
+    let mut notes = Vec::new();
+    for (i, opening) in data.outputs.iter().enumerate() {
+        let row = Row::decode(&encoded[i]).map_err(|_| "funded resume row codec")?;
+        if row.conditions != context.conditions
+            || row.accepted_root != context.accepted_root
+            || row.ticket
+                != if i < 4 {
+                    context.ticket_ids[i]
+                } else {
+                    [0; 32]
+                }
+            || row.role
+                != if i < 4 {
+                    Role::Refund
+                } else if i == 4 {
+                    Role::Seller
+                } else {
+                    Role::Operator
+                }
+            || row.action_index != opening.action_index
+            || row.action_index >= 6
+            || opening.cmx != identity.native_actions[row.action_index as usize]
+            || opening.amount != delivery.amounts[i]
+        {
+            return Err("funded resume canonical row/context/action/amount differs".into());
+        }
+        let address = orchard::Address::from_raw_address_bytes(
+            &opening
+                .recipient
+                .as_slice()
+                .try_into()
+                .map_err(|_| "funded resume receiver length")?,
+        )
+        .into_option()
+        .ok_or("funded resume receiver")?;
+        let rho = Rho::from_bytes(&opening.rho)
+            .into_option()
+            .ok_or("funded resume rho")?;
+        let seed = RandomSeed::from_bytes(opening.rseed, &rho)
+            .into_option()
+            .ok_or("funded resume seed")?;
+        let note = Note::from_parts(
+            address,
+            NoteValue::from_raw(opening.amount),
+            rho,
+            seed,
+            NoteVersion::V3,
+        )
+        .into_option()
+        .ok_or("funded resume V3 note")?;
+        if ExtractedNoteCommitment::from(note.commitment()).to_bytes() != opening.cmx {
+            return Err("funded resume note commitment differs".into());
+        }
+        binding_from_note(&row, &note)
+            .map_err(|_| "funded resume canonical recipient/amount differs")?;
+        rows.push(row);
+        notes.push(note);
+    }
+    let rows: [_; 6] = rows.try_into().map_err(|_| "funded resume rows")?;
+    let notes: [_; 6] = notes.try_into().map_err(|_| "funded resume notes")?;
+    let integration = Integration {
+        root: root(),
+        book,
+        directory: directory.clone(),
+        context,
+        delivery,
+        receiver_openings: Some(PathBuf::from(
+            request["receivers"]
+                .as_str()
+                .ok_or("funded receiver openings path")?,
+        )),
+        funding_is_synthetic: false,
+        native_proof_source: Some(source.clone()),
+        layout: RowLayout::Shared18,
+    };
+    let approval = integration.prove_and_check(
+        &rows,
+        &notes,
+        identity.native_actions,
+        identity.effects_digest,
+    )?;
+    approval.check(&identity.native_actions, &identity.effects_digest)?;
+    certificate.verify_statement(
+        &read_private(&approval.mpc.join("public-input0"), 232 * 32)?,
+        &manifest,
+    )?;
+    let native = checked_sdk("finalize-funded-auction", &directory)?;
+    if native["txid"] != identity.txid
+        || native["threshold_spends"] != 4
+        || native["dkg_source"] != true
+    {
+        return Err("funded resumed final native identity/setup differs".into());
+    }
+    Ok(
+        serde_json::json!({"scope":"actual isolated NU7 exact prepared memo auction construction; not broadcast",
+        "prepared":prepared,"native":native,"same_pczt_transaction":true,"prepared_pczt_reused":true,
+        "source_pczt_and_rows_unchanged":true,"accepted_root_and_recipients_proof_linked":true,
+        "blinded_v2_mpc_delivery_verified":true,"maximum_bids_read":false,
+        "price":integration.delivery.price,"sold":integration.delivery.sold,
+        "seconds":started.elapsed().as_secs_f64(),"broadcast":false}),
+    )
 }
 
 /// Same six-output statement/signing checks, with a caller-owned fixed PK.
@@ -529,6 +793,12 @@ fn run_inner(
 }
 
 pub fn verify_application(path: &Path) -> Result<serde_json::Value> {
+    verify_application_inner(path, None)
+}
+pub fn verify_funded_application(path: &Path, authority: &Path) -> Result<serde_json::Value> {
+    verify_application_inner(path, Some(authority))
+}
+fn verify_application_inner(path: &Path, authority: Option<&Path>) -> Result<serde_json::Value> {
     let start = Instant::now();
     let directory = local(path)?;
     // Expected effects are passed by the trusted SDK caller from its in-memory
@@ -543,7 +813,11 @@ pub fn verify_application(path: &Path) -> Result<serde_json::Value> {
     }
     let actual: Identity =
         serde_json::from_slice(&input).map_err(|_| "strict expected NU7 effects schema")?;
-    actual.validate()?;
+    actual.validate_scope(if authority.is_some() {
+        FUNDED_PREPARATION
+    } else {
+        SCOPE
+    })?;
     let saved: Identity = json(&directory, "nu7-native-identity.json", 16384)?;
     if saved != actual {
         return Err("NU7 actual native effects differ from proved identity".into());
@@ -572,6 +846,13 @@ pub fn verify_application(path: &Path) -> Result<serde_json::Value> {
     let encoded = read_private(&mpc.join("public-input0"), 232 * 32)?;
     if encoded.len() != 232 * 32 {
         return Err("NU7 MPC public statement size".into());
+    }
+    if let Some(authority) = authority {
+        use darkcall_wallet_bridge::final_book::{Certificate, Manifest};
+        let manifest: Manifest = serde_json::from_slice(&read_private(authority, 16384)?)
+            .map_err(|_| "strict independently trusted funded authority")?;
+        let certificate: Certificate = json(&directory, "final-book-certificate.json", 131072)?;
+        certificate.verify_statement(&encoded, &manifest)?;
     }
     let mut hashes = [[0u32; 8]; 6];
     for (i, field) in encoded[184 * 32..].chunks_exact(32).enumerate() {
@@ -635,7 +916,7 @@ pub fn verify_application(path: &Path) -> Result<serde_json::Value> {
     Ok(
         serde_json::json!({"scope":"fixed public NU7 auction application verification; native consensus checked by caller",
         "native_row_proofs_verified":true,"normal_cpp_auction_proof_verified":true,"actual_native_effects_and_outputs_match":true,
-        "layout":layout.id(),"private_openings_keys_pczt_read":false,"chain_funding_or_inclusion_verified":false,
+        "layout":layout.id(),"accepted_book_and_recipients_authenticated":authority.is_some(),"private_openings_keys_pczt_read":false,"chain_funding_or_inclusion_verified":false,
         "seconds":start.elapsed().as_secs_f64()}),
     )
 }
@@ -655,6 +936,10 @@ mod tests {
             native_actions: [[0; 32]; 6],
         };
         assert!(value.validate().is_ok());
+        value.scope = FUNDED_PREPARATION.into();
+        assert!(value.validate().is_err());
+        assert!(value.validate_scope(FUNDED_PREPARATION).is_ok());
+        value.scope = SCOPE.into();
         value.effects_digest[0] ^= 1;
         assert!(value.validate().is_err());
         value.effects_digest[0] ^= 1;

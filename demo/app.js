@@ -87,6 +87,12 @@ fetch('/api/state').then(async response => {
     $('native-shape').textContent = 'Ironwood · NU7 · 6 outputs / 4 encrypted receipts';
     $('settlement-scope').textContent = 'Verify this same auction’s native transaction, six output-binding proofs, fixed MPC proof and linked receipt proof using public artifacts only. Funded admission certification and chain inclusion remain outside this synthetic run.';
     $('remaining-scope').textContent = 'Local trusted-dealer threshold setup; all parties on one host. Public testnet funding, DKG admission and confirmations remain to be integrated into this same NU7 execution.';
+    if (state.funded_canonical) {
+      $('scope-description').textContent = 'One recorded isolated NU7 regtest auction: actual shielded deposits, authenticated bids, blinded clearing, four encrypted receipts, six output proofs and DKG authorization use the same transaction.';
+      $('settlement-scope').textContent = 'Verify the native transaction, six bindings, fixed MPC and receipt proofs, and signed accepted book under separate configured authority. Chain inclusion is checked separately.';
+      $('remaining-scope').textContent = 'All MPC and DKG operators are on one host. Public testnet, independent-host operation and broader live-wallet recovery remain unverified.';
+      $('chain-scope').textContent = state.recorded_local_confirmations ? 'Two controlled regtest confirmations recorded; public bundle does not prove chain inclusion' : 'Recorded regtest run; no chain inclusion proof in the public bundle';
+    }
     if (!state.recipient_identities_available) {
       $('result').replaceChildren(element('h3','Public verification view.'),element('p','This checkout contains no recipient keys. You can verify settlement and reject tampering; own receipt opening requires your private identity.'));
     }

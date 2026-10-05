@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 use zcash_protocol::{consensus::BranchId, memo::MemoBytes};
 
 const RULE: &str = "synthetic-native-receipt-transport-v1";
+const FUNDED_RULE: &str = "actual-native-six-output-auction-receipt-v1";
 const AUCTION_RULE: &str = "synthetic-native-six-output-auction-receipt-v1";
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -109,11 +110,78 @@ impl Transport {
 /// identity and the public transaction. It need not contain operator pads,
 /// other viewing keys, spending keys or the producer's PCZT.
 pub fn open(path: &Path, index: usize, out: &Path) -> Result<serde_json::Value> {
-    open_inner(path, index, out, false)
+    open_inner(path, index, out, false, false)
 }
 
 pub fn open_auction(path: &Path, index: usize, out: &Path) -> Result<serde_json::Value> {
-    open_inner(path, index, out, true)
+    open_inner(path, index, out, true, false)
+}
+
+pub fn open_funded(path: &Path, index: usize, out: &Path) -> Result<serde_json::Value> {
+    open_inner(path, index, out, true, true)
+}
+/// Explicit local recipient setup: derive only this wallet's viewing identity.
+/// This export may read that actor's ordinary spending key; subsequent receipt
+/// opening consumes only the exported FVK, never that key or another actor's FVK.
+pub fn export_funded(path: &Path, index: usize, wallet: &Path) -> Result<serde_json::Value> {
+    let directory = auction::directory(path)?;
+    if index >= 4 {
+        return Err("funded own ticket index".into());
+    }
+    let identity: crate::auction::Identity = serde_json::from_slice(&auction::read(
+        &directory.join("nu7-native-identity.json"),
+        16384,
+    )?)
+    .map_err(|_| "funded recipient native identity")?;
+    if identity.scope != crate::funded_prepare::SCOPE
+        || identity.sdk != SDK
+        || identity.branch != "77190ad9"
+    {
+        return Err("funded recipient scope/pin mismatch".into());
+    }
+    let statement: serde_json::Value = serde_json::from_slice(&auction::read(
+        &directory.join("native-public.json"),
+        32768,
+    )?)
+    .map_err(|_| "funded recipient action map")?;
+    let fvk = crate::regtest_wallet::viewing_key(wallet)?;
+    let bytes = auction::read(&directory.join("funded-nu7-transaction.bin"), 100000)?;
+    let tx = native::verify_bytes(&bytes, BranchId::Nu7, &mut rand::rng())?;
+    let action_index = usize::try_from(
+        statement["action_indices"][index]
+            .as_u64()
+            .ok_or("funded recipient action")?,
+    )
+    .map_err(|_| "funded recipient action range")?;
+    if tx.txid().to_string() != identity.txid || action_index >= 6 {
+        return Err("funded recipient transaction identity".into());
+    }
+    let (note, address, _) = tx
+        .ironwood_bundle()
+        .ok_or("funded native bundle")?
+        .decrypt_output_with_key(action_index, &fvk.to_ivk(Scope::External))
+        .ok_or("funded actor cannot decrypt own receipt")?;
+    if address != fvk.address_at(0u32, Scope::External) || note.value().inner() > 100 {
+        return Err("funded own recipient address/amount".into());
+    }
+    write(
+        &directory.join(format!("private-funded-recipient-{index}.json")),
+        &serde_json::to_vec(&Recipient {
+            format: 1,
+            rule: FUNDED_RULE.into(),
+            sdk: SDK.into(),
+            branch: "77190ad9".into(),
+            txid: identity.txid,
+            action_index,
+            amount: note.value().inner(),
+            viewing_key: fvk.to_bytes().to_vec(),
+        })
+        .map_err(|_| "funded own recipient encoding")?,
+    )?;
+    Ok(
+        serde_json::json!({"own_viewing_identity_exported":true,"actor_setup_may_read_own_spending_key":true,
+        "other_wallets_read":false,"private_key_logged":false}),
+    )
 }
 
 /// Producer-side export. The recipient reader subsequently reads only its one
@@ -152,6 +220,7 @@ fn open_inner(
     index: usize,
     out: &Path,
     auction_receipt: bool,
+    funded: bool,
 ) -> Result<serde_json::Value> {
     let directory = auction::directory(path)?;
     if index >= 4
@@ -164,7 +233,9 @@ fn open_inner(
     {
         return Err("expected own ignored recipient directory and index".into());
     }
-    let prefix = if auction_receipt {
+    let prefix = if funded {
+        "private-funded-recipient"
+    } else if auction_receipt {
         "private-auction-recipient"
     } else {
         "private-recipient"
@@ -176,7 +247,14 @@ fn open_inner(
     )?)
     .map_err(|_| "recipient identity schema")?;
     if recipient.format != 1
-        || recipient.rule != if auction_receipt { AUCTION_RULE } else { RULE }
+        || recipient.rule
+            != if funded {
+                FUNDED_RULE
+            } else if auction_receipt {
+                AUCTION_RULE
+            } else {
+                RULE
+            }
         || recipient.sdk != SDK
         || recipient.branch != "77190ad9"
         || recipient.action_index >= actions
@@ -192,7 +270,9 @@ fn open_inner(
             .map_err(|_| "recipient viewing key length")?,
     )
     .ok_or("recipient viewing key encoding")?;
-    let filename = if auction_receipt {
+    let filename = if funded {
+        "funded-nu7-transaction.bin"
+    } else if auction_receipt {
         "synthetic-nu7-transaction.bin"
     } else {
         "synthetic-receipt-transport.bin"
@@ -219,7 +299,7 @@ fn open_inner(
     }
     write(out, &memo)?;
     Ok(
-        serde_json::json!({"scope":"recipient native memo decryption only; synthetic funding",
+        serde_json::json!({"scope":if funded {"recipient native memo decryption; chain/proof policy checked separately"} else {"recipient native memo decryption only; synthetic funding"},
         "native_proof_and_signatures_verified":true,"own_viewing_key_only":true,"other_ticket_pads_read":false,
         "amount":note.value().inner(),"memo_bytes":memo.len(),"txid":tx.txid().to_string(),
         "receipt_in_six_output_transaction":auction_receipt,

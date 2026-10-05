@@ -28,7 +28,11 @@ AUTHORITY = ROOT / '.local/regtest-shared-v2-deposit4-20261005-admission/manifes
 
 
 class Demo:
-    def __init__(self, cases, canonical=None, bundle=None, public_only=False):
+    def __init__(self, cases, canonical=None, bundle=None, public_only=False, funded=False, authority=None):
+        self.funded = funded
+        self.authority = authority
+        if funded and (not canonical or authority is None):
+            raise RuntimeError("Funded demo requires canonical run and separate trusted authority")
         self.canonical = canonical
         self.bundle = bundle
         self.public_only = public_only
@@ -44,7 +48,17 @@ class Demo:
         cases = []
         for name,path in self.cases.items():
             if self.canonical:
-                if self.public_only:
+                if self.funded:
+                    identity=json.loads(private_read(path/'nu7-native-identity.json'))
+                    if identity['scope'] != 'actual isolated NU7 six-output auction preparation; no authorization':
+                        raise RuntimeError('Funded demo native identity scope mismatch')
+                    summary={'txid':identity['txid'],'branch':identity['branch'],'fee':30000,
+                        'transaction_bytes':len(private_read(path/'funded-nu7-transaction.bin'))}
+                    valid=len(identity['native_actions'])==6
+                    if not self.public_only:
+                        recorded=json.loads(private_read(path/'confirmed-summary.json',65536))
+                        valid=valid and recorded['full_node_accepted'] and recorded['canonical_confirmations']>=2                             and recorded['construction']['native']['txid']==identity['txid']
+                elif self.public_only:
                     identity=json.loads(private_read(path/'nu7-native-identity.json'))
                     summary={'txid':identity['txid'],'branch':identity['branch'],'fee':30000,
                         'transaction_bytes':len(private_read(path/'synthetic-nu7-transaction.bin')),
@@ -62,15 +76,16 @@ class Demo:
                 book = json.loads(public_book(path / 'proof-public/book.json'))
                 statement = private_read(path / 'proof-public/public-input0', 187*32)
                 valid = summary.get('synthetic_inputs') == 1 and summary.get('actions') == 4
-            if len(statement) != 187*32 or summary.get('chain_funding') is not False or not valid:
+            if len(statement) != 187*32 or (not self.funded and summary.get('chain_funding') is not False) or not valid:
                 raise RuntimeError('Demo accepts only the documented synthetic receipt component')
             price = int.from_bytes(statement[177*32:178*32], 'big')
             sold = int.from_bytes(statement[178*32:179*32], 'big')
             cases.append({'id':name, 'price':price, 'sold':sold, 'units':3, 'tickets':4,
                 'root':book['root'], 'txid':summary['txid'], 'fee':summary['fee'],
                 'bytes':summary['transaction_bytes'], 'branch':summary['branch'],
-                'scope':'synthetic six-output auction with four receipt memos' if self.canonical else 'synthetic receipt component; separate one-input/four-output transfer'})
+                'scope':'recorded actual isolated NU7 certified funded memo auction' if self.funded else 'synthetic six-output auction with four receipt memos' if self.canonical else 'synthetic receipt component; separate one-input/four-output transfer'})
         return {'cases':cases, 'csrf':self.token, 'last_settlement':self.last_settlement,
+            'funded_canonical':self.funded,'recorded_local_confirmations':2 if self.funded and not self.public_only else None,
             'recipient_identities_available':not self.public_only,
             'live_admission':False, 'independent_hosts':False, 'operators_know_results':True,
             'six_output_memo_e2e':bool(self.canonical), 'accepted_book_certified':False,
@@ -98,14 +113,34 @@ class Demo:
                         data = bytes([data[0] ^ 1]) + data[1:]
                     write_bytes(proof / file, data)
             try:
-                result = open_receipt(source/'receipt-book.json' if self.canonical else source/'proof-public/book.json', proof,
-                    source if self.canonical else source/f'recipient-{ticket}', ticket, checkpoint,
-                    auction_bundle=self.bundle if self.canonical else None)
+                if self.funded:
+                    from funded_public_bundle import snapshot as funded_snapshot, export as funded_export
+                    from open_funded_ticket import open_receipt as open_funded
+                    bundle=self.bundle
+                    if tamper:
+                        from replay_nu7_auction import write_existing
+                        frozen=funded_snapshot(bundle,self.authority,'browser-tamper-input')
+                        path=frozen/'receipt-proof-public/proof.0'
+                        data=private_read(path)
+                        write_existing(path,bytes([data[0]^1])+data[1:])
+                        forged=ROOT/'.local'/('browser-fundedtamper-'+nonce)
+                        funded_export(frozen,forged)
+                        bundle=forged
+                    result=open_funded(source/'receipt-book.json',bundle,self.authority,
+                        source/f'private-funded-recipient-{ticket}.json',ticket,checkpoint)
+                    result.update(fixed_cpp_ticket_proof_verified=result['fixed_cpp_ticket_and_auction_proofs_verified'],
+                        fixed_auction_context_proof_verified=True,receipt_in_six_output_transaction=True,
+                        six_output_auction_settlement_verified=False,chain_inclusion_verified=False)
+                else:
+                    result = open_receipt(source/'receipt-book.json' if self.canonical else source/'proof-public/book.json', proof,
+                        source if self.canonical else source/f'recipient-{ticket}', ticket, checkpoint,
+                        auction_bundle=self.bundle if self.canonical else None)
             except RuntimeError as error:
                 if tamper and str(error) == 'Fixed C++ ticket proof rejected before native decryption':
                     target = ROOT / '.local' / checkpoint
                     if ((target / f'private-recipient-{ticket}.json').exists()
                             or (target / f'private-auction-recipient-{ticket}.json').exists()
+                            or (target / f'private-funded-recipient-{ticket}.json').exists()
                             or (target / 'private-received.memo').exists()):
                         raise RuntimeError('Tamper gate unexpectedly accessed recipient key')
                     return 200, {'rejected':True, 'key_read':False, 'memo_decrypted':False,
@@ -129,12 +164,16 @@ class Demo:
             return 409, {'error':'Another verification is running. Please try again shortly.'}
         try:
             if self.canonical:
-                result = verify_bundle(self.bundle)
+                if self.funded:
+                    from funded_public_bundle import verify as verify_funded
+                    result=verify_funded(self.bundle,self.authority)
+                else:
+                    result = verify_bundle(self.bundle)
                 public = {key:result[key] for key in ('txid','transaction_bytes','native_proof_and_signatures_verified',
                     'actual_transaction_outputs_match','seconds')}
                 public.update(native_row_proofs_verified=result['application']['native_row_proofs_verified'],
                     normal_cpp_auction_proof_verified=result['application']['normal_cpp_auction_proof_verified'],
-                    acceptance_or_recipient_receipts_authenticated=False,private_openings_read=False,
+                    acceptance_or_recipient_receipts_authenticated=self.funded,private_openings_read=False,
                     chain_funding_or_finality_verified=False,
                     receipt_fixed_proof_verified=result['receipt_fixed_proof_verified'],
                     receipt_settlement_context_link_verified=result['receipt_settlement_context_link_verified'],
@@ -261,17 +300,26 @@ def main():
     parser.add_argument('--run',default='canonical-nu7-memos-20261005')
     parser.add_argument('--bundle',type=pathlib.Path,default=ROOT/'demo/artifacts/canonical-nu7-v1')
     parser.add_argument('--public-only',action='store_true',help='Use only committed public artifacts; no synthetic identities')
+    parser.add_argument('--funded',action='store_true',help='Recorded certified actual-note isolated NU7 run')
+    parser.add_argument('--authority',type=pathlib.Path,help='Separate caller-trusted admission manifest')
     args = parser.parse_args()
+    if args.funded and (not args.canonical or args.authority is None):
+        parser.error('--funded requires --canonical and explicit separate --authority')
     if not 1024 <= args.port <= 65535: raise RuntimeError('Expected unprivileged local port')
     if args.canonical:
         # CLI configuration is trusted local setup, never an HTTP supplied path.
         bundle = args.bundle.resolve(strict=True)
         run=ROOT/'.local'/args.run
         if args.public_only or not run.exists():
-            frozen=snapshot(bundle,'demo-public')
-            demo=Demo({'positive':frozen.name},canonical=True,bundle=bundle,public_only=True)
+            if args.funded:
+                from funded_public_bundle import snapshot as funded_snapshot
+                frozen=funded_snapshot(bundle,args.authority,'funded-demo-public')
+            else:
+                frozen=snapshot(bundle,'demo-public')
+            demo=Demo({'positive':frozen.name},canonical=True,bundle=bundle,public_only=True,
+                funded=args.funded,authority=args.authority)
         else:
-            demo = Demo({'positive':args.run},canonical=args.run,bundle=bundle)
+            demo = Demo({'positive':args.run},canonical=args.run,bundle=bundle,funded=args.funded,authority=args.authority)
     else:
         demo = Demo({'positive':args.positive,'zero':args.zero})
     demo.state()  # Fail before binding if fixtures are missing or wrong scope.

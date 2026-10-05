@@ -28,6 +28,10 @@ proof/security model and avoid unrelated recovery/wallet/cryptographic work.
     PCZT:9.118s, eleven refusals, source Frozen journals unchanged. No real signing.
   - [ ] Connect that funded preparation to unchanged native bindings/MPC/FROST,
     full-node inclusion, public replay under separately trusted admission authority.
+    - Opt-in signing/public/client paths implemented; initial row0 run stopped
+      at190.563s on4GiB disk guard before reservations/signing. Same-PCZT
+      native/memo replay passes; exact-effects retry active with one native thread.
+      Original accepted notes/journals retained. No funded completion claim.
 - [x] One coherent recorded synthetic browser story using that exact same run/bundle.
   - Four same-transaction own receipts, public replay and real tamper refusal pass;
     live admission/funded NU7 remains unfinished.

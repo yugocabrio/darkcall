@@ -29,17 +29,17 @@
         <div class="market-stats"><div><span>Clearing price</span><strong id="price">—</strong><small>zatoshi / unit</small></div><div><span>Units sold</span><strong id="sold">—<i>/ 3</i></strong><small>uniform-price allocation</small></div></div>
         <div class="sealed-book"><div class="book-header"><span>COMMITTED BOOK</span><span>4 / 4 SEALED</span></div><div class="sealed-tickets"><div><span>01</span><b>••••••</b><i>sealed</i></div><div><span>02</span><b>••••••</b><i>sealed</i></div><div><span>03</span><b>••••••</b><i>sealed</i></div><div><span>04</span><b>••••••</b><i>sealed</i></div></div><div class="root-row"><span>BOOK ROOT</span><code id="root">Loading…</code></div></div>
         <p class="book-caption">The public record reveals the price and units sold. Your maximum bid remains secret-shared.</p>
-        <details class="public-details"><summary>Inspect the transaction <span>↗</span></summary><dl><dt>Transaction</dt><dd id="txid">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Chain inclusion</dt><dd>Not claimed for this synthetic demo</dd></dl></details>
+        <details class="public-details"><summary>Inspect the transaction <span>↗</span></summary><dl><dt>Transaction</dt><dd id="txid">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Chain inclusion</dt><dd id="chain-scope">Not claimed for this synthetic demo</dd></dl></details>
       </article>
       <article class="receipt-panel">
         <div class="panel-top"><span class="eyebrow">ONLY YOUR OPENING</span><span class="lock-icon" aria-hidden="true">◇</span></div>
         <h2>Your private<br>result.</h2>
-        <label for="ticket">Choose a synthetic demo identity</label>
+        <label for="ticket">Choose a demo identity</label>
         <select id="ticket"><option value="0">Ticket 01</option><option value="1">Ticket 02</option><option value="2">Ticket 03</option><option value="3">Ticket 04</option></select>
         <div id="result" class="result-box" aria-live="polite"><span class="result-symbol">◈</span><h3>Still sealed to you.</h3><p>Verify the proof, decrypt your memo,<br>then open your own result.</p></div>
         <button id="verify" class="primary-button">Verify & open my result <span>↗</span></button>
         <ol class="verification-steps"><li id="step-proof"><span>01</span> Verify the fixed auction receipt proof</li><li id="step-native"><span>02</span> Authenticate the native transaction</li><li id="step-open"><span>03</span> Decrypt and check your ticket / refund</li></ol>
-        <p class="identity-note">Each verification reads one recipient’s viewing key. This local demo stores all synthetic identities on the same computer.</p>
+        <p class="identity-note">Each verification reads one recipient’s viewing key. This local demo stores all test identities on the same computer.</p>
       </article>
     </section>
     <section class="proof-strip settlement-strip"><div><span class="eyebrow">VERIFY THE COMPLETE SETTLEMENT</span><h3>Six shielded outputs. One public check.</h3><p id="settlement-scope">Loading the public verifier scope…</p></div><button id="settlement" class="secondary-button">Verify settlement <span>→</span></button><p id="settlement-result" aria-live="polite"></p></section>

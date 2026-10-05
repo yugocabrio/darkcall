@@ -3,6 +3,7 @@
 mod auction;
 mod claims;
 mod funded_prepare;
+mod funded_settlement;
 mod interop_export;
 mod native;
 mod note_interop;
@@ -33,6 +34,12 @@ async fn main() -> Result<()> {
         [command, wallet, notes, escrow, book, receivers, name] if command == "regtest-deposits" => regtest_deposits::build(std::path::Path::new(wallet),std::path::Path::new(notes),std::path::Path::new(escrow),std::path::Path::new(book),std::path::Path::new(receivers),name),
         [command, escrow, deposit] if command == "regtest-claim-check" => claims::check_deposit(std::path::Path::new(escrow),std::path::Path::new(deposit)),
         [command, directory] if command == "prepare-funded-auction" => funded_prepare::prepare(std::path::Path::new(directory)),
+        [command, directory, authority] if command == "funded-certificate-link" => funded_settlement::certificate_link(std::path::Path::new(directory),std::path::Path::new(authority)),
+        [command, directory, index, wallet] if command == "funded-receipt-export" => receipt_transport::export_funded(std::path::Path::new(directory),index.parse().map_err(|_| "funded recipient index")?,std::path::Path::new(wallet)),
+        [command, directory, index, out] if command == "funded-receipt-open" => receipt_transport::open_funded(std::path::Path::new(directory),index.parse().map_err(|_| "funded recipient index")?,std::path::Path::new(out)),
+        [command, directory] if command == "check-funded-prepared" => funded_settlement::finalize(std::path::Path::new(directory),false),
+        [command, directory] if command == "finalize-funded-auction" => funded_settlement::finalize(std::path::Path::new(directory),true),
+        [command, directory, authority] if command == "verify-funded-auction" => funded_settlement::verify(std::path::Path::new(directory),std::path::Path::new(authority)),
         [command, directory] if command == "receipt-transport" => native::gate_receipts(std::path::Path::new(directory)),
         [command, directory, index, out] if command == "receipt-transport-open" => receipt_transport::open(std::path::Path::new(directory),index.parse().map_err(|_| "recipient index")?,std::path::Path::new(out)),
         [command, directory, index, out] if command == "auction-receipt-open" => receipt_transport::open_auction(std::path::Path::new(directory),index.parse().map_err(|_| "recipient index")?,std::path::Path::new(out)),

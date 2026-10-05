@@ -127,28 +127,23 @@ retained as `.local/canonical-nu7-public-attacks-20261005`, not a crypto failure
 Only rebuildable `target/release/deps/*.rmeta` compiler metadata was deleted
 (1141971132bytes); all binaries/source/proofs/keys/journals were kept.
 
-**Current local jobs.** Warm measurement and NU7 actual-note/admission gates are
-complete. Driver44502, tests8656, SDK build27074 and inventory48696 all completed
-and were consumed. Root native-gate regression build2342 also passes in136s and was consumed.
-SDK test20201 also passed (one existing chain-identity test) and was consumed.
-No heavy build/prover remains running; preserve the Frozen funded book for settlement.
-New funded book, escrow and three Frozen journals are under
-.local/nu7-funded-book-20261005[-escrow/-admission]. Original cutoff is preserved.
-Never reset these wallets/journals or remint funding to recover construction.
-Node darkcall-zebra-regtest-nu7-700rc0 is idle at110 on29342 with its own state;
-the old6.3.0 node is untouched. SDK release build/strict clippy/fmt and Python
-checks pass. Transfer build26960, clippy21904, bank send7832 and DKG spend43138
-all finished and were consumed; do not duplicate.
-Private wallet captures/keys remain ignored; retain them for the next integration.
-Local canonical demo remains PID34999,
-exec session45695 at http://127.0.0.1:8877; log
-.local/canonical-demo-v2-server-20261005.log. Temporary public-only test server
-PID35061/session42429 was stopped; no duplicate server is needed. Automation
-`darkcall` was deleted at the human's request. Check process/port before restarting.
-Locks/inventories reflect the shared off-chain package described above. Prior root
-worker checks remain valid; wallet/protocol checks were rerun after this source
-packaging change. Both rustfmt checks and relevant Python checks pass. See
-`evidence/2026-10-05-canonical-nu7-memo-auction.json` and `docs/submission-draft.md`.
+**Current local jobs.** Exact prepared funded NU7 recovery is active, exec59400:
+`.local/nu7-funded-canonical-resumed-20261005.log` and resource JSONL. Source
+`.local/nu7-funded-canonical-20261005` stopped at190.563s when free disk fell below
+4GiB; no row completed, custody signature/reservation/broadcast occurred. Journals
+remain Frozen. Original tx effects47019e02…a211938, PCZT/memos/rows are preserved;
+recovery rechecks SAME bytes, canonical input snapshot and delivery before proving.
+Do not launch a duplicate prover. The retry uses ONE native Rayon thread and
+unchanged fixed circuits/statements/verifiers; no speed claim. Start10GiB/ongoing
+4GiB disk,8GiB root RSS/10%Mac memory guards are unchanged. Only2018817545bytes of
+validated rebuildable rmeta/rlib were removed; binaries/proofs/source/keys/journals
+remain. Private manifests are retained. Root and SDK release builds/strict clippy
+pass; dry prepared-PCZT checks pass without keys/reservation. Rebuilding exposed
+the already documented broken Homebrew protoc; pinned SDK's checked-in-generated
+fallback succeeds under the documented PATH. Root missing imports/needless borrows
+were fixed. UI PID34999 is still the earlier synthetic story. NU7 RPC29342 at110;
+old node unchanged. Public bundle/client/funded demo wiring is implemented but
+awaits actual funded completion; no completed funded E2E claim.
 
 Next high-value gap: same NU7 execution with actual funding, authenticated
 admission/final-book certificate, DKG and chain confirmation. Independent hosts,

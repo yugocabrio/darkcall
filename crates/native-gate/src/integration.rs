@@ -45,7 +45,11 @@ impl Delivery {
     /// Decode only an opening freshly re-derived from a verified transcript.
     /// The input tool authenticates context/root/tickets/mask commitments; these
     /// checks preserve the winner/refund relation at the native consumer too.
-    fn from_opening(value: &serde_json::Value, run: PathBuf, flags: bool) -> Result<Self> {
+    pub(crate) fn from_opening(
+        value: &serde_json::Value,
+        run: PathBuf,
+        flags: bool,
+    ) -> Result<Self> {
         if value["delivery_rule"] != if flags { FLAGS_RULE } else { REFUND_RULE } {
             return Err("decoded delivery rule mismatch".into());
         }
@@ -135,7 +139,7 @@ fn secret_write(path: &Path, bytes: &[u8]) -> Result<()> {
         .map_err(|e| fail("sync fixture directory", e))
 }
 
-fn checked(command: &mut Command, log: &Path) -> Result<()> {
+pub(crate) fn checked(command: &mut Command, log: &Path) -> Result<()> {
     let file = fs::File::create(log).map_err(|e| fail("open command log", e))?;
     let status = command
         .stdout(Stdio::from(

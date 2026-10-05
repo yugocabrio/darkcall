@@ -1,0 +1,50 @@
+{
+  "scope": "funded NU7 same-PCZT integration implementation and initial resource stop; no completion claim",
+  "pushed_preparation_commit": "b0386ae",
+  "stopped_after_seconds": 190.563,
+  "stop_reason": "4GiB disk guard during first native row proof; owned invocation terminated",
+  "initial_free_disk_bytes": 11871952896,
+  "last_free_disk_bytes": 4291112960,
+  "max_sampled_root_rss_kib": 997808,
+  "max_sampled_system_swap_bytes": 16094467194,
+  "sample_scope": "10-second shared-machine observations, not true peaks or owned-only swap",
+  "real_custody_signatures_reservations_broadcast": false,
+  "original_journals_frozen": true,
+  "same_prepared_txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+  "prepared_native_replay": {
+    "broadcast": false,
+    "four_actual_inputs_match_frozen_or_exact_prepared_book": true,
+    "funding_reservations_changed": false,
+    "pczt_canonical": true,
+    "proving_keys_or_real_signatures_created": false,
+    "scope": "actual funded NU7 prepared PCZT byte/claim/memo verification only",
+    "six_recipients_amounts_memos_match": true,
+    "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938"
+  },
+  "validation": {
+    "root_release_build": true,
+    "root_strict_all_target_clippy": true,
+    "sdk_release_build": true,
+    "sdk_strict_all_target_clippy": true,
+    "eleven_prepare_substitutions_repeated_after_shared_validation_refactor": true,
+    "python_and_js_syntax": true
+  },
+  "recovery": "Same native PCZT, six row openings, memos and blinded delivery rechecked in a fresh checkpoint. No new auction/digest is selected. Exact source notes must match current node and existing journals before authorization.",
+  "ongoing_retry": {
+    "native_rayon_threads": 1,
+    "row_workers": 1,
+    "fixed_circuit_verifier_security_unchanged": true,
+    "rebuildable_cache_removed_bytes": 2018817545,
+    "completed": false
+  },
+  "build_failures": [
+    "Missing resume helper imports and two Clippy needless borrows corrected before retry.",
+    "Cold SDK rebuild encountered existing broken Homebrew protoc. The upstream checked-in-generated fallback succeeded with the previously documented PATH; no system or SDK source modified."
+  ],
+  "limitations": [
+    "Funded full completion, same-run public replay/client/browser remain unproven at this checkpoint.",
+    "One host controlled regtest; fixture bids/tickets/terms; no public testnet or malicious MPC claim.",
+    "Higher-memory Linux parallel benchmarks remain unavailable.",
+    "Do not silently weaken native binding or disk/memory guards."
+  ]
+}

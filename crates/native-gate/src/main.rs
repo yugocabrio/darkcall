@@ -575,7 +575,24 @@ fn main() -> Result<()> {
     if args.len() == 2 && args[0] == "--nu7-warm-auction-worker" {
         return row_worker::run_auctions(args[1].parse().map_err(|_| "worker concurrency")?);
     }
-    if args.len() == 7 && args[0] == "--nu7-funded-memo-prepare" {
+    if args.len() == 4 && args[0] == "--nu7-funded-memo-resume" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&nu7_auction::resume_funded(
+                std::path::Path::new(&args[1]),
+                std::path::Path::new(&args[2]),
+                &args[3]
+            )?)
+            .map_err(|_| "funded resume summary encoding")?
+        );
+        return Ok(());
+    }
+    if args.len() == 7
+        && matches!(
+            args[0].as_str(),
+            "--nu7-funded-memo-prepare" | "--nu7-funded-memo-full"
+        )
+    {
         println!(
             "{}",
             serde_json::to_string_pretty(&nu7_auction::prepare_funded(
@@ -584,7 +601,8 @@ fn main() -> Result<()> {
                 std::path::Path::new(&args[3]),
                 std::path::Path::new(&args[4]),
                 std::path::Path::new(&args[5]),
-                &args[6]
+                &args[6],
+                args[0] == "--nu7-funded-memo-full"
             )?)
             .map_err(|_| "funded preparation summary encoding")?
         );
@@ -624,6 +642,17 @@ fn main() -> Result<()> {
                 &args[2],
                 args[0] == "--nu7-integrated-shared"
             )?
+        );
+        return Ok(());
+    }
+    if args.len() == 3 && args[0] == "--verify-nu7-funded-application" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&nu7_auction::verify_funded_application(
+                std::path::Path::new(&args[1]),
+                std::path::Path::new(&args[2])
+            )?)
+            .map_err(|_| "funded verification summary")?
         );
         return Ok(());
     }

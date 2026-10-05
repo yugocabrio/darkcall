@@ -43,16 +43,16 @@ use zcash_protocol::{
 pub const SCOPE: &str = "actual isolated NU7 six-output auction preparation; no authorization";
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Request {
+pub(super) struct Request {
     format: u32,
     scope: String,
     sdk: String,
     branch: String,
-    escrow: PathBuf,
-    notes: PathBuf,
-    receivers: PathBuf,
-    admission: PathBuf,
-    amounts: [u64; 6],
+    pub(super) escrow: PathBuf,
+    pub(super) notes: PathBuf,
+    pub(super) receivers: PathBuf,
+    pub(super) admission: PathBuf,
+    pub(super) amounts: [u64; 6],
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -65,7 +65,18 @@ fn json<T: serde::de::DeserializeOwned>(path: &Path, limit: u64) -> Result<T> {
     serde_json::from_slice(&auction::read(path, limit)?)
         .map_err(|_| "funded strict input schema".into())
 }
-pub fn prepare(path: &Path) -> Result<serde_json::Value> {
+pub(super) struct Validated {
+    pub request: Request,
+    pub fvk: orchard::keys::FullViewingKey,
+    pub addresses: Vec<orchard::Address>,
+    pub memos: [zcash_protocol::memo::MemoBytes; 6],
+    pub journals: Vec<Journal>,
+    pub inputs: Vec<crate::regtest_transfer::Source>,
+    pub tip: u32,
+    pub anchor: orchard::Anchor,
+    pub nullifiers: BTreeSet<[u8; 32]>,
+}
+pub(super) fn load(path: &Path, reserved: Option<[u8; 32]>) -> Result<Validated> {
     let directory = auction::directory(path)?;
     let req: Request = json(&directory.join("nu7-funded-request.json"), 32768)?;
     if req.format != 1 || req.scope != SCOPE || req.sdk != SDK || req.branch != "77190ad9" {
@@ -190,7 +201,9 @@ pub fn prepare(path: &Path) -> Result<serde_json::Value> {
             let r = j
                 .registration(&entry.ticket)
                 .ok_or("operator missing funded ticket")?;
-            if j.phase() != darkcall_auction_core::funding::Phase::Frozen
+            if !(j.phase() == darkcall_auction_core::funding::Phase::Frozen
+                || (j.phase() == darkcall_auction_core::funding::Phase::Prepared
+                    && reserved.is_some_and(|e| j.reserved_effects() == Some(e))))
                 || j.registrations().count() != 4
                 || r.note != reg.note
                 || r.bid_commitment != entry.bid_commitment
@@ -231,6 +244,37 @@ pub fn prepare(path: &Path) -> Result<serde_json::Value> {
     {
         return Err("funded nullifier/conservation mismatch".into());
     }
+    if inputs
+        .iter()
+        .any(|i| i.path.root(i.note.commitment().into()) != anchor)
+    {
+        return Err("funded native anchors differ".into());
+    }
+    Ok(Validated {
+        request: req,
+        fvk,
+        addresses,
+        memos,
+        journals,
+        inputs,
+        tip,
+        anchor,
+        nullifiers: expected_nullifiers,
+    })
+}
+pub fn prepare(path: &Path) -> Result<serde_json::Value> {
+    let directory = auction::directory(path)?;
+    let Validated {
+        request: req,
+        fvk,
+        addresses,
+        memos,
+        journals: _journals,
+        inputs,
+        tip,
+        anchor,
+        nullifiers: expected_nullifiers,
+    } = load(&directory, None)?;
     let mut rng = rand::rng();
     let height = BlockHeight::from_u32(tip.checked_add(1).ok_or("funded height overflow")?);
     let mut builder = Builder::new(

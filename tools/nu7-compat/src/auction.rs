@@ -102,14 +102,14 @@ struct Keys {
 }
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-struct Identity {
-    format: u32,
-    scope: String,
-    sdk: String,
-    branch: String,
-    txid: String,
-    effects_digest: [u8; 32],
-    native_actions: [[u8; 32]; 6],
+pub(crate) struct Identity {
+    pub(crate) format: u32,
+    pub(crate) scope: String,
+    pub(crate) sdk: String,
+    pub(crate) branch: String,
+    pub(crate) txid: String,
+    pub(crate) effects_digest: [u8; 32],
+    pub(crate) native_actions: [[u8; 32]; 6],
 }
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -175,7 +175,7 @@ fn request(directory: &Path) -> Result<Request> {
     }
     Ok(value)
 }
-fn identity<A: Authorization>(tx: &TransactionData<A>) -> Result<Identity> {
+pub(crate) fn identity<A: Authorization>(tx: &TransactionData<A>) -> Result<Identity> {
     if tx.version() != TxVersion::V6
         || tx.consensus_branch_id() != BranchId::Nu7
         || tx.transparent_bundle().is_some()
@@ -212,11 +212,27 @@ fn identity<A: Authorization>(tx: &TransactionData<A>) -> Result<Identity> {
     })
 }
 fn application(directory: &Path, actual: &Identity) -> Result<serde_json::Value> {
+    application_for(directory, actual, None)
+}
+pub(crate) fn application_for(
+    directory: &Path,
+    actual: &Identity,
+    authority: Option<&Path>,
+) -> Result<serde_json::Value> {
     // The trusted verifier is our compiled executable, never supplied in a bundle.
     // The expected effects come directly from the SDK's in-memory native object.
-    let mut child = Command::new(root().join("target/release/darkcall-native-gate"))
-        .arg("--verify-nu7-auction-application")
-        .arg(directory)
+    let mut command = Command::new(root().join("target/release/darkcall-native-gate"));
+    command
+        .arg(if authority.is_some() {
+            "--verify-nu7-funded-application"
+        } else {
+            "--verify-nu7-auction-application"
+        })
+        .arg(directory);
+    if let Some(authority) = authority {
+        command.arg(authority);
+    }
+    let mut child = command
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
@@ -237,6 +253,7 @@ fn application(directory: &Path, actual: &Identity) -> Result<serde_json::Value>
         serde_json::from_slice(&output.stdout).map_err(|_| "fixed verifier summary")?;
     if result["native_row_proofs_verified"] != true
         || result["normal_cpp_auction_proof_verified"] != true
+        || (authority.is_some() && result["accepted_book_and_recipients_authenticated"] != true)
     {
         return Err("incomplete NU7 application verification".into());
     }
