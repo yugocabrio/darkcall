@@ -32,7 +32,9 @@ autonomously, incorporate later human/ChatGPT reviews.
 - [ ] P0.5 Receive testnet funds, sign 2-of-3, broadcast and decrypt the recipient note.
   - Actual isolated regtest equivalent passes: matured native funding, canonical
     witnesses, 2-of-3 FROST, full-node acceptance, two confirmations and exact
-    recipient scan. Standard public testnet remains blocked by branch mismatch.
+    recipient scan. Standard public testnet uses upstream NU7 at 4465026; our pinned native
+    stack lacks branch 77190ad9. Isolated NU7 PCZT/FROST/scanner compatibility and
+    an explicit pin migration are next; retain the successful old-branch gate.
     This gate is a transfer, not the funded auction; trusted-dealer master key is
     retained. A second valid spend of the same note is rejected by the node.
 - [x] P0.6 Prove one private settlement row binds to a native note commitment.
@@ -115,6 +117,10 @@ autonomously, incorporate later human/ChatGPT reviews.
 - [ ] Four-bid repeatable demo, including intentionally rejected tampering.
 - [ ] Benchmark four bids, then attempt 32 without weakening the guarantees.
 - [ ] Threat model, dependency/license inventory and independent reproduction.
+  - Generated selected-target locked inventory: 430 packages, no missing license
+    declarations, registry checksums/git pins, no local absolute paths. Principal
+    external tool/license notes are in docs/dependencies.md; external full graphs
+    and another-host reproduction remain.
 - [ ] Submission requirements confirmed from official event materials.
 - [ ] OSS release readiness, video and submission package; human controls publication/submission.
 

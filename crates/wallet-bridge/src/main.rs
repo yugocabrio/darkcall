@@ -105,8 +105,16 @@ async fn probe(endpoint: &str, isolated: bool) -> Result<serde_json::Value> {
     // LightdInfo and the later block snapshot may straddle activation. Refuse
     // this snapshot and retry rather than build a transaction on mixed rules.
     if branch != expected_branch(latest.height, isolated)? {
+        // Read-only diagnosis from current upstream consensus.rs at
+        // 9c5705f56517c040c50f96d29f1ff15a9383f3e0. This does NOT enable spending
+        // with a branch missing from our pinned native SDK.
+        let diagnosis = if !isolated && latest.height >= 4_465_026 && branch == 0x7719_0ad9 {
+            "; recognized upstream NU7 testnet branch (activation 4465026); pinned native SDK lacks NU7 support"
+        } else {
+            "; unsupported or inconsistent branch; no compatibility override"
+        };
         return Err(format!(
-            "server branch ID {branch:08x} does not match pinned network rules {:08x} at height {}",
+            "server branch ID {branch:08x} does not match pinned network rules {:08x} at height {}{diagnosis}",
             expected_branch(latest.height, isolated)?,
             latest.height
         ));

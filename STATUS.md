@@ -97,8 +97,10 @@ clippy and Python syntax checks pass.
 Next highest priority: finish the active actual-funded auction, verify canonical
 broadcast and all six separate recipient wallet scans, reconcile consumed funding
 and three journal reservations, then replay its public-only certified artifacts.
-The node remains at height 108 with pinned branch 37a5165b. Keep public-testnet
-compatibility separate and do not relax its unknown-branch guard. New claims and
+The node remains at height 108 with pinned branch 37a5165b. Keep public-testnet compatibility separate. New pinned primary-source research
+identifies its reported 77190ad9/4465703 as NU7, activated at 4465026. This is
+missing support in our older native SDK, not an established endpoint fault.
+The mismatch guard remains; queue an isolated NU7 compatibility gate. New claims and
 receipt wire encodings support private transport/restart with strict signature,
 quorum and canonical commitment checks. Selected regressions pass (34), workspace
 all-target strict clippy passes. Final transport assertions and strict workspace clippy also pass.

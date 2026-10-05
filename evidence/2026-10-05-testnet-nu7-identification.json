@@ -1,0 +1,32 @@
+{
+  "scope": "primary-source explanation of public testnet branch mismatch; no branch override or SDK migration",
+  "sources": [
+    {
+      "component": "SDK",
+      "commit": "9c5705f56517c040c50f96d29f1ff15a9383f3e0",
+      "url": "https://raw.githubusercontent.com/zcash/librustzcash/9c5705f56517c040c50f96d29f1ff15a9383f3e0/components/zcash_protocol/src/consensus.rs",
+      "sha256": "848b3131fec40f52937ce6c17c418f76d651f50580d43ea1c96e36ea0040be69"
+    },
+    {
+      "component": "Zebra",
+      "commit": "6d1e414d6f55e4180d0e47baaa934bf97d5b4fec",
+      "url": "https://raw.githubusercontent.com/ZcashFoundation/zebra/6d1e414d6f55e4180d0e47baaa934bf97d5b4fec/zebra-chain/src/parameters/network_upgrade.rs",
+      "sha256": "9bc1a7cde9cac32fbdb6004d1d08e19e4c1c683ba793a13ee9904256d1a75b09"
+    }
+  ],
+  "recognized_branch": "77190ad9",
+  "upgrade": "NU7",
+  "testnet_activation_height": 4465026,
+  "prior_live_probe_height": 4465703,
+  "pinned_native_sdk_branch": "37a5165b",
+  "finding": "The reported branch and height match the newer upstream NU7 schedule. The pinned protocol 0.10/PCZT 0.8/primitives 0.29 native stack lacks it. Endpoint misconfiguration is not established.",
+  "next_action": "Isolated NU7-aware SDK compatibility gate, then explicit pinned native migration if proofs, FROST, PCZT and scanner remain valid. Preserve successful old-branch regtest reproduction.",
+  "current_checks_unchanged": true,
+  "funding_or_broadcast_on_public_testnet": false,
+  "new_live_probe": {
+    "endpoint": "https://testnet.zec.rocks:443",
+    "height": 4466083,
+    "branch": "77190ad9",
+    "native_compatibility_guard": "rejected with recognized upstream NU7 diagnosis; no funding or broadcast"
+  }
+}
