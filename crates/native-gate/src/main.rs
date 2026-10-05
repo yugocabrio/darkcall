@@ -9,6 +9,7 @@ mod nu7_binding;
 mod regtest_deposits;
 mod regtest_settlement;
 mod regtest_spend;
+mod row_worker;
 use darkcall_auction_core::{Bid, Terms, clear};
 use darkcall_settlement_types::{Role, Row};
 use ff::{Field, PrimeField};
@@ -571,6 +572,9 @@ fn gate(
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.len() == 2 && args[0] == "--warm-row-worker" {
+        return row_worker::run(args[1].parse().map_err(|_| "worker concurrency")?);
+    }
     if args.len() == 3
         && matches!(
             args[0].as_str(),

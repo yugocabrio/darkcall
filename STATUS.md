@@ -4,6 +4,67 @@ Updated: 2026-10-05 (latest receipt/client measurements recorded; git HEAD is au
 
 ## Current outcome
 
+**One current synthetic NU7 auction now includes the full six-output receipt flow.**
+The run `.local/canonical-nu7-memos-20261005` completes at price50/sold3:
+committed private bids → fresh blinded-v2 refund/winner delivery → four encrypted
+receipt memos in the SAME six-output PCZT → six fresh shared18 native bindings →
+normal fixed C++ MPC proof → four2-of-3 FROST spends → native proof/signatures →
+six exact recipient decryptions. Transaction52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b,
+21790bytes/30000zatoshi fee. Cold run1015.173s, native proof7.805s. Session69231
+completed/consumed. Synthetic notes/local trusted dealer: no funded admission,
+DKG, broadcast or chain inclusion is claimed. The older funded-v2 regtest is
+separate. Initial13.79GiB headroom allowed this run without deleting artifacts;
+unchanged10GiB start/4GiB disk/8GiB RSS/10% memory guards remained active.
+
+**The browser/client/public bundle all refer to that exact transaction.**
+Four recipients open only their own viewing identity; fixed flags+auction proof
+and exact context/price/sold are checked before key access. Actual4 openings and
+proof/wrong-key/trailing-tx/cross-run refusals pass in15.828s. Fixed public-only
+settlement replay passes in99.323s; same-transaction HTTP replay101.076s. All8
+native transaction/proof/action/layout substitutions reject in350.090s. Six more
+portable missing-file/digest/external-path/uploaded-VK/symlink/cross-run cases reject;
+producer-recomputed checksums do not replace fixed verifier trust. Same-run HTTP
+four-ticket/15-boundary checks pass in12.475s; no secret fields are served.
+A public-only checkout view starts without private identities, refuses own opening
+without a key, and still rejects a corrupt proof. Its15 boundaries pass in3.284s.
+The140386-byte public artifact is `demo/artifacts/canonical-nu7-v1`; no private
+keys/pads/openings/witness/PCZT are included. `./demo.sh` starts the coherent view;
+`./verify.sh demo/artifacts/canonical-nu7-v1` verifies the portable public bundle
+with pinned tools prebuilt. No live browser bid admission/authentication is claimed.
+
+**Same-circuit persistent PK is implemented and separately measured.**
+A pipe-only shared18 worker warms one immutable key, then handles bounded jobs.
+On the16GiB AppleM1, keygen111.984s; two new row0 proofs82.310s/92.506s,9504bytes
+per proof; one key generation, zero signing approvals. The second fresh proof
+replaces only row0 in a copied public bundle and passes the independent fixed
+public verifier in103.105s. Requesting2-way concurrency on the Mac refuses
+before key allocation.2/3/6 routing is compiled but not benchmarked on sufficient
+Linux hardware. The full auction orchestrator still uses its original cold path;
+there is no measured2-minute settlement or claimed parallel speedup.
+Resource samples are every10s, not true peaks; warm max sampled RSS4064256KiB,
+minimum disk7869779968bytes and memory34%. Short initial overlap with an independent
+public replay is disclosed; that replay was stopped to serialize heavy work and
+retained as `.local/canonical-nu7-public-attacks-20261005`, not a crypto failure.
+Only rebuildable `target/release/deps/*.rmeta` compiler metadata was deleted
+(1141971132bytes); all binaries/source/proofs/keys/journals were kept.
+
+**All heavy jobs are complete.** Local canonical demo remains PID34999,
+exec session45695 at http://127.0.0.1:8877; log
+.local/canonical-demo-v2-server-20261005.log. Temporary public-only test server
+PID35061/session42429 was stopped; no duplicate server is needed. Automation
+`darkcall` was deleted at the human's request. Check process/port before restarting.
+Root and NU7 locks are unchanged. Root worker tests, strict clippy, both rustfmt
+checks and relevant Python checks pass. New SDK inventory refreshed295 packages
+under its existing lock; no missing declared license. See
+`evidence/2026-10-05-canonical-nu7-memo-auction.json` and `docs/submission-draft.md`.
+
+Next high-value gap: same NU7 execution with actual funding, authenticated
+admission/final-book certificate, DKG and chain confirmation. Independent hosts,
+8/16/32-bid compiled proofs, larger-host concurrency and warm-worker orchestration
+are unfinished. Do not enlarge the crypto/wallet/recovery scope merely to add code.
+
+## Prior component records (historical; current result above is authoritative)
+
 **The first local browser receipt/verifier UI works with actual proofs.**
 `python3 scripts/serve_demo.py` is running at http://127.0.0.1:8877, PID63042,
 exec session32486; log .local/browser-demo-20261005.log. This original server

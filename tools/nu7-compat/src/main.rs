@@ -21,6 +21,7 @@ async fn main() -> Result<()> {
         [command, directory] if command == "verify-auction" => auction::verify(std::path::Path::new(directory)),
         [command, directory] if command == "receipt-transport" => native::gate_receipts(std::path::Path::new(directory)),
         [command, directory, index, out] if command == "receipt-transport-open" => receipt_transport::open(std::path::Path::new(directory),index.parse().map_err(|_| "recipient index")?,std::path::Path::new(out)),
+        [command, directory, index, out] if command == "auction-receipt-open" => receipt_transport::open_auction(std::path::Path::new(directory),index.parse().map_err(|_| "recipient index")?,std::path::Path::new(out)),
         [command, directory] if command == "verify-export" => interop_export::verify(std::path::Path::new(directory),None),
         [command, directory, row] if command == "verify-export" => interop_export::verify(std::path::Path::new(directory),Some(std::path::Path::new(row))),
         [command, endpoint] if command == "probe-testnet" => probe::probe(endpoint).await,

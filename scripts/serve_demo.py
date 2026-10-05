@@ -19,6 +19,7 @@ from regtest_deposits import ROOT, private_read
 from regtest_prepared_gate import write_bytes
 from regtest_resources import guarded_json_call
 from regtest_deposits import ENV, NATIVE
+from public_bundle import verify as verify_bundle, snapshot
 
 WEB = ROOT / 'demo'
 DEFAULTS = {'positive':'positive-receipt-memo-20261005', 'zero':'zero-receipt-memo-v2-20261005'}
@@ -27,7 +28,10 @@ AUTHORITY = ROOT / '.local/regtest-shared-v2-deposit4-20261005-admission/manifes
 
 
 class Demo:
-    def __init__(self, cases):
+    def __init__(self, cases, canonical=None, bundle=None, public_only=False):
+        self.canonical = canonical
+        self.bundle = bundle
+        self.public_only = public_only
         self.cases = {name: (ROOT / '.local' / path).resolve(strict=True) for name,path in cases.items()}
         local = (ROOT / '.local').resolve()
         if any(not p.is_relative_to(local) for p in self.cases.values()):
@@ -39,47 +43,69 @@ class Demo:
     def state(self):
         cases = []
         for name,path in self.cases.items():
-            summary = json.loads(private_read(path / 'native-summary.json', 16384))
-            book = json.loads(public_book(path / 'proof-public/book.json'))
-            statement = private_read(path / 'proof-public/public-input0', 187*32)
-            if (len(statement) != 187*32 or summary.get('chain_funding') is not False
-                    or summary.get('synthetic_inputs') != 1 or summary.get('actions') != 4):
+            if self.canonical:
+                if self.public_only:
+                    identity=json.loads(private_read(path/'nu7-native-identity.json'))
+                    summary={'txid':identity['txid'],'branch':identity['branch'],'fee':30000,
+                        'transaction_bytes':len(private_read(path/'synthetic-nu7-transaction.bin')),
+                        'chain_funding':False}
+                    valid=len(identity['native_actions'])==6
+                else:
+                    recorded = json.loads(private_read(path.parent/(path.name+'-summary.json'),65536))['result']
+                    summary = recorded['native']
+                    valid = (recorded['passed'] and summary['four_receipt_memos_in_same_six_output_transaction']
+                        and summary['synthetic_inputs'] == 4 and summary['actions'] == 6)
+                book = json.loads(public_book(path/'receipt-book.json'))
+                statement = private_read(path/'receipt-proof-public/public-input0',187*32)
+            else:
+                summary = json.loads(private_read(path / 'native-summary.json', 16384))
+                book = json.loads(public_book(path / 'proof-public/book.json'))
+                statement = private_read(path / 'proof-public/public-input0', 187*32)
+                valid = summary.get('synthetic_inputs') == 1 and summary.get('actions') == 4
+            if len(statement) != 187*32 or summary.get('chain_funding') is not False or not valid:
                 raise RuntimeError('Demo accepts only the documented synthetic receipt component')
             price = int.from_bytes(statement[177*32:178*32], 'big')
             sold = int.from_bytes(statement[178*32:179*32], 'big')
             cases.append({'id':name, 'price':price, 'sold':sold, 'units':3, 'tickets':4,
                 'root':book['root'], 'txid':summary['txid'], 'fee':summary['fee'],
                 'bytes':summary['transaction_bytes'], 'branch':summary['branch'],
-                'scope':'synthetic receipt component; separate one-input/four-output transfer'})
+                'scope':'synthetic six-output auction with four receipt memos' if self.canonical else 'synthetic receipt component; separate one-input/four-output transfer'})
         return {'cases':cases, 'csrf':self.token, 'last_settlement':self.last_settlement,
+            'recipient_identities_available':not self.public_only,
             'live_admission':False, 'independent_hosts':False, 'operators_know_results':True,
-            'six_output_memo_e2e':False, 'chain_inclusion_verified':False}
+            'six_output_memo_e2e':bool(self.canonical), 'accepted_book_certified':False,
+            'chain_inclusion_verified':False}
 
     def verify(self, name, ticket, tamper=False):
         if type(name) is not str or name not in self.cases or type(ticket) is not int or not 0 <= ticket < 4:
             raise ValueError('Unknown demo ticket')
+        if self.public_only and not tamper:
+            return 409, {'error':'This checkout has public proofs only. Receipt opening requires your private recipient identity.'}
         if not self.lock.acquire(blocking=False):
             return 409, {'error':'Another verification is running. Please try again shortly.'}
         try:
             source = self.cases[name]
-            proof = source / 'proof-public'
+            original_proof = source / ('receipt-proof-public' if self.canonical else 'proof-public')
+            proof = original_proof
             nonce = secrets.token_hex(6)
             checkpoint = 'browser-receipt-' + nonce
             if tamper:
                 proof = ROOT / '.local' / ('browser-tamper-' + nonce)
                 proof.mkdir(mode=0o700)
                 for file in ('vk', 'proof.0', 'public-input0'):
-                    data = private_read(source / 'proof-public' / file, 1048576)
+                    data = private_read(original_proof / file, 1048576)
                     if file == 'proof.0':
                         data = bytes([data[0] ^ 1]) + data[1:]
                     write_bytes(proof / file, data)
             try:
-                result = open_receipt(source / 'proof-public/book.json', proof,
-                    source / f'recipient-{ticket}', ticket, checkpoint)
+                result = open_receipt(source/'receipt-book.json' if self.canonical else source/'proof-public/book.json', proof,
+                    source if self.canonical else source/f'recipient-{ticket}', ticket, checkpoint,
+                    auction_bundle=self.bundle if self.canonical else None)
             except RuntimeError as error:
                 if tamper and str(error) == 'Fixed C++ ticket proof rejected before native decryption':
                     target = ROOT / '.local' / checkpoint
                     if ((target / f'private-recipient-{ticket}.json').exists()
+                            or (target / f'private-auction-recipient-{ticket}.json').exists()
                             or (target / 'private-received.memo').exists()):
                         raise RuntimeError('Tamper gate unexpectedly accessed recipient key')
                     return 200, {'rejected':True, 'key_read':False, 'memo_decrypted':False,
@@ -91,7 +117,8 @@ class Demo:
             public = {key:result[key] for key in ('won','refund','price','sold','txid','seconds',
                 'fixed_cpp_ticket_proof_verified','native_proof_and_signatures_verified',
                 'own_ticket_opening_verified','native_amount_matches_refund','own_viewing_key_only',
-                'six_output_auction_settlement_verified','chain_inclusion_verified')}
+                'six_output_auction_settlement_verified','chain_inclusion_verified',
+                'receipt_in_six_output_transaction','fixed_auction_context_proof_verified')}
             public['ticket_index'] = ticket
             return 200, public
         finally:
@@ -101,6 +128,21 @@ class Demo:
         if not self.lock.acquire(blocking=False):
             return 409, {'error':'Another verification is running. Please try again shortly.'}
         try:
+            if self.canonical:
+                result = verify_bundle(self.bundle)
+                public = {key:result[key] for key in ('txid','transaction_bytes','native_proof_and_signatures_verified',
+                    'actual_transaction_outputs_match','seconds')}
+                public.update(native_row_proofs_verified=result['application']['native_row_proofs_verified'],
+                    normal_cpp_auction_proof_verified=result['application']['normal_cpp_auction_proof_verified'],
+                    acceptance_or_recipient_receipts_authenticated=False,private_openings_read=False,
+                    chain_funding_or_finality_verified=False,
+                    receipt_fixed_proof_verified=result['receipt_fixed_proof_verified'],
+                    receipt_settlement_context_link_verified=result['receipt_settlement_context_link_verified'],
+                    verified_at_unix=int(time.time()))
+                if public['txid'] != self.state()['cases'][0]['txid']:
+                    raise RuntimeError('Public verification is for a different demo auction')
+                self.last_settlement=public
+                return 200,public
             # Fixed public-only fixture and independently configured authority.
             # Never discover authority keys in a supplied proof bundle or accept
             # a browser-provided path. Snapshot exact public bytes before verify.
@@ -215,9 +257,23 @@ def main():
     parser.add_argument('--port',type=int,default=8877)
     parser.add_argument('--positive',default=DEFAULTS['positive'])
     parser.add_argument('--zero',default=DEFAULTS['zero'])
+    parser.add_argument('--canonical',action='store_true',help='One completed NU7 six-output memo auction; no mixed fixtures')
+    parser.add_argument('--run',default='canonical-nu7-memos-20261005')
+    parser.add_argument('--bundle',type=pathlib.Path,default=ROOT/'demo/artifacts/canonical-nu7-v1')
+    parser.add_argument('--public-only',action='store_true',help='Use only committed public artifacts; no synthetic identities')
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535: raise RuntimeError('Expected unprivileged local port')
-    demo = Demo({'positive':args.positive,'zero':args.zero})
+    if args.canonical:
+        # CLI configuration is trusted local setup, never an HTTP supplied path.
+        bundle = args.bundle.resolve(strict=True)
+        run=ROOT/'.local'/args.run
+        if args.public_only or not run.exists():
+            frozen=snapshot(bundle,'demo-public')
+            demo=Demo({'positive':frozen.name},canonical=True,bundle=bundle,public_only=True)
+        else:
+            demo = Demo({'positive':args.run},canonical=args.run,bundle=bundle)
+    else:
+        demo = Demo({'positive':args.positive,'zero':args.zero})
     demo.state()  # Fail before binding if fixtures are missing or wrong scope.
     server = ThreadingHTTPServer(('127.0.0.1',args.port),handler(demo,args.port))
     server.timeout = 2

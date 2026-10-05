@@ -1,85 +1,103 @@
-# Local receipt demo
-
-Start from the repository root:
+# One-run DarkCall demo
 
 ```sh
-python3 scripts/serve_demo.py
+./demo.sh
+./verify.sh demo/artifacts/canonical-nu7-v1
 ```
 
-Open `http://127.0.0.1:8877`. The server binds only to IPv4 loopback. It serves
-three static files and a bounded API; there is no repository file server, CORS,
-remote host option, signing, RPC or transaction broadcast operation.
+Open `http://127.0.0.1:8877`. Both commands use the same recorded synthetic
+NU7 transaction `52555e25…151ab3b`: four committed bids, blinded-v2 private
+refund/winner delivery, four encrypted memos in the same six-output transaction,
+six output bindings, MPC proof, PCZT/FROST/native authorization and six decryptions.
+Its price is 50 zatoshi and three units sell. This tiny synthetic book is a demo;
+no public-testnet funding, admission certificate, DKG or chain inclusion is claimed.
+The earlier actual-funded NU6.3 regtest execution remains separate.
 
-Choose standard clearing or the zero-price tie, then a synthetic ticket.
-**Verify & open my result** runs the actual one-command recipient client:
-fixed C++ verification before reading the recipient key, native transaction
-authentication/decryption, and exact ticket/root/pad/refund checks. The browser
-receives the verified result only, never viewing keys, spending keys or pads.
-**Run tamper check** changes a proof and requires rejection before reading the
-recipient key or decrypting the memo. It does not simulate a successful result.
+After pinned tools are built from [toolchains](toolchains.md), the verifier works
+from the committed 140 KB **public-only** bundle. It never needs a bid/witness/key,
+PCZT or funding journal. It snapshots bounded allowlisted public files, rewrites
+only its own internal MPC path, and invokes the compiled native/Halo2/C++ verifiers.
+Manifest checksums detect packaging damage; they are not producer authentication.
+Supplied VK bytes must equal a key reconstructed from our pinned circuit.
+Wrong/missing artifacts, external MPC paths, symlinks and cross-run contexts refuse.
 
-The demo is the completed one-input/four-output encrypted receipt component.
-It is separate from six-output auction settlement. The newer same-six-output
-memo PCZT preparations have passed, but their complete NU7 application/native
-proof and signing run is still capacity-blocked. There is no new bid form:
-sending a plaintext maximum bid to this server would violate the intended
-privacy model. Independent browser bid proving/admission is unfinished.
+`./demo.sh` uses ignored synthetic recipient identities on this development machine.
+A fresh checkout automatically starts a **public-only** view when those identities
+are absent. It can show the recorded sealed book, verify settlement and reject a
+changed proof. It explicitly disables own receipt opening without a viewing key.
+No recipient key is shipped in Git. `./demo.sh --public-only` selects that view
+explicitly. Tool bootstrap/compilation is a prerequisite, not a claimed zero-install
+cryptographic verifier.
 
-The server uses **synthetic identities on this one computer**. Selecting a demo
-ticket is not bidder authentication. Operators know winning status/refunds.
-This is not a deployed wallet, independent-host privacy demonstration, admission
-receipt or proof of chain inclusion.
+## Functional story
 
-**Verify settlement** independently runs the public-only verifier on the
-completed price-25 six-output owned-regtest auction. It snapshots public
-transaction/row/MPC proofs, supplies the original public operator authority
-from outside that bundle, and verifies all three acceptance signatures, six
-native bindings, native authorization and the fixed C++ auction proof. It
-reads no bid openings, wallet keys, PCZT or funding journal. This historical
-settlement has no receipt memos; this check does not reestablish chain inclusion
-or current spendability. A verification takes about two minutes on this host.
-Its fixed checkpoint/authority paths are in `serve_demo.py`, not browser input.
+1. Four committed maximum bids remain sealed; the recorded price/units are public.
+2. Select a synthetic ticket and **Verify & open my result**. The fixed C++ flags
+   proof and fixed auction proof must pass and share the exact context/price/sold
+   before the client reads that one identity. It authenticates the native transaction,
+   decrypts the memo and checks ticket/root/refund/status. No other identity is copied.
+3. **Run tamper check** submits a real altered proof and refuses before key access.
+4. **Verify settlement** checks that same transaction's native authorization, six
+   row proofs, fixed MPC proof and receipt statement link using public files only.
 
-## Fixture prerequisites
+The UI separates clearing/own-result verification from settlement verification;
+showing the price does not pretend that funds have settled. Recorded and previous
+verification results are labeled. There is no fake bid form or live plaintext bid
+submission. Client proving/admission, registered identity authentication and chain
+delivery are unfinished.
 
-Default fixtures are private ignored checkpoints from the measured runs:
+The server binds only to IPv4 loopback, serves three static files, and has a bounded
+same-origin/token API with one verification at a time. It serves no repo files,
+keys, masks or raw memos, and has no RPC/broadcast/signing operation. Selecting a
+ticket is not authentication. All synthetic actors remain on one computer and
+operators know refunds/status.
 
-- `.local/positive-receipt-memo-20261005`
-- `.local/zero-receipt-memo-v2-20261005`
+## Regenerate the synthetic run
 
-They are not in Git. On a new machine first build the pinned tools from
-[toolchains.md](toolchains.md), then run `scripts/run_mpc_gate.py` with synthetic
-bids and `scripts/run_delivery_gate.py --winner-flags` for the returned book.
-For standard clearing use bids `90 70 60 50`; for the zero tie use
-`--reserve 0 --bids 0 0 0 0`. Both scripts return their new ignored `run` path.
-Generate each native receipt fixture with:
+Build the pinned tools. Make a fresh committed four-bid book with
+`scripts/run_mpc_gate.py` (bids 90/70/60/50, reserve 20), then:
 
 ```sh
-python3 scripts/check_receipt_transport.py BOOK_RUN FLAGS_RUN --name NEW_RECEIPT_NAME
+python3 scripts/run_nu7_auction.py BOOK_RUN --name FRESH_NAME --receipt-memos
+python3 scripts/public_bundle.py .local/FRESH_NAME --export .local/FRESH_PUBLIC
+python3 scripts/check_canonical_receipts.py .local/FRESH_NAME .local/FRESH_PUBLIC
+./verify.sh .local/FRESH_PUBLIC
+./demo.sh --run FRESH_NAME --bundle .local/FRESH_PUBLIC
 ```
 
-Supply the **directory names** of those generated checkpoints to
-`serve_demo.py --positive POSITIVE_RECEIPT_NAME --zero ZERO_RECEIPT_NAME`.
-Existing checkpoints are preserved; use fresh names. Missing/wrong-scope
-fixtures fail before the server binds. Each recipient opening uses the existing
-4GiB disk/8GiB RSS/10% system-memory guard. The complete new six-row prover
-requires10GiB initial disk headroom; the UI never lowers that requirement.
+Use new simple lowercase names; existing proofs/keys/journals are preserved. The
+current full gate needs 10 GiB initial disk, 4 GiB runtime, 8 GiB resident ceiling and
+10% macOS memory headroom. Never lower these to finish a demo. Synthetic funding
+cannot be broadcast. This regeneration does not reproduce historical funded DKG.
 
-## Validation
+## Actual checks
 
 ```sh
-python3 scripts/check_demo_http.py
-python3 scripts/check_demo_http.py --settlement-security-only
-python3 scripts/check_demo_http.py --settlement-only
+python3 scripts/check_demo_http.py --canonical
+python3 scripts/check_demo_http.py --canonical --settlement-security-only
+python3 scripts/check_demo_http.py --canonical --settlement-only
+python3 scripts/check_public_boundary.py
 ```
 
-The actual check covers four positive/zero winner/loser results, two corrupted
-proof refusals,15 HTTP/input rejections and secret-field exclusion. Browser
-interaction separately confirms result rendering, identity selection and the
-tamper rejection. UI refresh resets the presentation only; private proof/client
-checkpoints stay under `.local` for review/recovery.
+Four own receipts, 15 API/input refusals and a corrupt-proof refusal pass on the
+same six-output run. Public-only checkout checks use `--public-only` and a separate
+local test port. Native transaction/proof/action/layout substitutions are covered
+by `scripts/replay_nu7_auction.py`; source artifacts remain unchanged.
 
-The API accepts only allowlisted synthetic case/ticket/action values, exact
-loopback Host and same Origin, a per-server session token, and bounded JSON.
-One verification can run at a time. This provides local demo isolation, not a
-public service authentication protocol. All files/diagnostics remain local.
+## Proving latency
+
+The complete shared-host cold run took 1015.173s; independent public replay 99.323s,
+and HTTP public verification 101.076s. Key preparation 108.596s, sequential six
+proof/verify services 667.790s, native consensus proving 7.805s. Do not sum overlapping
+sub-scopes into a second total or compare them to an unrelated fixture as a controlled
+speedup. See the benchmark evidence for 10-second resource samples, not true peaks.
+
+`scripts/benchmark_warm_rows.py SOURCE --workers 1 --rows 0 --rounds 2` is a pipe-only
+persistent shared18-PK experiment. It prepares one key and makes fresh proofs for
+repeated jobs. It does not generate a signing approval. On this Mac concurrency 1
+is enforced; 2/3/6 require sufficient measured Linux RAM and all resource guards.
+The full auction orchestrator still uses its existing cold path; the standalone
+worker's timing does not establish a 2-minute end-to-end settlement. Its measured
+cold key was111.984s and two fresh row0 jobs82.310s/92.506s. A warm-produced proof
+also passes the independent fixed public verifier in103.105s. Full auction worker
+orchestration and larger-host concurrency remain unfinished.

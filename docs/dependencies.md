@@ -47,3 +47,22 @@ circuits. Details are in output-binding/non-native Poseidon documentation.
 Licenses here describe source metadata; this is not an audit or legal approval
 of distribution. Full external-tool notices and other target inventories belong
 in the final release package. The human controls OSS publication.
+
+
+The separate NU7 SDK workspace is pinned to librustzcash commit
+`9c5705f56517c040c50f96d29f1ff15a9383f3e0`; it does not alter the root lock.
+The refreshed selected-target NU7 inventory includes 295 packages, no missing
+license declarations, and lock SHA256
+`855d53ea101e2b0ef75d703417abc1d237aac7711a1eb684209b1945f3305a41`.
+The previous export was stale after the earlier byte-compatibility additions;
+this refresh changes the inventory, not the dependency resolution.
+
+```sh
+python3 scripts/dependency_inventory.py --manifest tools/nu7-compat/Cargo.toml --output evidence/2026-10-05-nu7-dependency-inventory.json
+```
+
+The committed canonical public bundle contains only transaction/proofs/public
+statements, commitments and public verification-key comparison bytes. It contains
+no viewing/spending key, PCZT, witness, plaintext maximum bid, delivery pad or
+blinder. Those verifier keys are compared to our pinned compiled circuit and
+never treated as bundle-provided trust anchors.

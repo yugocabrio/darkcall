@@ -2,8 +2,9 @@
 //! values are canonical bytes; this working SDK never parses a NU7 transaction.
 use super::*;
 use crate::regtest_spend::{read_private, write_private};
+use darkcall_bn254_emulation::poseidon::{digest_words, pack_row, reference};
 use darkcall_output_binding::poseidon_rows::{
-    HASH_RULE, RowLayout, read_layout, verify_set_for_layout,
+    HASH_RULE, RowLayout, binding_from_note, read_layout, verify_set_for_layout,
 };
 use darkcall_settlement_types::{NativeBatchStatement, link_four_bid_statements};
 use serde::{Deserialize, Serialize};
@@ -111,6 +112,84 @@ fn checked_sdk(mode: &str, directory: &Path) -> Result<serde_json::Value> {
         return Err("NU7 SDK summary bound".into());
     }
     serde_json::from_slice(&output.stdout).map_err(|_| "new SDK summary encoding".into())
+}
+
+/// Exact private row/note reconstruction for a local warmed prover. No keys,
+/// bids, PCZT or signing capability are loaded by this path.
+pub(crate) fn worker_bindings(
+    path: &Path,
+) -> Result<(
+    NativeBatchStatement,
+    Vec<darkcall_output_binding::sha::Binding>,
+)> {
+    let directory = local(path)?;
+    if read_layout(&directory).map_err(|_| "worker native layout")? != RowLayout::Shared18 {
+        return Err("worker requires the fixed shared18 layout".into());
+    }
+    let identity: Identity = json(&directory, "nu7-native-identity.json", 16384)?;
+    identity.validate()?;
+    let data: Openings = json(&directory, "private-nu7-auction-outputs.json", 32768)?;
+    let statement: NativeBatchStatement = json(&directory, "native-public.json", 32768)?;
+    let encoded: Vec<Vec<u8>> = json(&directory, "native-private-rows.json", 32768)?;
+    if data.format != 1
+        || data.scope != SCOPE
+        || data.sdk != SDK
+        || data.branch != identity.branch
+        || data.txid != identity.txid
+        || data.outputs.len() != 6
+        || encoded.len() != 6
+        || statement.native_actions != identity.native_actions
+    {
+        return Err("worker exact native identity/shape mismatch".into());
+    }
+    link_four_bid_statements(
+        &statement.row_hashes,
+        &statement.bindings(),
+        &identity.native_actions,
+    )
+    .map_err(|_| "worker action mapping mismatch")?;
+    let mut bindings = Vec::new();
+    for (i, opening) in data.outputs.iter().enumerate() {
+        let row = Row::decode(&encoded[i]).map_err(|_| "worker canonical row")?;
+        if row.action_index != opening.action_index
+            || row.action_index != statement.action_indices[i]
+            || opening.cmx != statement.cmxs[i]
+            || digest_words(&reference(&pack_row(&row.encode()))) != statement.row_hashes[i]
+        {
+            return Err("worker private row/native statement mismatch".into());
+        }
+        let address = orchard::Address::from_raw_address_bytes(
+            opening
+                .recipient
+                .as_slice()
+                .try_into()
+                .map_err(|_| "worker recipient length")?,
+        )
+        .into_option()
+        .ok_or("worker recipient encoding")?;
+        let rho = Rho::from_bytes(&opening.rho)
+            .into_option()
+            .ok_or("worker rho")?;
+        let seed = RandomSeed::from_bytes(opening.rseed, &rho)
+            .into_option()
+            .ok_or("worker seed")?;
+        let note = Note::from_parts(
+            address,
+            NoteValue::from_raw(opening.amount),
+            rho,
+            seed,
+            NoteVersion::V3,
+        )
+        .into_option()
+        .ok_or("worker note")?;
+        if ExtractedNoteCommitment::from(note.commitment()).to_bytes() != opening.cmx {
+            return Err("worker native commitment mismatch".into());
+        }
+        bindings.push(
+            binding_from_note(&row, &note).map_err(|_| "worker row recipient/amount mismatch")?,
+        );
+    }
+    Ok((statement, bindings))
 }
 
 pub fn run(book: &Path, name: &str, prove: bool) -> Result<serde_json::Value> {

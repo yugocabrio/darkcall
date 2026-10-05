@@ -15,6 +15,8 @@ def main():
     parser.add_argument('--port', type=int, default=8877)
     parser.add_argument('--settlement-security-only', action='store_true')
     parser.add_argument('--settlement-only', action='store_true')
+    parser.add_argument('--canonical',action='store_true')
+    parser.add_argument('--public-only',action='store_true')
     args = parser.parse_args()
     host = '127.0.0.1:' + str(args.port)
     origin = 'http://' + host
@@ -34,18 +36,24 @@ def main():
     status,raw = call('GET','/api/state')
     if status != 200: raise RuntimeError('Demo state unavailable')
     state = json.loads(raw)
+    if args.canonical and (not state['six_output_memo_e2e'] or len(state['cases']) != 1):
+        raise RuntimeError('Expected one same-run six-output auction')
     headers = {'Origin':origin,'Content-Type':'application/json','X-DarkCall-Token':state['csrf']}
     if args.settlement_only:
         status,data = call('POST','/api/settlement','{}',headers)
         value = json.loads(data)
         if (status != 200 or not all(value[k] for k in ('native_proof_and_signatures_verified',
                 'native_row_proofs_verified','normal_cpp_auction_proof_verified','actual_transaction_outputs_match',
-                'acceptance_or_recipient_receipts_authenticated'))
+                *(() if args.canonical else ('acceptance_or_recipient_receipts_authenticated',))))
                 or value['private_openings_read'] or value['chain_funding_or_finality_verified']):
             raise RuntimeError('Public settlement API verification did not pass')
+        if args.canonical and (value['txid'] != state['cases'][0]['txid']
+                or not value['receipt_fixed_proof_verified'] or not value['receipt_settlement_context_link_verified']
+                or value['acceptance_or_recipient_receipts_authenticated']):
+            raise RuntimeError('Canonical settlement scope/receipt transaction differs')
         forbidden = {'viewing_key','spending_key','refund_pad','winner_pad','pczt','witness','private_path'}
         if forbidden.intersection(value): raise RuntimeError('Private field in settlement response')
-        print(json.dumps({'scope':'actual public-only six-output settlement API verification; fixed historical regtest bundle',
+        print(json.dumps({'scope':'actual public-only same-run six-output memo verification' if args.canonical else 'actual public-only six-output settlement API verification; fixed historical regtest bundle',
             'result':value,'private_fields_served':False,'no_proving_key_or_new_signature':True,
             'seconds':time.monotonic()-start},indent=2))
         return
@@ -95,8 +103,24 @@ def main():
         elif isinstance(value,list):
             for item in value: clean(item)
     clean(state)
+    if args.public_only:
+        if state['recipient_identities_available']: raise RuntimeError('Public-only view loaded private identities')
+        payload={'case':'positive','ticket':0,'action':'verify'}
+        if call('POST','/api/verify',json.dumps(payload),headers)[0] != 409:
+            raise RuntimeError('Missing own identity did not fail closed')
+        payload['action']='tamper'
+        status,data=call('POST','/api/verify',json.dumps(payload),headers)
+        value=json.loads(data)
+        if status!=200 or not value['rejected'] or value['key_read'] or value['memo_decrypted']:
+            raise RuntimeError('Public-only proof tamper refusal failed')
+        print(json.dumps({'scope':'public-only canonical demo; no private identity fixtures',
+            'recipient_keys_included':False,'own_opening_without_key_refused':True,
+            'proof_tamper_refused_before_key':True,'http_rejections':denied,
+            'seconds':time.monotonic()-start},indent=2))
+        return
     verified = []
-    for name,index,won,refund in [('positive',0,True,50),('positive',3,False,100),('zero',0,True,100),('zero',3,False,100)]:
+    cases=[('positive',0,True,50),('positive',1,True,50),('positive',2,True,50),('positive',3,False,100)] if args.canonical else [('positive',0,True,50),('positive',3,False,100),('zero',0,True,100),('zero',3,False,100)]
+    for name,index,won,refund in cases:
         status,data = call('POST','/api/verify',json.dumps({'case':name,'ticket':index,'action':'verify'}),headers)
         value = json.loads(data)
         if (status != 200 or value['won'] != won or value['refund'] != refund
@@ -104,9 +128,12 @@ def main():
                 or not value['own_ticket_opening_verified'] or value['six_output_auction_settlement_verified']
                 or value['chain_inclusion_verified']):
             raise RuntimeError('Actual receipt API result differs from scoped fixture')
+        if args.canonical and (value['txid'] != state['cases'][0]['txid']
+                or not value['receipt_in_six_output_transaction'] or not value['fixed_auction_context_proof_verified']):
+            raise RuntimeError('Receipt is from a different auction')
         clean(value)
         verified.append({'case':name,'ticket':index,'won':won,'refund':refund})
-    for name in ('positive','zero'):
+    for name in ('positive',) if args.canonical else ('positive','zero'):
         status,data = call('POST','/api/verify',json.dumps({'case':name,'ticket':0,'action':'tamper'}),headers)
         value = json.loads(data)
         if status != 200 or not value['rejected'] or value['key_read'] or value['memo_decrypted']:
@@ -115,7 +142,7 @@ def main():
     print(json.dumps({'scope':'loopback receipt demo actual API/client integration',
         'verified':verified,'http_rejections':denied,'corrupt_proofs_rejected_before_key':2,
         'private_fields_served':False,'browser_ui_checked_separately':True,
-        'six_output_memo_e2e_verified':False,'seconds':time.monotonic()-start},indent=2))
+        'six_output_memo_e2e_verified':args.canonical,'seconds':time.monotonic()-start},indent=2))
 
 
 if __name__ == '__main__':

@@ -3,6 +3,39 @@
 Latest human instruction: start development, commit and push regularly, continue
 autonomously, incorporate later human/ChatGPT reviews.
 
+## Latest human priorities (Oct5; override the older queue)
+
+The15-minute automation is deleted at the human's request. Continue on direct
+requests. Converge on a Grand Prize submission; preserve exactly the current
+proof/security model and avoid unrelated recovery/wallet/cryptographic work.
+
+- [ ] One canonical current-v2 run: committed bids/admission, MPC, four receipt
+  memos in the same six-output NU7 transaction, bindings/FROST/native decryption,
+  public replay and own-ticket openings. Do not combine historical fixtures to
+  claim this is complete. Session69231 completes the synthetic NU7 subset at price50/sold3;
+  funded admission/DKG/chain inclusion still need the new-stack integration.
+- [x] One coherent recorded synthetic browser story using that exact same run/bundle.
+  - Four same-transaction own receipts, public replay and real tamper refusal pass;
+    live admission/funded NU7 remains unfinished.
+- [x] One-command demo and fail-closed public verification; fixed verifiers,
+  portable public paths, no private material or bundle-discovered authority.
+- [x] One focused concrete adversarial review on the canonical NU7 run: eight
+  native/proof/action/layout refusals, four recipient substitutions, six portable
+  bundle path/key/cross-run refusals and15 API boundaries pass. No new exploit
+  found in this review; keep explicit unfunded/uncertified limitations.
+- [ ] Profile cold keygen/prove/verify separately; warm the same PK across jobs,
+  implement bounded row workers without relaxing verification. No6-way proving on
+  this16GiB Mac.1/2/3/6 concurrency comparisons require sufficient measured hardware;
+  a2-minute target is not a measured claim.
+  - Pipe-only same-PK jobs pass: key111.984s, fresh proofs82.310s/92.506s.
+    Independent fixed public verification of a warm-produced proof passes.
+    Cold full-run key108.596s/six proof-services667.790s. Mac2-way request
+    refuses before key allocation. Full auction worker orchestration/larger-host
+    concurrency and8/16/32-bid proof shapes remain unimplemented/unmeasured.
+- [ ] Scaling measurements4/8/16/32 without weakening guarantees; exact failures
+  are useful results. Submission draft now: product, diagram, threat model,
+  verified/unverified table,90–120s script, verifier and benchmark/license notes.
+
 ## Schedule
 
 | Window (2026, UTC dates) | Outcome |
@@ -77,10 +110,10 @@ autonomously, incorporate later human/ChatGPT reviews.
     artifacts; full NU7 auction/wallet funding and live-chain freshness remain.
     New adapter verifies v2 delivery and prepares/checks all six unsigned NU7
     outputs at price25 and price0. Seven pre-sign malformed/substitution checks
-    pass, including canonical PCZT trailing-byte refusal. Full fresh six-row
-    proof, threshold native completion and public replay are implemented but
-    unverified: 10 GiB start guard refused at 6.94 GiB free. Resume only after
-    headroom changes; no guard relaxation, no false completed E2E claim.
+    pass, including canonical PCZT trailing-byte refusal. The later canonical
+    synthetic NU7 memo run completes all six fresh proofs, threshold native
+    authorization, six decryptions and public replay. Initial13.79GiB headroom;
+    no guard relaxation. Live funded admission/DKG/public-chain execution remains.
 
 - [x] Canonical four-ticket conditions/IDs, certified accepted root and six settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.
@@ -168,8 +201,10 @@ autonomously, incorporate later human/ChatGPT reviews.
     refund outputs before IO finalization. Positive/zero actual flags delivery,
     fixed C++ verification, native memo decryptions and old-stack V3 note checks
     pass in9.300s/7.937s;26 pre-sign changes reject. The full signing path checks
-    receipt/settlement context/price/sold equality before FROST; this new full
-    six-row run is not yet demonstrated and still needs10GiB initial headroom.
+    receipt/settlement context/price/sold equality before FROST. The later full
+    synthetic six-output memo transaction passes in1015.173s; all four own-key
+    receipt openings and public-only replay reference the same transaction.
+    Actual funded/admitted public-chain receipt delivery remains unfinished.
   - Actual encrypted memo transport component passes for four recipients at
     zero/positive price: native PCZT/proof/FROST, own-key decryption, fixed C++
     flags verification and exact ticket openings. 152 recipient substitutions

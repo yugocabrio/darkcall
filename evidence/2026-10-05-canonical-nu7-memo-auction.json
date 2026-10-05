@@ -1,0 +1,528 @@
+{
+  "date": "2026-10-05",
+  "scope": "ONE synthetic NU7 six-output auction including four encrypted receipts; not funded admission or chain inclusion",
+  "base_git_head": "b3d7567",
+  "hardware": {
+    "cpu": "Apple M1",
+    "ram_bytes": 17179869184,
+    "shared_host": true
+  },
+  "full_run": {
+    "scope": "synthetic NU7 auction/native integration; no chain funding",
+    "external_process_seconds": 1015.2847225829973,
+    "result": {
+      "acceptance_or_recipient_receipts_authenticated": false,
+      "application_seconds": 893.613163792,
+      "broadcast": false,
+      "chain_funding": false,
+      "delivery_rule": "fresh-field-mask-refund-and-winner-delivery-v2",
+      "layout": "experimental-shared18-native-row-v1",
+      "maximum_bids_read": false,
+      "native": {
+        "actions": 6,
+        "application": {
+          "actual_native_effects_and_outputs_match": true,
+          "chain_funding_or_inclusion_verified": false,
+          "layout": "experimental-shared18-native-row-v1",
+          "native_row_proofs_verified": true,
+          "normal_cpp_auction_proof_verified": true,
+          "private_openings_keys_pczt_read": false,
+          "scope": "fixed public NU7 auction application verification; native consensus checked by caller",
+          "seconds": 99.435152333
+        },
+        "auction_proofs_verified_before_signing": true,
+        "branch": "77190ad9",
+        "broadcast": false,
+        "chain_funding": false,
+        "changed_sighash_rejected": true,
+        "fee": 30000,
+        "four_receipt_memos_in_same_six_output_transaction": true,
+        "native_proof_and_signatures_verified": true,
+        "one_share_rejected": true,
+        "pczt_fvks_preserved": true,
+        "proof_seconds": 7.805154375,
+        "recipients_decrypted": 6,
+        "scope": "synthetic NU7 six-output auction; no chain funding",
+        "seconds": 111.905602542,
+        "setup": "local trusted dealer; no DKG",
+        "synthetic_inputs": 4,
+        "threshold": "2-of-3",
+        "threshold_spends": 4,
+        "transaction_bytes": 21790,
+        "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b",
+        "version": 6
+      },
+      "passed": true,
+      "prepared": {
+        "actions": 6,
+        "broadcast": false,
+        "fee": 30000,
+        "prepared": true,
+        "receipt_memos_proof_authenticated": true,
+        "recipients_decrypted_before_proving": 6,
+        "refund_memos_in_same_pczt": 4,
+        "seller_operator_memos_empty": true,
+        "synthetic_inputs": 4,
+        "threshold_signatures_created": false
+      },
+      "price": 50,
+      "private_fill_delivery_verified": true,
+      "private_winner_flags_verified": true,
+      "scope": "synthetic NU7 six-output auction; no chain funding",
+      "seconds": 1015.173066083,
+      "sold": 3
+    }
+  },
+  "native_rows": {
+    "key_seconds": 108.596102625,
+    "row_proof_and_verify_seconds": [
+      105.9405145,
+      113.436078667,
+      150.693661917,
+      98.744960541,
+      98.317105125,
+      100.657629833
+    ],
+    "rows": 6,
+    "reused_native_row_proofs": 0,
+    "proving_key_generated": true
+  },
+  "mpc_stages": [
+    {
+      "name": "witness",
+      "seconds": 1.426,
+      "peak_rss_bytes_per_process": [
+        19152896,
+        19005440,
+        18710528
+      ]
+    },
+    {
+      "name": "proof",
+      "seconds": 8.359,
+      "peak_rss_bytes_per_process": [
+        765952000,
+        758726656,
+        683819008
+      ]
+    },
+    {
+      "name": "verify",
+      "seconds": 0.215,
+      "peak_rss_bytes_per_process": [
+        7241728
+      ]
+    }
+  ],
+  "mpc_proof_bytes": 14656,
+  "native_row_proof_bytes": [
+    9504,
+    9504,
+    9504,
+    9504,
+    9504,
+    9504
+  ],
+  "resource_samples": {
+    "sample_interval_seconds": 10,
+    "max_sample_resident_kib": 2614176,
+    "minimum_free_disk_bytes": 4737323008,
+    "minimum_memory_free_percent": 34,
+    "maximum_sample_swap_bytes": 14453571584,
+    "true_peak_measurement": false
+  },
+  "public_replay": {
+    "actual_transaction_outputs_match": true,
+    "application": {
+      "actual_native_effects_and_outputs_match": true,
+      "chain_funding_or_inclusion_verified": false,
+      "layout": "experimental-shared18-native-row-v1",
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "private_openings_keys_pczt_read": false,
+      "scope": "fixed public NU7 auction application verification; native consensus checked by caller",
+      "seconds": 97.612719958
+    },
+    "broadcast": false,
+    "chain_funding_or_inclusion_verified": false,
+    "native_proof_and_signatures_verified": true,
+    "private_openings_keys_pczt_read": false,
+    "scope": "public-only NU7 six-output native/MPC/row replay; synthetic funding",
+    "seconds": 99.322582792,
+    "transaction_bytes": 21790,
+    "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b",
+    "receipt_fixed_proof_verified": true,
+    "receipt_settlement_context_link_verified": true,
+    "accepted_book_certified": false,
+    "private_material_required": false
+  },
+  "canonical_http": {
+    "scope": "loopback receipt demo actual API/client integration",
+    "verified": [
+      {
+        "case": "positive",
+        "ticket": 0,
+        "won": true,
+        "refund": 50
+      },
+      {
+        "case": "positive",
+        "ticket": 1,
+        "won": true,
+        "refund": 50
+      },
+      {
+        "case": "positive",
+        "ticket": 2,
+        "won": true,
+        "refund": 50
+      },
+      {
+        "case": "positive",
+        "ticket": 3,
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "http_rejections": [
+      "private-file",
+      "path-traversal",
+      "arbitrary-evidence",
+      "dns-rebinding",
+      "cross-origin-read",
+      "missing-origin",
+      "cross-origin-write",
+      "missing-token",
+      "wrong-token",
+      "wrong-content-type",
+      "arbitrary-path",
+      "unknown-action",
+      "boolean-ticket",
+      "unknown-ticket",
+      "extra-secret-field"
+    ],
+    "corrupt_proofs_rejected_before_key": 2,
+    "private_fields_served": false,
+    "browser_ui_checked_separately": true,
+    "six_output_memo_e2e_verified": true,
+    "seconds": 12.475355165996007
+  },
+  "public_settlement_http": {
+    "scope": "actual public-only same-run six-output memo verification",
+    "result": {
+      "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b",
+      "transaction_bytes": 21790,
+      "native_proof_and_signatures_verified": true,
+      "actual_transaction_outputs_match": true,
+      "seconds": 100.128072458,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "acceptance_or_recipient_receipts_authenticated": false,
+      "private_openings_read": false,
+      "chain_funding_or_finality_verified": false,
+      "receipt_fixed_proof_verified": true,
+      "receipt_settlement_context_link_verified": true,
+      "verified_at_unix": 1791213606
+    },
+    "private_fields_served": false,
+    "no_proving_key_or_new_signature": true,
+    "seconds": 101.07642316700367
+  },
+  "public_only_checkout": {
+    "scope": "public-only canonical demo; no private identity fixtures",
+    "recipient_keys_included": false,
+    "own_opening_without_key_refused": true,
+    "proof_tamper_refused_before_key": true,
+    "http_rejections": [
+      "private-file",
+      "path-traversal",
+      "arbitrary-evidence",
+      "dns-rebinding",
+      "cross-origin-read",
+      "missing-origin",
+      "cross-origin-write",
+      "missing-token",
+      "wrong-token",
+      "wrong-content-type",
+      "arbitrary-path",
+      "unknown-action",
+      "boolean-ticket",
+      "unknown-ticket",
+      "extra-secret-field"
+    ],
+    "seconds": 3.284326291999605
+  },
+  "portable_boundary": {
+    "scope": "actual public bundle input boundary; no native row proving or private inputs",
+    "rejected": [
+      "missing-proof",
+      "digest",
+      "external-mpc-path",
+      "uploaded-vk",
+      "symlink",
+      "cross-run-receipt"
+    ],
+    "producer_checksums_are_not_authentication": true
+  },
+  "native_public_attack_review": {
+    "scope": "public-only NU7 six-output auction replay; synthetic funding",
+    "passed": true,
+    "replay": {
+      "actual_transaction_outputs_match": true,
+      "application": {
+        "actual_native_effects_and_outputs_match": true,
+        "chain_funding_or_inclusion_verified": false,
+        "layout": "experimental-shared18-native-row-v1",
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "private_openings_keys_pczt_read": false,
+        "scope": "fixed public NU7 auction application verification; native consensus checked by caller",
+        "seconds": 103.797162834
+      },
+      "broadcast": false,
+      "chain_funding_or_inclusion_verified": false,
+      "native_proof_and_signatures_verified": true,
+      "private_openings_keys_pczt_read": false,
+      "scope": "public-only NU7 six-output native/MPC/row replay; synthetic funding",
+      "seconds": 105.4809255,
+      "transaction_bytes": 21790,
+      "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b"
+    },
+    "tampering": {
+      "trailing-byte": {
+        "expected_rejection": true,
+        "returncode": 1
+      },
+      "binding-signature": {
+        "expected_rejection": true,
+        "returncode": 1
+      },
+      "native-identity": {
+        "expected_rejection": true,
+        "returncode": 1
+      },
+      "action-map": {
+        "expected_rejection": true,
+        "returncode": 1
+      },
+      "row-hash": {
+        "expected_rejection": true,
+        "returncode": 1
+      },
+      "uploaded-vk": {
+        "expected_rejection": true,
+        "returncode": 1
+      },
+      "row-proof": {
+        "expected_rejection": true,
+        "returncode": 1
+      },
+      "auction-proof": {
+        "expected_rejection": true,
+        "returncode": 1
+      }
+    },
+    "private_openings_keys_pczt_delivery_copied": false,
+    "public_files_copied": 17,
+    "chain_funding_or_inclusion_verified": false,
+    "seconds": 350.0904741659979
+  },
+  "receipt_results": {
+    "scope": "same synthetic NU7 six-output memo auction; not live funding",
+    "four_receipts": [
+      {
+        "scope": "recipient proof-backed encrypted memo; synthetic funding",
+        "ticket_index": 0,
+        "won": true,
+        "refund": 50,
+        "price": 50,
+        "sold": 3,
+        "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b",
+        "fixed_cpp_ticket_proof_verified": true,
+        "native_proof_and_signatures_verified": true,
+        "own_ticket_opening_verified": true,
+        "native_amount_matches_refund": true,
+        "own_viewing_key_only": true,
+        "other_ticket_pads_read": false,
+        "expected_book_and_ticket_source": "caller-provided registration expectation",
+        "bidder_registration_authenticated_here": false,
+        "receipt_in_six_output_transaction": true,
+        "fixed_auction_context_proof_verified": true,
+        "six_output_auction_settlement_verified": false,
+        "chain_inclusion_verified": false,
+        "seconds": 3.2259356249996927
+      },
+      {
+        "scope": "recipient proof-backed encrypted memo; synthetic funding",
+        "ticket_index": 1,
+        "won": true,
+        "refund": 50,
+        "price": 50,
+        "sold": 3,
+        "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b",
+        "fixed_cpp_ticket_proof_verified": true,
+        "native_proof_and_signatures_verified": true,
+        "own_ticket_opening_verified": true,
+        "native_amount_matches_refund": true,
+        "own_viewing_key_only": true,
+        "other_ticket_pads_read": false,
+        "expected_book_and_ticket_source": "caller-provided registration expectation",
+        "bidder_registration_authenticated_here": false,
+        "receipt_in_six_output_transaction": true,
+        "fixed_auction_context_proof_verified": true,
+        "six_output_auction_settlement_verified": false,
+        "chain_inclusion_verified": false,
+        "seconds": 2.792032040997583
+      },
+      {
+        "scope": "recipient proof-backed encrypted memo; synthetic funding",
+        "ticket_index": 2,
+        "won": true,
+        "refund": 50,
+        "price": 50,
+        "sold": 3,
+        "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b",
+        "fixed_cpp_ticket_proof_verified": true,
+        "native_proof_and_signatures_verified": true,
+        "own_ticket_opening_verified": true,
+        "native_amount_matches_refund": true,
+        "own_viewing_key_only": true,
+        "other_ticket_pads_read": false,
+        "expected_book_and_ticket_source": "caller-provided registration expectation",
+        "bidder_registration_authenticated_here": false,
+        "receipt_in_six_output_transaction": true,
+        "fixed_auction_context_proof_verified": true,
+        "six_output_auction_settlement_verified": false,
+        "chain_inclusion_verified": false,
+        "seconds": 2.5176014579992625
+      },
+      {
+        "scope": "recipient proof-backed encrypted memo; synthetic funding",
+        "ticket_index": 3,
+        "won": false,
+        "refund": 100,
+        "price": 50,
+        "sold": 3,
+        "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b",
+        "fixed_cpp_ticket_proof_verified": true,
+        "native_proof_and_signatures_verified": true,
+        "own_ticket_opening_verified": true,
+        "native_amount_matches_refund": true,
+        "own_viewing_key_only": true,
+        "other_ticket_pads_read": false,
+        "expected_book_and_ticket_source": "caller-provided registration expectation",
+        "bidder_registration_authenticated_here": false,
+        "receipt_in_six_output_transaction": true,
+        "fixed_auction_context_proof_verified": true,
+        "six_output_auction_settlement_verified": false,
+        "chain_inclusion_verified": false,
+        "seconds": 2.569673457997851
+      }
+    ],
+    "rejected": [
+      "proof",
+      "wrong-key",
+      "trailing-tx",
+      "cross-run-context"
+    ],
+    "other_identities_copied": false,
+    "seconds": 15.828241750001325
+  },
+  "warm_worker": {
+    "scope": "same fixed shared18 native row proof benchmark; not complete auction latency",
+    "workers": 1,
+    "rounds": 2,
+    "messages": [
+      {
+        "cold_key_seconds": 111.984302541,
+        "layout": "experimental-shared18-native-row-v1",
+        "proving_key_generated": true,
+        "ready": true,
+        "workers": 1
+      },
+      {
+        "completed": true,
+        "job": "warm-rows-e650c86122-0",
+        "native_signatures_or_auction_approval_created": false,
+        "proving_key_generated": false,
+        "rows": [
+          {
+            "proof_and_verify_seconds": 82.309625416,
+            "proof_bytes": 9504,
+            "row": 0
+          }
+        ],
+        "same_fixed_verifier": true,
+        "seconds": 82.310240708,
+        "workers": 1
+      },
+      {
+        "completed": true,
+        "job": "warm-rows-e650c86122-1",
+        "native_signatures_or_auction_approval_created": false,
+        "proving_key_generated": false,
+        "rows": [
+          {
+            "proof_and_verify_seconds": 92.506355708,
+            "proof_bytes": 9504,
+            "row": 0
+          }
+        ],
+        "same_fixed_verifier": true,
+        "seconds": 92.50645741700001,
+        "workers": 1
+      }
+    ],
+    "measured_seconds": 286.9650698749974,
+    "key_generations": 1,
+    "native_signatures_or_auction_approval_created": false
+  },
+  "warm_resource_samples": {
+    "sample_interval_seconds": 10,
+    "max_sample_resident_kib": 4064256,
+    "minimum_free_disk_bytes": 7869779968,
+    "minimum_memory_free_percent": 34,
+    "maximum_sample_swap_bytes": 13776778690,
+    "true_peak_measurement": false
+  },
+  "warm_proof_public_replay": {
+    "actual_transaction_outputs_match": true,
+    "application": {
+      "actual_native_effects_and_outputs_match": true,
+      "chain_funding_or_inclusion_verified": false,
+      "layout": "experimental-shared18-native-row-v1",
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "private_openings_keys_pczt_read": false,
+      "scope": "fixed public NU7 auction application verification; native consensus checked by caller",
+      "seconds": 101.460414083
+    },
+    "broadcast": false,
+    "chain_funding_or_inclusion_verified": false,
+    "native_proof_and_signatures_verified": true,
+    "private_openings_keys_pczt_read": false,
+    "scope": "public-only NU7 six-output native/MPC/row replay; synthetic funding",
+    "seconds": 103.105314333,
+    "transaction_bytes": 21790,
+    "txid": "52555e259d4e6b8b8ddf029ae82ab297ad841a0de4316d0037dbd434f151ab3b",
+    "receipt_fixed_proof_verified": true,
+    "receipt_settlement_context_link_verified": true,
+    "accepted_book_certified": false,
+    "private_material_required": false
+  },
+  "same_circuit_security_guarantees": true,
+  "linux_2_3_6_way_benchmarks_completed": false,
+  "mac_parallel_request_refused_before_key": true,
+  "full_orchestrator_uses_warm_worker": false,
+  "scaling_8_16_32_bids": "not measured: current fixed public verifiers accept four bid slots/six rows only",
+  "public_artifact_bytes": 140386,
+  "cleanup": {
+    "compiler_rmeta_only_bytes": 1141971132,
+    "private_keys_journals_proofs_sources_deleted": false
+  },
+  "notes": [
+    "Public attack run v1 was deliberately interrupted to serialize warm proving; artifacts retained, not a cryptographic failure.",
+    "Warm measurements include a short initial public-verifier overlap; not a controlled dedicated-host speedup comparison.",
+    "Warm-generated row0 substitutes only its unchanged-statement proof in a copied public bundle and passes independent fixed native/MPC verification."
+  ]
+}

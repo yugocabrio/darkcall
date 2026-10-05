@@ -20,7 +20,7 @@ SDK = ROOT / '.deps/nu7-compat-target/release/darkcall-nu7-compat'
 INPUT = ROOT / 'target/release/darkcall-input-tool'
 
 
-def open_receipt(book, proof, receiver, index, name):
+def open_receipt(book, proof, receiver, index, name, auction_bundle=None):
     """Freeze inputs into a new private recipient checkpoint; no secret logs returned."""
     local = (ROOT / '.local').resolve()
     if (not name or len(name) > 50
@@ -55,13 +55,34 @@ def open_receipt(book, proof, receiver, index, name):
             stdout=log,stderr=subprocess.STDOUT,timeout=120)
     if verified.returncode:
         raise RuntimeError('Fixed C++ ticket proof rejected before native decryption')
+    linked = False
+    if auction_bundle is not None:
+        # Verify the fixed auction proof and match the exact committed book and
+        # clearing result before touching this recipient's viewing key. Native
+        # row proofs are separately verified by the public settlement action.
+        from public_bundle import snapshot, link_receipt_statements
+        bundle = snapshot(auction_bundle, 'receipt-auction')
+        settlement = private_read(bundle/'mpc-public/public-input0',232*32)
+        link_receipt_statements(statement,settlement)
+        with (target/'auction-context-verifier.log').open('xb') as log:
+            checked = subprocess.run(['python3',str(ROOT/'scripts/verify_external.py'),
+                str(bundle/'mpc-public'),'--circuit','settlement_poseidon4',
+                '--output-label','recipient-auction-context'],cwd=ROOT,env=ENV,
+                stdout=log,stderr=subprocess.STDOUT,timeout=120)
+        if checked.returncode:
+            raise RuntimeError('Fixed auction proof rejected before native decryption')
+        linked = True
     # Only after proof authentication do we read/copy this recipient's identity.
     # The native reader's strict schema/type/permissions checks remain mandatory.
-    own_name = f'private-recipient-{index}.json'
+    own_name = f'private-auction-recipient-{index}.json' if linked else f'private-recipient-{index}.json'
     write_bytes(target / own_name,private_read(receiver/own_name,4096))
-    write_bytes(target/'synthetic-receipt-transport.bin',private_read(receiver/'synthetic-receipt-transport.bin',100000))
+    transaction = 'synthetic-nu7-transaction.bin' if linked else 'synthetic-receipt-transport.bin'
+    transaction_bytes = private_read(receiver/transaction,100000)
+    if linked and transaction_bytes != private_read(bundle/transaction,100000):
+        raise RuntimeError('Recipient transaction differs from canonical auction bundle')
+    write_bytes(target/transaction,transaction_bytes)
     memo = target/'private-received.memo'
-    native = guarded_json_call([str(SDK),'receipt-transport-open',str(target),str(index),str(memo)],
+    native = guarded_json_call([str(SDK),'auction-receipt-open' if linked else 'receipt-transport-open',str(target),str(index),str(memo)],
         cwd=ROOT,env=ENV,timeout=120,observations=target/'native-resources.jsonl')
     with (target/'ticket-opening-error.log').open('xb') as log:
         opened = subprocess.run([str(INPUT),'flags-ticket-memo-open',str(target/'expected-book.json'),
@@ -74,7 +95,7 @@ def open_receipt(book, proof, receiver, index, name):
             or not native['native_proof_and_signatures_verified']
             or not native['own_viewing_key_only'] or native['amount'] != opening['refund']):
         raise RuntimeError('Native received amount and ticket refund differ')
-    result = {'scope':'recipient proof-backed encrypted memo; synthetic transport component',
+    result = {'scope':'recipient proof-backed encrypted memo; synthetic funding',
         'ticket_index':index,'won':opening['won'],'refund':opening['refund'],
         'price':opening['price'],'sold':opening['sold'],'txid':native['txid'],
         'fixed_cpp_ticket_proof_verified':True,'native_proof_and_signatures_verified':True,
@@ -82,6 +103,8 @@ def open_receipt(book, proof, receiver, index, name):
         'own_viewing_key_only':True,'other_ticket_pads_read':False,
         'expected_book_and_ticket_source':'caller-provided registration expectation',
         'bidder_registration_authenticated_here':False,
+        'receipt_in_six_output_transaction':linked,
+        'fixed_auction_context_proof_verified':linked,
         'six_output_auction_settlement_verified':False,'chain_inclusion_verified':False,
         'seconds':time.monotonic()-started}
     private_write(target/'private-receipt-result.json',result)
@@ -96,8 +119,11 @@ def main():
     parser.add_argument('own_receiver',type=pathlib.Path)
     parser.add_argument('ticket_index',type=int)
     parser.add_argument('--name',required=True)
+    parser.add_argument('--auction-bundle',type=pathlib.Path,
+                        help='Portable public six-output bundle for this exact receipt auction')
     args=parser.parse_args()
-    print(json.dumps(open_receipt(args.expected_book,args.public_proof,args.own_receiver,args.ticket_index,args.name),indent=2))
+    print(json.dumps(open_receipt(args.expected_book,args.public_proof,args.own_receiver,args.ticket_index,args.name,
+        auction_bundle=args.auction_bundle),indent=2))
 
 
 if __name__ == '__main__':

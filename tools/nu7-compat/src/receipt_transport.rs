@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 use zcash_protocol::{consensus::BranchId, memo::MemoBytes};
 
 const RULE: &str = "synthetic-native-receipt-transport-v1";
+const AUCTION_RULE: &str = "synthetic-native-six-output-auction-receipt-v1";
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Request {
@@ -108,6 +109,50 @@ impl Transport {
 /// identity and the public transaction. It need not contain operator pads,
 /// other viewing keys, spending keys or the producer's PCZT.
 pub fn open(path: &Path, index: usize, out: &Path) -> Result<serde_json::Value> {
+    open_inner(path, index, out, false)
+}
+
+pub fn open_auction(path: &Path, index: usize, out: &Path) -> Result<serde_json::Value> {
+    open_inner(path, index, out, true)
+}
+
+/// Producer-side export. The recipient reader subsequently reads only its one
+/// record. This does not confer registration or chain-inclusion authentication.
+pub fn persist_auction(
+    directory: &Path,
+    txid: &str,
+    receivers: &[FullViewingKey],
+    indices: &[u32; 6],
+    amounts: &[u64; 6],
+) -> Result<()> {
+    if receivers.len() != 6 {
+        return Err("six auction receivers required".into());
+    }
+    for i in 0..4 {
+        let recipient = Recipient {
+            format: 1,
+            rule: AUCTION_RULE.into(),
+            sdk: SDK.into(),
+            branch: "77190ad9".into(),
+            txid: txid.into(),
+            action_index: indices[i] as usize,
+            amount: amounts[i],
+            viewing_key: receivers[i].to_bytes().to_vec(),
+        };
+        write(
+            &directory.join(format!("private-auction-recipient-{i}.json")),
+            &serde_json::to_vec(&recipient).map_err(|_| "auction recipient encoding")?,
+        )?;
+    }
+    Ok(())
+}
+
+fn open_inner(
+    path: &Path,
+    index: usize,
+    out: &Path,
+    auction_receipt: bool,
+) -> Result<serde_json::Value> {
     let directory = auction::directory(path)?;
     if index >= 4
         || out
@@ -119,16 +164,22 @@ pub fn open(path: &Path, index: usize, out: &Path) -> Result<serde_json::Value> 
     {
         return Err("expected own ignored recipient directory and index".into());
     }
+    let prefix = if auction_receipt {
+        "private-auction-recipient"
+    } else {
+        "private-recipient"
+    };
+    let actions = if auction_receipt { 6 } else { 4 };
     let recipient: Recipient = serde_json::from_slice(&auction::read(
-        &directory.join(format!("private-recipient-{index}.json")),
+        &directory.join(format!("{prefix}-{index}.json")),
         4096,
     )?)
     .map_err(|_| "recipient identity schema")?;
     if recipient.format != 1
-        || recipient.rule != RULE
+        || recipient.rule != if auction_receipt { AUCTION_RULE } else { RULE }
         || recipient.sdk != SDK
         || recipient.branch != "77190ad9"
-        || recipient.action_index >= 4
+        || recipient.action_index >= actions
         || recipient.amount > 100
     {
         return Err("recipient native identity mismatch".into());
@@ -141,13 +192,18 @@ pub fn open(path: &Path, index: usize, out: &Path) -> Result<serde_json::Value> 
             .map_err(|_| "recipient viewing key length")?,
     )
     .ok_or("recipient viewing key encoding")?;
-    let bytes = auction::read(&directory.join("synthetic-receipt-transport.bin"), 100000)?;
+    let filename = if auction_receipt {
+        "synthetic-nu7-transaction.bin"
+    } else {
+        "synthetic-receipt-transport.bin"
+    };
+    let bytes = auction::read(&directory.join(filename), 100000)?;
     // Authenticate the complete native transaction before consuming ciphertext.
     // This verifies native consensus authorization, not application policy or
     // chain inclusion. The expected identity comes from the recipient fixture.
     let tx = native::verify_bytes(&bytes, BranchId::Nu7, &mut rand::rng())?;
     let bundle = tx.ironwood_bundle().ok_or("receipt native bundle")?;
-    if tx.txid().to_string() != recipient.txid || bundle.actions().len() != 4 {
+    if tx.txid().to_string() != recipient.txid || bundle.actions().len() != actions {
         return Err("recipient transaction identity/shape differs".into());
     }
     let (note, address, memo) = bundle
@@ -163,9 +219,10 @@ pub fn open(path: &Path, index: usize, out: &Path) -> Result<serde_json::Value> 
     }
     write(out, &memo)?;
     Ok(
-        serde_json::json!({"scope":"recipient native memo decryption only; synthetic transport component",
+        serde_json::json!({"scope":"recipient native memo decryption only; synthetic funding",
         "native_proof_and_signatures_verified":true,"own_viewing_key_only":true,"other_ticket_pads_read":false,
         "amount":note.value().inner(),"memo_bytes":memo.len(),"txid":tx.txid().to_string(),
+        "receipt_in_six_output_transaction":auction_receipt,
         "auction_application_binding_verified":false,"ticket_opening_verified_here":false,
         "chain_inclusion_verified":false}),
     )

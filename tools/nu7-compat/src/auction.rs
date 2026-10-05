@@ -555,6 +555,15 @@ pub fn finalize(path: &Path) -> Result<serde_json::Value> {
     tx.write(&mut bytes).map_err(|_| "NU7 serialization")?;
     native::verify_bytes(&bytes, BranchId::Nu7, &mut rng)?;
     write(&directory.join("synthetic-nu7-transaction.bin"), &bytes)?;
+    if request.receipt_memos {
+        crate::receipt_transport::persist_auction(
+            &directory,
+            &tx.txid().to_string(),
+            &receivers,
+            &keys.indices,
+            &request.amounts,
+        )?;
+    }
     Ok(
         serde_json::json!({"scope":SCOPE,"branch":"77190ad9","version":6,"synthetic_inputs":4,"actions":6,
         "threshold_spends":spends,"threshold":"2-of-3","setup":"local trusted dealer; no DKG",

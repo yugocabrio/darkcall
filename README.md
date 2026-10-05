@@ -6,37 +6,42 @@ A seller offers K identical units. Each funded ticket bids for one unit.
 Three REP3 nodes compute the result and its proof without reconstructing the
 maximum-bid list. Native Ironwood settlement uses a 2-of-3 FROST escrow.
 
-**The four-bid protocol has settled actual notes on an owned isolated regtest.**
-Four client proofs and 12 delivered-share checks authenticate the inputs. Signed
-acceptance receipts and a three-operator final-book certificate bind the accepted
-root and recipients. REP3 computes a commitment-bound auction/settlement proof;
-six Halo2 row proofs bind its private amounts and recipients to actual native
-output commitments. The PCZT is approved before four threshold spends are signed.
-The local full node accepts the transaction, and six SDK wallets confirm exact
-receipts. Public-only replay verifies the native proof/signatures, six bindings,
-normal C++ Barretenberg auction proof and certificate against an explicitly trusted
-manifest. It does not prove chain inclusion by itself.
+**One synthetic NU7 run now connects four private bids to the same six-output
+transaction and four encrypted ticket receipts.** Six Halo2 proofs bind private
+settlement rows to actual native commitments; fixed auction/receipt proofs are
+checked before four 2-of-3 FROST spends. All six recipients decrypt exact amounts.
+The public verifier checks the same transaction without bids, keys, PCZT or witness.
 
-The historical funded run used **v1 refund delivery, whose transcript privacy
-claim is withdrawn**: its deterministic mask commitments allowed a public
-two-candidate dictionary attack. Current v2 delivery requires a **fresh uniform
-mask and an independent private commitment blinder** for each refund/winner bit.
-Actual REP3, independent C++ verification and offline native/FROST integration
-pass with v2. A fresh funded v2 auction also completes new DKG deposits, native
-settlement, two controlled-chain confirmations and six exact receipts. Public-testnet
-NU7 settlement remains unfinished. Price-zero private winner delivery through
-native proof/FROST and all six decryptions also passes with synthetic funding;
-funded price-zero execution remains separate work. Local private per-ticket
-status/refund receipts now verify against the fixed public proof, including the
-zero-price native settlement context. A separate synthetic native transfer also
-carries encrypted per-ticket memo receipts; four own-key recipient openings and
-152 substitution checks pass. Connecting memo delivery to the six-output auction
-and registered bidder identities remains unfinished. The recipient's one-command
-client verifies the fixed proof before native decryption and checks its own
-ticket; zero/positive cases and12 client attacks pass. NU7 unsigned six-output preparation passes, while its full proof/
-signature gate is capacity-blocked and unverified. See [status](STATUS.md)
-and [the reproduced attack and fix](docs/operator-fill-delivery.md) for exact scope.
-Plaintext reference fixtures are correctness oracles, not privacy demonstrations.
+```sh
+./demo.sh
+./verify.sh demo/artifacts/canonical-nu7-v1
+```
+
+The committed public bundle is 140 KB. Build the [pinned tools](docs/toolchains.md)
+first. On this machine the browser can open its ignored synthetic identities;
+a fresh checkout uses a public-only view without including recipient keys.
+Both clearing/receipt and settlement verification refer to `52555e25…151ab3b`.
+[Demo instructions](docs/demo.md) distinguish recorded proving from live verification.
+
+**Funded NU7 admission/DKG/chain confirmation is still unfinished.** The older
+fresh-v2 owned-regtest execution already demonstrates real local notes, DKG,
+signed acceptance/final-book receipts, node acceptance and two confirmations.
+That is a different transaction and must not be combined with this synthetic
+NU7 run to claim a funded latest E2E. No public-testnet/mainnet settlement or
+independent operator hosts are claimed.
+
+The old deterministic delivery commitment leaked two-candidate refunds; its
+privacy claim was withdrawn and an actual attack reproduced the leak. Current
+v2 uses a fresh uniform mask plus an independent secret commitment blinder.
+See [attack and fix](docs/operator-fill-delivery.md). Plaintext fixture checks
+are correctness oracles, not privacy demonstrations.
+
+Cold same-run proving took 1015.173s on the shared 16 GiB Mac. Public-only replay
+99.323s; MPC proof 8.359s. PK preparation 108.596s and sequential native row
+proof/verification 667.790s dominate. A persistent-key worker is separately
+benchmarked; no 2-minute complete settlement or parallel speedup is asserted.
+See [submission draft](docs/submission-draft.md) for the product story, diagram,
+threat model, actual/unverified claims and 90–120s demo script.
 
 ## Project records
 
@@ -109,9 +114,7 @@ The generated cross-language check, `target/release/examples/cross_noir UNUSED_L
 compares the independent Rust oracle to pinned Noir ACVM constraints. Its 77 valid
 and seven invalid cases are plaintext regressions, not MPC or ZK proof evidence.
 
-The [local receipt demo](docs/demo.md) presents positive/zero-price results and
-calls the actual fixed-proof/native decryption client from a loopback browser.
-Run `python3 scripts/serve_demo.py` when the ignored synthetic receipt fixtures
-are present. It uses the separate four-output receipt component; the newest
-six-output memo flow is prepared but not fully proved/signed. New bidder
-admission, independent identities and public chain delivery remain unfinished.
+The [local demo](docs/demo.md) presents one canonical six-output memo transaction.
+Its fixed verifier rejects corruption before reading the chosen recipient key.
+Registered bidder authentication, live browser bid admission and public chain
+funding/delivery remain unfinished. The repo stays private until human approval.
