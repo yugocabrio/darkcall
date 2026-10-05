@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from mpc_process import GROUP_ENV
 
 MIN_FREE_BYTES = 4 * 1024 ** 3
 # A measured native row transiently reached 6.14 GiB while macOS reported 70%
@@ -105,7 +106,13 @@ def guarded_json_call(command, *, cwd, env, timeout, observations, interval=10,
             metrics.flush()
             os.fsync(metrics.fileno())
         record(initial)
-        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=output,
+        # The fresh session's pgid is the launched child's PID. Set the marker
+        # from inside that session so nested MPC runners can verify it before
+        # deciding whether to create their own groups. No preexec_fn/fork hooks.
+        launch = [sys.executable, '-c',
+                  'import os,sys; os.environ[sys.argv[1]]=str(os.getpgrp()); '
+                  'os.execvpe(sys.argv[2],sys.argv[2:],os.environ)', GROUP_ENV, *command]
+        process = subprocess.Popen(launch, cwd=cwd, env=env, stdout=output,
                                    stderr=subprocess.STDOUT if expected_failure is not None else None,
                                    start_new_session=True)
         try:

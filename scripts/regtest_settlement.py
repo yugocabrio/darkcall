@@ -15,6 +15,7 @@ from regtest_deposits import (ADMIT, NATIVE, ENV, private_read, private_write, c
 from regtest_funding import tree
 from regtest_resources import guarded_json_call
 from regtest_recovery import create_checkpoint, load_checkpoint, recover_signed
+from native_layout import read_layout, WORKING, SHARED
 
 
 def confirm_receipts(deposit, notes, directory, construction, confirmed, resumed=False,
@@ -73,6 +74,8 @@ def main():
                         help='Reverify and reconcile the exact existing signed transaction; no reconstruction/unlocking')
     parser.add_argument('--resume-built', metavar='SOURCE_NAME',
                         help='Resume an unapproved built PCZT and verify existing row proofs while all journals remain Frozen')
+    parser.add_argument('--shared-native-binding', action='store_true',
+                        help='Explicit experimental compiled shared18 binding layout; original default is preserved')
     args = parser.parse_args()
     if not args.name or len(args.name) > 50 or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in args.name):
         raise RuntimeError('Expected a fresh simple local run name')
@@ -92,11 +95,16 @@ def main():
         return
     snapshot = status()
     source = None
+    layout = SHARED if args.shared_native_binding else WORKING
     if args.resume_built:
         source_checkpoint, _ = load_checkpoint(deposit, args.book_run, args.resume_built)
         if source_checkpoint['tip'] != snapshot['tip']:
             raise RuntimeError('Unapproved native checkpoint chain changed; explicit reconciliation required')
         source = ROOT / '.local' / args.resume_built
+        source_layout = read_layout(source, private_read)
+        if args.shared_native_binding and source_layout != layout:
+            raise RuntimeError('Requested shared layout differs from built source')
+        layout = source_layout
         if (source / 'regtest-transaction.bin').exists():
             raise RuntimeError('Complete signed transaction exists; use --resume-signed instead of signing again')
     notes_path = escrow / f'private-notes-{snapshot["blocks"]}.json'
@@ -119,14 +127,15 @@ def main():
         raise RuntimeError('Substituted receiver was not rejected before proving/signing')
     bad_path.unlink()
     create_checkpoint(deposit, args.book_run, args.name, snapshot)
-    command = [str(NATIVE), '--regtest-resume-built' if source else '--regtest-settlement',
+    command = [str(NATIVE), '--regtest-resume-built' if source else
+               '--regtest-settlement-shared' if args.shared_native_binding else '--regtest-settlement',
                *map(str, (escrow, notes_path, args.book_run, receivers_path, admission, args.name))]
     if source:
         command.append(str(source))
     construction = guarded_json_call(command,
         cwd=ROOT, env=ENV, timeout=3600,
         observations=ROOT / '.local' / (args.name + '-resources.jsonl'),
-        minimum_start_disk_bytes=16 * 1024 ** 3)
+        minimum_start_disk_bytes=(10 if layout == SHARED else 16) * 1024 ** 3)
     directory = ROOT / '.local' / args.name
     if status()['tip'] != snapshot['tip']:
         raise RuntimeError('Chain changed during proving; rescan/reconcile before broadcast')

@@ -63,6 +63,10 @@ pub fn build(
     }
     let source = load_source(wallet, openings)?;
     let escrow = wallet_fvk(escrow_wallet)?;
+    let escrow_signing_key_read = escrow_wallet
+        .join("private-spending-key.bin")
+        .try_exists()
+        .map_err(|e| error("escrow viewing setup", e))?;
     let book: Book =
         serde_json::from_slice(&read_private(book, 16384)?).map_err(|e| error("book", e))?;
     let receivers: [Receiver; 6] = serde_json::from_slice(&read_private(receivers, 16384)?)
@@ -314,7 +318,7 @@ pub fn build(
     fs::File::open(&out)
         .and_then(|f| f.sync_all())
         .map_err(|e| error("deposit directory sync", e))?;
-    let summary = serde_json::json!({"scope":"four actual-regtest encrypted claim deposits; fixture tickets","txid":tx.txid().to_string(),"deposit_outputs":4,"native_actions":5,"transaction_bytes":bytes.len(),"deposit_value":required,"fee":fee,"maximum_bids_read":false,"client_signatures_generated":4,"keys_or_memos_logged":false,"native_proof_and_signatures_verified":true,"proof_seconds":proof_seconds,"seconds":start.elapsed().as_secs_f64(),"broadcast":false,"custody_setup":"local trusted dealer; retained full bank/escrow keys"});
+    let summary = serde_json::json!({"scope":"four actual-regtest encrypted claim deposits; fixture tickets","txid":tx.txid().to_string(),"deposit_outputs":4,"native_actions":5,"transaction_bytes":bytes.len(),"deposit_value":required,"fee":fee,"maximum_bids_read":false,"client_signatures_generated":4,"keys_or_memos_logged":false,"native_proof_and_signatures_verified":true,"proof_seconds":proof_seconds,"seconds":start.elapsed().as_secs_f64(),"broadcast":false,"custody_setup":if escrow_signing_key_read {"owned bank wallet signs deposits; historical escrow viewing key derived from retained spending key"} else {"owned bank wallet signs deposits; DKG/view-only escrow destination full viewing key"},"escrow_signing_key_read":escrow_signing_key_read});
     write_private(
         &out.join("summary.json"),
         &serde_json::to_vec_pretty(&summary).map_err(|e| error("deposit summary", e))?,

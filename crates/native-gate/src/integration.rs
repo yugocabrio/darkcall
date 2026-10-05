@@ -1,7 +1,10 @@
-//! Offline auction/native proof/signing linkage. Synthetic funding and fills;
-//! proof verification never authorizes a real chain spend in this fixture.
+//! Auction/native proof/signing linkage. Standalone gates use synthetic funding;
+//! the controlled regtest caller additionally verifies actual notes/receipts.
 use darkcall_bn254_emulation::poseidon::{digest_words, pack_row, reference};
-use darkcall_output_binding::poseidon_rows::{HASH_RULE, RowProver, binding_from_note, row_public};
+use darkcall_output_binding::poseidon_rows::{
+    HASH_RULE, LayoutProver, RowLayout, binding_from_note, read_layout, row_public,
+    verify_set_for_layout, write_layout,
+};
 use darkcall_settlement_types::{
     NativeBatchStatement, NativeContext, Row, link_four_bid_statements,
 };
@@ -23,6 +26,7 @@ pub struct Integration {
     pub receiver_openings: Option<PathBuf>,
     pub funding_is_synthetic: bool,
     pub native_proof_source: Option<PathBuf>,
+    pub layout: RowLayout,
 }
 
 pub struct Delivery {
@@ -31,6 +35,78 @@ pub struct Delivery {
     pub sold: u32,
     pub fee: u64,
     pub run: PathBuf,
+    pub winners: Option<[bool; 4]>,
+}
+
+const REFUND_RULE: &str = "fresh-field-mask-refund-delivery-v2";
+const FLAGS_RULE: &str = "fresh-field-mask-refund-and-winner-delivery-v2";
+
+impl Delivery {
+    /// Decode only an opening freshly re-derived from a verified transcript.
+    /// The input tool authenticates context/root/tickets/mask commitments; these
+    /// checks preserve the winner/refund relation at the native consumer too.
+    fn from_opening(value: &serde_json::Value, run: PathBuf, flags: bool) -> Result<Self> {
+        if value["delivery_rule"] != if flags { FLAGS_RULE } else { REFUND_RULE } {
+            return Err("decoded delivery rule mismatch".into());
+        }
+        let amounts: [u64; 6] = serde_json::from_value(value["amounts"].clone())
+            .map_err(|e| fail("private amount vector", e))?;
+        let price = value["price"].as_u64().ok_or("delivery price")?;
+        let sold = u32::try_from(value["sold"].as_u64().ok_or("delivery sold")?)
+            .map_err(|e| fail("delivery sold range", e))?;
+        let fee = value["network_fee"].as_u64().ok_or("delivery fee")?;
+        if sold > 3
+            || price > 100
+            || fee != 30000
+            || amounts[4] != price * u64::from(sold)
+            || amounts[5] != 30000
+            || amounts
+                .iter()
+                .map(|amount| u128::from(*amount))
+                .sum::<u128>()
+                + u128::from(fee)
+                != 4 * 15100
+        {
+            return Err("delivered amounts/price/sold/fee mismatch".into());
+        }
+        let winners = if flags {
+            let bits: [bool; 4] = serde_json::from_value(value["winners"].clone())
+                .map_err(|e| fail("private winner vector", e))?;
+            if bits.iter().filter(|bit| **bit).count() != sold as usize
+                || bits
+                    .iter()
+                    .zip(&amounts)
+                    .any(|(won, amount)| *amount != 100 - if *won { price } else { 0 })
+            {
+                return Err("delivered winner/refund/count mismatch".into());
+            }
+            Some(bits)
+        } else {
+            if price == 0
+                || amounts[..4]
+                    .iter()
+                    .any(|amount| *amount != 100 && *amount != 100 - price)
+            {
+                return Err("refund-only delivery needs an unambiguous positive price".into());
+            }
+            None
+        };
+        Ok(Self {
+            amounts,
+            price,
+            sold,
+            fee,
+            run,
+            winners,
+        })
+    }
+    pub fn rule(&self) -> &'static str {
+        if self.winners.is_some() {
+            FLAGS_RULE
+        } else {
+            REFUND_RULE
+        }
+    }
 }
 
 type Result<T> = std::result::Result<T, String>;
@@ -78,12 +154,16 @@ impl Integration {
     /// Check delivery consumption alone, before native key/proof/signature work.
     pub fn delivery_gate_summary(&self) -> serde_json::Value {
         serde_json::json!({"scope":"native integration consumes verified blinded-mask refunds only; no native construction",
-            "delivery_rule":"fresh-field-mask-refund-delivery-v2","delivery_verified":true,
+            "delivery_rule":self.delivery.rule(),"delivery_verified":true,
+            "private_winner_flags_verified":self.delivery.winners.is_some(),
             "normal_cpp_delivery_verifier_passed":true,"maximum_bids_read":false,
             "price":self.delivery.price,"sold":self.delivery.sold,"native_transaction_built":false,
             "custody_signatures":false,"broadcast":false})
     }
     pub fn new(book: &Path, name: &str) -> Result<Self> {
+        Self::new_with_layout(book, name, RowLayout::Working33)
+    }
+    pub fn new_with_layout(book: &Path, name: &str, layout: RowLayout) -> Result<Self> {
         if name.is_empty()
             || !name
                 .bytes()
@@ -113,6 +193,7 @@ impl Integration {
             fs::set_permissions(&directory, fs::Permissions::from_mode(0o700))
                 .map_err(|e| fail("private directory permissions", e))?;
         }
+        write_layout(&directory, layout).map_err(|e| fail("native layout checkpoint", e))?;
         checked(
             Command::new(root.join("target/release/darkcall-input-tool"))
                 .args(["native-context"])
@@ -129,28 +210,30 @@ impl Integration {
             &fs::read(book.join("book.json")).map_err(|e| fail("read book", e))?,
         )
         .map_err(|e| fail("parse book", e))?;
-        for (key, value) in [
-            ("units", 3),
-            ("reserve", 20),
-            ("budget", 100),
-            ("processing_fee", 15000),
-        ] {
+        for (key, value) in [("units", 3), ("budget", 100), ("processing_fee", 15000)] {
             if data[key].as_u64() != Some(value) {
                 return Err(
                     "offline integration requires the four-bid standard fixture terms".into(),
                 );
             }
         }
+        let flags = match data["reserve"].as_u64() {
+            Some(0) => true,
+            Some(20) => false,
+            _ => return Err("native fixture reserve must be zero or 20".into()),
+        };
         eprintln!("Committed private refund delivery started");
-        checked(
-            Command::new("python3")
-                .arg(root.join("scripts/run_delivery_gate.py"))
-                .arg("--book-run")
-                .arg(&book)
-                .arg("--result-file")
-                .arg(directory.join("delivery-result.json")),
-            &directory.join("delivery-gate.log"),
-        )?;
+        let mut delivery_command = Command::new("python3");
+        delivery_command
+            .arg(root.join("scripts/run_delivery_gate.py"))
+            .arg("--book-run")
+            .arg(&book)
+            .arg("--result-file")
+            .arg(directory.join("delivery-result.json"));
+        if flags {
+            delivery_command.arg("--winner-flags");
+        }
+        checked(&mut delivery_command, &directory.join("delivery-gate.log"))?;
         let result: serde_json::Value = serde_json::from_slice(
             &fs::read(directory.join("delivery-result.json"))
                 .map_err(|e| fail("delivery run read", e))?,
@@ -159,7 +242,8 @@ impl Integration {
         let run = PathBuf::from(result["run"].as_str().ok_or("delivery run path missing")?)
             .canonicalize()
             .map_err(|e| fail("delivery path", e))?;
-        if !run.starts_with(&local) || result["hash_rule"] != "fresh-field-mask-refund-delivery-v2"
+        if !run.starts_with(&local)
+            || result["hash_rule"] != if flags { FLAGS_RULE } else { REFUND_RULE }
         {
             return Err("unexpected delivery run/rule".into());
         }
@@ -167,10 +251,36 @@ impl Integration {
             Command::new("python3")
                 .arg(root.join("scripts/verify_external.py"))
                 .arg(&run)
-                .args(["--circuit", "delivery_private4"]),
+                .args([
+                    "--circuit",
+                    if flags {
+                        "delivery_flags4"
+                    } else {
+                        "delivery_private4"
+                    },
+                ]),
             &directory.join("delivery-external.log"),
         )?;
-        if fs::metadata(run.join("delivered-amounts.json"))
+        // Consume a fresh opening of the exact independently verified statement,
+        // not a detached JSON result previously emitted by the runner.
+        let opening_path = directory.join("private-delivery.json");
+        let mut open = Command::new(root.join("target/release/darkcall-input-tool"));
+        open.arg(if flags {
+            "flags-result"
+        } else {
+            "private-result"
+        })
+        .arg(book.join("book.json"))
+        .arg(run.join("plan/masks.json"));
+        if flags {
+            open.arg(run.join("plan/winner-masks.json"));
+        }
+        open.arg(run.join("public-input0")).arg(&opening_path);
+        checked(
+            &mut open,
+            &directory.join("delivery-opening-validation.log"),
+        )?;
+        if fs::metadata(&opening_path)
             .map_err(|e| fail("delivery metadata", e))?
             .len()
             > 4096
@@ -178,23 +288,10 @@ impl Integration {
             return Err("delivery data too large".into());
         }
         let value: serde_json::Value = serde_json::from_slice(
-            &fs::read(run.join("delivered-amounts.json"))
-                .map_err(|e| fail("private delivery read", e))?,
+            &fs::read(&opening_path).map_err(|e| fail("private delivery read", e))?,
         )
         .map_err(|e| fail("private delivery parse", e))?;
-        if value["delivery_rule"] != "fresh-field-mask-refund-delivery-v2" {
-            return Err("decoded delivery rule mismatch".into());
-        }
-        let amounts = serde_json::from_value(value["amounts"].clone())
-            .map_err(|e| fail("private amount vector", e))?;
-        let delivery = Delivery {
-            amounts,
-            price: value["price"].as_u64().ok_or("delivery price")?,
-            sold: u32::try_from(value["sold"].as_u64().ok_or("delivery sold")?)
-                .map_err(|e| fail("delivery sold range", e))?,
-            fee: value["network_fee"].as_u64().ok_or("delivery fee")?,
-            run,
-        };
+        let delivery = Delivery::from_opening(&value, run, flags)?;
         eprintln!("Refund delivery verified without reconstructing maximum bids");
         Ok(Self {
             root,
@@ -205,6 +302,7 @@ impl Integration {
             receiver_openings: None,
             funding_is_synthetic: true,
             native_proof_source: None,
+            layout,
         })
     }
 
@@ -243,6 +341,11 @@ impl Integration {
         fs::File::open(&self.directory)
             .and_then(|f| f.sync_all())
             .map_err(|e| fail("sync row checkpoint directory", e))?;
+        if let Some(source) = &self.native_proof_source
+            && read_layout(source).map_err(|e| fail("source native layout", e))? != self.layout
+        {
+            return Err("native proof recovery layout differs from source".into());
+        }
         let cached = self
             .native_proof_source
             .as_ref()
@@ -264,7 +367,7 @@ impl Integration {
         if let Some(proofs) = &cached {
             // Fully cached recovery needs only the original fixed VK, not a PK.
             // Invalid cached bytes still fail closed, never become fresh proofs.
-            darkcall_output_binding::poseidon_rows::verify_set(&statement, proofs)
+            verify_set_for_layout(self.layout, &statement, proofs)
                 .map_err(|e| fail("resumed complete native proof set", e))?;
         }
         let cached_set_verify_seconds = if cached.is_some() {
@@ -277,7 +380,7 @@ impl Integration {
         let prover = if cached.is_some() {
             None
         } else {
-            Some(RowProver::new().map_err(|e| fail("native row key", e))?)
+            Some(LayoutProver::new(self.layout).map_err(|e| fail("native row key", e))?)
         };
         let key_seconds = key_start.elapsed().as_secs_f64();
         let mut times = Vec::new();
@@ -328,7 +431,7 @@ impl Integration {
         // Release the large proving key before independent public verification.
         let proving_key_generated = prover.is_some();
         drop(prover);
-        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"reused_native_row_proofs":reused,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false,"proving_key_generated":proving_key_generated,"cached_set_verify_seconds":cached_set_verify_seconds});
+        let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"layout":self.layout.id(),"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"reused_native_row_proofs":reused,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"private_winner_flags_verified":self.delivery.winners.is_some(),"delivery_rule":self.delivery.rule(),"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false,"proving_key_generated":proving_key_generated,"cached_set_verify_seconds":cached_set_verify_seconds});
         fs::write(
             self.directory.join("native-proof-summary.json"),
             serde_json::to_vec_pretty(&summary).map_err(|e| fail("summary encode", e))?,
@@ -407,7 +510,6 @@ impl ApprovedPlan {
 /// Replay against transaction bytes and public proofs only. Input-note existence
 /// and finality still require a node; fabricated anchors are valid offline only.
 pub fn verify_public(directory: &Path, authority: Option<&Path>) -> Result<serde_json::Value> {
-    use darkcall_output_binding::poseidon_rows::verify_set;
     use orchard::{
         bundle::BatchValidator,
         circuit::{OrchardCircuitVersion, VerifyingKey},
@@ -427,6 +529,7 @@ pub fn verify_public(directory: &Path, authority: Option<&Path>) -> Result<serde
     if !directory.starts_with(root.join(".local")) {
         return Err("only offline local verification is supported".into());
     }
+    let layout = read_layout(&directory).map_err(|e| fail("public native layout", e))?;
     let read = |name: &str, limit: u64| -> Result<Vec<u8>> {
         let path = directory.join(name);
         if fs::metadata(&path)
@@ -530,7 +633,8 @@ pub fn verify_public(directory: &Path, authority: Option<&Path>) -> Result<serde
     if !batch.validate(OsRng) {
         return Err("native proof or spend/binding signatures invalid".into());
     }
-    verify_set(&statement, &proofs).map_err(|e| fail("public native row proofs", e))?;
+    verify_set_for_layout(layout, &statement, &proofs)
+        .map_err(|e| fail("public native row proofs", e))?;
     let label = format!(
         "external-replay-{}",
         std::time::SystemTime::now()
@@ -592,13 +696,57 @@ pub fn verify_public(directory: &Path, authority: Option<&Path>) -> Result<serde
     link_four_bid_statements(&hashes, &statement.bindings(), &actual)
         .map_err(|_| "MPC/public transaction mismatch")?;
     Ok(
-        serde_json::json!({"scope":"public-only transaction/application-proof replay; chain inclusion checked separately","private_openings_read":false,"native_proof_and_signatures_verified":true,"native_row_proofs_verified":true,"normal_cpp_auction_proof_verified":true,"actual_transaction_outputs_match":true,"hash_rule":HASH_RULE,"txid":tx.txid().to_string(),"transaction_bytes":bytes.len(),"chain_funding_or_finality_verified":false,"acceptance_or_recipient_receipts_authenticated":authority.is_some(),"acceptance_authentication_scope":"all-three operator attestation; not a public funding proof","seconds":started.elapsed().as_secs_f64()}),
+        serde_json::json!({"scope":"public-only transaction/application-proof replay; chain inclusion checked separately","private_openings_read":false,"native_proof_and_signatures_verified":true,"native_row_proofs_verified":true,"normal_cpp_auction_proof_verified":true,"actual_transaction_outputs_match":true,"hash_rule":HASH_RULE,"layout":layout.id(),"txid":tx.txid().to_string(),"transaction_bytes":bytes.len(),"chain_funding_or_finality_verified":false,"acceptance_or_recipient_receipts_authenticated":authority.is_some(),"acceptance_authentication_scope":"all-three operator attestation; not a public funding proof","seconds":started.elapsed().as_secs_f64()}),
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn zero_price_consumer_needs_explicit_verified_winners() {
+        let value = serde_json::json!({"delivery_rule": FLAGS_RULE,
+            "amounts":[100,100,100,100,0,30000],"price":0,"sold":3,
+            "network_fee":30000,"winners":[true,true,true,false]});
+        let opened = Delivery::from_opening(&value, PathBuf::new(), true).unwrap();
+        assert_eq!(opened.winners, Some([true, true, true, false]));
+        // Equal refunds do not establish which three tickets won.
+        for winners in [
+            serde_json::Value::Null,
+            serde_json::json!([1, 1, 1, 0]),
+            serde_json::json!([true, true, false, false]),
+        ] {
+            let mut changed = value.clone();
+            changed["winners"] = winners;
+            assert!(Delivery::from_opening(&changed, PathBuf::new(), true).is_err());
+        }
+        let mut refund_only = value.clone();
+        refund_only["delivery_rule"] = REFUND_RULE.into();
+        assert!(Delivery::from_opening(&refund_only, PathBuf::new(), false).is_err());
+        let mut old_rule = value;
+        old_rule["delivery_rule"] = "fresh-field-mask-refund-delivery-v1".into();
+        assert!(Delivery::from_opening(&old_rule, PathBuf::new(), true).is_err());
+    }
+
+    #[test]
+    fn native_consumer_checks_flag_refund_and_value_conservation() {
+        let value = serde_json::json!({"delivery_rule": FLAGS_RULE,
+            "amounts":[80,80,80,100,60,30000],"price":20,"sold":3,
+            "network_fee":30000,"winners":[true,true,true,false]});
+        assert!(Delivery::from_opening(&value, PathBuf::new(), true).is_ok());
+        let mut changed = value.clone();
+        changed["winners"] = serde_json::json!([false, true, true, true]);
+        assert!(Delivery::from_opening(&changed, PathBuf::new(), true).is_err());
+        for (field, replacement) in [("price", 101), ("sold", 4), ("network_fee", 1)] {
+            let mut changed = value.clone();
+            changed[field] = replacement.into();
+            assert!(Delivery::from_opening(&changed, PathBuf::new(), true).is_err());
+        }
+        let mut changed = value;
+        changed["amounts"][4] = 59.into();
+        assert!(Delivery::from_opening(&changed, PathBuf::new(), true).is_err());
+    }
     #[test]
     fn signer_rejects_changed_effects_outputs_mapping_and_shape() {
         let actions = std::array::from_fn(|i| [i as u8; 32]);

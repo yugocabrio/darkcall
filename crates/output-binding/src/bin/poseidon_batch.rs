@@ -2,7 +2,7 @@
 //! funding, custody signatures or full auction connection is claimed here.
 use darkcall_bn254_emulation::poseidon::{digest_words, pack_row, reference};
 use darkcall_output_binding::poseidon_rows::{
-    HASH_RULE, K, RowProver, binding_from_note, row_public, verify_set,
+    HASH_RULE, K, RowProver, binding_from_note, read_layout, row_public, verify_set_for_layout,
 };
 use darkcall_settlement_types::{
     NativeBatchStatement, NativeContext, Role, Row, link_four_bid_statements,
@@ -34,10 +34,11 @@ fn verify_export(path: &std::path::Path) -> Result<(), Box<dyn std::error::Error
         }
         proofs.push(std::fs::read(file)?);
     }
-    verify_set(&statement, &proofs)?;
+    let layout = read_layout(path)?;
+    verify_set_for_layout(layout, &statement, &proofs)?;
     println!(
         "{}",
-        serde_json::json!({"proof_verified":true,"trusted_circuit_key":true,"private_openings_read":false,"rows":6,"hash_rule":HASH_RULE,"seconds":started.elapsed().as_secs_f64(),"chain_inclusion_or_funding_proven":false})
+        serde_json::json!({"proof_verified":true,"trusted_circuit_key":true,"layout":layout.id(),"private_openings_read":false,"rows":6,"hash_rule":HASH_RULE,"seconds":started.elapsed().as_secs_f64(),"chain_inclusion_or_funding_proven":false})
     );
     Ok(())
 }

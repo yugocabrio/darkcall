@@ -30,6 +30,79 @@ pub fn circuit_profile() -> Result<serde_json::Value> {
 }
 
 pub const SHARED_LAYOUT: &str = "experimental-shared18-native-row-v1";
+pub const WORKING_LAYOUT: &str = "working-33-column-v1";
+
+/// Dispatches only two compiled circuits. Never imports a bundle-supplied VK.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RowLayout {
+    Working33,
+    Shared18,
+}
+impl RowLayout {
+    pub fn id(self) -> &'static str {
+        match self {
+            Self::Working33 => WORKING_LAYOUT,
+            Self::Shared18 => SHARED_LAYOUT,
+        }
+    }
+    pub fn from_id(id: &str) -> Result<Self> {
+        match id {
+            WORKING_LAYOUT => Ok(Self::Working33),
+            SHARED_LAYOUT => Ok(Self::Shared18),
+            _ => Err("unknown native binding layout".into()),
+        }
+    }
+}
+
+/// Missing metadata denotes the original historical circuit only. Present but
+/// invalid metadata fails closed; it never falls back to another circuit.
+pub fn read_layout(directory: &std::path::Path) -> Result<RowLayout> {
+    use std::io::Read;
+    let path = directory.join("native-layout.json");
+    let metadata = match std::fs::symlink_metadata(&path) {
+        Ok(value) => value,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(RowLayout::Working33),
+        Err(e) => return Err(e.into()),
+    };
+    if !metadata.is_file() || metadata.len() > 4096 {
+        return Err("bounded regular native layout metadata required".into());
+    }
+    let mut bytes = Vec::new();
+    std::fs::File::open(&path)?
+        .take(4097)
+        .read_to_end(&mut bytes)?;
+    if bytes.len() > 4096 {
+        return Err("native layout metadata exceeds bound".into());
+    }
+    let value: serde_json::Value = serde_json::from_slice(&bytes)?;
+    let object = value.as_object().ok_or("native layout object required")?;
+    if object.len() != 2 || value["format"] != 1 {
+        return Err("native layout metadata format/fields".into());
+    }
+    RowLayout::from_id(
+        value["layout"]
+            .as_str()
+            .ok_or("native layout id required")?,
+    )
+}
+
+pub fn write_layout(directory: &std::path::Path, layout: RowLayout) -> Result<()> {
+    use std::io::Write;
+    let mut options = std::fs::OpenOptions::new();
+    options.create_new(true).write(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(directory.join("native-layout.json"))?;
+    file.write_all(&serde_json::to_vec(
+        &serde_json::json!({"format":1,"layout":layout.id()}),
+    )?)?;
+    file.sync_all()?;
+    std::fs::File::open(directory)?.sync_all()?;
+    Ok(())
+}
 
 pub fn shared_circuit_profile() -> Result<serde_json::Value> {
     profile::<SharedPoseidonBinding>(SHARED_LAYOUT)
@@ -135,6 +208,31 @@ pub struct RowProver {
 pub struct SharedRowProver {
     params: Params<vesta::Affine>,
     pk: ProvingKey<vesta::Affine>,
+}
+
+pub enum LayoutProver {
+    Working(RowProver),
+    Shared(SharedRowProver),
+}
+impl LayoutProver {
+    pub fn new(layout: RowLayout) -> Result<Self> {
+        Ok(match layout {
+            RowLayout::Working33 => Self::Working(RowProver::new()?),
+            RowLayout::Shared18 => Self::Shared(SharedRowProver::new()?),
+        })
+    }
+    pub fn prove(&self, binding: Binding, public: &[pallas::Base]) -> Result<Vec<u8>> {
+        match self {
+            Self::Working(prover) => prover.prove(binding, public),
+            Self::Shared(prover) => prover.prove(binding, public),
+        }
+    }
+    pub fn verify(&self, proof: &[u8], public: &[pallas::Base]) -> Result<()> {
+        match self {
+            Self::Working(prover) => prover.verify(proof, public),
+            Self::Shared(prover) => prover.verify(proof, public),
+        }
+    }
 }
 impl SharedRowProver {
     pub fn new() -> Result<Self> {
@@ -247,6 +345,24 @@ impl RowProver {
 /// Public-only independent verification against the fixed trusted circuit key.
 /// Callers must additionally compare native_actions with the actual transaction.
 pub fn verify_set(statement: &NativeBatchStatement, proofs: &[Vec<u8>]) -> Result<()> {
+    verify_set_for_layout(RowLayout::Working33, statement, proofs)
+}
+
+pub fn verify_set_for_layout(
+    layout: RowLayout,
+    statement: &NativeBatchStatement,
+    proofs: &[Vec<u8>],
+) -> Result<()> {
+    match layout {
+        RowLayout::Working33 => verify_set_with::<PoseidonBinding>(statement, proofs),
+        RowLayout::Shared18 => verify_set_with::<SharedPoseidonBinding>(statement, proofs),
+    }
+}
+
+fn verify_set_with<C: Circuit<pallas::Base> + Default>(
+    statement: &NativeBatchStatement,
+    proofs: &[Vec<u8>],
+) -> Result<()> {
     if proofs.len() != 6 || proofs.iter().any(|p| p.len() > 65536) {
         return Err("expected six bounded native row proofs".into());
     }
@@ -257,7 +373,7 @@ pub fn verify_set(statement: &NativeBatchStatement, proofs: &[Vec<u8>]) -> Resul
     )
     .map_err(|_| "invalid native action mapping")?;
     let params = Params::new(K);
-    let vk = keygen_vk(&params, &PoseidonBinding::default())?;
+    let vk = keygen_vk(&params, &C::default())?;
     for (i, proof) in proofs.iter().enumerate() {
         let public = row_public(statement, i)?;
         let mut transcript =
@@ -295,6 +411,33 @@ pub fn verify_one(proof: &[u8], public: &[pallas::Base]) -> Result<()> {
 #[cfg(test)]
 mod layout_tests {
     use super::*;
+    #[test]
+    fn layout_metadata_accepts_only_compiled_modes_and_preserves_legacy_default() {
+        let dir = std::env::temp_dir().join(format!("darkcall-layout-{}", std::process::id()));
+        std::fs::create_dir(&dir).unwrap();
+        assert_eq!(read_layout(&dir).unwrap(), RowLayout::Working33);
+        write_layout(&dir, RowLayout::Shared18).unwrap();
+        assert_eq!(read_layout(&dir).unwrap(), RowLayout::Shared18);
+        assert!(write_layout(&dir, RowLayout::Working33).is_err());
+        let path = dir.join("native-layout.json");
+        for value in [
+            serde_json::json!({"format":1,"layout":"upload-your-own-vk"}),
+            serde_json::json!({"format":2,"layout":SHARED_LAYOUT}),
+            serde_json::json!({"format":1,"layout":SHARED_LAYOUT,"private_witness":[]}),
+            serde_json::json!({"format":1}),
+        ] {
+            std::fs::write(&path, serde_json::to_vec(&value).unwrap()).unwrap();
+            assert!(read_layout(&dir).is_err());
+        }
+        std::fs::remove_file(&path).unwrap();
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink("missing-layout", &path).unwrap();
+            assert!(read_layout(&dir).is_err());
+            std::fs::remove_file(path).unwrap();
+        }
+        std::fs::remove_dir(dir).unwrap();
+    }
     #[test]
     fn existing_circuit_configuration_is_unchanged_and_shared_layout_is_distinct() {
         let old = circuit_profile().unwrap();

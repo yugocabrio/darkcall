@@ -12,9 +12,11 @@ import argparse
 import json
 import os
 import pathlib
+import signal
 import socket
 import subprocess
 import time
+from mpc_process import separate_session, signal_child
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 UPSTREAM = ROOT / ".deps/co-snarks"
@@ -73,7 +75,7 @@ def main():
                 children.append(subprocess.Popen(
                     [str(binary), *map(str, command)],
                     stdout=handle, stderr=subprocess.STDOUT, env=environment,
-                    cwd=run, start_new_session=True,
+                    cwd=run, start_new_session=separate_session(),
                 ))
             expires = time.monotonic() + timeout
             while any(child.poll() is None for child in children):
@@ -94,12 +96,12 @@ def main():
         finally:
             for child in children:
                 if child.poll() is None:
-                    child.terminate()
+                    signal_child(child)
             for child in children:
                 try:
                     child.wait(timeout=5)
                 except subprocess.TimeoutExpired:
-                    child.kill()
+                    signal_child(child, signal.SIGKILL)
                     child.wait()
             for handle in handles:
                 handle.close()

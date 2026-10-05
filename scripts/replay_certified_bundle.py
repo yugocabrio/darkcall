@@ -9,7 +9,7 @@ import argparse
 import json
 import pathlib
 import shutil
-from replay_public_bundle import copy_bundle, run
+from replay_public_bundle import copy_bundle, run, reject_unknown_layouts, reject_other_compiled_layout
 
 
 def main():
@@ -18,6 +18,8 @@ def main():
     parser.add_argument('certificate', type=pathlib.Path)
     parser.add_argument('trusted_manifest', type=pathlib.Path)
     parser.add_argument('--name', required=True)
+    parser.add_argument('--wrong-known-layout', action='store_true',
+                        help='Also reject a valid alternate compiled circuit/VK')
     args = parser.parse_args()
     source, dest = copy_bundle(args.source, args.name)
     cert_path = dest / 'final-book-certificate.json'
@@ -61,6 +63,9 @@ def main():
     wrong_path.write_text(json.dumps(changed_authority) + '\n')
     summary['tampering']['trusted_auction_cutoff'] = run(dest, 'certified MPC acceptance', wrong_path)
     wrong_path.unlink()
+    summary['tampering'].update(reject_unknown_layouts(dest, authority))
+    if args.wrong_known_layout:
+        summary['tampering']['other_compiled_layout'] = reject_other_compiled_layout(dest, authority)
     summary['passed'] = True
     (dest / 'replay-summary.json').write_text(json.dumps(summary, indent=2) + '\n')
     print(json.dumps(summary, indent=2))

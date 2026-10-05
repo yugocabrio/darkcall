@@ -6,6 +6,7 @@ use crate::regtest_spend::{
     Regtest, WalletNotes, read_private, reconstruct, wallet_key, write_private,
 };
 use darkcall_input_tool::{context, receiver_commitment};
+use darkcall_output_binding::poseidon_rows::{RowLayout, read_layout};
 use darkcall_wallet_bridge::{
     final_book::{Certificate, Manifest},
     journal::Journal,
@@ -30,7 +31,34 @@ pub fn build(
     admission: &Path,
     name: &str,
 ) -> Result<serde_json::Value> {
-    build_from(escrow, notes, book, receivers, admission, name, None)
+    build_from(
+        escrow,
+        notes,
+        book,
+        receivers,
+        admission,
+        name,
+        (None, RowLayout::Working33),
+    )
+}
+
+pub fn build_shared(
+    escrow: &Path,
+    notes: &Path,
+    book: &Path,
+    receivers: &Path,
+    admission: &Path,
+    name: &str,
+) -> Result<serde_json::Value> {
+    build_from(
+        escrow,
+        notes,
+        book,
+        receivers,
+        admission,
+        name,
+        (None, RowLayout::Shared18),
+    )
 }
 
 pub fn resume_built(
@@ -49,7 +77,10 @@ pub fn resume_built(
         receivers,
         admission,
         name,
-        Some(source),
+        (
+            Some(source),
+            read_layout(source).map_err(|e| error("recovery native layout", e))?,
+        ),
     )
 }
 
@@ -60,8 +91,9 @@ fn build_from(
     receivers: &Path,
     admission: &Path,
     name: &str,
-    source: Option<&Path>,
+    mode: (Option<&Path>, RowLayout),
 ) -> Result<serde_json::Value> {
+    let (source, layout) = mode;
     let start = Instant::now();
     let dkg = [
         "private-full-viewing-key.bin",
@@ -211,7 +243,7 @@ fn build_from(
         }
         funding.push(reconstruct(opening, &fvk, &state.anchor)?);
     }
-    let mut integration = Integration::new(book, name)?;
+    let mut integration = Integration::new_with_layout(book, name, layout)?;
     if integration.context.conditions != c.conditions_hash
         || integration.context.accepted_root != accepted.accepted_root
         || integration.context.ticket_ids != accepted.entries.each_ref().map(|e| e.ticket)
@@ -587,7 +619,7 @@ fn build_from(
         )
         .map_err(|e| error("output map", e))?,
     )?;
-    let summary = serde_json::json!({"scope":"actual isolated regtest certified four-input native auction construction","chain_funding":"actual SDK-scanned notes; provenance checked by Python driver","funding_observations_fabricated":false,"broadcast":false,"client_spending_keys_read":false,"maximum_bids_read":false,"fills_from_plaintext_oracle_fixture":false,"private_refund_delivery_verified":true,"signed_root_and_recipients_checked_before_frost":true,"native_bindings_and_cpp_mpc_verified":true,"source_inputs_match_all_three_durable_journals":true,"funding_reservations_fsynced_before_signing":true,"changed_recipient_outputs_effects_rejected":true,"inputs":4,"outputs":6,"threshold":"2-of-3","setup":if dkg {"local three-participant DKG; all shares on one host; no escrow master key"} else {"local trusted dealer; full escrow key retained"},"escrow_master_key_read":!dkg,"escrow_full_ask_derived_or_reconstructed":!dkg,"independent_custody_hosts":false,"native_proof_and_signatures_verified":true,"transaction_bytes":bytes.len(),"fee":fee,"price":integration.delivery.price,"sold":integration.delivery.sold,"application_proof_seconds":app_seconds,"proof_seconds":proof_seconds,"total_seconds":start.elapsed().as_secs_f64(),"txid":tx.txid().to_string()});
+    let summary = serde_json::json!({"scope":"actual isolated regtest certified four-input native auction construction","chain_funding":"actual SDK-scanned notes; provenance checked by Python driver","funding_observations_fabricated":false,"broadcast":false,"client_spending_keys_read":false,"maximum_bids_read":false,"fills_from_plaintext_oracle_fixture":false,"private_refund_delivery_verified":true,"signed_root_and_recipients_checked_before_frost":true,"native_bindings_and_cpp_mpc_verified":true,"source_inputs_match_all_three_durable_journals":true,"funding_reservations_fsynced_before_signing":true,"changed_recipient_outputs_effects_rejected":true,"inputs":4,"outputs":6,"threshold":"2-of-3","setup":if dkg {"local three-participant DKG; all shares on one host; no escrow master key"} else {"local trusted dealer; full escrow key retained"},"escrow_master_key_read":!dkg,"escrow_full_ask_derived_or_reconstructed":!dkg,"independent_custody_hosts":false,"native_proof_and_signatures_verified":true,"transaction_bytes":bytes.len(),"fee":fee,"native_binding_layout":layout.id(),"price":integration.delivery.price,"sold":integration.delivery.sold,"application_proof_seconds":app_seconds,"proof_seconds":proof_seconds,"total_seconds":start.elapsed().as_secs_f64(),"txid":tx.txid().to_string()});
     write_private(
         &integration.directory.join("funded-summary.json"),
         &serde_json::to_vec_pretty(&summary).map_err(|e| error("summary", e))?,

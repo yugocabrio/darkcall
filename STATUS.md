@@ -1,8 +1,95 @@
 # DarkCall status
 
-Updated: 2026-10-05 10:15 UTC.
+Updated: 2026-10-05 11:20 UTC.
 
 ## Current outcome
+
+**Shared18 six-row native integration and public-only replay pass.** New blinded
+v2 refunds, all six fresh native bindings, committed-input MPC, PCZT/2-of-3 FROST,
+native consensus proof/signatures and six recipient decryptions pass with
+synthetic funding. External complete run 709.426s; native binding key 108.790s,
+six proof/initial verify stages 469.551s; no reused proofs. Public-only replay
+103.945s also rejects trailing transaction bytes, changed binding signature and
+action metadata. Session 5185 and replay 26086 are completed/consumed. Explicit
+versioned metadata chooses one of two compiled circuits/fixed keys, never an
+uploaded VK. Original working33 default/configuration remains unchanged. Sampled
+RSS reaches 7,049,376 KiB, minimum free disk 9,596,473,344 bytes, maximum used swap
+10,134,487,040 bytes; these are sampled, not controlled comparative measurements.
+Evidence: evidence/2026-10-05-shared-six-row-integration.json.
+
+**Fresh funded v2 settlement completes new deposits through exact confirmations.**
+Session 10390 is completed/consumed; log
+.local/regtest-shared-v2-auction4-20261005.log. New committed book
+.local/mpc-auction4-20261005T103810Z has price 25/sold 3. Four fresh deposits into a
+new local DKG escrow are full-node accepted with two confirmations at height 116;
+all 12 signed receipts and three final-book signatures match the actual cutoff.
+Deposit gate 32826 completed/consumed. Settlement uses explicit shared18 with
+10 GiB initial headroom and unchanged 4 GiB disk/8 GiB RSS/10% macOS guards.
+Six fresh row proofs (no cache), actual committed MPC, certified root/recipients,
+PCZT, four DKG threshold spends, native consensus proof/signatures, full-node
+broadcast acceptance, two confirmations, six exact decrypted receipts and three
+Finalized journals pass. Price 25/sold 3, fee 30,000, 21,790 bytes, txid
+66b860cf45a173ad03dd7b7112ff731b12ef15e62857a096c1488979add5b648.
+Construction 819.180s; application 800.454s, native proof 8.148s; current owned
+chain height 118. Maximum-bid list, client spending keys and escrow master ASK are
+not read/reconstructed. All participants still share one host. No public-chain
+finality or mainnet claim. Sampled max RSS 4,054,224 KiB, min disk 7,368,859,648
+bytes, max used swap 11,549,739,581 bytes; no controlled comparative benchmark.
+Evidence: evidence/2026-10-05-fresh-funded-blinded-v2.json.
+
+Public-only certified replay passes in 100.871s; session 24305 is completed/consumed,
+log .local/regtest-shared-v2-public-20261005.log. Ten certificate/book/recipient/
+unknown layout/version/uploaded VK changes reject. Zero-price native consumer connects
+the v2 flags circuit, independently verifies its normal C++ proof, freshly
+re-derives the private opening from the verified transcript/pads and checks
+winner count/refund/conservation. Three selected Rust integration tests and 21
+Python tests pass. Actual delivery-only zero-price consumption also passes at
+price 0/sold 3; session 90668 is complete. **Full zero-price synthetic native gate
+passes**, session 17906 completed/consumed. v2 private winner flags, six fresh
+shared18 bindings, committed MPC, PCZT, four FROST spends, native proof/signatures
+and all six decryptions pass. Price 0/sold 3, one zero-valued seller output,
+fee 30,000, 21,790 bytes; external total 742.670s (application 725.029s,
+native proof 8.191s). No chain funding/broadcast or authenticated bidder-status
+receipt. Evidence: evidence/2026-10-05-zero-price-native-v2.json.
+Zero-price public-only replay passes in 103.898s. Seven transaction/action/layout
+changes reject, including selecting the other valid compiled circuit/VK
+(102.211s). Session 17103 is completed/consumed. Original working33 historical
+public regression also passes in 104.549s; six original row proofs, exact native
+transaction/signatures and normal C++ auction proof pass, with no private inputs
+or new chain operation. Session 99455 completed/consumed. The original default
+and trusted configuration remain unchanged; evidence is appended to the shared
+six-row record. Resource-guarded synthetic
+driver: scripts/run_integrated_gate.py. Native build 52352/74249 is complete;
+35 selected small-crate Rust tests, six native unit tests, two layout tests and
+latest strict release clippy also pass. Test session 20806 is completed/consumed.
+
+**A nested-process interruption bug is reproduced and fixed.** Synthetic old
+behavior leaves a new-session child alive after its resource guard aborts.
+Only that owned test child is cleaned up. The guard now execs its command inside
+a fresh group with a marker matching its actual pgid; nested delivery/settlement/
+auction MPC runners inherit that group, while standalone runners retain their
+own child groups. Stage cleanup signals only its child or its owned group.
+Parent/time-wrapper/grandchild interruption and unrelated-parent survival tests
+pass. All 23 Python tests and an actual guarded delivery_flags4 REP3 run pass
+(7.762s); normal C++ verifier also passes. Session 38242 is completed/consumed.
+Evidence: evidence/2026-10-05-nested-mpc-resource-abort.json. No cryptographic
+predicate, resource limit, wallet journal or confirmed chain transaction changed.
+
+**Active follow-up: shared18 complete-cache partial-Prepare recovery, session
+38702**, log .local/shared-v2-prepared-20261005.log. Only copied historical
+journal prefixes and exact new v2 PCZT/proofs are used; all six verified proofs
+should be reused with no proving key. No RPC/broadcast, no changes to the original
+Finalized journals. This additionally exercises the full integration under the
+new nested-group guard. Do not duplicate this verification job. Next implementation
+priority after this regression is the full six-output NU7 auction/native bridge.
+
+Independent plaintext Rust/Noir ACVM regression passes 77 valid and seven invalid
+generated cases plus rejection of a deliberately wrong reference result. This
+does not generate MPC/ZK proofs or read private live bids. Evidence:
+evidence/2026-10-05-cross-noir-reference.json. All build/check/reference sessions
+61132/73271/96182/84241/22039/77530 are completed/consumed. Earlier diagnostic-only
+harness failure 47317 is retained; all cases were rerun after correcting the
+pinned ACVM constraint-error predicate.
 
 **A concrete delivery privacy flaw is reproduced and the v2 fix passes actual
 REP3, independent C++ verification and offline native MPC/FROST recovery.**

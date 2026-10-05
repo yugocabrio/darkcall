@@ -1,0 +1,183 @@
+{
+  "recorded_utc": "2026-10-05T10:39:50.731801+00:00",
+  "scope": "Explicit shared18 six-row synthetic native integration with blinded v2 refund delivery; no chain funding or broadcast",
+  "native": {
+    "actions": 6,
+    "application_mpc_run": "mpc-settlement_poseidon4-20261005T103453Z",
+    "application_proof_checked_before_signing": true,
+    "application_proof_seconds": 690.664562667,
+    "broadcast": false,
+    "chain_funding": false,
+    "changed_sighash_rejected": true,
+    "constructed_recipients_decrypted": 6,
+    "construction_seconds": 0.101321167,
+    "fills_from_plaintext_oracle_fixture": false,
+    "maximum_bids_read": false,
+    "mpc_settlement_binding": true,
+    "native_output_and_effects_substitution_rejected": true,
+    "native_proof_bytes": 16352,
+    "native_transaction_verified": true,
+    "one_signature_share_rejected": true,
+    "planned_network_fee": 30000,
+    "pool": "Ironwood",
+    "private_fill_delivery_verified": true,
+    "proof_seconds": 9.1670115,
+    "real_spends": 4,
+    "recipients_decrypted": 6,
+    "requested_outputs": 6,
+    "scope": "offline synthetic native transaction gate",
+    "setup": "synthetic trusted dealer",
+    "signed_funding_or_receiver_receipts": false,
+    "threshold": "2-of-3",
+    "total_seconds": 701.619855667,
+    "transaction_bytes": 21790,
+    "txid": "4a64f4280cbea84b1e0a522c46f51a821c27806c4f99bcaf04ad34e2c244a109",
+    "version": 6,
+    "zero_value_outputs": 0
+  },
+  "native_bindings": {
+    "book_context_supplied": true,
+    "cached_set_verify_seconds": 0.0,
+    "delivery_run": "mpc-delivery_private4-20261005T102507Z",
+    "fills_from_plaintext_oracle_fixture": false,
+    "funding_proven": false,
+    "hash_rule": "bn254-poseidon2-packed-row-v1",
+    "key_seconds": 108.790489666,
+    "layout": "experimental-shared18-native-row-v1",
+    "native_custody_signature_verified": false,
+    "price": 20,
+    "private_fill_delivery_verified": true,
+    "proof_verified": true,
+    "proving_key_generated": true,
+    "reused_native_row_proofs": 0,
+    "row_proof_and_verify_seconds": [
+      79.821592708,
+      77.856875584,
+      77.992691541,
+      77.882550958,
+      77.83668925,
+      78.024376708
+    ],
+    "rows": 6,
+    "seconds": 578.341256708,
+    "sold": 3,
+    "synthetic_inputs": true
+  },
+  "external_process_seconds": 709.426,
+  "resources": {
+    "sample_interval_seconds": 10,
+    "max_sampled_root_resident_kib": 7049376,
+    "min_free_disk_bytes": 9596473344,
+    "max_used_swap_bytes": 10134487040,
+    "min_reported_memory_headroom_percent": 35,
+    "sampled_not_true_peak": true,
+    "controlled_performance_or_memory_comparison": false
+  },
+  "circuit_configuration_unchanged": true,
+  "original_default_preserved": true,
+  "shared_requires_known_compiled_layout_and_fixed_vk": true,
+  "source_uploaded_keys_accepted": false,
+  "layout_metadata_regressions_passed": true,
+  "strict_native_binding_release_all_target_clippy_passed": true,
+  "private_openings_keys_masks_shares_in_evidence": false,
+  "commands": [
+    "RAYON_NUM_THREADS=2 target/release/darkcall-native-gate --integrated-shared .local/mpc-auction4-20261004T231421Z integrated-shared-v2-20261005",
+    "cargo test --locked --release -p darkcall-output-binding --lib layout_tests",
+    "cargo clippy --locked --release -p darkcall-native-gate -p darkcall-output-binding --all-targets -- -D warnings"
+  ],
+  "public_only_replay": {
+    "public_only_replay": {
+      "acceptance_authentication_scope": "all-three operator attestation; not a public funding proof",
+      "acceptance_or_recipient_receipts_authenticated": false,
+      "actual_transaction_outputs_match": true,
+      "chain_funding_or_finality_verified": false,
+      "hash_rule": "bn254-poseidon2-packed-row-v1",
+      "layout": "experimental-shared18-native-row-v1",
+      "native_proof_and_signatures_verified": true,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "private_openings_read": false,
+      "scope": "public-only transaction/application-proof replay; chain inclusion checked separately",
+      "seconds": 103.944730625,
+      "transaction_bytes": 21790,
+      "txid": "4a64f4280cbea84b1e0a522c46f51a821c27806c4f99bcaf04ad34e2c244a109"
+    },
+    "private_artifacts_copied": false,
+    "original_private_directory_required": false,
+    "source": "integrated-shared-v2-20261005",
+    "directory": "integrated-shared-public-20261005",
+    "tampering": {
+      "trailing_byte": {
+        "rejected": true,
+        "seconds": 0.004,
+        "reason": "unexpected transaction format/pools/trailing data"
+      },
+      "binding_signature": {
+        "rejected": true,
+        "seconds": 1.648,
+        "reason": "native proof or spend/binding signatures invalid"
+      },
+      "transaction_action_metadata": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "statement actions differ from serialized transaction"
+      }
+    },
+    "passed": true
+  },
+  "original_default_public_regression": {
+    "public_only_replay": {
+      "acceptance_authentication_scope": "all-three operator attestation; not a public funding proof",
+      "acceptance_or_recipient_receipts_authenticated": false,
+      "actual_transaction_outputs_match": true,
+      "chain_funding_or_finality_verified": false,
+      "hash_rule": "bn254-poseidon2-packed-row-v1",
+      "layout": "working-33-column-v1",
+      "native_proof_and_signatures_verified": true,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "private_openings_read": false,
+      "scope": "public-only transaction/application-proof replay; chain inclusion checked separately",
+      "seconds": 104.549272584,
+      "transaction_bytes": 21790,
+      "txid": "89547f42484258df9958dd2775018a4665c3888363c26a99aacd0e5abb97b859"
+    },
+    "private_artifacts_copied": false,
+    "original_private_directory_required": false,
+    "source": "regtest-dkg-auction4-resumed-20261005",
+    "directory": "original-layout-final-replay-20261005",
+    "tampering": {
+      "trailing_byte": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "unexpected transaction format/pools/trailing data"
+      },
+      "binding_signature": {
+        "rejected": true,
+        "seconds": 1.566,
+        "reason": "native proof or spend/binding signatures invalid"
+      },
+      "transaction_action_metadata": {
+        "rejected": true,
+        "seconds": 0.004,
+        "reason": "statement actions differ from serialized transaction"
+      },
+      "unknown_layout": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "public native layout"
+      },
+      "uploaded_vk_metadata": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "public native layout"
+      },
+      "unknown_layout_version": {
+        "rejected": true,
+        "seconds": 0.003,
+        "reason": "public native layout"
+      }
+    },
+    "passed": true
+  }
+}

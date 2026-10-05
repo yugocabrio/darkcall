@@ -13,6 +13,7 @@ import pathlib
 import subprocess
 from regtest_deposits import ROOT, NATIVE, ADMIT, ENV, private_read, private_write, call
 from regtest_resources import guarded_json_call
+from native_layout import read_layout
 
 
 def write_bytes(path, data):
@@ -100,6 +101,11 @@ def main():
     for filename, limit in [('private-built-settlement.pczt', 1_000_000),
                             ('native-public.json', 32768), ('native-private-rows.json', 16384)]:
         copy(built / filename, source / filename, limit)
+    # An absent historical marker and an explicit original marker are identical.
+    if read_layout(built, private_read) != read_layout(proved, private_read):
+        raise RuntimeError('Built/proved layout metadata differs')
+    if (built / 'native-layout.json').exists():
+        copy(built / 'native-layout.json', source / 'native-layout.json', 4096)
     if private_read(built / 'native-private-rows.json', 16384) != private_read(proved / 'native-private-rows.json', 16384):
         raise RuntimeError('Proved rows do not match the exact original PCZT source')
     for i in range(6):

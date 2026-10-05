@@ -2,14 +2,64 @@
 import json
 import os
 import pathlib
+import signal
+import subprocess
 import sys
 import tempfile
 import unittest
 from unittest.mock import patch
 import regtest_resources as resources
+from mpc_process import signal_child
 
 
 class ResourceTests(unittest.TestCase):
+    def test_stage_cleanup_signals_only_its_child_or_owned_group(self):
+        # Both standalone and guarded-style groups must leave this parent alive.
+        for isolated in (True, False):
+            child = subprocess.Popen([sys.executable,'-c','import time;time.sleep(30)'],
+                start_new_session=isolated,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            try:
+                signal_child(child)
+                self.assertNotEqual(child.wait(timeout=3), 0)
+            finally:
+                if child.poll() is None:
+                    child.kill()
+                    child.wait(timeout=3)
+
+    def test_guard_abort_also_stops_nested_mpc_children(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory)
+            code = '''import pathlib,subprocess,sys,time
+from mpc_process import separate_session
+child_code="import os,pathlib,time;pathlib.Path('grandchild-pid').write_text(str(os.getpid()));time.sleep(30)"
+child=subprocess.Popen(['/usr/bin/time','-l' if sys.platform=='darwin' else '-v',sys.executable,'-c',child_code],
+    start_new_session=separate_session(),stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+pathlib.Path('child-pid').write_text(str(child.pid))
+time.sleep(30)
+'''
+            env = {**os.environ, 'PYTHONPATH': str(pathlib.Path(__file__).resolve().parent)}
+            plenty = {'free_disk_bytes': resources.MIN_FREE_BYTES + 1}
+            pid = None
+            try:
+                with patch.object(resources, 'sample', side_effect=[plenty, {'free_disk_bytes': 0}]):
+                    with self.assertRaisesRegex(RuntimeError, 'disk headroom'):
+                        resources.guarded_json_call([sys.executable, '-c', code],
+                            cwd=path, env=env, timeout=5, observations=path/'metrics', interval=.4)
+                pid = int((path/'child-pid').read_text())
+                for observed_pid in (pid, int((path/'grandchild-pid').read_text())):
+                    state = subprocess.run(['ps','-o','stat=','-p',str(observed_pid)],
+                        capture_output=True,text=True,timeout=5).stdout.strip()
+                    self.assertTrue(not state or state.startswith('Z'),
+                                    'Nested MPC-like child survives parent guard interruption')
+            finally:
+                # Clean only this test's explicitly recorded child even on failure.
+                if pid is None and (path/'child-pid').exists():
+                    pid = int((path/'child-pid').read_text())
+                for filename in ('child-pid','grandchild-pid'):
+                    if (path/filename).exists():
+                        try: os.kill(int((path/filename).read_text()),signal.SIGKILL)
+                        except ProcessLookupError: pass
+
     def test_expected_failure_requires_exact_diagnostic_and_private_log(self):
         with tempfile.TemporaryDirectory() as directory:
             path = pathlib.Path(directory)

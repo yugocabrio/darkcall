@@ -1,0 +1,31 @@
+{
+  "scope": "plaintext generated Rust sort oracle versus actual pinned Noir ACVM; not MPC or ZK",
+  "result": {
+    "scope": "plaintext generated Rust/Noir ACVM correctness regression, not MPC or a ZK proof",
+    "valid_cases": 77,
+    "invalid_cases": 7,
+    "all_cases_checked": 84,
+    "wrong_oracle_rejected": true,
+    "zk_proof_generated": false,
+    "private_bid_inputs_read": false
+  },
+  "noir_version": "1.0.0-rc.2",
+  "invalid_cases_require_actual_constraint_failure": true,
+  "cases_cover": [
+    "zero price",
+    "all ties",
+    "all 16 active masks including empty",
+    "short demand",
+    "units 1 through 6",
+    "full unsigned ticket bytes and final-byte ties",
+    "near maximum total money",
+    "48 reproducible generated cases",
+    "7 invalid rules/ranges/duplicates/fees",
+    "intentionally wrong Rust reference"
+  ],
+  "initial_harness_error": "77 valid cases passed; diagnostic expected Failed assertion, actual pinned ACVM reports Failed constraint / Cannot satisfy constraint; corrected diagnostic and reran all cases",
+  "dependency_graph_changed": false,
+  "command": "target/release/examples/cross_noir cross-reference-fixed-20261005",
+  "private_bid_inputs_read": false,
+  "zk_proof_generated": false
+}

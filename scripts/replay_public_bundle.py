@@ -10,6 +10,7 @@ import pathlib
 import shutil
 import subprocess
 import time
+from native_layout import read_layout, WORKING, SHARED
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BIN = ROOT / 'target/release/darkcall-native-gate'
@@ -39,6 +40,7 @@ def copy_bundle(source_path, name):
     local = ROOT / '.local'
     if not source.is_relative_to(local.resolve()):
         raise RuntimeError('Only ignored offline synthetic artifacts are supported')
+    read_layout(source)  # Reject invalid/broken symlink metadata before copying.
     dest = local / name
     dest.mkdir(mode=0o700)
     mpc = dest / 'mpc-public'
@@ -51,6 +53,8 @@ def copy_bundle(source_path, name):
     if len(transaction_names) != 1:
         raise RuntimeError('Expected exactly one explicit transaction artifact')
     names = [transaction_names[0], 'native-public.json'] + [f'native-binding-proof-{i}' for i in range(6)]
+    if (source / 'native-layout.json').exists():
+        names.append('native-layout.json')
     for name in names:
         shutil.copyfile(source / name, dest / name)
     for name in ['vk', 'proof.0', 'public-input0', 'tampered-price', 'tampered-plan', 'tampered-row']:
@@ -60,10 +64,49 @@ def copy_bundle(source_path, name):
     return source, dest
 
 
+def reject_unknown_layouts(directory, authority=None):
+    """Public metadata can select only compiled circuits, never supplied keys."""
+    marker = directory / 'native-layout.json'
+    original = marker.read_bytes() if marker.exists() else None
+    rejected = {}
+    try:
+        for name, value in [
+            ('unknown_layout', {'format': 1, 'layout': 'untrusted-circuit'}),
+            ('uploaded_vk_metadata', {'format': 1, 'layout': 'working-33-column-v1',
+                                      'vk': 'attacker-supplied-key'}),
+            ('unknown_layout_version', {'format': 2, 'layout': 'working-33-column-v1'}),
+        ]:
+            marker.write_text(json.dumps(value) + '\n')
+            rejected[name] = run(directory, 'public native layout', authority)
+    finally:
+        if original is None:
+            marker.unlink()
+        else:
+            marker.write_bytes(original)
+    return rejected
+
+
+def reject_other_compiled_layout(directory, authority=None):
+    """A valid alternate layout id still cannot rebind an existing row proof."""
+    marker = directory / 'native-layout.json'
+    original = marker.read_bytes() if marker.exists() else None
+    layout = read_layout(directory)
+    try:
+        marker.write_text(json.dumps({'format': 1, 'layout': WORKING if layout == SHARED else SHARED}) + '\n')
+        return run(directory, 'public native row proofs', authority)
+    finally:
+        if original is None:
+            marker.unlink()
+        else:
+            marker.write_bytes(original)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('source', type=pathlib.Path)
     parser.add_argument('--name', required=True)
+    parser.add_argument('--wrong-known-layout', action='store_true',
+                        help='Also reject a valid alternate compiled layout/VK; adds key preparation time')
     args = parser.parse_args()
     source, dest = copy_bundle(args.source, args.name)
     # A separate directory proves replay does not require accidental reads of
@@ -91,6 +134,9 @@ def main():
         summary['tampering']['transaction_action_metadata'] = run(dest, 'statement actions differ from serialized transaction')
     finally:
         statement_path.write_bytes(original_statement)
+    summary['tampering'].update(reject_unknown_layouts(dest))
+    if args.wrong_known_layout:
+        summary['tampering']['other_compiled_layout'] = reject_other_compiled_layout(dest)
     summary['passed'] = True
     (dest / 'replay-summary.json').write_text(json.dumps(summary, indent=2) + '\n')
     print(json.dumps(summary, indent=2))

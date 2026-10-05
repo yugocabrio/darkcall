@@ -494,6 +494,7 @@ fn gate(
         "scope":"offline synthetic native transaction gate", "chain_funding":false,
         "broadcast":false,"mpc_settlement_binding":approval.is_some(),"native_transaction_verified":false,
         "fills_from_plaintext_oracle_fixture":integration.is_none(),"private_fill_delivery_verified":integration.is_some(),
+        "private_winner_flags_verified":integration.is_some_and(|i| i.delivery.winners.is_some()),
         "maximum_bids_read":integration.is_none(),"signed_funding_or_receiver_receipts":false,
         "application_proof_checked_before_signing":approval.is_some(),
         "native_output_and_effects_substitution_rejected":approval.is_some(),
@@ -654,10 +655,20 @@ fn main() -> Result<()> {
         );
         return Ok(());
     }
-    if args.len() == 7 && args[0] == "--regtest-settlement" {
+    if args.len() == 7
+        && matches!(
+            args[0].as_str(),
+            "--regtest-settlement" | "--regtest-settlement-shared"
+        )
+    {
+        let build = if args[0] == "--regtest-settlement-shared" {
+            regtest_settlement::build_shared
+        } else {
+            regtest_settlement::build
+        };
         println!(
             "{}",
-            serde_json::to_string_pretty(&regtest_settlement::build(
+            serde_json::to_string_pretty(&build(
                 std::path::Path::new(&args[1]),
                 std::path::Path::new(&args[2]),
                 std::path::Path::new(&args[3]),
@@ -719,8 +730,19 @@ fn main() -> Result<()> {
         );
         return Ok(());
     }
-    let integrated = if args.len() == 3 && args[0] == "--integrated" {
-        Some(Integration::new(std::path::Path::new(&args[1]), &args[2])?)
+    let integrated = if args.len() == 3
+        && matches!(args[0].as_str(), "--integrated" | "--integrated-shared")
+    {
+        let layout = if args[0] == "--integrated-shared" {
+            darkcall_output_binding::poseidon_rows::RowLayout::Shared18
+        } else {
+            darkcall_output_binding::poseidon_rows::RowLayout::Working33
+        };
+        Some(Integration::new_with_layout(
+            std::path::Path::new(&args[1]),
+            &args[2],
+            layout,
+        )?)
     } else {
         if args.iter().any(|x| x != "--prove" && x != "--zero-rows") {
             return Err("usage: darkcall-native-gate [--prove] [--zero-rows] | --integrated BOOK_RUN LOCAL_NAME".into());

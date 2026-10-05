@@ -14,6 +14,7 @@ import signal
 import socket
 import subprocess
 import time
+from mpc_process import separate_session, signal_child
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 UPSTREAM = ROOT / '.deps/co-snarks'
@@ -70,7 +71,7 @@ def main():
                 logs.append(log)
                 handles.append(log.open('wb'))
                 children.append(subprocess.Popen(['/usr/bin/time', '-l', str(binary), *map(str,command)],
-                    cwd=run, env=env, stdout=handles[-1], stderr=subprocess.STDOUT, start_new_session=True))
+                    cwd=run, env=env, stdout=handles[-1], stderr=subprocess.STDOUT, start_new_session=separate_session()))
             while any(p.poll() is None for p in children):
                 if any(p.poll() not in (None, 0) for p in children):
                     raise RuntimeError(name + ' failed; inspect ignored logs')
@@ -86,11 +87,11 @@ def main():
             raise
         finally:
             for p in children:
-                if p.poll() is None: os.killpg(p.pid,signal.SIGTERM)
+                if p.poll() is None: signal_child(p,signal.SIGTERM)
             for p in children:
                 try: p.wait(timeout=5)
                 except subprocess.TimeoutExpired:
-                    os.killpg(p.pid,signal.SIGKILL)
+                    signal_child(p,signal.SIGKILL)
                     p.wait()
             for h in handles: h.close()
             stage['seconds'] = round(time.monotonic()-start,3)

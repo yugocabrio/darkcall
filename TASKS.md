@@ -78,7 +78,11 @@ autonomously, incorporate later human/ChatGPT reviews.
 
 - [x] Canonical four-ticket conditions/IDs, certified accepted root and six settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.
-- [ ] Cross-language generated fixtures and committed-input circuit equivalence.
+- [x] Generated cross-language plaintext auction-rule equivalence.
+  - 77 valid and seven invalid Rust sort/Noir ACVM cases plus a deliberately
+    wrong expected result pass. Zero price, all active masks, ties, unsigned full
+    ticket sorting and money bounds are covered. No MPC or ZK proof is generated.
+- [ ] Expand generated-case equivalence to committed-input MPC proofs.
 - [x] Shared four-bid/six-output commitment encoding with constrained Poseidon/native hash links.
   - Canonical 224-byte SHA-256 format, linked Halo2 SHA and actual native row proof
     passed. Six-row Noir plan circuit compiles/tests pass. Complete MPC hash proof
@@ -121,7 +125,37 @@ autonomously, incorporate later human/ChatGPT reviews.
     private mask/blinder pairs and domains prevent the legacy bit-candidate oracle.
     Price/root/cipher/flag changes reject. The small-blinder audit is a regression,
     not an exhaustive hiding proof. Native zero-price remains a separate gate.
-- [ ] Run a new funded v2 native auction and complete zero-price native delivery.
+- [x] Explicit shared18 six-row native integration and public-only replay.
+  - Blinded v2 delivery, six fresh bindings, actual MPC, PCZT/FROST/native proof
+    and six decryptions pass with synthetic funding in 709.426s. Public replay
+    passes in 103.945s. Original working33 default/fingerprint is preserved;
+    known versioned metadata dispatches only compiled circuits and fixed keys.
+- [x] Run a new funded v2 native auction through confirmation.
+  - Fresh price-25 book, new local DKG escrow, four confirmed deposits, 12 signed
+    receipts and three signed final-book endorsements pass. Six fresh shared18
+    bindings, committed MPC, exact PCZT/DKG FROST/native transaction, full-node
+    acceptance, two confirmations, all six exact receipts and three finalized
+    journals pass. Native construction 819.180s; no full maximum-bid list/master
+    escrow key read. Public certified replay passes in 100.871s with ten changed
+    certificate/book/recipient/layout cases rejected. Session 24305 is complete.
+- [x] Complete zero-price native delivery and full transaction execution (offline).
+  - Consumer now requires independently verified v2 winner bits for reserve-zero
+    books, freshly re-derives the opening from the transcript/pads and checks
+    count/refund/conservation. Six native unit tests pass. Actual price-0/sold-3
+    committed MPC, six fresh shared18 bindings, four threshold spends, native
+    proof/signatures and all six decryptions pass in 742.670s. Synthetic funding,
+    trusted dealer, no chain broadcast or authenticated bidder-status receipt.
+    Public replay passes in 103.898s, and seven transaction/action/layout changes
+    reject, including substitution of the other valid compiled circuit/VK.
+- [ ] Authenticated per-ticket winner-status receipts, including zero-price bidders.
+  - Operator-only private flags are verified; zero-price refund amounts alone do
+    not tell bidders which ticket won. Client receipt delivery remains separate
+    from the demonstrated native payments and item delivery.
+- [x] Resource guard abort stops nested MPC children without affecting parent/unrelated groups.
+  - Synthetic old behavior reproduced a child surviving its parent's resource
+    abort. Guard now execs into a fresh owned group with a marker matching its
+    actual pgid; nested MPC runners inherit it and standalone runs keep their own
+    groups. Actual nested-stop/owned-child tests and guarded flags/C++ proofs pass.
 - [x] Reject changed complete cached binding proofs without regeneration/signatures.
   - The exact copied partial-Prepare negative gate changes one cached proof;
     trusted fixed-VK verification rejects before proving-key preparation or FROST.

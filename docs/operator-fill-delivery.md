@@ -65,11 +65,28 @@ K+1 price. Zero-price refunds are all B and are already implied by the rules;
 separate flags distinguish winners. Masking cannot hide consequences of the
 public output. No IP/timing protection or malicious-MPC security is claimed.
 
-Native integration still fixes reserve 20, budget 100, fee 15000 and four active
-tickets. Zero-price flag delivery is an actual cryptographic primitive, not yet
-a full funded zero-price native auction. Local DKG funded native settlement and
-recipient confirmations passed with historical v1 delivery; a new funded v2
-run and full public-testnet/NU7 wallet migration are separate unfinished gates.
+Native integration fixes budget 100, processing fee 15000, three units and four
+active tickets. Reserve 20 uses v2 refund delivery; reserve zero requires v2
+refund-and-winner delivery. After independent C++ verification, the native
+consumer re-derives a fresh opening directly from the exact transcript and private
+pads, checks the winner count/refund relation and conserves the output total.
+Decoded winner bits remain private; summary files expose only whether verification
+passed. Price-zero/sold-three execution also passes through six fresh bindings,
+MPC, PCZT, four FROST spends, native consensus proof/signatures and all six
+decryptions in 742.670s with fabricated funding. Its public replay passes in
+103.898s, including rejection under the other valid compiled layout/VK. This
+does not establish funded-chain zero-price execution or bidder-status receipts.
+See [zero-price evidence](../evidence/2026-10-05-zero-price-native-v2.json).
+
+A **fresh funded v2 auction** now completes new local DKG escrow deposits, 12 signed
+receipts, three final-book endorsements, six fresh native row proofs, committed MPC,
+four FROST spends, chain acceptance, two controlled-chain confirmations and six
+exact recipient decryptions. Its price is 25/sold 3, distinct from the historical
+price-20 book. Public-only certified replay passes in 100.871s and rejects ten
+certificate/book/recipient/layout changes. No escrow master key or maximum-bid list
+is read. All participants share one host on an owned isolated regtest; full
+public-testnet/NU7 wallet migration and funded zero-price remain separate gates.
+See [fresh funded evidence](../evidence/2026-10-05-fresh-funded-blinded-v2.json).
 
 The native integration uses delivered amounts to construct PCZT outputs, proves
 all six row-to-cmx bindings and verifies a second committed MPC proof tying the
@@ -78,6 +95,9 @@ outputs and effects digest. Public final verification needs no delivery pads or
 transcript: its separate settlement proof binds all six amounts to actual cmxs.
 Fully cached recovery verifies all six proofs with the original fixed VK before
 reusing them; it does not construct an unnecessary proving key.
+New explicit shared18 runs use their own compiled fixed VK. Present malformed
+metadata fails closed; only genuinely absent metadata denotes the historical
+working33 circuit. Neither path accepts a bundle-supplied key.
 
 ```sh
 python3 scripts/run_delivery_gate.py --book-run .local/BOOK_RUN

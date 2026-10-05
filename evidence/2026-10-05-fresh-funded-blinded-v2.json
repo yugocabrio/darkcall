@@ -1,0 +1,232 @@
+{
+  "recorded_utc": "2026-10-05T10:59:47.090097+00:00",
+  "scope": "fresh actual owned isolated-regtest deposits through blinded v2 auction and exact native DKG settlement; not public-testnet or mainnet",
+  "synthetic_client_bids_and_fixture_terms": true,
+  "fresh_dkg_escrow_and_admission": true,
+  "deposit_full_node_accepted": true,
+  "deposit_confirmations": 2,
+  "deposit_height": 116,
+  "operator_acceptance_receipts": 12,
+  "all_three_final_book_signatures": true,
+  "actual_wall_clock_cutoff_checked": true,
+  "deposit_funder": "normal owned bank wallet key; destination is new DKG escrow full viewing key",
+  "legacy_deposit_summary_custody_label_corrected_in_source": true,
+  "delivery_rule": "fresh-field-mask-refund-delivery-v2",
+  "confirmed_settlement": {
+    "scope": "actual isolated regtest certified four-funded MPC/native auction",
+    "construction": {
+      "application_proof_seconds": 800.454395208,
+      "broadcast": false,
+      "chain_funding": "actual SDK-scanned notes; provenance checked by Python driver",
+      "changed_recipient_outputs_effects_rejected": true,
+      "client_spending_keys_read": false,
+      "escrow_full_ask_derived_or_reconstructed": false,
+      "escrow_master_key_read": false,
+      "fee": 30000,
+      "fills_from_plaintext_oracle_fixture": false,
+      "funding_observations_fabricated": false,
+      "funding_reservations_fsynced_before_signing": true,
+      "independent_custody_hosts": false,
+      "inputs": 4,
+      "maximum_bids_read": false,
+      "native_binding_layout": "experimental-shared18-native-row-v1",
+      "native_bindings_and_cpp_mpc_verified": true,
+      "native_proof_and_signatures_verified": true,
+      "outputs": 6,
+      "price": 25,
+      "private_refund_delivery_verified": true,
+      "proof_seconds": 8.147893542,
+      "scope": "actual isolated regtest certified four-input native auction construction",
+      "setup": "local three-participant DKG; all shares on one host; no escrow master key",
+      "signed_root_and_recipients_checked_before_frost": true,
+      "sold": 3,
+      "source_inputs_match_all_three_durable_journals": true,
+      "threshold": "2-of-3",
+      "total_seconds": 819.17955675,
+      "transaction_bytes": 21790,
+      "txid": "66b860cf45a173ad03dd7b7112ff731b12ef15e62857a096c1488979add5b648"
+    },
+    "substituted_receiver_rejected_before_proving": true,
+    "full_node_accepted": true,
+    "canonical_confirmations": 2,
+    "recipients": [
+      {
+        "role": "refund",
+        "exact_private_amount_verified": true,
+        "native_note_decrypted": true,
+        "native_path_matches_node": true
+      },
+      {
+        "role": "refund",
+        "exact_private_amount_verified": true,
+        "native_note_decrypted": true,
+        "native_path_matches_node": true
+      },
+      {
+        "role": "refund",
+        "exact_private_amount_verified": true,
+        "native_note_decrypted": true,
+        "native_path_matches_node": true
+      },
+      {
+        "role": "refund",
+        "exact_private_amount_verified": true,
+        "native_note_decrypted": true,
+        "native_path_matches_node": true
+      },
+      {
+        "role": "seller",
+        "exact_private_amount_verified": true,
+        "native_note_decrypted": true,
+        "native_path_matches_node": true
+      },
+      {
+        "role": "operator",
+        "exact_private_amount_verified": true,
+        "native_note_decrypted": true,
+        "native_path_matches_node": true
+      }
+    ],
+    "all_six_exact_private_amounts_verified": true,
+    "escrow_actual_spent_notes": 4,
+    "three_durable_journals_finalized": true,
+    "maximum_bids_read": false,
+    "public_only_replay_pending": false,
+    "finality_scope": "two controlled-regtest confirmations, not public-chain finality",
+    "setup": "local three-participant DKG; all shares on one host; no escrow master key",
+    "escrow_master_key_read": false,
+    "escrow_full_ask_derived_or_reconstructed": false,
+    "independent_custody_hosts": false,
+    "resumed_exact_signed_transaction": false,
+    "reconciliation": null,
+    "finalize_record": {
+      "chain_check": "caller must verify actual canonical inclusion",
+      "journal_events_written": 3,
+      "recorded_in_three_durable_journals": "finalize",
+      "unchanged_operator_records": 0
+    },
+    "private_witnesses_or_keys_committed": false
+  },
+  "native_bindings": {
+    "book_context_supplied": true,
+    "cached_set_verify_seconds": 0.0,
+    "delivery_run": "mpc-delivery_private4-20261005T104424Z",
+    "fills_from_plaintext_oracle_fixture": false,
+    "funding_proven": false,
+    "hash_rule": "bn254-poseidon2-packed-row-v1",
+    "key_seconds": 110.472100625,
+    "layout": "experimental-shared18-native-row-v1",
+    "native_custody_signature_verified": false,
+    "price": 25,
+    "private_fill_delivery_verified": true,
+    "proof_verified": true,
+    "proving_key_generated": true,
+    "reused_native_row_proofs": 0,
+    "row_proof_and_verify_seconds": [
+      85.679824292,
+      82.783994334,
+      81.393732,
+      105.228442041,
+      110.741464083,
+      104.807809791
+    ],
+    "rows": 6,
+    "seconds": 681.23709225,
+    "sold": 3,
+    "synthetic_inputs": false
+  },
+  "resources": {
+    "sample_interval_seconds": 10,
+    "max_sampled_root_resident_kib": 4054224,
+    "min_free_disk_bytes": 7368859648,
+    "max_used_swap_bytes": 11549739581,
+    "min_reported_memory_headroom_percent": 34,
+    "sampled_not_true_peak": true,
+    "controlled_comparative_benchmark": false,
+    "guarded_process_seconds": 819.237
+  },
+  "public_only_certified_replay_pending": false,
+  "private_keys_openings_masks_shares_in_evidence": false,
+  "commands": [
+    "python3 scripts/run_mpc_gate.py --bids 95 65 40 25 --result-file .local/shared-v2-new-book-20261005.json",
+    "python3 scripts/regtest_deposits.py .local/regtest-funding-wallet-20261005 .local/regtest-funding-wallet-20261005/private-notes-114.json .local/mpc-auction4-20261005T103810Z --name regtest-shared-v2-deposit4-20261005 --dkg",
+    "python3 scripts/regtest_settlement.py .local/regtest-shared-v2-deposit4-20261005 .local/mpc-auction4-20261005T103810Z --name regtest-shared-v2-auction4-20261005 --shared-native-binding",
+    "python3 scripts/replay_certified_bundle.py .local/regtest-shared-v2-auction4-20261005 .local/regtest-shared-v2-deposit4-20261005-admission/final-book-certificate.json .local/regtest-shared-v2-deposit4-20261005-admission/manifest.json --name regtest-shared-v2-public-20261005"
+  ],
+  "public_only_certified_replay": {
+    "source": "regtest-shared-v2-auction4-20261005",
+    "directory": "regtest-shared-v2-public-20261005",
+    "public_only_replay": {
+      "acceptance_authentication_scope": "all-three operator attestation; not a public funding proof",
+      "acceptance_or_recipient_receipts_authenticated": true,
+      "actual_transaction_outputs_match": true,
+      "chain_funding_or_finality_verified": false,
+      "hash_rule": "bn254-poseidon2-packed-row-v1",
+      "layout": "experimental-shared18-native-row-v1",
+      "native_proof_and_signatures_verified": true,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "private_openings_read": false,
+      "scope": "public-only transaction/application-proof replay; chain inclusion checked separately",
+      "seconds": 100.871004917,
+      "transaction_bytes": 21790,
+      "txid": "66b860cf45a173ad03dd7b7112ff731b12ef15e62857a096c1488979add5b648"
+    },
+    "trusted_manifest_supplied_explicitly": true,
+    "funding_journals_or_private_openings_copied": false,
+    "chain_funding_or_finality_verified": false,
+    "tampering": {
+      "operator_signature": {
+        "rejected": true,
+        "seconds": 0.007,
+        "reason": "certified MPC acceptance"
+      },
+      "duplicate_operator": {
+        "rejected": true,
+        "seconds": 0.005,
+        "reason": "certified MPC acceptance"
+      },
+      "accepted_intent": {
+        "rejected": true,
+        "seconds": 0.006,
+        "reason": "certified MPC acceptance"
+      },
+      "bid_commitment": {
+        "rejected": true,
+        "seconds": 0.005,
+        "reason": "certified MPC acceptance"
+      },
+      "accepted_root": {
+        "rejected": true,
+        "seconds": 0.01,
+        "reason": "certified MPC acceptance"
+      },
+      "refund_receiver": {
+        "rejected": true,
+        "seconds": 0.009,
+        "reason": "certified MPC acceptance"
+      },
+      "trusted_auction_cutoff": {
+        "rejected": true,
+        "seconds": 0.009,
+        "reason": "certified MPC acceptance"
+      },
+      "unknown_layout": {
+        "rejected": true,
+        "seconds": 0.018,
+        "reason": "public native layout"
+      },
+      "uploaded_vk_metadata": {
+        "rejected": true,
+        "seconds": 0.014,
+        "reason": "public native layout"
+      },
+      "unknown_layout_version": {
+        "rejected": true,
+        "seconds": 0.015,
+        "reason": "public native layout"
+      }
+    },
+    "passed": true
+  }
+}
