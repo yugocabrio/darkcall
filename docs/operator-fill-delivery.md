@@ -75,7 +75,8 @@ passed. Price-zero/sold-three execution also passes through six fresh bindings,
 MPC, PCZT, four FROST spends, native consensus proof/signatures and all six
 decryptions in 742.670s with fabricated funding. Its public replay passes in
 103.898s, including rejection under the other valid compiled layout/VK. This
-does not establish funded-chain zero-price execution or bidder-status receipts.
+does not establish funded-chain zero-price execution. Local per-ticket proof
+receipts are now demonstrated separately below; network delivery remains.
 See [zero-price evidence](../evidence/2026-10-05-zero-price-native-v2.json).
 
 A **fresh funded v2 auction** now completes new local DKG escrow deposits, 12 signed
@@ -110,3 +111,39 @@ The delivery-only commands construct no native transaction and do not broadcast.
 `--integrated` constructs fabricated inputs/anchors and must never be broadcast.
 Actual controlled-chain funding uses the separate regtest driver, which checks
 real owned funding/witnesses, signed receipts, reservations and confirmations.
+
+## Private per-ticket status receipts
+
+The operator can export one refund mask/blinder and one independently generated
+winner mask/blinder for a ticket. Each recipient supplies its own expected ticket
+from registration, checks the compiled `delivery_flags4` proof with the fixed
+normal C++ verifier, and then opens just its own refund/winning bit. The opening
+checks the exact accepted public book, ticket, root, v2 domains, commitments and
+refund/price relation. No other ticket's pads or maximum bids are required. The
+opening CLI reports `proof_verified_here=false`; it is insufficient without the
+prior fixed-circuit proof verification.
+
+This receipt is a **private proof opening**, not an operator signature. Its
+authenticity comes from the fixed ZK proof and the recipient's expected accepted
+book/ticket. It does not replace signed admission/funding certificates, identify
+the bidder, prove inclusion/finality or implement secure network transport.
+Sharing it reveals that ticket's refund and winning status; keep it out of public
+bundles. Consequences inferred from public sold count or one's own status remain.
+
+The local zero-price receipt run checks all four recipients independently, links
+the exact book/price/sold to the completed native settlement public proof, and
+passes in 104.391s including native replay. Positive-price and no-sale cases pass
+in 2.114s/2.103s without native replay. Across these runs, 72 changed ticket/root/
+mask/blinder/domain/extra-status cases reject. All test outcomes are synthetic.
+Only the operator-side exporter reads all pads; recipient opening processes read
+their own receipt and public data. See
+[ticket receipt evidence](../evidence/2026-10-05-private-ticket-status-receipts.json).
+
+```sh
+python3 scripts/check_ticket_receipts.py .local/BOOK_RUN .local/FLAGS_RUN \
+  --native-bundle .local/PUBLIC_NATIVE_BUNDLE --name UNUSED_RECEIPT_CHECK
+```
+
+Native-bundle linking currently accepts the completed NU6.3 public gate. The
+new NU7 six-output adapter remains unverified beyond unsigned preparation until
+the full resource-guarded proof/signature run succeeds.

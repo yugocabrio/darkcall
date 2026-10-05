@@ -651,6 +651,15 @@ fn main() -> Result<()> {
             let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
             flags_delivery::result(&book,Path::new(&args[2]),Some(Path::new(&args[3])),Path::new(&args[4]),Path::new(&args[5]))?;
         },
+        Some("flags-ticket-export") if args.len()==7 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            flags_delivery::export_ticket(&book,Path::new(&args[2]),Path::new(&args[3]),Path::new(&args[4]),args[5].parse()?,Path::new(&args[6]))?;
+        },
+        Some("flags-ticket-open") if args.len()==5 => {
+            let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
+            let result=flags_delivery::open_ticket(&book,args[2].parse()?,Path::new(&args[3]),Path::new(&args[4]))?;
+            println!("{}",serde_json::to_string(&result)?);
+        },
         Some("private-result") if args.len()==5 => {
             let book:Book=serde_json::from_slice(&fs::read(&args[1])?)?;
             flags_delivery::result(&book,Path::new(&args[2]),None,Path::new(&args[3]),Path::new(&args[4]))?;

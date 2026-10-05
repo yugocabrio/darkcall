@@ -1,0 +1,166 @@
+{
+  "date": "2026-10-05",
+  "scope": "synthetic per-ticket proof-authenticated openings; recipient network delivery/admission authentication unfinished",
+  "commands": [
+    "python3 scripts/check_ticket_receipts.py .local/mpc-auction4-20261005T093324Z .local/mpc-delivery_flags4-20261005T110133Z --native-bundle .local/integrated-zero-public-20261005 --name zero-ticket-receipts-v2-20261005",
+    "python3 scripts/check_ticket_receipts.py BOOK_RUN FLAGS_DELIVERY_RUN --name positive-ticket-receipts-20261005",
+    "python3 scripts/check_ticket_receipts.py BOOK_RUN FLAGS_DELIVERY_RUN --name no-sale-ticket-receipts-20261005"
+  ],
+  "runs": {
+    "zero_native": {
+      "scope": "local synthetic per-ticket proof-authenticated winner/refund opening",
+      "passed": true,
+      "outcomes": [
+        {
+          "ticket_index": 0,
+          "won": true,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 1,
+          "won": true,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 2,
+          "won": true,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 3,
+          "won": false,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        }
+      ],
+      "receipt_substitutions_rejected": 24,
+      "normal_cpp_price_root_cipher_winner_tampering_rejected": true,
+      "native_public_settlement_linked": true,
+      "native_replay": {
+        "acceptance_authentication_scope": "all-three operator attestation; not a public funding proof",
+        "acceptance_or_recipient_receipts_authenticated": false,
+        "actual_transaction_outputs_match": true,
+        "chain_funding_or_finality_verified": false,
+        "hash_rule": "bn254-poseidon2-packed-row-v1",
+        "layout": "experimental-shared18-native-row-v1",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "private_openings_read": false,
+        "scope": "public-only transaction/application-proof replay; chain inclusion checked separately",
+        "seconds": 102.10851425,
+        "transaction_bytes": 21790,
+        "txid": "f2ed981d347c63767d3d8f8bcb1b12ac47071eb9f30f46528bef4cc85b1933e0"
+      },
+      "operator_exports_from_all_pads": true,
+      "recipient_reads_only_own_pads": true,
+      "receipt_is_operator_signature": false,
+      "admission_or_funding_authenticated": false,
+      "bidder_identity_or_network_delivery_implemented": false,
+      "maximum_bids_read_in_verifier": false,
+      "seconds": 104.39093858400156
+    },
+    "positive": {
+      "scope": "local synthetic per-ticket proof-authenticated winner/refund opening",
+      "passed": true,
+      "outcomes": [
+        {
+          "ticket_index": 0,
+          "won": true,
+          "refund": 50,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 1,
+          "won": true,
+          "refund": 50,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 2,
+          "won": true,
+          "refund": 50,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 3,
+          "won": false,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        }
+      ],
+      "receipt_substitutions_rejected": 24,
+      "normal_cpp_price_root_cipher_winner_tampering_rejected": true,
+      "native_public_settlement_linked": false,
+      "native_replay": null,
+      "operator_exports_from_all_pads": true,
+      "recipient_reads_only_own_pads": true,
+      "receipt_is_operator_signature": false,
+      "admission_or_funding_authenticated": false,
+      "bidder_identity_or_network_delivery_implemented": false,
+      "maximum_bids_read_in_verifier": false,
+      "seconds": 2.1138171670027077
+    },
+    "no_sale": {
+      "scope": "local synthetic per-ticket proof-authenticated winner/refund opening",
+      "passed": true,
+      "outcomes": [
+        {
+          "ticket_index": 0,
+          "won": false,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 1,
+          "won": false,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 2,
+          "won": false,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        },
+        {
+          "ticket_index": 3,
+          "won": false,
+          "refund": 100,
+          "fixed_cpp_verified": true,
+          "recipient_reads_other_pads": false
+        }
+      ],
+      "receipt_substitutions_rejected": 24,
+      "normal_cpp_price_root_cipher_winner_tampering_rejected": true,
+      "native_public_settlement_linked": false,
+      "native_replay": null,
+      "operator_exports_from_all_pads": true,
+      "recipient_reads_only_own_pads": true,
+      "receipt_is_operator_signature": false,
+      "admission_or_funding_authenticated": false,
+      "bidder_identity_or_network_delivery_implemented": false,
+      "maximum_bids_read_in_verifier": false,
+      "seconds": 2.1026989169986336
+    }
+  },
+  "all_receipt_substitutions_rejected": 72,
+  "raw_private_receipts_or_pads_committed": false,
+  "root_lock_sha256": "1e2cfdab9e6a7603589fa6af8805e0778631b646f3b93c46c13bb2992c13d9fb",
+  "first_harness_repair": "Historical public zero-price book was mode0644; keep private pad readers strict, add a bounded O_NOFOLLOW public-book reader and rerun with a new target. Failed target retained.",
+  "trust": "Each recipient must supply its own expected ticket and trusted accepted book, and verify the fixed C++ proof before opening. Opening CLI alone does not verify proof. This is neither an operator signature nor a replacement for native binding, admission certificates or chain finality."
+}

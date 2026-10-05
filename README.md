@@ -26,7 +26,11 @@ pass with v2. A fresh funded v2 auction also completes new DKG deposits, native
 settlement, two controlled-chain confirmations and six exact receipts. Public-testnet
 NU7 settlement remains unfinished. Price-zero private winner delivery through
 native proof/FROST and all six decryptions also passes with synthetic funding;
-funded price-zero execution and bidder-status receipts remain separate work. See [status](STATUS.md)
+funded price-zero execution remains separate work. Local private per-ticket
+status/refund receipts now verify against the fixed public proof, including the
+zero-price native settlement context; transport and bidder identity remain
+unfinished. NU7 unsigned six-output preparation passes, while its full proof/
+signature gate is capacity-blocked and unverified. See [status](STATUS.md)
 and [the reproduced attack and fix](docs/operator-fill-delivery.md) for exact scope.
 Plaintext reference fixtures are correctness oracles, not privacy demonstrations.
 

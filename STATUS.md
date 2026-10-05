@@ -1,8 +1,65 @@
 # DarkCall status
 
-Updated: 2026-10-05 11:33 UTC.
+Updated: 2026-10-05 12:15 UTC.
 
 ## Current outcome
+
+**NU7 four-input/six-output unsigned preparation passes; full proof not run.**
+The separate pinned SDK now consumes freshly verified blinded v2 delivery,
+builds an unsigned six-action PCZT and exports canonical private note bytes.
+The working stack reconstructs/checks all six actual V3 openings against the
+new SDK commitments and auction-delivered amounts. Price 25/sold 3 preparation
+passes in 8.365s; zero-price/sold 3 preparation with private winner flags passes
+in 7.654s. No application binding proof, native proof, FROST signature or
+transaction broadcast is claimed for these two prepared checkpoints.
+
+Seven actual pre-sign attack checks pass: missing application proof, changed
+amounts while conserving value, duplicate output index, substituted recipient,
+changed effects identity, unknown private key fields and trailing PCZT bytes.
+Upstream PCZT parsing accepted the extra byte; the adapter now requires an exact
+canonical serialize/parse round-trip before interpreting a persisted request.
+No transaction is emitted for any rejected checkpoint. Full NU7 application
+binding/normal C++ verification before FROST and public-only replay are
+implemented but remain **unverified** until a complete run succeeds.
+
+Full six-row proof was not launched: the unchanged guard requires 10 GiB initial
+headroom; .local/nu7-auction-shared-20261005.log records 6.94 GiB available and
+5.95 GiB used macOS swap. Prepared artifacts, old chain/journals and root lock
+remain intact. Do not repeat this full launch without capacity change. No
+resource guard was weakened and no unrelated application/process was stopped.
+
+**Nine committed-input MPC cases pass against the Rust sort oracle.** Session
+63449 is completed/consumed. Tied cutoff, insufficient/exact demand, no qualified
+bid, budget boundary, zero-price tie and three deterministic generated books each
+pass four client proofs, 12 delivered pairs, actual REP3 auction proof and v2
+private winning-flag proof, plus both fixed normal C++ verifiers. Price/sold and
+all six delivered amounts/four winning bits match the separate synthetic Rust
+oracle. Total 134.006s; all participant processes share this host. Oracle knows
+fabricated bids; no malicious-security/native-funding claim. Evidence:
+evidence/2026-10-05-committed-auction-cases.json.
+
+**Per-ticket proof-authenticated winning status/refund receipts pass.** A
+recipient's opening process uses its own expected ticket, two private pads only
+(refund/status), and the public book/transcript. Fixed C++ verification is
+mandatory before opening; opening CLI explicitly reports no proof verification
+on its own. Zero-price receipts link the exact verified native settlement public
+book/price/sold to the blinded flags transcript: four equal100 refunds still show
+three winners/one loser. This completes in 104.391s including public native replay.
+Positive-price tie and no-sale receipts pass in 2.114s/2.103s without native bundle
+checks. All 72 ticket/root/mask/blinder/domain/extra-status changes reject. Receipts
+are private proof openings, not operator signatures, new public disclosures,
+funding/admission attestations or implemented network delivery. Sessions 70447
+and 63120 are complete/consumed. Evidence:
+evidence/2026-10-05-private-ticket-status-receipts.json.
+
+All current jobs are complete/consumed; no heavy prover is running. Root lock is
+unchanged. Separate NU7 inventory remains 295 packages with no missing license
+metadata; direct serde1.0.229/libc0.2.190 pins reuse existing locked versions.
+35 small-crate Rust tests, seven native tests, receipt opening regression,
+23 Python tests, strict all-target release clippy for both workspaces, rustfmt
+and Python compile checks pass. Full NU7 flow/replay remain capacity-blocked and
+unverified; next priority is complete new-SDK six-row proof before wallet migration.
+
 
 **Shared18 six-row native integration and public-only replay pass.** New blinded
 v2 refunds, all six fresh native bindings, committed-input MPC, PCZT/2-of-3 FROST,
@@ -49,8 +106,9 @@ passes**, session 17906 completed/consumed. v2 private winner flags, six fresh
 shared18 bindings, committed MPC, PCZT, four FROST spends, native proof/signatures
 and all six decryptions pass. Price 0/sold 3, one zero-valued seller output,
 fee 30,000, 21,790 bytes; external total 742.670s (application 725.029s,
-native proof 8.191s). No chain funding/broadcast or authenticated bidder-status
-receipt. Evidence: evidence/2026-10-05-zero-price-native-v2.json.
+native proof 8.191s). This historical run alone did not deliver bidder receipts. New local proof-backed
+per-ticket receipts are recorded above; network delivery remains unfinished.
+No chain funding/broadcast. Evidence: evidence/2026-10-05-zero-price-native-v2.json.
 Zero-price public-only replay passes in 103.898s. Seven transaction/action/layout
 changes reject, including selecting the other valid compiled circuit/VK
 (102.211s). Session 17103 is completed/consumed. Original working33 historical
@@ -84,10 +142,13 @@ one Prepare. Cancellation-purpose substitution rejects before proving/signing.
 Original PCZT/proofs and Finalized journals remain unchanged. Historical notes
 are already spent; no RPC, broadcast, mining or new chain-funding claim.
 Evidence: evidence/2026-10-05-shared-layout-prepared-recovery.json.
-No recorded jobs are active. Implementation/tests/measurements through zero-price,
-fresh funded v2 and the resource abort fix are pushed in 9bff22d. This subsequent
-checkpoint records the completed recovery; identify its current commit with git.
-Next implementation priority is the full six-output NU7 auction/native bridge.
+No recorded jobs are active. This turn started from pushed checkpoint 9f7ef8a;
+new NU7 adapter/preparation and nine committed-MPC case changes are recorded in
+8d0863d and 9115d10. The per-ticket receipt source/evidence and this status file
+are committed together; git HEAD is authoritative for the current checkpoint.
+Next priority is the full six-output NU7 proof when at least10 GiB disk headroom
+is available. Until then, advance private receipt transport/client integration;
+do not repeat an unchanged capacity refusal or weaken resource guards.
 
 Independent plaintext Rust/Noir ACVM regression passes 77 valid and seven invalid
 generated cases plus rejection of a deliberately wrong reference result. This

@@ -68,7 +68,9 @@ commitmentに含め、実際のREP3共同証明と通常C++検証が通ってい
 旧版のtranscriptに対する返金秘匿の主張は撤回します。新規native構築はv2を
 要求します。公開結果からの推測は残ります。価格0のoperator当落配送から
 MPC/native精算、FROST署名、全出力の復号もofflineで確認しました。入札者へ
-当落を知らせる認証済みreceiptと、資金付き価格0実行は別の未完了項目です。詳細と保証範囲は [operator-fill-delivery.md](operator-fill-delivery.md)
+各入札者が自分のticketと2組のpadだけで当落・返金を検証するreceiptも、通常C++証明と
+価格0のnative精算の公開contextへの接続までローカルで確認しました。receiptのネットワーク配送、
+入札者本人の認証、資金付き価格0実行は未完了です。詳細と保証範囲は [operator-fill-delivery.md](operator-fill-delivery.md)
 を参照してください。以下の設計目標と、STATUS.mdの実証済み結果は区別します。
 
 入札額を隠す対象と、資金管理者が必要とする情報を分けます。通常のZK証明では証明作成者が入札の平文を知り得るため、入札処理と証明作成の両方をMPCで行う案です。入札者が公開コードを確認できる信頼済みクライアントを実行することも前提です。運営が配信するWebコード自体を悪意あるものに差し替えられる場合、MPCだけでは端末からの漏えいを防げません。クライアントの配布と検証方法を実装計画に含めます。
@@ -124,6 +126,11 @@ MPC/native精算、FROST署名、全出力の復号もofflineで確認しまし�
 追加の精算証明は、同じ計画への開口と、実際の取引のnative noteの開口を使い、「各計画行の宛先と金額が、その取引の出力コミットメントに一致し、行の欠落や使い回しがない」ことを示す設計目標です。公開検証者は証明で指定されたpool、取引、action index、note commitmentを、自分が信頼するZcash nodeのデータと照合します。 native出力は[実装](https://github.com/zcash/orchard/blob/main/src/note/commitment.rs)上、PallasのSinsemilla commitmentから取り出したx座標です。精算回路は同じ演算と正規のバイト表現を検証し、受取先、金額、noteの各値を計画に結び付ける必要があります。Ironwood固有のnote生成も[ZIP 2005](https://zips.z.cash/zip-2005)と採用するSDKで照合します。価格計算用のハッシュをnative commitmentの代わりには使いません。また、古い支払いを別の開催の精算として流用するケースを検証対象に追加します。auction IDと受付rootだけでなく、その開催の資金チケットの消費、取引の時期、確定状態を照合する設計を具体化します。
 
 **10月5日現在、この接続は6出力すべてについて実装・実測済みです。**
+
+これは動作済みのNU6.3 SDKによるoffline／隔離regtest実行です。別のNU7 SDKでは、
+v2配送を用いた4入力・6出力の未署名PCZTと、全6行のbyte互換／受取先復号まで確認しました。
+新SDKの全工程証明・署名・公開replayは、開始時の空き容量10 GiBを満たせず未実行です。
+NU7の移行完了やpublic testnet資金の精算とは説明しません。
 BN254 Poseidon2でcanonical rowをコミットし、Pallas/Halo2回路内のnon-native
 演算で同じhashを再現します。受取先、金額、native cmx、action indexとの結合を
 証明し、別のREP3精算証明が6行すべてを入札ルールに結び付けます。署名者は

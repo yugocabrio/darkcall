@@ -75,6 +75,12 @@ autonomously, incorporate later human/ChatGPT reviews.
     and public-only new-native/row replay now pass (221.541s / 107.893s); one
     synthetic output only. Preserve working33 trusted verifier and original funded
     artifacts; full NU7 auction/wallet funding and live-chain freshness remain.
+    New adapter verifies v2 delivery and prepares/checks all six unsigned NU7
+    outputs at price25 and price0. Seven pre-sign malformed/substitution checks
+    pass, including canonical PCZT trailing-byte refusal. Full fresh six-row
+    proof, threshold native completion and public replay are implemented but
+    unverified: 10 GiB start guard refused at 6.94 GiB free. Resume only after
+    headroom changes; no guard relaxation, no false completed E2E claim.
 
 - [x] Canonical four-ticket conditions/IDs, certified accepted root and six settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.
@@ -82,7 +88,10 @@ autonomously, incorporate later human/ChatGPT reviews.
   - 77 valid and seven invalid Rust sort/Noir ACVM cases plus a deliberately
     wrong expected result pass. Zero price, all active masks, ties, unsigned full
     ticket sorting and money bounds are covered. No MPC or ZK proof is generated.
-- [ ] Expand generated-case equivalence to committed-input MPC proofs.
+- [x] Initial generated-case equivalence with actual committed-input MPC proofs.
+  - Nine synthetic four-active cases each pass client/pair checks, actual REP3
+    auction/v2 flags proofs, both normal C++ verifiers and Rust amount/status
+    comparison. Larger/inactive books remain separately unfinished.
 - [x] Shared four-bid/six-output commitment encoding with constrained Poseidon/native hash links.
   - Canonical 224-byte SHA-256 format, linked Halo2 SHA and actual native row proof
     passed. Six-row Noir plan circuit compiles/tests pass. Complete MPC hash proof
@@ -144,13 +153,19 @@ autonomously, incorporate later human/ChatGPT reviews.
     count/refund/conservation. Six native unit tests pass. Actual price-0/sold-3
     committed MPC, six fresh shared18 bindings, four threshold spends, native
     proof/signatures and all six decryptions pass in 742.670s. Synthetic funding,
-    trusted dealer, no chain broadcast or authenticated bidder-status receipt.
+    trusted dealer, no chain broadcast. Local proof-backed per-ticket status
+    receipts are now demonstrated separately below; network delivery remains.
     Public replay passes in 103.898s, and seven transaction/action/layout changes
     reject, including substitution of the other valid compiled circuit/VK.
-- [ ] Authenticated per-ticket winner-status receipts, including zero-price bidders.
-  - Operator-only private flags are verified; zero-price refund amounts alone do
-    not tell bidders which ticket won. Client receipt delivery remains separate
-    from the demonstrated native payments and item delivery.
+- [x] Local proof-authenticated per-ticket winner/refund receipts, including price zero.
+  - Recipient supplies own expected ticket, reads two private pads only and
+    verifies the fixed C++ flags proof first. Zero-price receipt transcript links
+    the exact verified native settlement context/price/sold. Positive/no-sale
+    cases also pass; 72 substitutions reject. This is a private proof opening,
+    not a signature or replacement for admission/funding authentication.
+- [ ] Private authenticated network delivery and client UI for ticket status receipts.
+  - Issuance/verification are local tools; transport, bidder identity and item
+    delivery remain separate from the demonstrated proof openings/payments.
 - [x] Resource guard abort stops nested MPC children without affecting parent/unrelated groups.
   - Synthetic old behavior reproduced a child surviving its parent's resource
     abort. Guard now execs into a fresh owned group with a marker matching its

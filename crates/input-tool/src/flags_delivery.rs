@@ -97,6 +97,142 @@ fn masks(path: &Path) -> Result<Vec<[Fr; 2]>> {
         .collect()
 }
 
+/// A private per-ticket opening of two fields in a publicly verifiable proof.
+/// This is not an operator signature, an admission receipt or a chain receipt.
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TicketReceipt {
+    format: u32,
+    rule: String,
+    ticket: [u8; 32],
+    accepted_root: String,
+    refund_pad: [String; 2],
+    winner_pad: [String; 2],
+}
+const TICKET_RULE: &str = "private-ticket-opening-delivery-flags-v2";
+
+fn ticket_statement(book: &Book, path: &Path) -> Result<Vec<Fr>> {
+    let bytes = bounded(path, 187 * 32)?;
+    if bytes.len() != 187 * 32 {
+        return Err("ticket receipt requires exact v2 winner statement".into());
+    }
+    let fields = bytes
+        .chunks_exact(32)
+        .map(|b| {
+            let value = Fr::from_be_bytes_mod_order(b);
+            if encoded_field(value) != b {
+                return Err("noncanonical ticket statement field".into());
+            }
+            Ok(value)
+        })
+        .collect::<Result<Vec<_>>>()?;
+    if fields[..169] != book_fields(book)? {
+        return Err("ticket receipt proof differs from expected accepted book".into());
+    }
+    Ok(fields)
+}
+fn ticket_opening(
+    book: &Book,
+    receipt: &TicketReceipt,
+    fields: &[Fr],
+) -> Result<serde_json::Value> {
+    if receipt.format != 1 || receipt.rule != TICKET_RULE || receipt.accepted_root != book.root {
+        return Err("ticket receipt version/domain/root mismatch".into());
+    }
+    let i = book
+        .ids
+        .iter()
+        .position(|id| *id == receipt.ticket)
+        .ok_or("ticket not in accepted book")?;
+    let refund = receipt
+        .refund_pad
+        .each_ref()
+        .map(|s| canonical_field(s))
+        .into_iter()
+        .collect::<Result<Vec<_>>>()?;
+    let winner = receipt
+        .winner_pad
+        .each_ref()
+        .map(|s| canonical_field(s))
+        .into_iter()
+        .collect::<Result<Vec<_>>>()?;
+    if fields[169 + i] != blinded_commitment(book, i, refund[0], refund[1], false)?
+        || fields[173 + i] != blinded_commitment(book, i, winner[0], winner[1], true)?
+    {
+        return Err("ticket receipt mask/blinder/context/kind mismatch".into());
+    }
+    let bit = fields[183 + i] - winner[0];
+    if bit != Fr::from(0) && bit != Fr::from(1) {
+        return Err("ticket status is not a bit".into());
+    }
+    let won = bit == Fr::from(1);
+    let amount: u64 = (fields[179 + i] - refund[0])
+        .to_string()
+        .parse()
+        .map_err(|_| "ticket refund range")?;
+    let price: u64 = fields[177]
+        .to_string()
+        .parse()
+        .map_err(|_| "ticket price range")?;
+    let sold: u32 = fields[178]
+        .to_string()
+        .parse()
+        .map_err(|_| "ticket sold range")?;
+    if price > book.budget
+        || price < book.reserve
+        || sold > book.units
+        || sold > 4
+        || amount != book.budget - if won { price } else { 0 }
+    {
+        return Err("ticket winning status/refund/price mismatch".into());
+    }
+    Ok(
+        serde_json::json!({"ticket":receipt.ticket,"won":won,"refund":amount,"price":price,"sold":sold,
+        "opening_verified":true,"proof_verified_here":false,"other_ticket_pads_read":false,
+        "maximum_bids_read":false,"funding_or_chain_inclusion_verified":false}),
+    )
+}
+pub(super) fn export_ticket(
+    book: &Book,
+    refund_masks: &Path,
+    winner_masks: &Path,
+    statement: &Path,
+    index: usize,
+    out: &Path,
+) -> Result<()> {
+    if index >= 4 {
+        return Err("ticket receipt index outside book".into());
+    }
+    let fields = ticket_statement(book, statement)?;
+    // Only this operator-side exporter opens the complete set of delivery pads.
+    // Recipients receive one pair for refund and one independent pair for status.
+    let refund = masks(refund_masks)?;
+    let winner = masks(winner_masks)?;
+    let receipt = TicketReceipt {
+        format: 1,
+        rule: TICKET_RULE.into(),
+        ticket: book.ids[index],
+        accepted_root: book.root.clone(),
+        refund_pad: refund[index].map(|f| f.to_string()),
+        winner_pad: winner[index].map(|f| f.to_string()),
+    };
+    ticket_opening(book, &receipt, &fields)?;
+    write_private(out, &serde_json::to_vec(&receipt)?)
+}
+pub(super) fn open_ticket(
+    book: &Book,
+    expected_index: usize,
+    receipt: &Path,
+    statement: &Path,
+) -> Result<serde_json::Value> {
+    let receipt: TicketReceipt = serde_json::from_slice(&bounded(receipt, 4096)?)?;
+    if expected_index >= 4 || receipt.ticket != book.ids[expected_index] {
+        return Err("receipt differs from recipient's expected ticket".into());
+    }
+    let fields = ticket_statement(book, statement)?;
+    ticket_opening(book, &receipt, &fields)
+}
+
 pub(super) fn result(
     book: &Book,
     refund_masks: &Path,
@@ -352,6 +488,29 @@ mod tests {
             opened["amounts"],
             serde_json::json!([100, 100, 100, 100, 0, 30000])
         );
+        // The per-ticket path does not read all operator pads. The claimant's
+        // expected ticket must come from their own registration, not the receipt.
+        for i in 0..4 {
+            let receipt = dir.join(format!("ticket-{i}"));
+            export_ticket(
+                &book,
+                &dir.join("refund"),
+                &dir.join("winner"),
+                &dir.join("statement"),
+                i,
+                &receipt,
+            )
+            .unwrap();
+            let one = open_ticket(&book, i, &receipt, &dir.join("statement")).unwrap();
+            assert_eq!(one["won"], i < 3);
+            assert_eq!(one["refund"], 100);
+            assert_eq!(one["proof_verified_here"], false);
+            assert!(open_ticket(&book, (i + 1) % 4, &receipt, &dir.join("statement")).is_err());
+            let mut wire: serde_json::Value =
+                serde_json::from_slice(&fs::read(&receipt).unwrap()).unwrap();
+            wire["won"] = true.into();
+            assert!(serde_json::from_value::<TicketReceipt>(wire).is_err());
+        }
         for (name, index, delta) in [
             ("not-a-bit", 183, 1),
             ("too-many-winners", 186, 1),
