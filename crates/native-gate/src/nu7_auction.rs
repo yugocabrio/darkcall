@@ -114,11 +114,19 @@ fn checked_sdk(mode: &str, directory: &Path) -> Result<serde_json::Value> {
 }
 
 pub fn run(book: &Path, name: &str, prove: bool) -> Result<serde_json::Value> {
+    run_with_memos(book, name, prove, false)
+}
+pub fn run_with_memos(
+    book: &Path,
+    name: &str,
+    prove: bool,
+    receipts: bool,
+) -> Result<serde_json::Value> {
     let start = Instant::now();
-    let integration = Integration::new_with_layout(book, name, RowLayout::Shared18)?;
+    let integration = Integration::new_with_receipts(book, name, RowLayout::Shared18, receipts)?;
     let directory = &integration.directory;
     write_private(&directory.join("nu7-auction-request.json"), &serde_json::to_vec(&serde_json::json!({
-        "format":1,"scope":SCOPE,"sdk":SDK,"branch":"77190ad9","amounts":integration.delivery.amounts
+        "format":1,"scope":SCOPE,"sdk":SDK,"branch":"77190ad9","amounts":integration.delivery.amounts,"receipt_memos":receipts
     })).map_err(|_| "NU7 amount request encoding")?)?;
     let prepared = checked_sdk("prepare-auction", directory)?;
     let identity: Identity = json(directory, "nu7-native-identity.json", 16384)?;
@@ -206,6 +214,7 @@ pub fn run(book: &Path, name: &str, prove: bool) -> Result<serde_json::Value> {
             "prepared":prepared,"private_fill_delivery_verified":true,"delivery_rule":integration.delivery.rule(),
             "maximum_bids_read":false,"price":integration.delivery.price,"sold":integration.delivery.sold,
             "six_native_output_openings_checked":true,"application_binding_proofs_generated":false,
+            "four_receipt_memos_in_same_six_output_pczt":receipts,
             "threshold_signatures_created":false,"chain_funding":false,"broadcast":false,"seconds":start.elapsed().as_secs_f64()}),
         );
     }

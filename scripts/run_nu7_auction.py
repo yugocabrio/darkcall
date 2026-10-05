@@ -20,6 +20,8 @@ def main():
     parser.add_argument('--name', required=True)
     parser.add_argument('--prepare-only', action='store_true',
                         help='Verify v2 delivery and six native bytes; no binding/native proofs or signatures')
+    parser.add_argument('--receipt-memos', action='store_true',
+                        help='Put fixed-proof-authenticated per-ticket receipts in the four refund outputs')
     args = parser.parse_args()
     if (not args.name or len(args.name) > 50
             or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in args.name)):
@@ -30,7 +32,8 @@ def main():
     if (ROOT / '.local' / args.name).exists():
         raise RuntimeError('Preserve existing NU7 run; choose an unused name')
     started = time.monotonic()
-    result = guarded_json_call([str(NATIVE), '--nu7-auction-prepare-only' if args.prepare_only else '--nu7-integrated-shared', str(book), args.name],
+    mode = ('--nu7-auction-memo-prepare-only' if args.prepare_only else '--nu7-integrated-memos-shared') if args.receipt_memos else ('--nu7-auction-prepare-only' if args.prepare_only else '--nu7-integrated-shared')
+    result = guarded_json_call([str(NATIVE), mode, str(book), args.name],
         cwd=ROOT, env=ENV, timeout=3600,
         observations=ROOT / '.local' / (args.name + '-resources.jsonl'),
         minimum_start_disk_bytes=(4 if args.prepare_only else 10) * 1024 ** 3)

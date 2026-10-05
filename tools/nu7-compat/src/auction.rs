@@ -58,6 +58,34 @@ struct Request {
     sdk: String,
     branch: String,
     amounts: [u64; 6],
+    #[serde(default)]
+    receipt_memos: bool,
+}
+
+fn receipt_memos(directory: &Path, request: &Request, linked: bool) -> Result<[MemoBytes; 6]> {
+    let mut memos = std::array::from_fn(|_| MemoBytes::empty());
+    if request.receipt_memos {
+        // Independent fixed C++ proof + canonical ticket opening verification.
+        // Finalization additionally links this statement to the six-row auction.
+        let mut command = Command::new("python3");
+        command
+            .arg(root().join("scripts/check_auction_memos.py"))
+            .arg(directory);
+        if linked {
+            command.arg("--linked-settlement");
+        }
+        let output = command
+            .output()
+            .map_err(|_| "receipt proof verifier launch")?;
+        if !output.status.success() || output.stdout.len() > 4096 {
+            return Err("auction receipt proof/opening rejected before FROST".into());
+        }
+        for (i, memo) in memos.iter_mut().enumerate().take(4) {
+            *memo = MemoBytes::from_bytes(&read(&directory.join(format!("ticket-{i}.memo")), 512)?)
+                .map_err(|_| "auction memo length")?;
+        }
+    }
+    Ok(memos)
 }
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -213,6 +241,7 @@ fn application(directory: &Path, actual: &Identity) -> Result<serde_json::Value>
 pub fn prepare(path: &Path) -> Result<serde_json::Value> {
     let directory = directory(path)?;
     let request = request(&directory)?;
+    let memos = receipt_memos(&directory, &request, false)?;
     let mut rng = rand::rng();
     let sk = native::random_key(&mut rng);
     let fvk = FullViewingKey::from(&sk);
@@ -260,13 +289,13 @@ pub fn prepare(path: &Path) -> Result<serde_json::Value> {
     }
     let receivers: [_; 6] =
         std::array::from_fn(|_| FullViewingKey::from(&native::random_key(&mut rng)));
-    for (receiver, amount) in receivers.iter().zip(request.amounts) {
+    for (i, (receiver, amount)) in receivers.iter().zip(request.amounts).enumerate() {
         builder
             .add_ironwood_output::<Infallible>(
                 None,
                 receiver.address_at(0u32, Scope::External),
                 Zatoshis::from_u64(amount).map_err(|_| "output money range")?,
-                MemoBytes::empty(),
+                memos[i].clone(),
             )
             .map_err(|_| "NU7 output build")?;
     }
@@ -296,12 +325,13 @@ pub fn prepare(path: &Path) -> Result<serde_json::Value> {
     let bundle = effects.ironwood_bundle().ok_or("Ironwood effects")?;
     let mut openings = Vec::new();
     for (i, receiver) in receivers.iter().enumerate() {
-        let (note, address, _) = bundle
+        let (note, address, memo) = bundle
             .decrypt_output_with_key(indices[i] as usize, &receiver.to_ivk(Scope::External))
             .ok_or("constructed recipient cannot decrypt")?;
         if note.value().inner() != request.amounts[i]
             || address != receiver.address_at(0u32, Scope::External)
             || note.version() != NoteVersion::V3
+            || memo != *memos[i].as_array()
             || ExtractedNoteCommitment::from(note.commitment())
                 != *bundle.actions()[indices[i] as usize].cmx()
         {
@@ -333,7 +363,9 @@ pub fn prepare(path: &Path) -> Result<serde_json::Value> {
     )?;
     Ok(
         serde_json::json!({"prepared":true,"actions":6,"synthetic_inputs":4,"fee":30000,
-        "recipients_decrypted_before_proving":6,"threshold_signatures_created":false,"broadcast":false}),
+        "recipients_decrypted_before_proving":6,"receipt_memos_proof_authenticated":request.receipt_memos,
+        "refund_memos_in_same_pczt":if request.receipt_memos {4} else {0},
+        "seller_operator_memos_empty":true,"threshold_signatures_created":false,"broadcast":false}),
     )
 }
 
@@ -341,6 +373,7 @@ pub fn finalize(path: &Path) -> Result<serde_json::Value> {
     let start = Instant::now();
     let directory = directory(path)?;
     let request = request(&directory)?;
+    let memos = receipt_memos(&directory, &request, false)?;
     let keys: Keys = json(&directory, "private-nu7-auction-keys.json")?;
     if keys.format != 1 || keys.receivers.len() != 6 {
         return Err("NU7 synthetic keys shape".into());
@@ -395,11 +428,12 @@ pub fn finalize(path: &Path) -> Result<serde_json::Value> {
         if index >= 6 || !used.insert(index) {
             return Err("NU7 recipient index collision".into());
         }
-        let (note, address, _) = bundle
+        let (note, address, memo) = bundle
             .decrypt_output_with_key(index, &receiver.to_ivk(Scope::External))
             .ok_or("prepared output cannot decrypt")?;
         if note.value().inner() != request.amounts[i]
             || address != receiver.address_at(0u32, Scope::External)
+            || memo != *memos[i].as_array()
         {
             return Err("NU7 prepared output substituted".into());
         }
@@ -407,6 +441,7 @@ pub fn finalize(path: &Path) -> Result<serde_json::Value> {
     // Application proof is checked on exact in-memory effects BEFORE signing.
     eprintln!("NU7 fixed six-row/MPC application verification before FROST started");
     let app = application(&directory, &actual)?;
+    receipt_memos(&directory, &request, true)?;
     let mut before_fvks = Vec::new();
     let pczt = Verifier::new(pczt)
         .with_ironwood::<Infallible, _>(
@@ -503,7 +538,7 @@ pub fn finalize(path: &Path) -> Result<serde_json::Value> {
         return Err("NU7 extracted effects changed".into());
     }
     for (i, receiver) in receivers.iter().enumerate() {
-        let (note, address, _) = tx
+        let (note, address, memo) = tx
             .ironwood_bundle()
             .ok_or("Ironwood missing")?
             .decrypt_output_with_key(keys.indices[i] as usize, &receiver.to_ivk(Scope::External))
@@ -511,6 +546,7 @@ pub fn finalize(path: &Path) -> Result<serde_json::Value> {
         if note.value().inner() != request.amounts[i]
             || address != receiver.address_at(0u32, Scope::External)
             || note.version() != NoteVersion::V3
+            || memo != *memos[i].as_array()
         {
             return Err("NU7 final recipient mismatch".into());
         }
@@ -525,6 +561,7 @@ pub fn finalize(path: &Path) -> Result<serde_json::Value> {
         "auction_proofs_verified_before_signing":true,"application":app,"recipients_decrypted":6,
         "native_proof_and_signatures_verified":true,"changed_sighash_rejected":true,"one_share_rejected":true,
         "pczt_fvks_preserved":true,
+        "four_receipt_memos_in_same_six_output_transaction":request.receipt_memos,
         "txid":tx.txid().to_string(),"fee":30000,"transaction_bytes":bytes.len(),"proof_seconds":proof_seconds,
         "seconds":start.elapsed().as_secs_f64(),"chain_funding":false,"broadcast":false}),
     )

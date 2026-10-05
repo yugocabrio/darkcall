@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-05",
+  "scope": "actual unsigned six-output NU7 ticket memo preparation; complete native/application signing flow not yet run",
+  "commands": [
+    "python3 scripts/run_nu7_auction.py .local/mpc-auction4-20261005T120230Z --name six-memo-positive-20261005 --prepare-only --receipt-memos",
+    "python3 scripts/run_nu7_auction.py .local/mpc-auction4-20261005T093324Z --name six-memo-zero-20261005 --prepare-only --receipt-memos",
+    "python3 scripts/check_auction_memo_prepared.py .local/six-memo-positive-20261005 --name six-memo-pos-attacks-v2-20261005",
+    "python3 scripts/check_auction_memo_prepared.py .local/six-memo-zero-20261005 --name six-memo-zero-attacks-v2-20261005"
+  ],
+  "runs": {
+    "positive": {
+      "preparation": {
+        "scope": "synthetic NU7 auction/native integration; no chain funding",
+        "external_process_seconds": 9.638532042001316,
+        "result": {
+          "application_binding_proofs_generated": false,
+          "broadcast": false,
+          "chain_funding": false,
+          "delivery_rule": "fresh-field-mask-refund-and-winner-delivery-v2",
+          "four_receipt_memos_in_same_six_output_pczt": true,
+          "maximum_bids_read": false,
+          "prepared": {
+            "actions": 6,
+            "broadcast": false,
+            "fee": 30000,
+            "prepared": true,
+            "receipt_memos_proof_authenticated": true,
+            "recipients_decrypted_before_proving": 6,
+            "refund_memos_in_same_pczt": 4,
+            "seller_operator_memos_empty": true,
+            "synthetic_inputs": 4,
+            "threshold_signatures_created": false
+          },
+          "price": 50,
+          "private_fill_delivery_verified": true,
+          "scope": "synthetic NU7 auction preparation and six output-byte reconstruction only",
+          "seconds": 9.299855334,
+          "six_native_output_openings_checked": true,
+          "sold": 3,
+          "threshold_signatures_created": false
+        }
+      },
+      "pre_sign_checks": {
+        "scope": "unsigned six-output native memo preparation; pre-sign rejection only",
+        "rejected": [
+          "missing-six-row-proofs",
+          "wrong-refund-memo",
+          "wrong-ticket-memo",
+          "extra-memo-data",
+          "corrupt-receipt-proof",
+          "uploaded-receipt-vk",
+          "changed-receipt-statement",
+          "wrong-refund-request",
+          "disable-memo-request",
+          "wrong-receiver",
+          "duplicate-index",
+          "changed-effects",
+          "trailing-pczt"
+        ],
+        "source_unchanged": true,
+        "native_application_proof_generated": false,
+        "threshold_signature_created": false,
+        "transaction_emitted": false,
+        "broadcast": false,
+        "seconds": 6.5158089169999585
+      }
+    },
+    "zero": {
+      "preparation": {
+        "scope": "synthetic NU7 auction/native integration; no chain funding",
+        "external_process_seconds": 8.003028917002666,
+        "result": {
+          "application_binding_proofs_generated": false,
+          "broadcast": false,
+          "chain_funding": false,
+          "delivery_rule": "fresh-field-mask-refund-and-winner-delivery-v2",
+          "four_receipt_memos_in_same_six_output_pczt": true,
+          "maximum_bids_read": false,
+          "prepared": {
+            "actions": 6,
+            "broadcast": false,
+            "fee": 30000,
+            "prepared": true,
+            "receipt_memos_proof_authenticated": true,
+            "recipients_decrypted_before_proving": 6,
+            "refund_memos_in_same_pczt": 4,
+            "seller_operator_memos_empty": true,
+            "synthetic_inputs": 4,
+            "threshold_signatures_created": false
+          },
+          "price": 0,
+          "private_fill_delivery_verified": true,
+          "scope": "synthetic NU7 auction preparation and six output-byte reconstruction only",
+          "seconds": 7.9368735,
+          "six_native_output_openings_checked": true,
+          "sold": 3,
+          "threshold_signatures_created": false
+        }
+      },
+      "pre_sign_checks": {
+        "scope": "unsigned six-output native memo preparation; pre-sign rejection only",
+        "rejected": [
+          "missing-six-row-proofs",
+          "wrong-refund-memo",
+          "wrong-ticket-memo",
+          "extra-memo-data",
+          "corrupt-receipt-proof",
+          "uploaded-receipt-vk",
+          "changed-receipt-statement",
+          "wrong-refund-request",
+          "disable-memo-request",
+          "wrong-receiver",
+          "duplicate-index",
+          "changed-effects",
+          "trailing-pczt"
+        ],
+        "source_unchanged": true,
+        "native_application_proof_generated": false,
+        "threshold_signature_created": false,
+        "transaction_emitted": false,
+        "broadcast": false,
+        "seconds": 5.996591625000292
+      }
+    }
+  },
+  "threshold_signatures_created": false,
+  "full_six_row_proof_generated": false,
+  "broadcast": false,
+  "full_flow_capacity_requirement_gib": 10,
+  "failed_harness_checkpoint_preserved": ".local/six-memo-pos-attacks-20261005",
+  "dependency_or_lock_changes": false
+}

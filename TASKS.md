@@ -164,6 +164,12 @@ autonomously, incorporate later human/ChatGPT reviews.
     cases also pass; 72 substitutions reject. This is a private proof opening,
     not a signature or replacement for admission/funding authentication.
 - [ ] Private authenticated network delivery and client UI for ticket status receipts.
+  - Six-output NU7 preparation now inserts canonical ticket memos into the four
+    refund outputs before IO finalization. Positive/zero actual flags delivery,
+    fixed C++ verification, native memo decryptions and old-stack V3 note checks
+    pass in9.300s/7.937s;26 pre-sign changes reject. The full signing path checks
+    receipt/settlement context/price/sold equality before FROST; this new full
+    six-row run is not yet demonstrated and still needs10GiB initial headroom.
   - Actual encrypted memo transport component passes for four recipients at
     zero/positive price: native PCZT/proof/FROST, own-key decryption, fixed C++
     flags verification and exact ticket openings. 152 recipient substitutions

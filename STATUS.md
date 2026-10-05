@@ -4,6 +4,28 @@ Updated: 2026-10-05 (latest receipt/client measurements recorded; git HEAD is au
 
 ## Current outcome
 
+**Four receipt memos now belong to the same six-output NU7 prepared PCZT.**
+Positive-price50/sold3 preparation completes in9.300s; price0/sold3 in7.937s.
+Each runs fresh actual REP3 winner/refund delivery, normal fixed C++ verification,
+four canonical ticket openings, native note encryption/decryption of all six
+outputs and working-stack V3 commitment reconstruction. Seller/operator memos
+remain empty. There are26 actual pre-sign rejections across both checkpoints,
+including pad/ticket/proof/key/statement/refund/receiver/effects/PCZT changes and
+refusal of missing six-row application proofs. Original source hashes match.
+These are unsigned preparations: no six-row binding/native proof/signature,
+funding/broadcast or full memo settlement claim. The implemented full path also
+checks the receipt statement against the verified six-row context/price/sold
+before FROST; that complete new run remains unexecuted below10GiB headroom.
+Checkpoints: .local/six-memo-positive-20261005 / .local/six-memo-zero-20261005.
+Initial attack session21755 failed because repeated fixed-verifier output labels
+collided; diagnostics showed FileExistsError, not a cryptographic failure.
+Unique output labels fixed the harness; fresh sessions5600/27546 complete all13
+checks each in6.516s/5.997s. The failed original checkpoint is retained.
+Do not change memos in historical signed/prepared funding checkpoints: IO
+finalization erased dummy spend keys, while memo ciphertext changes affect the
+signed effects. Existing journal reservations/signatures must not be reused for
+changed effects. The new path builds memos before IO finalization instead.
+
 Compact per-ticket receipts now pass actual native encrypted memo transport.
 Zero-price session99068 is complete/consumed: four recipients use their own
 viewing key only, native consensus proof/signatures and the fixed C++ flags

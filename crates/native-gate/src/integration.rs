@@ -164,6 +164,14 @@ impl Integration {
         Self::new_with_layout(book, name, RowLayout::Working33)
     }
     pub fn new_with_layout(book: &Path, name: &str, layout: RowLayout) -> Result<Self> {
+        Self::new_with_receipts(book, name, layout, false)
+    }
+    pub fn new_with_receipts(
+        book: &Path,
+        name: &str,
+        layout: RowLayout,
+        receipts: bool,
+    ) -> Result<Self> {
         if name.is_empty()
             || !name
                 .bytes()
@@ -219,7 +227,7 @@ impl Integration {
         }
         let flags = match data["reserve"].as_u64() {
             Some(0) => true,
-            Some(20) => false,
+            Some(20) => receipts,
             _ => return Err("native fixture reserve must be zero or 20".into()),
         };
         eprintln!("Committed private refund delivery started");
@@ -293,7 +301,7 @@ impl Integration {
         .map_err(|e| fail("private delivery parse", e))?;
         let delivery = Delivery::from_opening(&value, run, flags)?;
         eprintln!("Refund delivery verified without reconstructing maximum bids");
-        Ok(Self {
+        let integration = Self {
             root,
             book,
             directory,
@@ -303,7 +311,51 @@ impl Integration {
             funding_is_synthetic: true,
             native_proof_source: None,
             layout,
-        })
+        };
+        if receipts {
+            integration.export_ticket_memos()?;
+        }
+        Ok(integration)
+    }
+
+    fn export_ticket_memos(&self) -> Result<()> {
+        if self.delivery.winners.is_none() {
+            return Err("receipt memos require independently proved winner flags".into());
+        }
+        let public = self.directory.join("receipt-proof-public");
+        fs::create_dir(&public).map_err(|e| fail("receipt public directory", e))?;
+        for name in [
+            "vk",
+            "proof.0",
+            "public-input0",
+            "tampered-price",
+            "tampered-root",
+            "tampered-cipher",
+            "tampered-winner",
+        ] {
+            secret_write(
+                &public.join(name),
+                &crate::regtest_spend::read_private(&self.delivery.run.join(name), 1048576)?,
+            )?;
+        }
+        secret_write(
+            &self.directory.join("receipt-book.json"),
+            &fs::read(self.book.join("book.json")).map_err(|e| fail("receipt book", e))?,
+        )?;
+        for index in 0..4 {
+            checked(
+                Command::new(self.root.join("target/release/darkcall-input-tool"))
+                    .arg("flags-ticket-memo-export")
+                    .arg(self.directory.join("receipt-book.json"))
+                    .arg(self.delivery.run.join("plan/masks.json"))
+                    .arg(self.delivery.run.join("plan/winner-masks.json"))
+                    .arg(public.join("public-input0"))
+                    .arg(index.to_string())
+                    .arg(self.directory.join(format!("ticket-{index}.memo"))),
+                &self.directory.join(format!("receipt-export-{index}.log")),
+            )?;
+        }
+        Ok(())
     }
 
     pub fn prove_and_check(

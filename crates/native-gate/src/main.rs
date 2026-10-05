@@ -574,6 +574,24 @@ fn main() -> Result<()> {
     if args.len() == 3
         && matches!(
             args[0].as_str(),
+            "--nu7-auction-memo-prepare-only" | "--nu7-integrated-memos-shared"
+        )
+    {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&nu7_auction::run_with_memos(
+                std::path::Path::new(&args[1]),
+                &args[2],
+                args[0] == "--nu7-integrated-memos-shared",
+                true
+            )?)
+            .map_err(|_| "memo auction summary")?
+        );
+        return Ok(());
+    }
+    if args.len() == 3
+        && matches!(
+            args[0].as_str(),
             "--nu7-integrated-shared" | "--nu7-auction-prepare-only"
         )
     {
