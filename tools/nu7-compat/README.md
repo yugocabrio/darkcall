@@ -19,6 +19,7 @@ CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo build --releas
 CARGO_TARGET_DIR=.deps/nu7-compat-target cargo test --release --locked --manifest-path tools/nu7-compat/Cargo.toml
 .deps/nu7-compat-target/release/darkcall-nu7-compat probe-testnet https://testnet.zec.rocks:443
 .deps/nu7-compat-target/release/darkcall-nu7-compat synthetic-native
+.deps/nu7-compat-target/release/darkcall-nu7-compat note-interop
 .deps/nu7-compat-target/release/darkcall-nu7-compat verify-old-native .local/regtest-auction4-public-20261005/regtest-transaction.bin
 ```
 
@@ -43,6 +44,17 @@ absolute PATH blindly.
   compatibility coverage, not a finalized public-chain transaction freshness or
   rescan policy. The existing auction's unchanged-tip regtest driver is not
   appropriate for a live chain.
+- `note-interop` reconstructs seven new-SDK V3 note openings in the exact working
+  Orchard fork through canonical recipient/rho/rseed/FVK bytes. It compares cmx,
+  nullifier and psi/rcm_v3 witness bytes, alternating internal/external addresses
+  at boundary amounts, and checks changed amounts change commitments. Both pins
+  expose their witness accessors with upstream `unstable-voting-circuits`; no
+  upstream source patches or Rust field/group type sharing are used. It produces
+  no proof and does not migrate the actual auction binding stack. Evidence:
+  `evidence/2026-10-05-nu7-note-interop.json`; the separate updated inventory records
+  295 packages and their declared licenses. This includes an old registry RedDSA
+  0.5.2 transitive for note semantics, alongside the independently pinned 0.5.1
+  Git FROST fork; it does not change the working root lockfile.
 - The old-transaction command checks native proof/signatures and rejects treating
   the NU6.3 transaction as NU7. It does not check application proofs or inclusion.
 

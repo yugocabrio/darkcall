@@ -61,6 +61,8 @@ autonomously, incorporate later human/ChatGPT reviews.
 - [ ] Migrate auction native stack to NU7 after isolated compatibility checks.
   - Standalone synthetic native gate and live tree reconstruction pass; root
     Cargo.lock, native binding dependencies and isolated NU6.3 chain are preserved.
+    Seven new-to-old native V3 encoding/commitment/nullifier/psi/rcm_v3 byte cases
+    pass without shared Rust types; actual new-SDK output-binding proof is next.
 
 - [ ] Canonical auction conditions, ticket IDs, accepted roots and settlement rows.
 - [x] Initial oracle and circuit fixtures agree on ties, insufficient demand and empty auctions.
@@ -130,14 +132,15 @@ autonomously, incorporate later human/ChatGPT reviews.
     Native construction stores a private verified PCZT before reservation.
     Early unapproved PCZT now checkpoints exact output openings before proving;
     pre-reservation exact built-PCZT/partial-proof resume is implemented and
-    running against a deliberately interrupted two-proof actual DKG construction.
-    Cached rows are reverified; changed amount rejects before reservation.
+    passed against a deliberately interrupted two-proof actual DKG construction.
+    Exact source PCZT/rows/commitments reused; two cached proofs reverified,
+    four missing proofs generated; changed amount rejects before reservation.
     Exact same-purpose Prepared-stage reservations are now recoverable in code
     and unit tests; a separate full native Prepared-stage gate remains. Signed native recovery
-    is implemented and unit-tested, including canonical bytes, original input
-    checkpoint, exact journal reservations, RPC-error distinction, existing
-    broadcasts/confirmations and fresh SDK receipt/nullifier reconciliation;
-    actual retained-chain recovery run is next.
+    passes on the actual completed DKG auction: original checkpoint, exact bytes,
+    native/application proofs, all six SDK receipts and four spent nullifiers
+    reverified. Zero re-sends/blocks/journal writes; canonical height 114 retained.
+    Prepared-stage full integration and live reorg/expiry remain separate gates.
   - The interrupted row-0 run had no reservation/signature. Existing deposits,
     cutoff, DKG packages and all three Frozen journals survived the PC reboot;
     rerunning with fresh output artifacts, one heavy prover and resource guards.

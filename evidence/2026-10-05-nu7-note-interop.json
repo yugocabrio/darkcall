@@ -1,0 +1,64 @@
+{
+  "recorded_utc": "2026-10-05T08:10:33.038610+00:00",
+  "scope": "standalone NU7/new-to-working V3 note byte gate; no workspace migration or public funding",
+  "commands": [
+    "PATH=/Users/yugo/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo build --release --offline --locked --manifest-path tools/nu7-compat/Cargo.toml",
+    "cargo fmt --manifest-path tools/nu7-compat/Cargo.toml",
+    ".deps/nu7-compat-target/release/darkcall-nu7-compat note-interop",
+    ".deps/nu7-compat-target/release/darkcall-nu7-compat synthetic-native",
+    "PATH=/Users/yugo/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo clippy --release --offline --locked --all-targets --manifest-path tools/nu7-compat/Cargo.toml -- -D warnings",
+    "python3 scripts/dependency_inventory.py --manifest tools/nu7-compat/Cargo.toml --output evidence/2026-10-05-nu7-note-interop-dependencies.json"
+  ],
+  "initial_compile_failure": "Private V3 witness accessors require upstream unstable-voting-circuits features; enabled on both exact Orchard pins. rand::Rng import required for rand 0.10. No upstream sources changed.",
+  "note_interop": {
+    "passed": true,
+    "cases": 7,
+    "amount_edges_zatoshi": [
+      0,
+      1,
+      100,
+      15100,
+      30000,
+      1000000,
+      2100000000000000
+    ],
+    "scopes": "alternating external/internal per case",
+    "canonical_fvk_note_encodings_match": true,
+    "commitments_nullifiers_psi_rcm_v3_bytes_match": true,
+    "changed_amount_commitment_mismatch_in_all_cases": true,
+    "seconds": 0.037402834,
+    "rust_field_or_group_types_shared": false,
+    "proof_generated": false
+  },
+  "new_native_regression": {
+    "passed": true,
+    "proof_seconds": 3.875084458,
+    "total_seconds": 10.385267333,
+    "actions": 2,
+    "transaction_bytes": 9166,
+    "fee": 10000,
+    "branch": "77190ad9",
+    "threshold": "2-of-3",
+    "setup": "synthetic local trusted dealer; no DKG",
+    "recipient_decryptions": 2,
+    "one_share_sighash_old_branch_trailing_binding_signature_changes_rejected": true,
+    "auction_application_binding": false,
+    "chain_funding": false,
+    "broadcast": false
+  },
+  "strict_all_target_release_clippy": true,
+  "dependency_inventory": {
+    "file": "2026-10-05-nu7-note-interop-dependencies.json",
+    "package_count": 295,
+    "missing_declared_license": [],
+    "cargo_lock_sha256": "63ae47ed65955147f64c796998176aa438bf965073fdcb2c687ce5b02aa32528"
+  },
+  "main_cargo_lock_sha256": "1e2cfdab9e6a7603589fa6af8805e0778631b646f3b93c46c13bb2992c13d9fb",
+  "main_workspace_lock_unchanged": true,
+  "limitations": [
+    "Seven random-opening boundary fixtures are compatibility evidence, not a proof that all versions/protocols are equivalent.",
+    "Existing native output-binding circuit has not yet been run against actual new-SDK transaction outputs.",
+    "No live-chain advancing-tip/reorg policy, public funding/broadcast or independent custody hosts."
+  ],
+  "private_material_committed": false
+}

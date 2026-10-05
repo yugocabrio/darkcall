@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-05 07:53 UTC.
+Updated: 2026-10-05 08:05 UTC.
 
 ## Current outcome
 
@@ -34,11 +34,14 @@ verify without bids, keys, private openings, masks or PCZT. Seven changed
 certificate/authority/book/recipient cases reject. Public bundle
 .local/regtest-dkg-auction4-public-20261005; log .local/dkg-certified-public-replay.log.
 
-Active signed-finalized restart reconciliation: session 73183, log
-.local/dkg-signed-recovery.log. Command uses --resume-signed with existing name
-regtest-dkg-auction4-resumed-20261005. It must preserve tx bytes, node height 114,
-all recipient openings and all three journals, with no re-send/re-mine/re-sign.
-Complete signed-reconciliation result remains pending.
+Signed-finalized restart reconciliation completed/consumed (73183), log
+.local/dkg-signed-recovery.log. --resume-signed reverified the original checkpoint,
+exact signed bytes, public proofs, six wallet receipts and four spent nullifiers.
+No transaction re-send/re-sign, no generated blocks, no broadcast/finalize journal
+writes. Node height 114 and the same canonical tip are retained. Separate tx
+trailing-byte, binding-signature and action-metadata changes also reject. Evidence
+above includes this actual finalized-restart gate; Prepared-stage integration and
+general live-chain reorg/expiry remain separate unfinished work.
 
 PC reboot audit and controlled resource stops remain in separate evidence.
 The first rebooted run had no native output checkpoint/reservation/signature;
@@ -70,8 +73,18 @@ auction's public native transaction (1.405s), rejecting treating it as NU7.
 Evidence: evidence/2026-10-05-nu7-compatibility.json. No public funding/broadcast,
 no application binding migration yet. Standalone lockfile and 277-package declared
 license inventory preserve all working old SDK pins/chain/wallets. See
-tools/nu7-compat/README.md. Next: DKG escrow setup, then funded NU7 and live-chain
+tools/nu7-compat/README.md. Next: actual new-SDK output binding, then funded NU7 and live-chain
 freshness/reorg support; do not override the old application's branch guard.
+
+The new-to-working V3 note byte interoperability gate also passes seven random
+boundary cases (0.037s): cmx/nullifier, psi/rcm_v3 and canonical FVK/note encodings
+match across the two exact Orchard pins. No Rust field/group types are shared.
+Changed amounts change commitments; this is sampled semantic compatibility, not
+an application binding proof. Native NU7 regression still passes (10.385s total,
+3.875s proof). Strict standalone all-target release clippy passes. The updated
+295-package inventory includes the old note library; root lock remains unchanged.
+Evidence: evidence/2026-10-05-nu7-note-interop.json. Actual new-SDK outputs → existing
+binding circuit and public-chain funding/freshness remain next work.
 
 **The four-funded native auction passed on the actual isolated chain.** Confirmed
 native deposits → authenticated client/proof/share admission → durable receipts

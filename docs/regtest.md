@@ -165,8 +165,9 @@ New construction records an immutable ignored recovery input checkpoint and an
 unapproved exact private PCZT before row proving. Approved PCZT is separately
 fsynced before reservation. Pre-reservation continuation now uses the built checkpoint and verifies existing
 row proofs under the trusted circuit against the exact native cmxs/row/context.
-All three journals must still be Frozen. Prepared-stage continuation remains
-unfinished and must not be treated as permission to unlock inputs.
+Frozen journals can start reservation. Exact same-purpose Prepared reservations
+can continue in code and unit tests; a full native Prepared-stage integration gate
+remains unfinished. Never unlock or replace reserved inputs.
 
 ```sh
 python3 scripts/regtest_settlement.py ORIGINAL_DEPOSIT_RUN ORIGINAL_MPC_BOOK_RUN --name FRESH_RESUMED_NAME --resume-built ORIGINAL_PARTIAL_NAME
@@ -196,7 +197,12 @@ authorizes finalization. Reorg/expiry/changed-chain cases fail closed without
 unlocking inputs or creating replacement effects. Existing pre-feature runs
 without a recovery input checkpoint require an explicit audit/migration.
 
-Actual full signed-recovery gate is pending in evidence/2026-10-05-signed-recovery-gates.json.
+Actual finalized signed-recovery now passes on the funded local-DKG auction in
+`evidence/2026-10-05-dkg-funded-resumed-auction.json`. It reverified native/application
+proofs and all actual SDK receipts/nullifiers, with zero re-sends, generated blocks
+or journal writes. The original canonical height 114/tip and transaction are retained.
+The earlier signed-recovery-gates file records the preceding implementation tests,
+not the later actual chain result.
 The first monitored rerun reached three verified rows before a conservative
 6 GiB RSS guard stopped it (6.135 GiB transient, 70% reported memory headroom).
 The next measured run uses one prover with an 8 GiB root RSS ceiling and separate

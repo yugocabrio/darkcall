@@ -136,7 +136,7 @@
     "completed": true
   },
   "benchmark_scope": "Resumed completion timing excludes initial two row proofs and repeats key generation; single shared Mac, not isolated cold benchmark.",
-  "signed_finalized_transaction_restart_pending": true,
+  "signed_finalized_transaction_restart_pending": false,
   "limitations": [
     "All DKG shares and all REP3 nodes on one host; no independent custody/privacy demonstration",
     "At most one semi-honest corrupt REP3 party; two colluding parties break bid privacy and custody",
@@ -204,5 +204,35 @@
       }
     },
     "passed": true
+  },
+  "transaction_tampering": {
+    "trailing_byte": {
+      "rejected": true,
+      "seconds": 0.015,
+      "reason": "unexpected transaction format/pools/trailing data"
+    },
+    "binding_signature": {
+      "rejected": true,
+      "seconds": 1.951,
+      "reason": "native proof or spend/binding signatures invalid"
+    },
+    "action_metadata": {
+      "rejected": true,
+      "seconds": 0.005,
+      "reason": "statement actions differ from serialized transaction"
+    }
+  },
+  "signed_restart_reconciliation": {
+    "passed": true,
+    "same_transaction_identity": true,
+    "same_canonical_confirmations": 2,
+    "native_and_application_proofs_reverified": true,
+    "all_six_private_receipts_reconfirmed": true,
+    "all_four_spent_nullifiers_reconfirmed": true,
+    "exact_signed_transaction_sent": false,
+    "confirmation_blocks_generated": 0,
+    "broadcast_journal_events_written": 0,
+    "finalize_journal_events_written": 0,
+    "node_height_retained": 114
   }
 }
