@@ -235,3 +235,18 @@ ZSAとZIP 228は初版の必須依存にしません。[ZIP 228](https://zips.z.
 10月4日時点で、締切まで約24日あります。開始許可後は、最初の技術検証、その後の一回の全工程、障害時の返金と公開検証、UIとデモ、提出確認の順に進める提案です。10月25日までに機能を固定し、残りを再現性と提出物に使うことを目標にします。レビュー時期と技術検証の結果に合わせて調整します。
 
 **2026年10月4日に開発開始が許可されました。** 続きのタスクと優先順位は[TASKS.md](../TASKS.md)、実装・測定状況は[STATUS.md](../STATUS.md)を参照してください。新たなユーザー指示はこの計画に優先します。
+
+## Actual NU7 certified six-output preparation
+
+`python3 scripts/regtest_nu7_prepare.py ESCROW CURRENT_NOTES MPC_BOOK
+RECEIVER_OPENINGS ADMISSION --name FRESH_NAME` rechecks the owned node snapshot
+and accepted notes, then runs actual blinded-v2 REP3 delivery. The new SDK
+checks signed frozen book, authenticated receiver openings, canonical witnesses,
+exact nullifiers/value conservation and four encrypted receipt memos. All six
+V3 output openings match their native commitments. Preparation is9.118s and
+eleven private-copy substitutions reject; original Frozen journals stay unchanged.
+It reads no recipient keys/custody packages and produces no native bindings or
+real threshold signatures. IO may authorize dummy zero-valued native actions.
+Existing synthetic finalizer/verifier refuse this distinct actual preparation
+scope. Do not interpret this as completed funded auction settlement. See
+`evidence/2026-10-05-nu7-funded-six-output-preparation.json`.

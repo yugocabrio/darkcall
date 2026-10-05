@@ -11,6 +11,7 @@ publish = false
 
 [dependencies]
 darkcall-wallet-protocol = { path = "../../crates/wallet-protocol" }
+darkcall-auction-core = { path = "../../crates/auction-core" }
 darkcall-input-tool = { path = "../../crates/input-tool" }
 ed25519-dalek = "=2.2.0"
 ff = "=0.14.0"

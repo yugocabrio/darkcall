@@ -2,7 +2,7 @@
   "scope": "declared package licenses and locked resolution; no legal compatibility claim",
   "manifest": "tools/nu7-compat/Cargo.toml",
   "target": "aarch64-apple-darwin",
-  "cargo_lock_sha256": "6327f83359bb5674e13e2acd1be989bcc9fef383ddc7d23dbb257ec58939bae0",
+  "cargo_lock_sha256": "3d6f69bc6ad7286a844b5c40d5053242a4e7191d7f4b518a734dbc4b2074d882",
   "package_count": 462,
   "missing_declared_license": [],
   "tool_pins": {},

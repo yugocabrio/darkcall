@@ -1,0 +1,74 @@
+{
+  "scope": "actual isolated NU7 funded auction preparation; no funded settlement proof/signature/inclusion",
+  "command": "python3 scripts/regtest_nu7_prepare.py .local/nu7-funded-book-20261005-escrow .local/nu7-funded-book-20261005-escrow/private-nu7-notes-110.json .local/mpc-auction4-20261005T120230Z .local/nu7-funded-book-20261005-inputs/private-receivers.json .local/nu7-funded-book-20261005-admission --name nu7-funded-six-prepare-20261005",
+  "preparation": {
+    "accepted_root_authenticated": true,
+    "application_binding_proofs_generated": false,
+    "blinded_v2_mpc_delivery_verified": true,
+    "four_receipt_memos_in_same_six_output_pczt": true,
+    "funding_reserved_or_broadcast": false,
+    "maximum_bids_read": false,
+    "native_proof_or_real_threshold_signatures_created": false,
+    "normal_cpp_winner_proof_verified": true,
+    "prepared": {
+      "actual_outgoing_recoveries": 6,
+      "application_binding_proofs_generated": false,
+      "broadcast": false,
+      "chain_provenance": "caller must verify same canonical scanner snapshot before preparation",
+      "custody_key_packages_read": false,
+      "fee": 30000,
+      "four_actual_inputs_match_frozen_book": true,
+      "funding_reservations_changed": false,
+      "native_proof_or_real_threshold_signatures_created": false,
+      "outputs": 6,
+      "proving_keys_created": false,
+      "recipient_viewing_or_spending_keys_read": false,
+      "refund_receipt_memos": 4,
+      "scope": "actual isolated NU7 six-output auction preparation; no authorization"
+    },
+    "price": 50,
+    "scope": "actual isolated NU7 six-output auction preparation; no authorization",
+    "seconds": 9.117956875,
+    "six_canonical_native_row_openings_match": true,
+    "sold": 3,
+    "canonical_source_snapshot_checked": true,
+    "original_frozen_journals_unchanged": true
+  },
+  "substitution_checks": {
+    "scope": "funded NU7 preparation substitutions; no signing or chain inclusion",
+    "rejected": [
+      "request-branch",
+      "request-extra",
+      "request-amount",
+      "receiver-substitution",
+      "source-witness",
+      "source-branch",
+      "source-duplicate",
+      "certificate-signature",
+      "missing-journal",
+      "receipt-memo",
+      "receipt-book"
+    ],
+    "synthetic_finalizer_refuses_actual_scope": true,
+    "source_pczt_and_journals_unchanged": true,
+    "seconds": 3.5656034589992487
+  },
+  "validation": {
+    "root_release_build": true,
+    "root_strict_all_target_clippy": true,
+    "sdk_release_build": true,
+    "sdk_strict_all_target_clippy": true,
+    "python_compile": true
+  },
+  "failures": [
+    "Root summary serialization initially lacked String error conversion; fixed before running.",
+    "Negative harness initially passed bytes to a JSON helper, then expected the wrong rejection diagnostic; corrected and reran all eleven cases. Neither failed check changed source funding journals."
+  ],
+  "limitations": [
+    "Same-host fixture clients/tickets and committed bid input proofs.",
+    "Preparation proves blinded delivery only; native row bindings/full settlement auction proof/signatures/reservations/broadcast remain absent.",
+    "Node provenance is independently caller checked; this is not a public funding proof.",
+    "Existing synthetic finalizer and public verifier retain their strict scope.",
+    "IO finalization may authorize dummy zero-valued native actions; no real custody spend is authorized."
+  ]
+}

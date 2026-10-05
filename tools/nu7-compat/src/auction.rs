@@ -63,27 +63,32 @@ struct Request {
 }
 
 fn receipt_memos(directory: &Path, request: &Request, linked: bool) -> Result<[MemoBytes; 6]> {
-    let mut memos = std::array::from_fn(|_| MemoBytes::empty());
     if request.receipt_memos {
-        // Independent fixed C++ proof + canonical ticket opening verification.
-        // Finalization additionally links this statement to the six-row auction.
-        let mut command = Command::new("python3");
-        command
-            .arg(root().join("scripts/check_auction_memos.py"))
-            .arg(directory);
-        if linked {
-            command.arg("--linked-settlement");
-        }
-        let output = command
-            .output()
-            .map_err(|_| "receipt proof verifier launch")?;
-        if !output.status.success() || output.stdout.len() > 4096 {
-            return Err("auction receipt proof/opening rejected before FROST".into());
-        }
-        for (i, memo) in memos.iter_mut().enumerate().take(4) {
-            *memo = MemoBytes::from_bytes(&read(&directory.join(format!("ticket-{i}.memo")), 512)?)
-                .map_err(|_| "auction memo length")?;
-        }
+        checked_receipt_memos(directory, linked)
+    } else {
+        Ok(std::array::from_fn(|_| MemoBytes::empty()))
+    }
+}
+pub(crate) fn checked_receipt_memos(directory: &Path, linked: bool) -> Result<[MemoBytes; 6]> {
+    let mut memos = std::array::from_fn(|_| MemoBytes::empty());
+    // Independent fixed C++ proof + canonical ticket opening verification.
+    // Finalization additionally links this statement to the six-row auction.
+    let mut command = Command::new("python3");
+    command
+        .arg(root().join("scripts/check_auction_memos.py"))
+        .arg(directory);
+    if linked {
+        command.arg("--linked-settlement");
+    }
+    let output = command
+        .output()
+        .map_err(|_| "receipt proof verifier launch")?;
+    if !output.status.success() || output.stdout.len() > 4096 {
+        return Err("auction receipt proof/opening rejected before FROST".into());
+    }
+    for (i, memo) in memos.iter_mut().enumerate().take(4) {
+        *memo = MemoBytes::from_bytes(&read(&directory.join(format!("ticket-{i}.memo")), 512)?)
+            .map_err(|_| "auction memo length")?;
     }
     Ok(memos)
 }

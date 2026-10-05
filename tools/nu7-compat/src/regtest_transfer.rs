@@ -153,6 +153,13 @@ pub(super) struct Source {
     pub path: MerklePath,
 }
 pub(super) fn load_source(wallet: &Path, notes_path: &Path) -> Result<Source> {
+    load_selected(wallet, notes_path, None)
+}
+pub(super) fn load_selected(
+    wallet: &Path,
+    notes_path: &Path,
+    cmx: Option<[u8; 32]>,
+) -> Result<Source> {
     let wallet = auction::directory(wallet)?;
     auction::directory(notes_path.parent().ok_or("NU7 notes parent")?)?;
     let state: Notes = serde_json::from_slice(&auction::read(notes_path, 1_000_000)?)
@@ -172,7 +179,10 @@ pub(super) fn load_source(wallet: &Path, notes_path: &Path) -> Result<Source> {
         .notes
         .iter()
         .enumerate()
-        .find(|(_, n)| !n.coinbase || state.tip_height >= n.mined_height.saturating_add(100))
+        .find(|(_, n)| {
+            cmx.is_none_or(|id| id == n.cmx)
+                && (!n.coinbase || state.tip_height >= n.mined_height.saturating_add(100))
+        })
         .ok_or("NU7 source has no matured unspent note")?;
     let address = orchard::Address::from_raw_address_bytes(
         &source

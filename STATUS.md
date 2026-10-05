@@ -1,8 +1,21 @@
 # DarkCall status
 
-Updated: 2026-10-05 (fresh NU7 funded admission/final root recorded; git HEAD is authoritative).
+Updated: 2026-10-05 (certified actual-note NU7 six-output memo preparation passes; git HEAD is authoritative).
 
 ## Current outcome
+
+**The accepted actual NU7 notes now form one six-output receipt PCZT.**
+Fresh blinded-v2 REP3 delivery and fixed C++ winner proof feed the four refund
+memos in the SAME unsigned PCZT, with all six certified recipients, actual
+accepted nullifiers,15100-per-input amounts,30000 fee and canonical V3 openings
+checked. Preparation9.118s; canonical node snapshot110 and all three original
+Frozen journals unchanged. Eleven request/recipient/source/witness/certificate/
+memo substitutions reject in3.566s; synthetic finalizer refuses actual scope.
+No native row proof, final settlement auction proof, real custody signatures,
+reservation or broadcast is claimed. Existing synthetic verification stays strict.
+Root/new SDK release builds and strict all-target clippy pass. Evidence:
+`evidence/2026-10-05-nu7-funded-six-output-preparation.json`. Next connect unchanged
+bindings/MPC and proof-linked certified admission BEFORE actual DKG authorization.
 
 **Four fresh NU7 deposits now produce an authenticated frozen book.**
 Fresh local DKG escrow receives four actual15100zatoshi notes in a native NU7
@@ -806,6 +819,5 @@ Keys, PCZTs, bids, masks, witnesses, wallet journals and private logs remain ign
 under .local/.deps. No new native prover should run alongside another on this
 16GB Mac. Report RSS and memory footprint separately; cold runs include keygen.
 
-Heartbeat darkcall is ACTIVE every 15 minutes through October 28, 2026 23:59 UTC,
-in this same chat. Resume AGENTS.md, this file, TASKS.md, current jobs and the latest
-human instructions; implement, test, preserve evidence, commit/push useful milestones.
+Heartbeat darkcall was deleted at the human's request. Continue on direct human
+requests; do not recreate recurring scheduling. Preserve evidence and coherent commits.

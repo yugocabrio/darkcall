@@ -575,6 +575,21 @@ fn main() -> Result<()> {
     if args.len() == 2 && args[0] == "--nu7-warm-auction-worker" {
         return row_worker::run_auctions(args[1].parse().map_err(|_| "worker concurrency")?);
     }
+    if args.len() == 7 && args[0] == "--nu7-funded-memo-prepare" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&nu7_auction::prepare_funded(
+                std::path::Path::new(&args[1]),
+                std::path::Path::new(&args[2]),
+                std::path::Path::new(&args[3]),
+                std::path::Path::new(&args[4]),
+                std::path::Path::new(&args[5]),
+                &args[6]
+            )?)
+            .map_err(|_| "funded preparation summary encoding")?
+        );
+        return Ok(());
+    }
     if args.len() == 2 && args[0] == "--warm-row-worker" {
         return row_worker::run(args[1].parse().map_err(|_| "worker concurrency")?);
     }

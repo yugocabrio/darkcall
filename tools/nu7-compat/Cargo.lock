@@ -1235,6 +1235,7 @@ dependencies = [
 name = "darkcall-nu7-compat"
 version = "0.1.0"
 dependencies = [
+ "darkcall-auction-core",
  "darkcall-input-tool",
  "darkcall-wallet-protocol",
  "ed25519-dalek",

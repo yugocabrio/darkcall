@@ -24,8 +24,10 @@ proof/security model and avoid unrelated recovery/wallet/cryptographic work.
       signatures after original cutoff.13 claim/encoding and8 certificate/authority
       refusals;17+2 legacy and12 shared protocol tests pass. Source modules are
       reused; no proof/circuit change. Current funded six-output settlement is pending.
-  - [ ] Use those accepted notes/recipients for the same six-output memo PCZT,
-    unchanged native bindings/MPC/FROST, full-node inclusion and public replay.
+  - [x] Actual accepted notes/recipients produce a same six-output unsigned memo
+    PCZT:9.118s, eleven refusals, source Frozen journals unchanged. No real signing.
+  - [ ] Connect that funded preparation to unchanged native bindings/MPC/FROST,
+    full-node inclusion, public replay under separately trusted admission authority.
 - [x] One coherent recorded synthetic browser story using that exact same run/bundle.
   - Four same-transaction own receipts, public replay and real tamper refusal pass;
     live admission/funded NU7 remains unfinished.

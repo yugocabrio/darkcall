@@ -54,7 +54,7 @@ The separate NU7 SDK workspace is pinned to librustzcash commit
 `9c5705f56517c040c50f96d29f1ff15a9383f3e0`; it does not alter the root lock.
 The refreshed selected-target NU7 inventory includes462 packages, no missing
 license declarations, and lock SHA256
-`6327f83359bb5674e13e2acd1be989bcc9fef383ddc7d23dbb257ec58939bae0`.
+`3d6f69bc6ad7286a844b5c40d5053242a4e7191d7f4b518a734dbc4b2074d882`.
 Authenticated admission reuses the existing off-chain claim/receipt/journal source
 through the local `darkcall-wallet-protocol` package. It intentionally excludes
 the old native transaction/backend SDK: putting both full SDK graphs together

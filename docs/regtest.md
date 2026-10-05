@@ -340,3 +340,18 @@ Evidence: ../evidence/2026-10-05-prepared-dkg-recovery.json.
 The actual funded built-stage run above started from Frozen. If complete signed bytes exist, use --resume-signed
 instead of constructing/signing again. General live-chain reorg/expiry recovery
 remains outside these controlled-chain paths.
+
+## Actual NU7 certified six-output preparation
+
+`python3 scripts/regtest_nu7_prepare.py ESCROW CURRENT_NOTES MPC_BOOK
+RECEIVER_OPENINGS ADMISSION --name FRESH_NAME` rechecks the owned node snapshot
+and accepted notes, then runs actual blinded-v2 REP3 delivery. The new SDK
+checks signed frozen book, authenticated receiver openings, canonical witnesses,
+exact nullifiers/value conservation and four encrypted receipt memos. All six
+V3 output openings match their native commitments. Preparation is9.118s and
+eleven private-copy substitutions reject; original Frozen journals stay unchanged.
+It reads no recipient keys/custody packages and produces no native bindings or
+real threshold signatures. IO may authorize dummy zero-valued native actions.
+Existing synthetic finalizer/verifier refuse this distinct actual preparation
+scope. Do not interpret this as completed funded auction settlement. See
+`evidence/2026-10-05-nu7-funded-six-output-preparation.json`.
