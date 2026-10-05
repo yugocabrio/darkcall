@@ -18,7 +18,40 @@
       <h1>Sealed bids.<br><em>Verifiable settlement.</em></h1>
       <p class="lead">A sealed-bid auction settled privately on Zcash.</p>
       <p id="scope-description" class="scope-note">Loading the recorded demo…</p>
+      <div class="entry-actions"><button id="start-auction" class="primary-button">Create an auction <span>↗</span></button><button id="show-recording" class="text-button">Explore recorded settlement →</button></div>
     </section>
+    <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">
+      <div class="panel-top"><span class="eyebrow">START A PRIVATE MARKET</span><span class="recorded-label">LOCAL REHEARSAL</span></div>
+      <h2 id="rehearsal-title">Create your auction.</h2>
+      <p class="rehearsal-scope">Fresh input proofs &amp; signed acceptances. Synthetic deposits; no chain funding.</p>
+      <form id="create-form" class="create-form">
+        <label>Units<input id="create-units" type="number" min="1" max="3" step="1" value="3" required></label>
+        <label>Reserve · zatoshi<input id="create-reserve" type="number" min="0" max="1000000" step="1" value="20" required></label>
+        <label>Bid deposit budget · zatoshi<input id="create-budget" type="number" min="0" max="1000000" step="1" value="100" required></label>
+        <label>Local close time<input id="create-close" type="datetime-local" step="1" required></label>
+        <p class="form-note">Each synthetic deposit is the budget + 15,000 zatoshi processing fee. Four tickets maximum.</p>
+        <button id="create-auction" class="primary-button" type="submit">Create auction <span>→</span></button>
+      </form>
+      <div id="auction-room" hidden>
+        <div class="room-summary"><span id="room-terms"></span><strong id="room-count">0 / 4 accepted</strong></div>
+        <div class="share-row"><label for="auction-link">Share this local auction</label><input id="auction-link" readonly><button id="copy-auction-link" class="secondary-button" type="button">Copy link</button></div>
+        <p class="form-note">This link works in browsers on this PC. It does not publish a hosted auction.</p>
+        <button id="new-auction" class="text-button" type="button">Create another demo auction +</button>
+        <form id="bid-form" class="bid-form">
+          <label>Maximum demo bid · zatoshi<input id="maximum-bid" type="number" min="0" max="100" step="1" value="75" required></label>
+          <button id="seal-bid" class="primary-button" type="submit">Seal bid <span>↗</span></button>
+          <p class="form-note">The localhost client helper receives your demo bid to create its proof and shares. Use demo amounts.</p>
+        </form>
+        <div id="bid-accepted" class="bid-accepted" hidden aria-live="polite"></div>
+        <button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed acceptance ↓</button>
+        <details id="acceptance-details" class="advanced-details" hidden><summary>Acceptance details <span>+</span></summary><pre id="acceptance-public"></pre></details>
+        <div class="close-row"><p id="close-status"></p><button id="close-auction" class="secondary-button" type="button">Certify closed book →</button></div>
+      </div>
+      <p id="rehearsal-status" class="check-result" aria-live="polite"></p><p id="rehearsal-error" class="error" role="alert" hidden></p>
+      <div class="recording-transition"><h3>Next: clearing &amp; shielded settlement.</h3><p>Explore a completed, proof-backed auction below. It uses a different recorded book; your new demo bids are not settled by that transaction.</p><button id="continue-recording" class="secondary-button" type="button">View recorded clearing &amp; settlement →</button></div>
+    </section>
+    <div id="recorded-demo" hidden>
+    <p id="recording-banner" class="recording-banner">RECORDED AUCTION · These results belong to the recorded book, not the new rehearsal bids.</p>
     <section class="workspace" aria-label="Auction and private result">
       <article class="auction-panel">
         <div class="panel-top"><span class="eyebrow">THE AUCTION</span><span class="recorded-label">RECORDED</span></div>
@@ -44,8 +77,9 @@
     <section class="how-it-works"><span class="eyebrow">HOW IT WORKS</span><ol><li><span>01</span>Private bids</li><li><span>02</span>Confidential clearing</li><li><span>03</span>Shielded settlement</li><li><span>04</span>Your private receipt</li></ol></section>
     <section class="technical-section" aria-label="Further details">
       <details class="public-details"><summary>Technical details <span>+</span></summary><p>REP3 computation · FROST signing · Halo2 output bindings · NU7</p><dl><dt>Transaction ID</dt><dd id="txid">—</dd><dt>Accepted root</dt><dd id="root">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Verification stages</dt><dd id="stage-status">Recorded clearing; own receipt unopened. Settlement not reverified in this session.</dd><dt>Public check</dt><dd id="settlement-detailed-result">Not run in this page session.</dd></dl></details>
-      <details class="public-details"><summary>Trust model & limitations <span>+</span></summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds; users cannot force a unilateral refund.</li><li>Operators have escrow viewing capability and learn refunds and winning status. Public outcomes can allow inference.</li><li>One-host prototype on isolated regtest. No public-testnet, malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The configured admission authority is trusted separately.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded fixture run; no live browser bid admission.</p></details>
+      <details class="public-details"><summary>Trust model & limitations <span>+</span></summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds; users cannot force a unilateral refund.</li><li>Operators have escrow viewing capability and learn refunds and winning status. Public outcomes can allow inference.</li><li>One-host prototype on isolated regtest. No public-testnet, malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The configured admission authority is trusted separately.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded settlement; separate offline rehearsal with synthetic funding.</p></details>
     </section>
+    </div>
   </main>
   <footer><span>DARKCALL / ZECATHON 2026</span><span>Private inputs. Public checks.</span><span>BUILT ON ZCASH</span></footer>
 </body>

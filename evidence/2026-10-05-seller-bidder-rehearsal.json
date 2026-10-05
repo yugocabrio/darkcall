@@ -1,0 +1,169 @@
+{
+  "date": "2026-10-05",
+  "scope": "Working localhost seller/bidder entry with fresh SINGLE-CLIENT input ZK proofs, verified REP3 share pairs and signed OFFLINE-SYNTHETIC admission; explicit transition to a DIFFERENT recorded funded settlement",
+  "actual_http_gate": {
+    "passed": true,
+    "scope": "fresh offline browser rehearsal; single-client input ZK + REP3 pairs + signed admission, not MPC clearing",
+    "client_proofs": 4,
+    "verified_share_pairs": 12,
+    "acceptance_signatures": 12,
+    "final_book_signatures": 3,
+    "actual_pre_admission_substitutions_leave_journals_unchanged": true,
+    "rejected": [
+      "zero-units",
+      "reserve-over-budget",
+      "negative-budget",
+      "float-unit",
+      "past-cutoff",
+      "extra-authority",
+      "cross-origin",
+      "wrong-token",
+      "over-budget",
+      "negative-bid",
+      "bool-bid",
+      "fifth-ticket",
+      "early-final-book",
+      "actual-proof-substitution",
+      "actual-pair-substitution",
+      "actual-context-substitution",
+      "late-bid"
+    ],
+    "per_bid_seconds": [
+      0.628,
+      0.608,
+      0.547,
+      0.61
+    ],
+    "new_auction_condition_digest": "f9ad0d08a757543b7b0e921f85a3ad967d82988facace7f0e9beeee45e3ccc44",
+    "new_accepted_root": "1f5aba12d49ba8930884b1ed36e0fb0a87bea44dfd909f41058f02f16489a0ec",
+    "recorded_txid_unchanged": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "secret_fields_served": false,
+    "synthetic_funding_observations": true,
+    "actual_chain_funding": false,
+    "fresh_mpc_clearing_or_settlement": false,
+    "clock_cutoff_enforced": true,
+    "seconds": 74.87781916700624
+  },
+  "browser": {
+    "seller_form_create": true,
+    "four_new_bids_accepted": true,
+    "same_local_auction_share_link_joined": true,
+    "actual_cutoff_and_three_signature_book_certified": true,
+    "new_browser_book_root": "27a78fffee7645d8a2b66681fcd8a1897147fe76c13f4558c15e25a229ba2b43",
+    "public_acceptance_copy_verified": true,
+    "copied_receipt_signatures": 3,
+    "copied_maximum_or_opening_fields": false,
+    "maximum_input_cleared_after_post": true,
+    "actual_acceptance_seconds_displayed": [
+      0.8,
+      0.6
+    ],
+    "mobile_viewport_width": 390,
+    "mobile_document_width": 390,
+    "horizontal_overflow": false,
+    "temporary_viewport_reset": true,
+    "different_recorded_book_transition_explicit": true,
+    "new_bid_selects_recorded_winner": false,
+    "recorded_own_receipt": {
+      "won": true,
+      "refund": 50,
+      "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938"
+    },
+    "recorded_corrupted_proof_rejected_before_fvk_access": true,
+    "blob_download_completion": "unconfirmed; replaced by browser-confirmed clipboard copy",
+    "final_seller_mobile_document_width": 390
+  },
+  "unchanged_recorded_security": {
+    "verify_and_settlement_functions_ast_identical_to_parent": true,
+    "circuits_native_output_bindings_authority_and_public_bundle_changed": false,
+    "new_full_six_row_verification_run": false,
+    "existing_full_verification_evidence": "evidence/2026-10-05-judge-demo-presentation.json",
+    "settlement_api_rejections": [
+      "supplied-path",
+      "supplied-authority",
+      "supplied-key",
+      "cross-origin",
+      "wrong-session-token"
+    ],
+    "boundary_check_seconds": 0.007535500000813045
+  },
+  "checks": {
+    "locked_offline_release_build": true,
+    "strict_locked_offline_release_clippy_all_targets": true,
+    "cargo_fmt": true,
+    "javascript_syntax": true,
+    "python_syntax": true,
+    "existing_rust_tests": {
+      "input_tool": 4,
+      "wallet_bridge_library": 17,
+      "wallet_bridge_binary": 2
+    },
+    "public_only_rehearsal_refused_http": 409,
+    "invalid_number_safe_error_http": 400,
+    "no_external_dependency_version_or_checksum_change": true,
+    "root_lock_change": "one local wallet-bridge dependency on already resolved group0.13.0",
+    "initial_build_errors": "corrected public claim module, GroupEncoding import/dependency and public address accessor feature; no crypto fallback",
+    "initial_clippy_errors": "two needless_range_loop warnings corrected to key.iter().enumerate()",
+    "candidate_source_path_and_credential_markers": 23,
+    "not_exhaustive_secret_detection": true
+  },
+  "pins": {
+    "co_snarks": "467a2abbad940d40ed78f38d424cc21920988976",
+    "barretenberg": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f",
+    "input_circuit": "circuits/bid_input/target/darkcall_bid_input.json"
+  },
+  "commands": [
+    "cargo build --offline --locked --release -p darkcall-input-tool",
+    "cargo build --offline --locked --release -p darkcall-wallet-bridge --example rehearsal_admission",
+    "cargo clippy --offline --locked --release -p darkcall-input-tool -p darkcall-wallet-bridge --all-targets -- -D warnings",
+    "cargo test --offline --locked --release -p darkcall-input-tool -p darkcall-wallet-bridge",
+    "python3 -B scripts/check_rehearsal.py --port 8877 --output .local/rehearsal-check-20261005.json",
+    "python3 -B scripts/check_demo_http.py --port 8877 --canonical --funded --settlement-security-only"
+  ],
+  "limitations": [
+    "localhost helper sees typed demo maximum",
+    "all generated operator keys/shares on one host",
+    "funding observations are explicitly fabricated under a disjoint offline network genesis",
+    "new book does not run REP3 clearing or native settlement",
+    "recorded funded transaction remains on isolated regtest",
+    "restart invalidates local links and preserves artifacts; no general bid retry recovery",
+    "public-only checkouts disable fresh admission; no identities committed"
+  ],
+  "private_material_committed": false,
+  "rpc_or_broadcast_started": false,
+  "external_messages_deployment_or_submission": false,
+  "new_native_screenshot_sha256": {
+    "demo/media/07-entry-create.jpg": "2eb3ad857d7cf23d041397ea06766da5155944ad6d464e6a27881e8bc1e26be9",
+    "demo/media/08-entry-accepted.jpg": "4c4a7b7ce78843ce00c7ac0e21ed3a64b20f6afe1b3e871b11e0379cd939318f",
+    "demo/media/09-entry-closed.jpg": "76270266d340aa43ccbf933aace71b71cbf68423f79bc571c12d2b5183453e82"
+  },
+  "product_loop_video": {
+    "passed": true,
+    "scope": "Edited native browser stills: working fresh offline entry, explicit switch to a DIFFERENT recorded funded settlement; not a real-time auction or proof recording",
+    "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "seconds": 110,
+    "scenes": 9,
+    "width": 1920,
+    "height": 1080,
+    "audio": false,
+    "published": false,
+    "video_bytes": 1339783,
+    "video_sha256": "f711fc21f046b7bcc4982f7ca168903848cc7ba03b58f7939eb96b48b46c679a",
+    "image_sha256": {
+      "07-entry-create.jpg": "2eb3ad857d7cf23d041397ea06766da5155944ad6d464e6a27881e8bc1e26be9",
+      "08-entry-accepted.jpg": "4c4a7b7ce78843ce00c7ac0e21ed3a64b20f6afe1b3e871b11e0379cd939318f",
+      "09-entry-closed.jpg": "76270266d340aa43ccbf933aace71b71cbf68423f79bc571c12d2b5183453e82",
+      "03-winner.jpg": "3ce9c7ac83e069b7d57de7ea4ccd0b5237b5db803d6217819b753c2248dd136f",
+      "05-tamper.jpg": "e16425f70e199488bcf92166425a6e5418c28985a34a41ba112d6c10067cd09d",
+      "06-public-check.jpg": "a285e080c77f3f9dde52b1420373e76a112b9b69dabbfa3feaa966702d72f8e9"
+    },
+    "private_material_read": false,
+    "proof_generation_in_video": false,
+    "visually_inspected_frames_seconds": [
+      5,
+      38,
+      100
+    ],
+    "prior_recorded_screenshots_reused": true
+  }
+}

@@ -76,12 +76,19 @@ is attested by the separately configured admission authority, not proved by the 
 
 ## 90–120 second demo script
 
-1. 0–15s: show four sealed bids and explain the single uniform price. Say that
-   this is a recorded actual-funded isolated regtest run, not a live public auction.
-2. 15–35s: select one demo ticket, run the fixed proof verifier, decrypt its
+The seller/bidder entry is a separate offline rehearsal, not a new funded
+execution. Its local helper sees typed demo maxima. Show that scope before input
+and state the switch to the different recorded book before any result. The prior
+result-only edited draft is preserved separately; the current110-second draft
+includes the new entry and the explicit recorded-book transition.
+
+1. 0–20s: create a local auction and seal a demo bid. Show fresh input proof,
+   share checks and signed acceptance; deposits are synthetic.
+2. 20–40s: explicitly switch to the different recorded funded regtest book;
+   explain its single uniform price. Select one example ticket, verify and decrypt its
    own native memo and show win/loss plus refund. Point out the exact transaction ID.
-3. 35–50s: corrupt a proof; show refusal before recipient key access.
-4. 50–105s: verify the **same** transaction's public bundle: native authorization,
+3. 40–55s: corrupt a proof; show refusal before recipient key access.
+4. 55–105s: verify the **same** transaction's public bundle: native authorization,
    six output bindings, auction proof and receipt context. If verification exceeds
    the video length, show a clearly labeled recorded verification with its measured
    duration. Do not stage an artificial live success.

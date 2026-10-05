@@ -11,8 +11,26 @@ proof/security model and avoid unrelated recovery/wallet/cryptographic work.
 After the funded canonical milestone, freeze new cryptography. Focus on review
 packaging, reproduction and presentation, followed by measured performance and
 bug fixes. Second-machine/Linux results require an actual available host.
-Latest frontend review: simplify the judge-facing story; keep backend/API and
-security acceptance unchanged; put technical/trust details behind disclosures.
+Latest frontend priority supersedes further review packaging: implement the
+seller → bidder → auction entry loop, preserving all existing verification and
+native security conditions. Fresh client commitments/shares/acceptance can be
+real while settlement transitions explicitly to a DIFFERENT recorded book.
+The localhost helper sees typed demo bids; funding is explicitly synthetic.
+
+- [x] Actual seller create/share and bidder input proof/share/receipt entry, plus
+  cutoff/four-ticket final-book certification. Four fresh input proofs/12 pair
+  checks/12 receipt signatures/3 endorsements;17 rejection cases, pre-admission
+  proof/share/context substitutions leave journals unchanged. Actual browser
+  create/seal/copy, local join, mobile390px and recorded receipt/tamper pass.
+  New entry does not run MPC clearing, native funding, signing or settlement.
+- [x] Adapt the video/storyboard to include seller → bidder entry and explicit
+  different-recorded-book transition. Latest110s/9-scene edited draft shows three
+  native entry screens, a switch card and existing recorded verification/trust.
+  Footers distinguish offline/synthetic entry from recorded funded transaction;
+  no live-auction/proof-timing claim. Prior result-only draft is preserved.
+- [ ] Human product-loop review; real in-browser/private transport admission,
+  wallet funding, idempotent bid/restart recovery and fresh settlement hookup
+  remain separate implementation work, not claimed by this local rehearsal.
 
 - [x] Produce a committed-source review kit, validate its exclusions and public
   links, and start its extracted public-only browser with no private identities.

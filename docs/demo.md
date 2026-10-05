@@ -35,7 +35,16 @@ checkout automatically starts a public-only view when the ignored run is absent.
 corrupt proofs, but refuses own receipt opening without a key. No keys ship in Git.
 The local server's recorded two confirmations are not a chain-inclusion proof.
 
-## Functional story
+## Seller / bidder entry
+
+[Local entry rehearsal](local-rehearsal.md) adds actual fresh client ZK input
+proofs, REP3 share-pair checks and signed synthetic acceptance before this
+recorded result. Create/share/bid/close operate on a new offline book. Its
+localhost helper sees typed demo bids; deposits are synthetic and no new clearing
+or native settlement runs. The screen explicitly switches to a different
+recorded auction. `--public-only` disables entry; the canonical verifier is unchanged.
+
+## Recorded settlement story
 
 1. Four committed maximum bids remain secret-shared; recorded price/units are public.
 2. Choose a fixture bidder and **Open my result**. Both fixed C++ proofs,
@@ -47,8 +56,9 @@ The local server's recorded two confirmations are not a chain-inclusion proof.
    fixed MPC/receipt proofs and signed accepted book under the configured authority.
 
 Receipt verification and full six-row settlement verification are separate stages.
-Recorded/previous results are labeled. There is no fake bid form, live browser
-admission or production bidder authentication. Selecting a ticket is not login.
+Recorded/previous results are labeled. The separate browser entry uses real
+input proofs/receipts with explicitly synthetic funding; it is not live chain
+admission or production bidder authentication. Selecting a recorded ticket is not login.
 The judge-facing view leads with sealed bids, price and the own result. Advanced
 receipt checks, transaction/root and trust/limitations are collapsed by default.
 A receipt pass displays auction/receipt and native checks; the settlement badge

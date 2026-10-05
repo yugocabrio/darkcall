@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Loopback-only recorded demo running the fixed-proof/native recipient client.
+"""Loopback-only recorded demo and separate offline seller/bidder rehearsal.
 
 Canonical synthetic and certified isolated-regtest runs are separate explicit
-configurations. This server does not submit bids, sign or broadcast transactions.
+configurations. Rehearsal creates input proofs and signed synthetic acceptances;
+it never funds, clears, signs native transactions or broadcasts rehearsal bids.
 No spending keys, viewing keys, masks or raw memos are served to the browser.
 """
 import argparse
@@ -20,6 +21,7 @@ from regtest_prepared_gate import write_bytes
 from regtest_resources import guarded_json_call
 from regtest_deposits import ENV, NATIVE
 from public_bundle import verify as verify_bundle, snapshot
+from rehearsal import Rehearsal
 
 WEB = ROOT / 'demo'
 DEFAULTS = {'positive':'positive-receipt-memo-20261005', 'zero':'zero-receipt-memo-v2-20261005'}
@@ -42,6 +44,7 @@ class Demo:
             raise RuntimeError('Demo fixtures must be ignored controlled checkpoints')
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
+        self.rehearsal = Rehearsal(self.lock, enabled=not public_only and bool(canonical))
         self.last_settlement = None
 
     def state(self):
@@ -89,7 +92,8 @@ class Demo:
         return {'cases':cases, 'csrf':self.token, 'last_settlement':self.last_settlement,
             'funded_canonical':self.funded,'recorded_local_confirmations':2 if self.funded and not self.public_only else None,
             'recipient_identities_available':not self.public_only,
-            'live_admission':False, 'independent_hosts':False, 'operators_know_results':True,
+            'live_admission':False, 'local_rehearsal_available':self.rehearsal.enabled,
+            'independent_hosts':False, 'operators_know_results':True,
             'six_output_memo_e2e':bool(self.canonical), 'accepted_book_certified':False,
             'chain_inclusion_verified':False}
 
@@ -259,18 +263,26 @@ def handler(demo, port):
             if self.path == '/api/state':
                 try: return self.reply(200,demo.state())
                 except Exception: return self.reply(503,{'error':'Demo checkpoints unavailable'})
+            if self.path.startswith('/api/rehearsal/auction/'):
+                try: return self.reply(200,demo.rehearsal.get(self.path.removeprefix('/api/rehearsal/auction/')))
+                except ValueError: return self.reply(404,{'error':'Unknown local demo auction'})
             return self.reply(404,{'error':'Not found'})
 
         def do_POST(self):
             if (not self.allowed_host() or self.headers.get('Origin') != origin
                     or self.headers.get('X-DarkCall-Token') != demo.token):
                 return self.reply(403,{'error':'Same origin and session token required'})
-            if self.path not in ('/api/verify','/api/settlement'): return self.reply(404,{'error':'Not found'})
+            rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close'}
+            if self.path not in ('/api/verify','/api/settlement',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
             try:
                 length = int(self.headers.get('Content-Length','0'))
                 if not 0 < length <= 1024 or self.headers.get('Content-Type') != 'application/json':
                     return self.reply(400,{'error':'Bounded JSON request required'})
                 value = json.loads(self.rfile.read(length))
+                if self.path in rehearsal_actions:
+                    try: status,result=demo.rehearsal.post(rehearsal_actions[self.path],value)
+                    except ValueError as error: return self.reply(400,{'error':str(error)})
+                    return self.reply(status,result)
                 if self.path == '/api/settlement':
                     if value != {}: return self.reply(400,{'error':'Settlement accepts no supplied paths or keys'})
                     status,result = demo.settlement()

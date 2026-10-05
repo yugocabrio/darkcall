@@ -2,6 +2,7 @@
   font-family:LocalSans;
   src:local("Helvetica Neue")
 }
+:root {--accent:#c7ed9e;--muted:#a9b5a0;--line:#3b4835;--text:#eff3e9;--panel:#1a2117;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
 * {
   box-sizing:border-box
 }
@@ -577,4 +578,44 @@ footer {
     margin-left:22px;
     margin-right:22px
   }
+}
+
+.entry-actions {display:flex;align-items:center;gap:26px;margin-top:24px}
+.entry-actions .primary-button {width:auto;min-width:238px}
+.text-button {border:0;background:none;color:var(--accent);padding:12px 0;font:inherit;cursor:pointer;text-align:left}
+.rehearsal-panel {border:1px solid var(--line);padding:32px;margin:24px 0 38px;background:var(--panel)}
+.rehearsal-panel h2 {font-size:34px;margin:25px 0 10px}
+.rehearsal-scope {color:var(--muted);font-size:13px;margin-bottom:30px}
+.create-form {display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.create-form label,.bid-form label {display:grid;gap:10px;font-size:13px;color:var(--muted)}
+input {background:#121a10;border:1px solid var(--line);color:var(--text);padding:14px;font:inherit;border-radius:0;min-width:0;width:100%;color-scheme:dark}
+input:focus {outline:1px solid var(--accent)}
+.form-note {font-size:12px;line-height:1.65;color:var(--muted);margin:0}
+.create-form .form-note {grid-column:1/-1}
+.create-form .primary-button {max-width:340px}
+.room-summary {display:flex;justify-content:space-between;gap:16px;margin:25px 0;color:var(--muted);font-size:14px}
+.room-summary strong {color:var(--accent);white-space:nowrap}
+.share-row {display:grid;grid-template-columns:180px 1fr auto;align-items:center;gap:18px;margin-bottom:10px}
+.share-row label {font-size:13px;color:var(--muted)}
+.share-row input {font:12px var(--mono)}
+.bid-form {display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:end;margin:36px 0 24px;max-width:760px}
+.bid-form .form-note {grid-column:1/-1}
+.bid-accepted {border:1px solid var(--accent);background:#243219;padding:24px;margin-top:24px}
+.bid-accepted h3 {font-size:27px;margin:0 0 10px;color:var(--accent)}
+.bid-accepted p {font-size:13px;margin:7px 0;color:var(--muted)}
+.close-row {display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:22px}
+.close-row p {font-size:13px;color:var(--muted)}
+.recording-transition {border-top:1px solid var(--line);padding-top:24px;margin-top:28px}
+.recording-transition h3 {font-size:23px;margin:0 0 10px}
+.recording-transition p {max-width:780px;font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:18px}
+.recording-banner {color:var(--accent);border-top:1px solid var(--line);padding:24px 0;font:11px var(--mono);line-height:1.7}
+#acceptance-public {font-size:11px;max-height:260px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+#rehearsal-status {overflow-wrap:anywhere;font-size:13px;margin-top:24px}
+@media(max-width:700px) {
+.entry-actions {align-items:stretch;flex-direction:column;gap:8px}
+.rehearsal-panel {padding:22px 18px}
+.create-form,.bid-form {grid-template-columns:1fr}
+.share-row {grid-template-columns:1fr}
+.share-row .secondary-button {justify-self:start}
+.room-summary,.close-row {align-items:flex-start;flex-direction:column}
 }

@@ -33,11 +33,15 @@ def render(output,font):
     clips=[]; images={}; elapsed=0; subtitles=[]
     def text(name,value):
         path=target/name; path.write_text(value); return path
-    label=text('label.txt','DARKCALL / ZECATHON  |  EDITED RECORDED DEMO DRAFT')
-    identity=text('identity.txt','SAME TRANSACTION  '+TXID)
+    label=text('label.txt','DARKCALL / ZECATHON  |  EDITED PROOF-BACKED DEMO DRAFT')
     def draw(path,y,size,color='0xd2eca5',x='120'):
         return f"drawtext=fontfile='{escaped(font)}':textfile='{escaped(path)}':expansion=none:fontsize={size}:fontcolor={color}:x={x}:y={y}:line_spacing=12"
     for index,scene in enumerate(story['scenes']):
+        scope=scene.get('execution','recorded')
+        if scope not in ('entry','recorded'): raise RuntimeError('Unknown scene execution scope')
+        identity=text(f'identity-{index}.txt',
+            'OFFLINE ENTRY  |  SYNTHETIC DEPOSITS  |  NOT SETTLED BY RECORDED TRANSACTION' if scope=='entry'
+            else 'RECORDED FUNDED REGTEST TX  '+TXID)
         duration=scene['seconds']
         if type(duration)!=int or not 1<=duration<=30: raise RuntimeError('Unbounded scene duration')
         title=text(f'title-{index}.txt',scene['title'])

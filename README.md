@@ -24,6 +24,11 @@ supplied bundle. Build the [pinned tools](docs/toolchains.md) first. On this mac
 the browser can open ignored fixture viewing identities; a fresh checkout uses a
 public-only view. [Demo instructions](docs/demo.md) separate recorded proving,
 own-result verification, public verification and controlled chain confirmation.
+The [seller / bidder entry](docs/local-rehearsal.md) creates a new local auction,
+fresh input proofs and signed acceptances. Its deposits are synthetic, its
+localhost helper sees typed demo bids, and its explicit transition opens a
+**different recorded settlement**. No new clearing or chain payment is implied.
+
 The earlier synthetic run remains available through `./demo.sh --synthetic` and
 `./verify.sh demo/artifacts/canonical-nu7-v1`.
 

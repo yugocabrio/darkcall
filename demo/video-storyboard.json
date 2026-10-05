@@ -1,15 +1,70 @@
 {
   "format": 1,
-  "scope": "Edited stills of actual verified fixture UI, with explanatory cards; not a real-time screen recording",
+  "scope": "Edited native browser stills: working fresh offline entry, explicit switch to a DIFFERENT recorded funded settlement; not a real-time auction or proof recording",
   "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
   "scenes": [
-    {"seconds":12,"title":"Private bids. Verifiable settlement.","image":"01-intro.jpg","caption":"DarkCall / Zcash Private Markets\nOne recorded actual-funded NU7 auction on isolated regtest."},
-    {"seconds":13,"title":"Four sealed bids. One clearing price.","image":"02-sealed.jpg","caption":"Three local REP3 parties compute without reconstructing the bid list.\nPrice and sold units are public; individual maximum bids remain shared."},
-    {"seconds":15,"title":"The winner opens only their own receipt.","image":"03-winner.jpg","caption":"Fixed proofs and the signed book pass before the own viewing key is read.\nTicket 01 decrypts its native refund memo: won, refund 50 zatoshi."},
-    {"seconds":12,"title":"The losing bidder verifies their refund too.","image":"04-loser.jpg","caption":"Ticket 04 uses its own viewing identity: not filled, refund 100 zatoshi.\nThese are controlled fixture identities, all stored on the development Mac."},
-    {"seconds":13,"title":"A changed proof is rejected.","image":"05-tamper.jpg","caption":"This screenshot follows an actual corrupted-proof check.\nThe fixed verifier rejects before reading the recipient key or decrypting."},
-    {"seconds":15,"title":"Six shielded outputs. The same transaction.","image":"06-public-check.jpg","caption":"Recorded public replay: 112.431 seconds; no private openings read.\nNative authorization, six bindings, MPC, receipt proof and accepted book pass."},
-    {"seconds":13,"title":"Funded, signed, confirmed on regtest.","body":"4 actual deposits -> one accepted book -> 6 outputs\n2-of-3 DKG signing; no escrow master key reconstructed\nZebra acceptance + 2 controlled confirmations + exact wallet scans\nPublic proof validity and chain inclusion are separate checks.","caption":"The public bundle is 153,557 bytes. Trust admission keys separately.\nFull funded recovery: 1847.653s on a shared 16GiB M1, one native thread."},
-    {"seconds":17,"title":"Know what you are trusting.","body":"Bid privacy: at most 1 semi-honest corrupt REP3 party\nTwo colluders can reconstruct bids; two signers can move funds.\nOperators learn refunds and winning status.\nOne host / regtest; no public-testnet or Linux speedup claim.","caption":"Source + public proofs + fixed replay command are ready for review.\nSecond-machine reproduction and independent operators remain unfinished."}
+    {
+      "seconds": 12,
+      "execution": "entry",
+      "title": "Create a private market.",
+      "image": "07-entry-create.jpg",
+      "caption": "Working local entry: fresh input ZK proofs and signed acceptances.\nSynthetic deposits; the localhost client helper sees typed demo bids."
+    },
+    {
+      "seconds": 14,
+      "execution": "entry",
+      "title": "Seal a demo bid. Get signed acceptance.",
+      "image": "08-entry-accepted.jpg",
+      "caption": "Existing Noir input proof, three verified share pairs, three receipt signatures.\nNo maximum bid, secret opening or key is included in the public acceptance."
+    },
+    {
+      "seconds": 10,
+      "execution": "entry",
+      "title": "Close the accepted book at its real cutoff.",
+      "image": "09-entry-closed.jpg",
+      "caption": "Four complete tickets and three final-book signatures.\nFresh clearing has not run; this rehearsal does not spend funds."
+    },
+    {
+      "seconds": 7,
+      "execution": "recorded",
+      "title": "Now switch to recorded settlement.",
+      "body": "A DIFFERENT completed auction follows.\nIts actual deposits, bids, clearing and payment are already recorded.\nThe new rehearsal bids do not select these winners or refunds.\nOne canonical transaction connects the recorded result and public proofs.",
+      "caption": "The browser labels this switch explicitly.\nOne-host isolated regtest, not a live hosted or public-testnet auction."
+    },
+    {
+      "seconds": 15,
+      "title": "The winner opens only their own receipt.",
+      "image": "03-winner.jpg",
+      "caption": "Fixed proofs and the signed book pass before the own viewing key is read.\nTicket 01 decrypts its native refund memo: won, refund 50 zatoshi.",
+      "execution": "recorded"
+    },
+    {
+      "seconds": 12,
+      "title": "A changed proof is rejected.",
+      "image": "05-tamper.jpg",
+      "caption": "This screenshot follows an actual corrupted-proof check.\nThe fixed verifier rejects before reading the recipient key or decrypting.",
+      "execution": "recorded"
+    },
+    {
+      "seconds": 14,
+      "title": "Six shielded outputs. The same transaction.",
+      "image": "06-public-check.jpg",
+      "caption": "Recorded public replay: 112.431 seconds; no private openings read.\nNative authorization, six bindings, MPC, receipt proof and accepted book pass.",
+      "execution": "recorded"
+    },
+    {
+      "seconds": 12,
+      "title": "Funded, signed, confirmed on regtest.",
+      "body": "4 actual deposits -> one accepted book -> 6 outputs\n2-of-3 DKG signing; no escrow master key reconstructed\nZebra acceptance + 2 controlled confirmations + exact wallet scans\nPublic proof validity and chain inclusion are separate checks.",
+      "caption": "The public bundle is 153,557 bytes. Trust admission keys separately.\nFull funded recovery: 1847.653s on a shared 16GiB M1, one native thread.",
+      "execution": "recorded"
+    },
+    {
+      "seconds": 14,
+      "title": "Know what you are trusting.",
+      "body": "Bid privacy: at most 1 semi-honest corrupt REP3 party\nTwo colluders can reconstruct bids; two signers can move funds.\nOperators learn refunds and winning status.\nOne host / regtest; no public-testnet or Linux speedup claim.",
+      "caption": "Source + public proofs + fixed replay command are ready for review.\nSecond-machine reproduction and independent operators remain unfinished.",
+      "execution": "recorded"
+    }
   ]
 }

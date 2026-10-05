@@ -565,6 +565,85 @@ fn check(
 fn fixture(out: &Path, values: [u64; 4]) -> Result<()> {
     fixture_reserve(out, values, 20)
 }
+
+/// A localhost client helper: secret input arrives over stdin, never argv/logs.
+/// It uses the SAME commitments, shares and input circuit as the existing gate.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct OneInput {
+    condition_digest: [u8; 32],
+    ticket: [u8; 32],
+    bidder: usize,
+    units: u32,
+    reserve: u64,
+    budget: u64,
+    processing_fee: u64,
+    bid: u64,
+}
+fn prepare_one(out: &Path) -> Result<()> {
+    use std::io::Read;
+    let mut bytes = Vec::new();
+    std::io::stdin().take(4097).read_to_end(&mut bytes)?;
+    if bytes.len() > 4096 {
+        return Err("bounded client input required".into());
+    }
+    let input: OneInput = serde_json::from_slice(&bytes)?;
+    if input.bidder >= 4
+        || !(1..=3).contains(&input.units)
+        || input.reserve > input.budget
+        || input.bid > input.budget
+        || input.budget > 2_100_000_000_000_000
+        || input.processing_fee > 2_100_000_000_000_000 - input.budget
+    {
+        return Err("invalid four-ticket rehearsal input".into());
+    }
+    fs::create_dir(out)?;
+    let i = input.bidder;
+    let mut book = Book {
+        condition_digest: input.condition_digest,
+        ids: [[0; 32]; 4],
+        active: [false; 4],
+        units: input.units,
+        reserve: input.reserve,
+        budget: input.budget,
+        processing_fee: input.processing_fee,
+        commitments: std::array::from_fn(|_| "0".into()),
+        pair_commitments: std::array::from_fn(|_| std::array::from_fn(|_| "0".into())),
+        root: String::new(),
+    };
+    book.ids[i] = input.ticket;
+    book.active[i] = true;
+    let mut rng = rand::rngs::OsRng;
+    let salt = <Fr as ark_ff::UniformRand>::rand(&mut rng);
+    let bids = rep3::share_field_element(Fr::from(input.bid), &mut rng);
+    let salts = rep3::share_field_element(salt, &mut rng);
+    book.commitments[i] = book.leaf(&input.ticket, input.bid, salt).to_string();
+    for party in 0..3 {
+        book.pair_commitments[i][party] =
+            book.pair(i, party, bids[party], salts[party]).to_string();
+        let map = BTreeMap::from([
+            (format!("bid{i}"), Rep3Type::Shared(bids[party])),
+            (format!("salt{i}"), Rep3Type::Shared(salts[party])),
+        ]);
+        write_private(
+            &out.join(format!("bidder{i}.toml.{party}.shared")),
+            &bincode::serialize(&map)?,
+        )?;
+    }
+    book.root = book.root()?.to_string();
+    write_private(&out.join("book.json"), &serde_json::to_vec(&book)?)?;
+    let private = format!(
+        "bid = \"{}\"\nsalt = \"{salt}\"\nbid_shares = {}\nsalt_shares = {}\n",
+        input.bid,
+        serde_json::to_string(&bids.map(|s| s.a.to_string()))?,
+        serde_json::to_string(&salts.map(|s| s.a.to_string()))?
+    );
+    write_private(
+        &out.join("Prover.toml"),
+        (private + &book.client_public_toml(i)?).as_bytes(),
+    )?;
+    Ok(())
+}
 fn fixture_reserve(out: &Path, values: [u64; 4], reserve: u64) -> Result<()> {
     if reserve > 100 {
         return Err("fixture reserve exceeds budget".into());
@@ -632,6 +711,7 @@ fn fixture_reserve(out: &Path, values: [u64; 4], reserve: u64) -> Result<()> {
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
+        Some("prepare-one") if args.len()==2 => prepare_one(Path::new(&args[1]))?,
         Some("fixture") if args.len()==2 || args.len()==6 => {
             let values=if args.len()==6 {[args[2].parse()?,args[3].parse()?,args[4].parse()?,args[5].parse()?]} else {[90,70,60,50]};
             fixture(Path::new(&args[1]),values)?;

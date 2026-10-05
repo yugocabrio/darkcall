@@ -1,9 +1,55 @@
 # DarkCall status
 
-Updated: 2026-10-05 (judge-facing UI simplified; same verifier/API; edited demo draft rendered; git HEAD is authoritative).
+Updated: 2026-10-05 (working seller/bidder offline entry; fresh input proofs and signed admission; recorded settlement unchanged; git HEAD is authoritative).
 
 ## Current outcome
 
+**Seller → bidder entry now works before the recorded result.** New browser
+forms create bounded units/reserve/budget/cutoff, fresh conditions and three
+admission authorities; the local share link joins that same new auction.
+Seal bid creates a fresh existing `bid_input` ZK proof with pinned plaindriver
+`--zk`, fixed C++ verification and three checked REP3 bid/salt pairs. The existing
+signed claim/receipt primitives issue three verified durable acceptances.
+After four complete tickets and the actual cutoff, the existing final-book
+certificate verifies three endorsements. Public receipt copying works.
+This is explicitly **offline synthetic funding** under a disjoint genesis:
+unmined V3 notes and fabricated Observe/Confirm events, no RPC or native signing.
+The localhost client helper sees the typed demo maximum; do not call this
+operator-blind browser admission. No new MPC auction clearing or native settlement
+runs. A prominent transition opens a **different recorded funded book**, without
+using the new bid/receipt to choose a fixture winner. Existing recorded native/
+public verification methods are AST-identical and cryptographic circuits,
+authority and bundle unchanged. `--public-only` disables rehearsal.
+
+Four fresh input proofs/twelve pair checks/twelve acceptance signatures plus
+three final-book signatures pass. Per-bid0.547–0.628s in the HTTP gate; actual
+75-second clock cutoff,17 rejections including corrupt proof/pair/context BEFORE
+journal mutation. Browser create/seal also passes; four additional browser bids
+show4/4 and public receipt copy with three signatures and no opening. Shared link
+joins;390px mobile has no horizontal overflow. Recorded bidder01 opens WON/
+refund50; tamper rejects before FVK access. Public settlement API's five existing
+path/key/authority/Origin/token gates pass. A new full six-row verification run
+was not needed: both recorded verifier methods and artifacts are unchanged.
+Locked release build, strict all-target clippy, Rust format and JS/Python syntax
+pass. First compile failed on a wrong public module/API import and stale build
+feature selection, then was fixed; first clippy rejected two range-loop lints,
+fixed without changing receipts. Initial blob-download event was unconfirmed in
+IAB; it was replaced by browser-confirmed public receipt copying. Evidence and
+bounds: `evidence/2026-10-05-seller-bidder-rehearsal.json`,
+`docs/local-rehearsal.md`. Keys/openings/shares/journals are ignored and preserved.
+
+**Product-loop video draft now includes the new entry.** Three actual browser
+screenshots plus an explicit different-recorded-book card lead into the existing
+verified winner/tamper/public screens and funding/trust cards. Nine scenes,
+110s/1920×1080/1,339,783bytes, no audio, still-image edit. Entry footers say
+OFFLINE/SYNTHETIC; only recorded scenes carry the canonical transaction ID.
+Entry/transition/trust frames visually inspected; no proving, wallet access or
+upload by the renderer. New MP4 remains ignored at
+`.local/darkcall-product-loop-draft-20261005.mp4`; old draft preserved separately.
+The existing Rust regression tests pass: input-tool4, wallet-bridge library17,
+binary2. Public evidence includes scope, exact pins/commands and asset digests.
+
+**Earlier presentation/review milestones (recorded result UI).**
 **Judge-facing information hierarchy now leads with the result.** The latest
 human request changes the frontend only: “Sealed bids. Verifiable settlement.”,
 price/sold, bidder choice, prominent WON/LOST/refund, public settlement and actual
@@ -77,24 +123,27 @@ trusted admission authority is a separate public setup file. Evidence:
 All operators/fixture actors remain on one host on isolated regtest, not public
 chain. Signed admission attests funding; it is not a public ZK funding proof.
 
-**Current local jobs.** No heavy prover/verifier/video-render runs remain. Two
-public browser checks and final own receipt opening completed in this session;
-the new UI's success was captured only after actual full verification. Video
-render21944 completed. Recovery59400,
-public replay85667, public attacks6044, own-client96262 and HTTP77185/15526 completed
-and were consumed. Default funded UI PID20469/exec78615 listens only127.0.0.1:8877;
-log`.local/funded-canonical-demo-server-20261005.log`. Public-only test UI28293/
-85373 was stopped after its checks; old synthetic UI34999/45695 was stopped.
-Do not duplicate the server. NU7 node29342 at112; old6.3.0 node unchanged. Exact
-run`.local/nu7-funded-canonical-resumed-20261005`, original stopped preparation,
-private keys/journals/PCZT/witnesses/pads/resource observations are preserved.
-Only validated rebuildable compiler caches were removed. Guards stayed unchanged.
+**Current local jobs.** Low-cost input proof/admission and browser/API checks
+completed. Final helper build75174, input binary build67711, Rust regression77634, video
+render77659 and strict clippy54177 completed; no heavy
+six-row prover/verifier started. Default funded UI PID52864/exec33268 listens only
+127.0.0.1:8877; log`.local/seller-bidder-demo-server-final-20261005.log`.
+Previous UI72629/72510 was stopped before this restart (older20469/78615 had already
+been stopped). Temporary public-only UI52934/17933 was stopped after its409 check.
+Do not duplicate the default server. New ignored rehearsal namespaces/partial
+checkpoints remain preserved; restart does not auto-resume them. Original
+canonical private keys/journals/PCZT/witnesses/pads remain unchanged.
+NU7 node29342 at112 and old6.3.0 node are unchanged. Automation stays removed.
 
-Next: convergence/reproduction on a second machine and demo/submission polish.
-Public testnet, independent hosts, larger Linux concurrency and8/16/32 proofs are
-unfinished. Keep published claims limited to one-host controlled regtest; no new
-primitives or unrelated wallet/recovery scope merely to add code. Automation remains
-removed. Repo stays private; no external messages/release/deployment/submission.
+Next: review the new front-to-back product story and its updated edited
+video draft with the honest recorded-book transition.
+The new110s edited video includes that entry and awaits human review; do not call
+it a live run or real-time native proving. Second-machine/Linux performance/
+reproduction remains pending available hardware.
+Public testnet, independent operators and8/16/32 proofs are unfinished. Freeze
+new cryptography; do not invent fresh funding/clearing/settlement from this
+synthetic admission rehearsal. Repo stays private; no external messages,
+release/deployment/submission.
 
 ## Earlier component milestones
 

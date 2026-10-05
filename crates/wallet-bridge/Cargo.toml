@@ -24,6 +24,8 @@ zcash_primitives = "=0.29.0"
 zcash_protocol = "=0.10.0"
 
 [dev-dependencies]
+group = "=0.13.0"
+orchard = { version = "=0.15.5", features = ["unstable-voting-circuits"] }
 pczt = { version = "=0.8.0-rc.1", features = ["zcp-builder", "io-finalizer"] }
 rand = "0.8"
 zcash_address = "=0.13.0"

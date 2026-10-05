@@ -1221,6 +1221,7 @@ dependencies = [
  "darkcall-auction-core",
  "darkcall-input-tool",
  "ed25519-dalek",
+ "group",
  "hex",
  "incrementalmerkletree",
  "libc",

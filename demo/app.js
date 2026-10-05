@@ -95,7 +95,7 @@ fetch('/api/state').then(async response => {
     $('remaining-scope').textContent = 'Local trusted-dealer threshold setup; all parties on one host. Public testnet funding, DKG admission and confirmations remain to be integrated into this same NU7 execution.';
     if (state.funded_canonical) {
       $('scope-description').textContent = 'Recorded proof-backed demo on isolated Zcash regtest.';
-      $('remaining-scope').textContent = 'Recorded fixture auction; no live browser bid admission. Independent-host operation, public testnet, broader wallet recovery and larger bid counts remain unverified.';
+      $('remaining-scope').textContent = 'This recorded auction is separate from the browser rehearsal. The rehearsal uses synthetic deposits and a localhost helper that sees typed demo bids; it does not clear or settle them. Independent hosts, public testnet and larger bid counts remain unverified.';
       $('chain-scope').textContent = state.recorded_local_confirmations ? 'Two controlled regtest confirmations recorded; public bundle does not prove chain inclusion' : 'Recorded regtest run; no chain inclusion proof in the public bundle';
     }
     if (!state.recipient_identities_available) {
@@ -114,4 +114,131 @@ fetch('/api/state').then(async response => {
     $('settlement-detailed-result').textContent = 'Previous public verification passed for transaction: '+state.last_settlement.txid+'. Not reverified in this page session.';
   }
   lock(false);
+  $('recording-banner').textContent=(state.funded_canonical ? 'RECORDED FUNDED AUCTION' : 'RECORDED DEMO')+' · These results belong to the recorded book, not the new rehearsal bids.';
+  refreshRoom(); joinRehearsal();
 }).catch(error => setError(error.message));
+
+// Interactive entry is an OFFLINE rehearsal. It never alters the recorded book.
+let room = null, lastAcceptance = null;
+const integer = id => { const text=$(id).value; if (!/^\d+$/.test(text)) throw new Error('Use whole-number demo values.'); return Number(text); };
+function rehearsalError(message) { $('rehearsal-error').textContent=message; $('rehearsal-error').hidden=!message; }
+function refreshRoom() {
+  const available=Boolean(state && state.local_rehearsal_available);
+  $('create-auction').disabled=busy || !available;
+  if (!room) return;
+  const remaining=Math.max(0,room.closes_at_utc-Math.floor(Date.now()/1000));
+  $('room-terms').textContent=room.units+' units · reserve '+room.reserve+' · budget '+room.budget+' zatoshi';
+  $('room-count').textContent=room.accepted+' / 4 accepted';
+  $('maximum-bid').max=room.budget;
+  $('seal-bid').disabled=busy || !available || room.stopped_after_incomplete_admission || remaining===0 || room.accepted>=4 || room.closed;
+  $('close-auction').disabled=busy || !available || room.stopped_after_incomplete_admission || remaining>0 || room.accepted!==4 || room.closed;
+  $('close-status').textContent=room.stopped_after_incomplete_admission ? 'Admission stopped. Start a new rehearsal; the incomplete checkpoint is preserved.' : room.closed ? '✓ Book closed. Three final-book signatures verified. Fresh clearing has not run.' :
+    remaining>0 ? 'Bidding closes in '+Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')+'. '+room.deposit+' zatoshi per synthetic deposit.' :
+    room.accepted===4 ? 'Bidding is closed. Certify the four accepted tickets.' : 'Bidding is closed; four tickets are required to certify this prototype book.';
+}
+function showRoom(value) {
+  if (!value || value.funding_scope!=='offline-synthetic' || value.chain_funding_verified || value.fresh_clearing_or_settlement) throw new Error('Unexpected rehearsal scope.');
+  if (room && room.auction_id!==value.auction_id) {
+    lastAcceptance=null; $('bid-accepted').hidden=true; $('copy-acceptance').hidden=true; $('acceptance-details').hidden=true;
+  }
+  room=value; $('create-form').hidden=true; $('auction-room').hidden=false;
+  $('rehearsal-title').textContent='Place a sealed demo bid.';
+  $('auction-link').value=location.origin+'/#auction='+room.auction_id;
+  refreshRoom();
+}
+async function rehearsalRequest(action,payload) {
+  const response=await fetch('/api/rehearsal/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify(payload)});
+  const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Local rehearsal stopped.'); return result;
+}
+$('start-auction').addEventListener('click',()=>{
+  $('rehearsal').hidden=false; $('recorded-demo').hidden=true;
+  if (!room) setDefaultClose();
+  $('rehearsal-status').textContent=state && state.local_rehearsal_available ? '' : 'Local input prover and admission helper are required; recorded verification is available below.';
+  refreshRoom(); $('rehearsal').scrollIntoView({behavior:'smooth',block:'start'});
+});
+function showRecording() {
+  $('rehearsal').hidden=true; $('recorded-demo').hidden=false;
+  // Never use the new maximum bid or receipt to choose an old fixture identity.
+  $('recorded-demo').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('show-recording').addEventListener('click',showRecording);
+$('continue-recording').addEventListener('click',showRecording);
+$('new-auction').addEventListener('click',()=>{
+  if (busy) return;
+  room=null; lastAcceptance=null; history.replaceState(null,'',location.pathname);
+  $('auction-room').hidden=true; $('create-form').hidden=false; $('rehearsal-title').textContent='Create your auction.';
+  $('bid-accepted').hidden=true; $('copy-acceptance').hidden=true; $('acceptance-details').hidden=true;
+  $('rehearsal-status').textContent=''; rehearsalError('');
+  setDefaultClose();
+});
+$('create-form').addEventListener('submit',async event=>{
+  event.preventDefault(); if (busy || !state || !state.local_rehearsal_available) return;
+  rehearsalError(''); lock(true); $('rehearsal-status').textContent='Creating a new local auction and admission authority…';
+  try {
+    const cutoff=Math.floor(new Date($('create-close').value).getTime()/1000);
+    if (!Number.isSafeInteger(cutoff) || cutoff<Date.now()/1000+30 || cutoff>Date.now()/1000+86400) throw new Error('Choose a close time between 30 seconds and 24 hours from now.');
+    const result=await rehearsalRequest('create',{units:integer('create-units'),reserve:integer('create-reserve'),budget:integer('create-budget'),closes_at_utc:cutoff});
+    showRoom(result); history.replaceState(null,'','#auction='+room.auction_id);
+    $('rehearsal-status').textContent='✓ Auction created. Share the local link and seal a demo bid.';
+  } catch (error) { rehearsalError(error.message); $('rehearsal-status').textContent=''; }
+  finally { lock(false); refreshRoom(); }
+});
+$('bid-form').addEventListener('submit',async event=>{
+  event.preventDefault(); if (busy || !state || !room) return;
+  rehearsalError(''); lock(true); $('rehearsal-status').textContent='Generating an input ZK proof and three REP3 share pairs, then verifying admission…';
+  try {
+    const maximum=integer('maximum-bid'); $('maximum-bid').value='';
+    const result=await rehearsalRequest('bid',{auction_id:room.auction_id,maximum_bid:maximum});
+    if (!result.accepted || !result.client_input_proof_verified || result.share_pairs_verified!==3 || result.receipt_signatures_verified!==3 || result.chain_funding_verified || result.native_settlement_started || result.auction.auction_id!==room.auction_id) throw new Error('Incomplete signed acceptance.');
+    lastAcceptance=result; showRoom(result.auction);
+    $('bid-accepted').hidden=false; $('bid-accepted').replaceChildren(element('h3','✓ Bid accepted'),element('p','Ticket '+String(result.ticket_number).padStart(2,'0')+' · Signed acceptance verified.'),element('p','Your maximum bid stays out of the public acceptance. Synthetic funding only.'));
+    $('copy-acceptance').hidden=false; $('acceptance-details').hidden=false;
+    $('acceptance-public').textContent=JSON.stringify({client_input_proof_verified:true,share_pairs_verified:3,receipt_signatures_verified:3,ticket:result.ticket,commitment:result.commitment,receipt:result.receipt},null,2);
+    $('rehearsal-status').textContent='✓ Fresh signed acceptance ready. '+result.seconds.toFixed(1)+' seconds.';
+  } catch (error) {
+    rehearsalError(error.message); $('rehearsal-status').textContent='';
+    try {
+      const response=await fetch('/api/rehearsal/auction/'+room.auction_id);
+      if (response.ok) showRoom(await response.json());
+    } catch { /* Keep the original admission error visible. */ }
+  }
+  finally { lock(false); refreshRoom(); }
+});
+$('close-auction').addEventListener('click',async()=>{
+  if (busy || !room) return; rehearsalError(''); lock(true);
+  try {
+    const result=await rehearsalRequest('close',{auction_id:room.auction_id});
+    if (!result.closed || result.funding_scope!=='offline-synthetic' || result.fresh_clearing_or_settlement) throw new Error('Unexpected book certification.');
+    room.closed=true; room.accepted_root=result.accepted_root;
+    $('rehearsal-status').textContent='✓ Accepted book certified. Root: '+result.accepted_root;
+  } catch(error) { rehearsalError(error.message); }
+  finally { lock(false); refreshRoom(); }
+});
+$('copy-auction-link').addEventListener('click',async()=>{
+  try { await navigator.clipboard.writeText($('auction-link').value); $('rehearsal-status').textContent='✓ Local auction link copied.'; }
+  catch { $('auction-link').select(); $('rehearsal-status').textContent='Select and copy the local link.'; }
+});
+$('copy-acceptance').addEventListener('click',async()=>{
+  if (!lastAcceptance) return;
+  const data={format:1,scope:'offline-synthetic browser rehearsal; no chain funding or settlement',auction:lastAcceptance.auction,receipt:lastAcceptance.receipt};
+  const json=JSON.stringify(data,null,2);
+  try {
+    await navigator.clipboard.writeText(json);
+    $('rehearsal-status').textContent='✓ Public signed acceptance copied. No bid opening or key included.';
+  } catch {
+    $('acceptance-details').open=true; $('acceptance-public').textContent=json;
+    $('rehearsal-status').textContent='Select and copy the public acceptance below. No bid opening or key included.';
+  }
+});
+async function joinRehearsal() {
+  const match=/^#auction=([0-9a-f]{32})$/.exec(location.hash); if (!match || !state) return;
+  try {
+    const response=await fetch('/api/rehearsal/auction/'+match[1]); const value=await response.json();
+    if (!response.ok) throw new Error(value.error || 'Local auction unavailable.');
+    showRoom(value); $('rehearsal').hidden=false; $('recorded-demo').hidden=true;
+  } catch (error) { $('rehearsal').hidden=false; rehearsalError(error.message); }
+}
+window.addEventListener('hashchange',joinRehearsal);
+function setDefaultClose() { const close=new Date(Date.now()+300000); $('create-close').value=new Date(close-close.getTimezoneOffset()*60000).toISOString().slice(0,19); }
+setDefaultClose();
+setInterval(refreshRoom,1000);
