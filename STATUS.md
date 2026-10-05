@@ -1,8 +1,37 @@
 # DarkCall status
 
-Updated: 2026-10-05 (same fresh browser book through certified REP3 clearing and own result; recorded native settlement remains separate; git HEAD is authoritative).
+Updated: 2026-10-05 (two-mode visual polish and refreshed video; no new cryptography; git HEAD is authoritative).
 
 ## Current outcome
+
+**Try DarkCall / Proof it settles** are now visibly separate modes. Landing cards
+become a compact switch with each scope still visible. Create/Bid/Clear/Result
+progress follows existing proof gates; fresh price and own result sit side by
+side. Bids, signed acceptances, technical details and trust assumptions remain
+expandable. Visible copy is shorter; helper input visibility is stated before
+sealing and fresh results explicitly say no payment was sent.
+
+Actual browser run bc615713…56f3bd:4 fresh accepted bids, real cutoff, signed
+root086dc2a7…512cff, price43/sold2, clearing8.284s/proving2.858s, own WON/entitlement57.
+Corrupt proof rejects before pads. Switching modes retains the same ticket;
+a separate page has no opening capability and keeps Result incomplete.
+Recorded47019e02…a211938 winner50/loser100, tamper-before-key and full public
+settlement pass; replay110.622s with no private openings or chain-finality claim.
+390px landing/create/fresh/recorded views have no horizontal overflow; override
+reset. Browser screenshots contain only synthetic/regtest demonstration data.
+
+Video refreshed to110s/11 scenes with seven new verified UI screenshots and an
+explicit DIFFERENT recorded-auction switch. Edited stills, no audio/live-proving
+claim. Evidence: `evidence/2026-10-05-two-mode-demo-polish.json`.
+All fetch calls, verification guards and recorded verification handlers are
+unchanged; no backend/API/circuit/bundle/authority edits. JS syntax, HTML ID/ref
+checks and diff checks pass. Existing localhost server remains PID63252/port8877.
+
+Next: human visual/video review and actual second-machine reproduction when
+another host is available. Fresh wallet settlement and independent operators
+remain outside the current demo; avoid new crypto or packaging detours.
+
+## Previous same-book clearing milestone (5ae9bad)
 
 **The new seller/bidder book now clears itself.** Create → four actual input
 proofs/12 share checks →12 signed acceptances → real cutoff/3 final-book signatures

@@ -22,6 +22,17 @@ clearing circuit and opens its own result. Native payment still uses a separate
 recorded auction. Do not replace fresh random tickets/commitments with an implied
 same-root preset or redesign cryptography.
 
+- [x] Latest visual priority: separate **Try DarkCall / Proof it settles** mode
+  cards, compact navigation, Create/Bid/Clear/Result progress, paired fresh price
+  and own result, expandable bids/acceptances and shorter visible copy. Existing
+  request payloads, proof gates, recorded handlers, circuits and authority remain
+  unchanged. Actual new book: price43/sold2,8.284s, own entitlement57 and tamper
+  refusal; recorded winner/loser/public settlement pass.390px does not overflow.
+- [x] Refresh all seven video stills to the polished UI and keep the explicit
+  different-recorded-auction switch.110s/11 scenes; edited stills, not live proving.
+- [ ] Human review of the two-mode design and video. Independent second-machine
+  reproduction remains unavailable on this host; no new cryptography queued.
+
 - [x] Same-book fresh browser clearing: canonical reindex of unchanged share
   values, exact signed root/conditions/tickets, actual3-party REP3 flags proof,
   fixed C++ verification and per-ticket opening after proof/certificate gates.

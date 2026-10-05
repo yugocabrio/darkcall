@@ -87,6 +87,7 @@ $('settlement').addEventListener('click', async () => {
 lock(true);
 fetch('/api/state').then(async response => {
   const data=await response.json(); if (!response.ok) throw new Error(data.error || 'Demo unavailable'); state=data;
+  $('proof-card-scope').textContent=state.funded_canonical?'Separate auction · isolated regtest':'Separate example · synthetic transactions';
   if (state.six_output_memo_e2e) {
     $('case-tabs').hidden = true;
     $('scope-description').textContent = 'Recorded proof-backed demo · synthetic funding, no broadcast.';
@@ -114,17 +115,24 @@ fetch('/api/state').then(async response => {
     $('settlement-detailed-result').textContent = 'Previous public verification passed for transaction: '+state.last_settlement.txid+'. Not reverified in this page session.';
   }
   lock(false);
-  $('recording-banner').textContent=(state.funded_canonical ? 'RECORDED FUNDED AUCTION' : 'RECORDED DEMO')+' · These results belong to the recorded book, not the new rehearsal bids.';
+  $('recording-banner').textContent='Separate recorded auction · these '+(state.funded_canonical?'regtest payments':'synthetic results')+' do not settle your demo bids.';
   refreshRoom(); joinRehearsal();
 }).catch(error => setError(error.message));
 
 // Interactive entry is an OFFLINE rehearsal. It never alters the recorded book.
-let room = null, lastAcceptance = null;
+let room = null, lastAcceptance = null, freshClearingVerified = false, freshResultVerified = false;
 const integer = id => { const text=$(id).value; if (!/^\d+$/.test(text)) throw new Error('Use whole-number demo values.'); return Number(text); };
 function rehearsalError(message) { $('rehearsal-error').textContent=message; $('rehearsal-error').hidden=!message; }
 function refreshRoom() {
   const available=Boolean(state && state.local_rehearsal_available);
   $('create-auction').disabled=busy || !available;
+  $('new-auction').hidden=!room;
+  const complete=[Boolean(room),Boolean(room && room.accepted===4),freshClearingVerified,freshResultVerified];
+  const current=complete.findIndex(done=>!done);
+  ['create','bid','clear','result'].forEach((name,i)=>{
+    const step=$('progress-'+name); step.classList.toggle('done',complete[i]);
+    if (i===current) step.setAttribute('aria-current','step'); else step.removeAttribute('aria-current');
+  });
   if (!room) return;
   const remaining=Math.max(0,room.closes_at_utc-Math.floor(Date.now()/1000));
   $('room-terms').textContent=room.units+' units · reserve '+room.reserve+' · budget '+room.budget+' zatoshi';
@@ -135,9 +143,12 @@ function refreshRoom() {
   $('clear-auction').disabled=busy || !available || !room.clearing_available || !room.closed || room.clearing_stopped || Boolean(room.clearing);
   $('open-fresh-result').disabled=busy || !room.clearing || !lastAcceptance;
   $('tamper-fresh').disabled=busy || !room.clearing || !lastAcceptance;
-  $('close-status').textContent=room.stopped_after_incomplete_admission ? 'Admission stopped. Start a new rehearsal; the incomplete checkpoint is preserved.' : room.closed ? '✓ Book closed. Three final-book signatures verified.' :
-    remaining>0 ? 'Bidding closes in '+Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')+'. '+room.deposit+' zatoshi per synthetic deposit.' :
-    room.accepted===4 ? 'Bidding is closed. Certify the four accepted tickets.' : 'Bidding is closed; four tickets are required to certify this prototype book.';
+  $('clear-auction').hidden=Boolean(room.clearing);
+  $('rehearsal-title').textContent=room.clearing?'Your auction cleared.':room.closed?'Ready to clear.':room.accepted===4?'Bids are sealed.':'Place your bid.';
+  document.querySelector('.rehearsal-scope').textContent=room.clearing?'Fresh outcome. Verified against your accepted bids.':room.closed?'Four sealed bids. One verified outcome.':room.accepted===4?'Waiting for the scheduled close.':'Use demo amounts. Get a signed acceptance.';
+  $('close-status').textContent=room.stopped_after_incomplete_admission ? 'Admission stopped. The checkpoint is preserved.' : room.closed ? '✓ Closed bids certified.' :
+    remaining>0 ? 'Bidding closes in '+Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')+'.' :
+    room.accepted===4 ? 'Deadline reached. Confirm the accepted bids.' : 'Closed. Four tickets are required.';
 }
 function showRoom(value) {
   if (!value || value.funding_scope!=='offline-synthetic' || value.chain_funding_verified || value.native_settlement_started) throw new Error('Unexpected rehearsal scope.');
@@ -146,16 +157,17 @@ function showRoom(value) {
     resetFresh();
   }
   room=value; $('create-form').hidden=true; $('auction-room').hidden=false;
-  $('rehearsal-title').textContent='Place a sealed demo bid.';
   $('auction-link').value=location.origin+'/#auction='+room.auction_id;
   refreshRoom();
-  if (room.clearing) renderFresh(room.clearing);
+  if (room.clearing) { renderFresh(room.clearing); $('book-details').open=false; }
 }
 async function rehearsalRequest(action,payload) {
   const response=await fetch('/api/rehearsal/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify(payload)});
   const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Local rehearsal stopped.'); return result;
 }
 function resetFresh() {
+  freshClearingVerified=false; freshResultVerified=false; $('book-details').open=true;
+  $('clearing-title').textContent='Discover the price.';
   $('fresh-outcome').hidden=true; $('clearing-status').textContent=''; $('fresh-tamper-result').textContent='';
   $('fresh-result').className='result-box';
   $('fresh-result').replaceChildren(element('h3','Still sealed.'),element('p','Open the ticket accepted in this browser session.'));
@@ -164,10 +176,12 @@ function renderFresh(result) {
   if (!room || result.auction_id!==room.auction_id || result.accepted_root!==room.accepted_root
       || !result.rep3_clearing_verified || !result.fixed_cpp_proof_verified || !result.certified_book_matches
       || result.certificate_signatures_verified!==3 || result.native_settlement) throw new Error('Clearing does not match this certified book.');
+  freshClearingVerified=true;
   $('fresh-outcome').hidden=false;
+  $('clearing-title').textContent='One price. Your result.';
   $('fresh-price').textContent=result.price;
   $('fresh-sold').textContent=result.sold+' / '+room.units;
-  $('clearing-status').textContent='✓ This auction cleared. Fresh proof verified in '+result.seconds.toFixed(1)+' seconds.';
+  $('clearing-status').textContent='✓ Auction verified · '+result.seconds.toFixed(1)+'s';
   $('fresh-proof-details').textContent='REP3 delivery_flags4/v2 · fixed C++ verification · three final-book signatures. Proof generation: '+result.proof_generation_seconds.toFixed(1)+' seconds.';
   $('fresh-root').textContent='Same accepted root: '+result.accepted_root;
 }
@@ -177,6 +191,8 @@ $('clear-auction').addEventListener('click',async()=>{
   try {
     const result=await rehearsalRequest('clear',{auction_id:room.auction_id});
     renderFresh(result); room.clearing=result; room.fresh_clearing_verified=true;
+    $('rehearsal-status').textContent='';
+    $('book-details').open=false;
   } catch(error) {
     $('clearing-status').textContent=''; rehearsalError(error.message);
     try { const response=await fetch('/api/rehearsal/auction/'+room.auction_id); if (response.ok) showRoom(await response.json()); } catch { /* Preserve failure. */ }
@@ -185,7 +201,7 @@ $('clear-auction').addEventListener('click',async()=>{
 async function openFresh(action) {
   if (busy || !room || !lastAcceptance || !room.clearing) return;
   rehearsalError(''); lock(true);
-  if (action==='open') $('fresh-result').replaceChildren(element('h3','Verifying…'),element('p','Checking the proof and this signed book before opening your result.'));
+  if (action==='open') { freshResultVerified=false; $('fresh-result').replaceChildren(element('h3','Verifying…'),element('p','Checking your proof and signed book.')); }
   else $('fresh-tamper-result').textContent='Submitting a corrupted clearing proof to the fixed verifier…';
   try {
     const result=await rehearsalRequest('result',{auction_id:room.auction_id,ticket:lastAcceptance.ticket,opening_token:lastAcceptance.opening_token,action});
@@ -197,9 +213,10 @@ async function openFresh(action) {
       if (!result.fixed_cpp_proof_verified || !result.certified_book_matches || result.accepted_root!==room.accepted_root
           || result.price!==room.clearing.price || result.sold!==room.clearing.sold || !result.opening_verified) throw new Error('Incomplete own-result verification.');
       const box=$('fresh-result'); box.className='result-box verified';
+      freshResultVerified=true;
       box.replaceChildren(element('h3',result.won?'YOU WON':'YOU LOST'),element('p',result.won?'1 unit @ '+result.price+' zatoshi':'No unit allocated. Your outcome is verified.'));
       const amounts=element('div','','receipt-amounts'), column=element('div','');
-      column.append(element('span','Refund entitlement · zatoshi'),element('strong',String(result.refund))); amounts.append(column); box.append(amounts,element('p','✓ Auction verified · synthetic deposit, no payment sent'));
+      column.append(element('span','Refund entitlement · zatoshi'),element('strong',String(result.refund))); amounts.append(column); box.append(amounts,element('p','✓ Your result verified'));
     }
   } catch(error) {
     if (action==='open') {
@@ -213,15 +230,23 @@ async function openFresh(action) {
 $('open-fresh-result').addEventListener('click',()=>openFresh('open'));
 $('tamper-fresh').addEventListener('click',()=>openFresh('tamper'));
 $('start-auction').addEventListener('click',()=>{
+  selectExperience('try');
   $('rehearsal').hidden=false; $('recorded-demo').hidden=true;
   if (!room) setDefaultClose();
   $('rehearsal-status').textContent=state && state.local_rehearsal_available ? '' : 'Local input prover and admission helper are required; recorded verification is available below.';
   refreshRoom(); $('rehearsal').scrollIntoView({behavior:'smooth',block:'start'});
 });
 function showRecording() {
+  selectExperience('settlement');
   $('rehearsal').hidden=true; $('recorded-demo').hidden=false;
   // Never use the new maximum bid or receipt to choose an old fixture identity.
   $('recorded-demo').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function selectExperience(mode) {
+  document.body.classList.add('has-experience');
+  for (const [id,name] of [['start-auction','try'],['show-recording','settlement']]) {
+    $(id).classList.toggle('active',mode===name); $(id).setAttribute('aria-pressed',String(mode===name));
+  }
 }
 $('show-recording').addEventListener('click',showRecording);
 $('continue-recording').addEventListener('click',showRecording);
@@ -230,6 +255,7 @@ $('new-auction').addEventListener('click',()=>{
   room=null; lastAcceptance=null; history.replaceState(null,'',location.pathname);
   resetFresh();
   $('auction-room').hidden=true; $('create-form').hidden=false; $('rehearsal-title').textContent='Create your auction.';
+  document.querySelector('.rehearsal-scope').textContent='Set the terms. Invite four bidders.';
   $('bid-accepted').hidden=true; $('copy-acceptance').hidden=true; $('acceptance-details').hidden=true;
   $('rehearsal-status').textContent=''; rehearsalError('');
   setDefaultClose();
@@ -254,7 +280,7 @@ $('bid-form').addEventListener('submit',async event=>{
     const result=await rehearsalRequest('bid',{auction_id:room.auction_id,maximum_bid:maximum});
     if (!result.accepted || !result.client_input_proof_verified || result.share_pairs_verified!==3 || result.receipt_signatures_verified!==3 || result.chain_funding_verified || result.native_settlement_started || result.auction.auction_id!==room.auction_id) throw new Error('Incomplete signed acceptance.');
     lastAcceptance=result; showRoom(result.auction);
-    $('bid-accepted').hidden=false; $('bid-accepted').replaceChildren(element('h3','✓ Bid accepted'),element('p','Ticket '+String(result.ticket_number).padStart(2,'0')+' · Signed acceptance verified.'),element('p','Your maximum bid stays out of the public acceptance. Synthetic funding only.'));
+    $('bid-accepted').hidden=false; $('bid-accepted').replaceChildren(element('h3','✓ Bid accepted'),element('p','Ticket '+String(result.ticket_number).padStart(2,'0')+' · Signed acceptance verified.'));
     $('copy-acceptance').hidden=false; $('acceptance-details').hidden=false;
     $('acceptance-public').textContent=JSON.stringify({client_input_proof_verified:true,share_pairs_verified:3,receipt_signatures_verified:3,ticket:result.ticket,commitment:result.commitment,receipt:result.receipt},null,2);
     $('rehearsal-status').textContent='✓ Fresh signed acceptance ready. '+result.seconds.toFixed(1)+' seconds.';
@@ -273,7 +299,7 @@ $('close-auction').addEventListener('click',async()=>{
     const result=await rehearsalRequest('close',{auction_id:room.auction_id});
     if (!result.closed || result.funding_scope!=='offline-synthetic' || result.fresh_clearing_or_settlement) throw new Error('Unexpected book certification.');
     room.closed=true; room.accepted_root=result.accepted_root;
-    $('rehearsal-status').textContent='✓ Accepted book certified. Root: '+result.accepted_root;
+    $('rehearsal-status').textContent='✓ Bids locked. Ready to clear.';
   } catch(error) { rehearsalError(error.message); }
   finally { lock(false); refreshRoom(); }
 });
@@ -298,7 +324,7 @@ async function joinRehearsal() {
   try {
     const response=await fetch('/api/rehearsal/auction/'+match[1]); const value=await response.json();
     if (!response.ok) throw new Error(value.error || 'Local auction unavailable.');
-    showRoom(value); $('rehearsal').hidden=false; $('recorded-demo').hidden=true;
+    showRoom(value); selectExperience('try'); $('rehearsal').hidden=false; $('recorded-demo').hidden=true;
   } catch (error) { $('rehearsal').hidden=false; rehearsalError(error.message); }
 }
 window.addEventListener('hashchange',joinRehearsal);

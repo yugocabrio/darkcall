@@ -11,7 +11,7 @@
 }
 body {
   margin:0;
-  background:#101411;
+  background:radial-gradient(ellipse at 18% 0,#18231a 0,transparent 55%),#0d120f;
   color:#eff3e9;
   font:14px LocalSans,Arial,sans-serif
 }
@@ -76,7 +76,7 @@ main {
   padding:0 44px
 }
 .intro {
-  padding:42px 0 29px;
+  padding:62px 0 42px;
   position:relative
 }
 h1 {
@@ -580,8 +580,6 @@ footer {
   }
 }
 
-.entry-actions {display:flex;align-items:center;gap:26px;margin-top:24px}
-.entry-actions .primary-button {width:auto;min-width:238px}
 .text-button {border:0;background:none;color:var(--accent);padding:12px 0;font:inherit;cursor:pointer;text-align:left}
 .rehearsal-panel {border:1px solid var(--line);padding:32px;margin:24px 0 38px;background:var(--panel)}
 .rehearsal-panel h2 {font-size:34px;margin:25px 0 10px}
@@ -625,4 +623,127 @@ input:focus {outline:1px solid var(--accent)}
 .share-row .secondary-button {justify-self:start}
 .room-summary,.close-row {align-items:flex-start;flex-direction:column}
 .fresh-actions {grid-template-columns:1fr}
+}
+
+/* Two separate experiences; the proof and payment states keep their own gates. */
+.experience-picker {display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:0 0 32px}
+.experience-card {position:relative;display:flex;flex-direction:column;align-items:stretch;gap:16px;text-align:left;border:1px solid #3b4c37;border-radius:12px;padding:28px;background:#1b271b;color:var(--text);transition:border-color .18s,background .18s}
+.experience-card:hover {border-color:#a8c884;background:#243424}
+.experience-number {font:10px var(--mono);letter-spacing:1.5px;color:#aac691}
+.experience-heading {display:flex;align-items:center;justify-content:space-between;font:400 34px/1.1 Georgia,serif;letter-spacing:-.7px;gap:20px}
+.experience-heading > span {font:22px LocalSans,Arial,sans-serif;color:var(--accent)}
+.experience-caption {font-size:14px;color:#c0cdb7}
+.experience-scope {font-size:11px;color:#96a88a;margin-top:12px}
+.proof-card {background:#182221;border-color:#394944}
+.proof-card:hover {background:#21302d;border-color:#aaccc6}
+.proof-card .experience-number,.proof-card .experience-heading > span {color:#b6d0c9}
+.proof-card .experience-caption {color:#bbcec8}
+.proof-card .experience-scope {color:#90aaa1}
+.has-experience .intro {display:none}
+.has-experience .experience-picker {margin-top:24px;gap:12px}
+.has-experience .experience-card {padding:16px 22px;gap:6px;background:transparent;border-color:#313d32}
+.has-experience .experience-heading {font-size:23px;letter-spacing:-.4px}
+.has-experience .experience-number,.has-experience .experience-caption {display:none}
+.has-experience .experience-scope {margin-top:0;font-size:10px}
+.has-experience .try-card.active {background:#263621;border-color:#a7ce7d}
+.has-experience .proof-card.active {background:#24332f;border-color:#9cbfb1}
+.experience-card:disabled {cursor:wait}
+.rehearsal-panel {padding:32px 36px;margin:0 0 32px;border-radius:12px;background:#171e17;border-color:#374333}
+.rehearsal-panel h2 {font-size:38px;margin:32px 0 10px}
+.rehearsal-scope {font-size:14px;margin:0 0 28px;color:#aabca0}
+.auction-progress {list-style:none;display:grid;grid-template-columns:repeat(4,1fr);padding:0;margin:26px 0 0;gap:12px}
+.auction-progress li {display:flex;align-items:center;gap:10px;font-size:12px;color:#788775;border-top:2px solid #313e2f;padding-top:12px}
+.auction-progress li span {font:10px var(--mono)}
+.auction-progress li[aria-current] {color:#d2eca9;border-color:#c7ed9e}
+.auction-progress li.done {color:#b3ce9b;border-color:#768f61}
+.create-form {gap:22px 26px;max-width:880px}
+.create-form label,.bid-form label {font-size:12px;color:#b7c7ad;gap:10px}
+input,select {border-radius:6px;background:#10190f;border-color:#3c4c33}
+input {padding:15px;font-size:17px}
+input:focus {outline:1px solid var(--accent);outline-offset:1px}
+.primary-button,.secondary-button {border-radius:6px;padding:15px 18px;min-height:50px}
+.create-form .primary-button {margin-top:6px;grid-column:1/-1;max-width:320px}
+.room-summary {padding:16px 0;margin:0 0 10px;align-items:center;border-top:1px solid #34422e}
+.room-summary strong {font:11px var(--mono);background:#2b3d22;color:#d0e8b5;padding:8px 12px;border-radius:20px}
+.book-details {border-bottom:1px solid var(--line);padding:12px 0 22px}
+.book-details > summary {display:flex;justify-content:space-between;cursor:pointer;list-style:none;color:#a8b89a;font-size:12px}
+.book-details > summary::-webkit-details-marker {display:none}
+.book-details[open] > summary {margin-bottom:20px}
+.share-row {grid-template-columns:80px 1fr auto;gap:12px;margin:14px 0 8px}
+.share-row input {font:11px var(--mono);padding:12px}
+.share-row .secondary-button {min-height:40px;padding:10px 15px;font-size:12px}
+.bid-form {margin:28px 0 20px;gap:14px 22px;max-width:850px}
+.input-disclosure {color:#b4bba5}
+.bid-accepted {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-radius:7px;background:#25331d;border-color:#66864a}
+.bid-accepted h3 {font:500 19px LocalSans,Arial,sans-serif;margin:0;white-space:nowrap}
+.bid-accepted p {margin:0;font-size:12px}
+.close-row {margin-top:24px}
+.close-row .secondary-button {font-size:12px;min-height:44px}
+.fresh-clearing {border:0;padding-top:26px;margin-top:0}
+.fresh-clearing h3 {font:400 30px Georgia,serif;letter-spacing:-.5px;margin:14px 0 20px}
+.fresh-clearing > .primary-button {margin-top:12px;max-width:320px}
+#clearing-status {font:11px var(--mono);color:#b9daa3;margin:0 0 22px}
+.fresh-result-layout {display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.fresh-market {min-width:0;padding:8px 0}
+.fresh-market .market-stats {grid-template-columns:1fr 1fr;padding:20px 0;border-bottom:0}
+.fresh-market .market-stats strong {font-size:58px;letter-spacing:-2px;white-space:nowrap}
+.fresh-market .market-stats > div+div {padding-left:22px}
+.fresh-market .book-caption {margin-top:0;font-size:12px}
+.payment-status {display:inline-block;color:#b7bea7;font-size:11px;border:1px solid #44503b;border-radius:20px;padding:7px 10px;margin:16px 0 0}
+.fresh-receipt {padding:22px;border:1px solid #4d653a;border-radius:8px;background:#1c2818;min-width:0}
+.fresh-receipt .result-box {min-height:190px;margin-bottom:14px;background:none;border:0;padding:8px 0}
+.fresh-receipt .result-box.verified {background:none;border:0}
+.fresh-receipt .result-box h3 {font-size:34px;margin:0 0 12px}
+.fresh-receipt .result-box.verified h3 {font:600 38px/1.1 LocalSans,Arial,sans-serif;letter-spacing:-1px}
+.fresh-challenge {display:flex;align-items:center;justify-content:space-between;border-top:1px solid #384930;margin-top:26px;padding-top:20px;gap:20px}
+.fresh-challenge .eyebrow {font-size:9px}
+.fresh-challenge p {font-size:13px;color:#abbc9b;margin:8px 0 0}
+.fresh-challenge .secondary-button {font-size:12px}
+#fresh-tamper-result {font-size:12px;color:var(--accent);line-height:1.7}
+.advanced-details {line-height:1.8}
+.demo-details {margin-top:6px;font-size:12px}
+.recording-transition {display:flex;align-items:center;justify-content:space-between;gap:30px;padding:26px 0 0;margin-top:20px}
+.recording-transition h3 {font:400 25px Georgia,serif;margin:10px 0}
+.recording-transition p {max-width:540px;margin:0;font-size:12px}
+.recording-transition .secondary-button {flex-shrink:0;font-size:12px}
+.recorded-intro {margin:36px 0 30px}
+.recorded-intro h2 {font:400 42px/1.12 Georgia,serif;margin:14px 0 20px}
+.recording-banner {color:#b4c5ad;font:12px/1.7 LocalSans,Arial,sans-serif;padding:0;border:0;margin:0}
+.recorded-intro .scope-note {margin:7px 0 0}
+.auction-panel,.receipt-panel {border-radius:10px}
+.auction-panel {background:#17201a}
+.receipt-panel {background:#1b281e}
+@media(max-width:760px) {
+  .experience-picker {gap:12px;margin-bottom:22px}
+  .experience-card {padding:22px 18px;gap:12px}
+  .experience-heading {font-size:26px}
+  .experience-heading > span {font-size:18px}
+  .experience-caption {font-size:12px;line-height:1.6}
+  .experience-scope {font-size:10px;line-height:1.6;margin-top:6px}
+  .has-experience .experience-card {padding:14px 12px;gap:6px}
+  .has-experience .experience-heading {font-size:19px}
+  .has-experience .experience-heading > span {display:none}
+  .has-experience .experience-scope {font-size:9px;line-height:1.5}
+  .rehearsal-panel {padding:24px 20px}
+  .rehearsal-panel h2 {font-size:31px;margin-top:28px}
+  .auction-progress {gap:8px}
+  .auction-progress li {gap:6px;font-size:10px;padding-top:10px}
+  .auction-progress li span {font-size:8px}
+  .share-row {grid-template-columns:1fr auto}
+  .share-row label {grid-column:1/-1}
+  .share-row input {font-size:10px}
+  .bid-accepted {align-items:flex-start;flex-direction:column;gap:8px}
+  .fresh-result-layout {grid-template-columns:1fr;gap:18px}
+  .fresh-receipt {padding:22px 18px}
+  .fresh-market .market-stats strong {font-size:51px}
+  .fresh-market .market-stats > div+div {padding-left:18px}
+  .fresh-challenge,.recording-transition {align-items:flex-start;flex-direction:column;gap:18px}
+  .recorded-intro h2 {font-size:36px}
+}
+@media(max-width:420px) {
+  body:not(.has-experience) .experience-picker {grid-template-columns:1fr}
+  .experience-card {padding:22px}
+  .experience-scope {margin-top:4px}
+  .has-experience .experience-picker {grid-template-columns:1fr 1fr}
+  .has-experience .experience-heading {font-size:18px}
 }

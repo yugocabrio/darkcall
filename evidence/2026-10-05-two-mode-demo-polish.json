@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-05",
+  "source_base": "5ae9badc06b8f97c4e40eb2b3fe785d8e34950fb",
+  "scope": "Presentation only: two visibly separate experiences; no backend/API/circuit/authority/bundle changes",
+  "fresh_browser": {
+    "auction_id": "bc6157132488020d6e4985b70156f3bd",
+    "accepted_root": "086dc2a707596198ecf499a6b6c90e7c715d6a71a524a220ffa58fdf59512cff",
+    "conditions": {
+      "units": 2,
+      "reserve": 10,
+      "budget": 100
+    },
+    "actual_acceptances": 4,
+    "real_deadline_enforced": true,
+    "clearing": {
+      "accepted_root": "086dc2a707596198ecf499a6b6c90e7c715d6a71a524a220ffa58fdf59512cff",
+      "certificate_signatures_verified": 3,
+      "certified_book_matches": true,
+      "funding_scope": "offline-synthetic",
+      "native_settlement": false,
+      "price": 43,
+      "proof_must_be_verified_separately": true,
+      "sold": 2,
+      "fixed_cpp_proof_verified": true,
+      "rep3_clearing_verified": true,
+      "proof_generation_seconds": 2.858,
+      "seconds": 8.283780375000788,
+      "maximum_bid_openings_read": false,
+      "receipt_proof_version": "delivery_flags4/v2",
+      "proof_bytes": 14656,
+      "auction_id": "bc6157132488020d6e4985b70156f3bd"
+    },
+    "own_result": {
+      "won": true,
+      "refund_entitlement": 57
+    },
+    "fixed_cpp_tamper_rejected_before_pads": true,
+    "copy_signed_public_acceptance_passed": true,
+    "progress_result_done_only_after_success": true,
+    "mode_switch_retains_same_root_and_capability": true,
+    "new_page_cannot_open_own_result": true,
+    "new_page_result_step_incomplete": true
+  },
+  "recorded_browser": {
+    "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "winner_refund": 50,
+    "tamper_rejected_before_key": true,
+    "public_verification": {
+      "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+      "transaction_bytes": 21790,
+      "native_proof_and_signatures_verified": true,
+      "actual_transaction_outputs_match": true,
+      "seconds": 110.622441042,
+      "native_row_proofs_verified": true,
+      "normal_cpp_auction_proof_verified": true,
+      "acceptance_or_recipient_receipts_authenticated": true,
+      "private_openings_read": false,
+      "chain_funding_or_finality_verified": false,
+      "receipt_fixed_proof_verified": true,
+      "receipt_settlement_context_link_verified": true,
+      "verified_at_unix": 1791236235
+    },
+    "loser_refund": 100
+  },
+  "responsive": {
+    "width": 390,
+    "landing_scroll_width": 390,
+    "create_scroll_width": 390,
+    "recorded_scroll_width": 390,
+    "viewport_reset": true,
+    "fresh_scroll_width": 390
+  },
+  "static_checks": {
+    "unique_html_ids": true,
+    "all_dom_ids_exist": true,
+    "fetch_calls_unchanged": true,
+    "verification_guards_unchanged": true,
+    "recorded_verification_handlers_unchanged": true
+  },
+  "limitations": [
+    "Fresh funds are synthetic; helper sees typed bids; no new native payment.",
+    "Recorded payments are a different one-host isolated-regtest auction.",
+    "No second-machine reproduction or public testnet result."
+  ],
+  "video": {
+    "passed": true,
+    "scope": "Edited native browser stills of two visibly separate modes: fresh synthetic same-book REP3 auction and recorded funded regtest settlement; not real-time proving",
+    "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+    "seconds": 110,
+    "scenes": 11,
+    "width": 1920,
+    "height": 1080,
+    "audio": false,
+    "published": false,
+    "output": "/Users/yugo/zzzzzzcash/.local/darkcall-two-mode-demo-draft-v2-20261005.mp4",
+    "video_bytes": 1263335,
+    "video_sha256": "949834794cdc339357a3877777427df32be82c871594ae8f513198c822131800",
+    "image_sha256": {
+      "13-two-experiences.png": "8cba92e4129d6f0b89b890e08b8a3e8e64814949a8c99c31c1588ba561a4dbff",
+      "14-polished-create.png": "5ed3c26ebb571a9c8ea9243f05da6dcb360078a5697a8c500f783bea0045d801",
+      "15-polished-accepted.png": "2b8cc35d939c12faf6aea77b2fc6103182812660a3d3e837e1716dc3551ca282",
+      "16-polished-fresh-result.png": "cfbf1bfddc9a07f2c480b65817ba00d1cd393c817e0aa6727bd46c59b98bbed5",
+      "17-polished-recorded-winner.png": "2a4c904a5522f709ad15c47963267262b2569629c75e5ccba436bce647e1eb97",
+      "18-polished-recorded-tamper.png": "9156c2eaaffc4e7827a48b3342fe6634108ff726e2bcd678d4fbb30aaa98fd0a",
+      "19-polished-public-check.png": "2b1951a53495add06ea367f3f2f6a69d1638b8d49f2a91cf16a02c90a0d585c8"
+    },
+    "private_material_read": false,
+    "proof_generation_in_video": false,
+    "fresh_result_frame_visually_checked": true,
+    "explicit_transition_frame_visually_checked": true,
+    "public_verification_frame_visually_checked": true
+  }
+}

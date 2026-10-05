@@ -17,56 +17,63 @@
     <section class="intro">
       <h1>Sealed bids.<br><em>Verifiable settlement.</em></h1>
       <p class="lead">A sealed-bid auction settled privately on Zcash.</p>
-      <p id="scope-description" class="scope-note">Loading the recorded demo…</p>
-      <div class="entry-actions"><button id="start-auction" class="primary-button">Create an auction <span>↗</span></button><button id="show-recording" class="text-button">Explore recorded settlement →</button></div>
     </section>
+    <nav class="experience-picker" aria-label="Choose an experience">
+      <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-number">01 / TRY IT</span><span class="experience-heading">Try DarkCall <span aria-hidden="true">↗</span></span><span class="experience-caption">Create. Bid. Discover the price.</span><span class="experience-scope">Demo funds · no payments</span></button>
+      <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-number">02 / VERIFY IT</span><span class="experience-heading">Proof it settles <span aria-hidden="true">↗</span></span><span class="experience-caption">Inspect a recorded Zcash settlement.</span><span id="proof-card-scope" class="experience-scope">Separate auction · isolated regtest</span></button>
+    </nav>
     <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">
-      <div class="panel-top"><span class="eyebrow">START A PRIVATE MARKET</span><span class="recorded-label">LOCAL REHEARSAL</span></div>
+      <div class="panel-top"><span class="eyebrow">TRY DARKCALL</span><span class="recorded-label">DEMO FUNDS</span></div>
+      <ol class="auction-progress" aria-label="Auction progress"><li id="progress-create" aria-current="step"><span>01</span>Create</li><li id="progress-bid"><span>02</span>Bid</li><li id="progress-clear"><span>03</span>Clear</li><li id="progress-result"><span>04</span>Result</li></ol>
       <h2 id="rehearsal-title">Create your auction.</h2>
-      <p class="rehearsal-scope">Create, seal and clear your own auction. Synthetic deposits; no chain funding.</p>
+      <p class="rehearsal-scope">Set the terms. Invite four bidders.</p>
       <form id="create-form" class="create-form">
         <label>Units<input id="create-units" type="number" min="1" max="3" step="1" value="3" required></label>
         <label>Reserve · zatoshi<input id="create-reserve" type="number" min="0" max="1000000" step="1" value="20" required></label>
         <label>Bid deposit budget · zatoshi<input id="create-budget" type="number" min="0" max="1000000" step="1" value="100" required></label>
         <label>Local close time<input id="create-close" type="datetime-local" step="1" required></label>
-        <p class="form-note">Each synthetic deposit is the budget + 15,000 zatoshi processing fee. Four tickets maximum.</p>
         <button id="create-auction" class="primary-button" type="submit">Create auction <span>→</span></button>
       </form>
       <div id="auction-room" hidden>
         <div class="room-summary"><span id="room-terms"></span><strong id="room-count">0 / 4 accepted</strong></div>
-        <div class="share-row"><label for="auction-link">Share this local auction</label><input id="auction-link" readonly><button id="copy-auction-link" class="secondary-button" type="button">Copy link</button></div>
-        <p class="form-note">This link works in browsers on this PC. It does not publish a hosted auction.</p>
-        <button id="new-auction" class="text-button" type="button">Create another demo auction +</button>
+        <details id="book-details" class="book-details" open><summary>Bids &amp; receipts <span>+</span></summary>
+        <div class="share-row"><label for="auction-link">Share link</label><input id="auction-link" readonly><button id="copy-auction-link" class="secondary-button" type="button">Copy link</button></div>
+        <p class="form-note">Local link · works on this PC.</p>
         <form id="bid-form" class="bid-form">
           <label>Maximum demo bid · zatoshi<input id="maximum-bid" type="number" min="0" max="100" step="1" value="75" required></label>
           <button id="seal-bid" class="primary-button" type="submit">Seal bid <span>↗</span></button>
-          <p class="form-note">The localhost client helper receives your demo bid to create its proof and shares. Use demo amounts.</p>
+          <p class="form-note input-disclosure">Demo only. The local helper sees your input.</p>
         </form>
         <div id="bid-accepted" class="bid-accepted" hidden aria-live="polite"></div>
-        <button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed acceptance ↓</button>
-        <details id="acceptance-details" class="advanced-details" hidden><summary>Acceptance details <span>+</span></summary><pre id="acceptance-public"></pre></details>
+        <details id="acceptance-details" class="advanced-details" hidden><summary>Signed acceptance <span>+</span></summary><button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed acceptance ↓</button><pre id="acceptance-public"></pre></details>
         <div class="close-row"><p id="close-status"></p><button id="close-auction" class="secondary-button" type="button">Certify closed book →</button></div>
+        </details>
         <section class="fresh-clearing" aria-label="Clear this new auction">
-          <div class="panel-top"><span class="eyebrow">THIS AUCTION · FRESH PROOF</span><span class="recorded-label">LIVE LOCAL CLEARING</span></div>
-          <h3>Same book. Your outcome.</h3>
-          <p class="form-note">Compute the outcome from these accepted secret shares. Verify the proof before opening your own result.</p>
+          <div class="panel-top"><span class="eyebrow">YOUR AUCTION</span><span class="recorded-label">FRESH PROOF</span></div>
+          <h3 id="clearing-title">Discover the price.</h3>
           <button id="clear-auction" class="primary-button" type="button">Clear this auction <span>→</span></button>
           <p id="clearing-status" class="check-result" aria-live="polite"></p>
           <div id="fresh-outcome" hidden>
+            <div class="fresh-result-layout"><div class="fresh-market">
             <div class="market-stats"><div><span>CLEARING PRICE</span><strong id="fresh-price">—</strong><small>zatoshi / unit</small></div><div><span>SOLD</span><strong id="fresh-sold">—</strong><small>units</small></div></div>
+            <p class="book-caption">One price for every winner.</p><p class="payment-status">Demo funds · no payment sent</p>
+            </div><div class="fresh-receipt">
             <div id="fresh-result" class="result-box" aria-live="polite"><h3>Still sealed.</h3><p>Open the ticket accepted in this browser session.</p></div>
-            <div class="fresh-actions"><button id="open-fresh-result" class="primary-button" type="button">Open this ticket’s result <span>↗</span></button><button id="tamper-fresh" class="secondary-button" type="button">Tamper with clearing proof →</button></div>
+            <button id="open-fresh-result" class="primary-button" type="button">Open my result <span>↗</span></button>
+            </div></div>
+            <div class="fresh-challenge"><div><span class="eyebrow">TRY TO CHEAT</span><p>Change a proof. See it rejected.</p></div><button id="tamper-fresh" class="secondary-button" type="button">Tamper with proof <span>→</span></button></div>
             <p id="fresh-tamper-result" class="check-result" aria-live="polite"></p>
-            <p class="form-note">✓ Auction proof verified. Shielded settlement has not been constructed for this synthetic book.</p>
             <details class="advanced-details"><summary>Fresh clearing details <span>+</span></summary><p id="fresh-proof-details"></p><p id="fresh-root"></p><p>The localhost helper sees demo inputs. Three semi-honest REP3 parties run on this PC; privacy assumes at most one is corrupt. The local ticket capability is kept in this page’s memory; reloading loses it. It is not a production login or an encrypted native memo.</p></details>
           </div>
         </section>
       </div>
       <p id="rehearsal-status" class="check-result" aria-live="polite"></p><p id="rehearsal-error" class="error" role="alert" hidden></p>
-      <div class="recording-transition"><h3>Explore a recorded native settlement.</h3><p>A separate funded auction shows shielded payments and encrypted native receipts. Its transaction does not settle the new book above.</p><button id="continue-recording" class="secondary-button" type="button">Explore recorded native settlement →</button></div>
+      <button id="new-auction" class="text-button" type="button">Start another auction +</button>
+      <details class="public-details demo-details"><summary>About this demo <span>+</span></summary><p>Synthetic deposits only; each is the bid budget +15,000 zatoshi processing fee. No chain funding or native payment is sent for this auction. The local helper sees typed demo bids and creates their proofs/shares on this PC.</p><p>Four tickets are required. After the actual cutoff, three operators sign the accepted book and run the same secret shares through REP3. The fixed proof and signed root are verified before your ticket pads are opened. One host, semi-honest MPC; privacy assumes at most one corrupt party.</p><p>The opening capability stays in page memory; reload loses access. This is not production authentication, private browser proving or native memo delivery.</p></details>
+      <div class="recording-transition"><div><span class="eyebrow">NEXT / VERIFY IT</span><h3>Proof it settles.</h3><p>Explore a separate recorded Zcash transaction. It does not settle these demo bids.</p></div><button id="continue-recording" class="secondary-button" type="button">Explore settlement <span>→</span></button></div>
     </section>
     <div id="recorded-demo" hidden>
-    <p id="recording-banner" class="recording-banner">RECORDED AUCTION · These results belong to the recorded book, not the new rehearsal bids.</p>
+    <div class="recorded-intro"><span class="eyebrow">PROOF IT SETTLES</span><h2>Private payments.<br>Public verification.</h2><p id="recording-banner" class="recording-banner">Separate recorded auction · these payments do not settle your demo bids.</p><p id="scope-description" class="scope-note">Loading the recorded demo…</p></div>
     <section class="workspace" aria-label="Auction and private result">
       <article class="auction-panel">
         <div class="panel-top"><span class="eyebrow">THE AUCTION</span><span class="recorded-label">RECORDED</span></div>

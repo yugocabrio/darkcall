@@ -37,6 +37,15 @@ The local server's recorded two confirmations are not a chain-inclusion proof.
 
 ## Seller / bidder entry
 
+The entry screen offers two distinct experiences: **Try DarkCall** for
+Create → Bid → Clear → Result with demo funds, and **Proof it settles** for the
+separate recorded native transaction. A compact mode bar keeps both scopes visible.
+After successful clearing, price and own result sit side by side; bidding and
+signed acceptances remain expandable. Progress advances only after the existing
+verification gates pass. Switching modes retains the local ticket capability;
+opening a separate page does not grant one. Technical and trust details stay
+available below the main interaction.
+
 [Local entry rehearsal](local-rehearsal.md) adds actual fresh client ZK input
 proofs, REP3 share-pair checks and signed synthetic acceptance before this
 recorded result. Create/share/bid/close operate on a new offline book. Its
