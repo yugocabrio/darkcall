@@ -29,7 +29,20 @@ submission package. Do not start 8/16/32 scaling or new cryptography.
   swap exhausted the disk on Oct 18 (recovered by removing my image/cache).
 - [ ] Docs: README (rewritten), judge-review, submission-draft, demo, local
   rehearsal, reproduce (full local product). Capture-ready demo plan.
+- [x] README screenshots (sealed bids, cleared price + per-ticket result, own
+  receipt, landing). Disk-headroom guard verified in the UI: Settle was refused
+  before funding with 9.9 GiB free.
+- [ ] Next session: once ≥10 GiB disk and swap headroom return, run one Settle
+  with the pane open. Exercise Open my shielded receipt and Tamper with receipt
+  in the UI, and capture the settled view for the README.
 - [ ] Final consistency pass, then the human decides on visibility and submission.
+
+### Human actions before Oct 28 23:59 UTC
+- Record the demo using `docs/demo.md` → "Capture-ready demo plan".
+- Make the repository public (rule 3) and submit in **Private Markets** using
+  `docs/submission-draft.md`.
+- Optional: restart Docker Desktop when the other project's node can stop, to
+  release the 16 GiB VM allocation that keeps macOS swap near 19 GiB.
 
 Latest human instruction: start development, commit and push regularly, continue
 autonomously, incorporate later human/ChatGPT reviews.
