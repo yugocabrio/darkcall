@@ -2,7 +2,7 @@
 
 ## One command: clean-room Linux container
 
-With Docker and at least 12 GB of free disk (more while building), from a checkout:
+With Docker and at least 15 GB of free disk, from a checkout:
 
 ```sh
 scripts/docker_verify.sh          # or: scripts/docker_verify.sh REVISION

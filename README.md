@@ -91,15 +91,18 @@ bids. Exact records:
 ## Try it
 
 **Verify every committed settlement in a clean Linux container, with one
-command.** It needs Docker and about 12 GB of free disk; the build takes about
-20 minutes the first time:
+command.** It needs Docker and at least 15 GB of free disk; the build takes
+about 20 minutes the first time:
 
 ```sh
 scripts/docker_verify.sh
 ```
 
 It builds every pinned tool from source using only committed files, verifies
-all three public bundles, and checks that a corrupted proof is rejected.
+all three public bundles, and checks that a corrupted proof is rejected. It
+passed on Oct 18 on linux/arm64
+([record](evidence/2026-10-18-clean-room-linux-verification.json)). Remove the
+image afterwards with `docker image rm`.
 
 **Or verify on the host.** Build the pinned tools
 ([reproduce.md](docs/reproduce.md)), then run:
@@ -187,6 +190,7 @@ These are single-host measurements, not a controlled benchmark.
 | `tools/nu7-compat` | NU7 SDK: deposits, scanning, PCZT, DKG FROST, receipt memos, public verifier |
 | `scripts/` | Drivers: `serve_demo.py`, `rehearsal.py`, `settle_fresh_book.py`, regtest and checks |
 | `demo/` | Browser UI, public bundles and separately configured authority |
+| `docker/verify/` | Clean-room Linux build of the public verifier (`scripts/docker_verify.sh`) |
 | `evidence/` | Measured, public-only run records |
 
 More: [judge review](docs/judge-review.md) · [submission](docs/submission-draft.md) ·
