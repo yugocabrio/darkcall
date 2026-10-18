@@ -23,7 +23,9 @@ MAX_FILE = 8 * 1024 * 1024
 MAX_FILES = 1500
 ROOT_FILES = {'.gitignore', 'AGENTS.md', 'Cargo.lock', 'Cargo.toml', 'LICENSE',
               'README.md', 'STATUS.md', 'TASKS.md', 'demo.sh', 'verify.sh'}
-ROOT_DIRS = {'circuits', 'crates', 'demo', 'docs', 'evidence', 'patches', 'scripts', 'tools', 'vendor'}
+ROOT_DIRS = {'circuits', 'crates', 'demo', 'docker', 'docs', 'evidence', 'patches', 'scripts', 'tools', 'vendor'}
+# Vendored upstream source whose name matches the witness-artifact rule.
+SOURCE_EXCEPTIONS = {'vendor/halo2_gadgets/src/ecc/chip/witness_point.rs'}
 BUNDLE = 'demo/artifacts/canonical-nu7-funded-v1'
 AUTHORITY = 'demo/authority/canonical-nu7-funded-v1.json'
 TXID = '47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938'
@@ -42,7 +44,8 @@ def safe_source(name, data):
         raise RuntimeError('Unreviewed source path')
     if (set(p.parts) & {'.git', '.deps', '.local', 'target', '__pycache__'}
             or name.startswith('evidence/private/') or p.name == 'Prover.toml'
-            or p.name.startswith(('.env', 'private-')) or 'witness' in p.name.lower()
+            or p.name.startswith(('.env', 'private-'))
+            or ('witness' in p.name.lower() and name not in SOURCE_EXCEPTIONS)
             or p.suffix in {'.pczt', '.db', '.db-shm', '.db-wal', '.sqlite', '.sqlite3',
                             '.sqlite-shm', '.sqlite-wal', '.pyc', '.pem', '.key', '.log'}):
         raise RuntimeError('Runtime/private artifact refused')
