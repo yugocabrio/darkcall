@@ -71,39 +71,38 @@ Zcash authorization and an operator-signed accepted book.
 
 ## It runs, end to end, for an auction you create
 
-On October 18, 2026 an auction was **created, bid on, funded, cleared and
-settled by clicking through the browser UI**. That run funded at Settle time;
-the UI now funds right after the close, before clearing (protocol order). It settled on an isolated Zebra 7.0.0-rc.0
-NU7 regtest. The same sealed tickets, commitments, shares and accepted root
-carried through every step:
+On October 19, 2026 an auction was **created, bid on, funded, cleared and
+settled by clicking through the browser UI**, in protocol order, on an isolated
+Zebra 7.0.0-rc.0 NU7 regtest. The same sealed tickets, commitments, shares and
+accepted root `2d619728…558d12f9` carried through every step:
 
 | Step | Result |
 | --- | --- |
-| Create + 4 sealed demo bids (77, 61, 43, 21) | 4 client ZK input proofs, 12 REP3 share-pair checks, 12 signed acceptances |
-| Fund & admit | 4 real shielded deposits, tx `d11efd9a…5fd04abd`, 2 confirmations. Same 4 proofs + 12 pairs re-verified; operator certificate over the **same root** `04728ac2…ccbc739a` (121 s) |
-| Clear in the browser | REP3 price **21**, 3 sold, coNoir proof verified in 8.6 s |
-| Settle → MPC, bind, sign | Fresh REP3 run inside settlement, 6 Halo2 output bindings, 2-of-3 DKG FROST; Zebra accepted tx `3fee2c7c…b5c0b5d7` with 2 confirmations (settlement 886 s) |
-| Payout | 6 wallets scanned their notes: refunds 79/79/100/79, seller 63, operator fee 30000 |
-| Public check | Public-only verifier passed (native authorization, 6 bindings, auction proof, certificate) in 102 s; Settle → verified 1117 s |
-| Own receipts | Each bidder's memo decrypts with only their own key: won/lost and refund equal to the browser result |
+| Create + 4 sealed demo bids (77, 61, 43, 21) | 4 client ZK input proofs, 12 REP3 share-pair checks, 3 operator signatures per bid (pre-check) |
+| Fund on Zcash | 4 real shielded deposits, tx `5e9432e5…d72f14be`, 2 confirmations. Same 4 proofs + 12 pairs re-verified against the deposits; operator certificate over the **same root** (121 s) |
+| Clear | REP3 price **21**, 3 sold, coNoir proof verified in 7.8 s, after funding |
+| Settle | Fresh REP3 delivery on the same shares, 6 Halo2 output bindings, 2-of-3 DKG FROST; Zebra accepted tx `e3ffa436…84769754` with 2 confirmations (driver 912 s) |
+| Payout | 6 wallets scanned their exact notes: refunds 79/79/100/79, seller 63, operator fee 30000 |
+| Public check | Public-only verifier passed in 105 s: native authorization, 6 bindings, auction proof, certificate |
+| Own receipts | Ticket 01 WON / 79 and Ticket 04 LOST / 100, each decrypted from its own memo with its own key; a corrupted receipt proof was rejected before key use |
 
-A scripted run of the same API (`scripts/check_fresh_settlement.py`) repeats
-this. It also checks that a tampered receipt proof, a foreign ticket capability,
-an early settle and a concurrent proof are all refused. Three committed public
-bundles can be verified without secrets: this browser auction, a CLI-driven
-fresh book, and the earlier recorded settlement `47019e02…a211938` with fixture
-bids. Exact records:
-[Oct 18 settlements](evidence/2026-10-18-fresh-book-native-settlement.json),
+The scripted run of the same API (`scripts/check_fresh_settlement.py`) repeats
+the flow. It also checks that clearing or settling before funding, a tampered
+receipt proof, a foreign ticket capability and a concurrent proof are all
+refused. Four committed public bundles can be verified without secrets: this
+six-step auction, two earlier browser-created books from Oct 18, and the Oct 5
+recorded settlement `47019e02…a211938` with fixture bids. Exact records:
+[browser settlements](evidence/2026-10-18-fresh-book-native-settlement.json),
 [recorded settlement](evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
 <table>
-<tr><td><img src="docs/img/02-bids-sealed.jpg" alt="Four bids sealed with client ZK proofs and signed acceptances"></td>
-<td><img src="docs/img/03-cleared-own-result.jpg" alt="Clearing price 21, 3 of 3 sold, and one ticket's own verified result"></td></tr>
+<tr><td><img src="docs/img/02-bids-sealed.jpg" alt="Four bids sealed with client ZK proofs and operator pre-check signatures"></td>
+<td><img src="docs/img/03-funded.jpg" alt="Deposits locked on Zcash regtest and admitted over the same root"></td></tr>
 <tr><td>Four sealed bids, each with a client ZK proof and three operator signatures.</td>
-<td>One public price from REP3 MPC; each ticket opens only its own result.</td></tr>
-<tr><td><img src="docs/img/05-settled.jpg" alt="Five settlement stages done, who learned what, and the settlement transaction"></td>
+<td>Fund on Zcash: real shielded deposits, admitted over the same root, before any clearing.</td></tr>
+<tr><td><img src="docs/img/05-settled.jpg" alt="Settlement stages done, who learned what, and the settlement transaction"></td>
 <td><img src="docs/img/06-shielded-receipt-tamper.jpg" alt="A losing ticket's shielded refund decrypted, and a corrupted receipt proof rejected"></td></tr>
-<tr><td>Settle on Zcash: same sealed book funded, cleared by MPC, bound, signed, confirmed and publicly verified.</td>
+<tr><td>Settle: MPC delivery, six output bindings, FROST signing, confirmations, public check.</td>
 <td>Each ticket opens only its own shielded receipt; a corrupted proof is rejected before the key is read.</td></tr>
 </table>
 
@@ -127,8 +126,8 @@ image afterwards with `docker image rm`.
 ([reproduce.md](docs/reproduce.md)), then run:
 
 ```sh
-./verify.sh --funded demo/artifacts/browser-auction-nu7-v1 \
-  --authority demo/authority/browser-auction-nu7-v1.json
+./verify.sh --funded demo/artifacts/browser-auction-nu7-v2 \
+  --authority demo/authority/browser-auction-nu7-v2.json
 ```
 
 **Run the whole product locally.** You need the pinned tools, Docker, and the

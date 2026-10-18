@@ -379,5 +379,80 @@
     "concurrent_settle_and_recorded_proof_refused_409": true,
     "non_default_terms_not_settleable": true,
     "total_seconds": 1189.173
+  },
+  "six_step_browser_run": {
+    "date": "2026-10-19 (CEST)",
+    "order": "Create, Bid, Fund, Clear, Result, Settle in one open browser page (fund-first UI)",
+    "auction_id": "3e1361da746515f4bdaa91194f982ed8",
+    "terms": {
+      "units": 3,
+      "reserve": 20,
+      "budget": 100
+    },
+    "demo_bids": "77, 61, 43, 21 via one-click chips",
+    "accepted_root": "2d6197285c9df3245d9f82b63085e73e5d0e4df4afaf658be8af5127558d12f9",
+    "tickets": [
+      "1225574ef065cf671b2edd417f2244142d244a90764e265b8694b5465e6b1e70",
+      "4f91cd45b2fb84bf15a61a5192edc82094f3ef06fc1c72cebecc118b07f0ae06",
+      "89dde4016ff703efc36cb79b53cffb673a96dc2423494e8d6fc43dea7b3d8441",
+      "ef078ac990440d60d959cecaf81fc599f29cd888ea6a24eeee4aadbd43874bbd"
+    ],
+    "funding": {
+      "deposit_txid": "5e9432e561a9e4125dc10e9d27f21e12b3e3e69f8242f9f5e6db38c8d72f14be",
+      "confirmations": 2,
+      "client_proofs": 4,
+      "share_pairs": 12,
+      "receipt_signatures": 12,
+      "final_book_signatures": 3,
+      "same_accepted_root": true,
+      "seconds": 120.862
+    },
+    "clearing_after_funding": {
+      "price": 21,
+      "sold": 3,
+      "seconds_displayed": 7.8
+    },
+    "own_browser_result": {
+      "ticket": "01",
+      "won": true,
+      "refund_entitlement": 79
+    },
+    "settlement": {
+      "txid": "e3ffa436a2fd747653dec92e052f622135f51912c6707ec95b7373ab84769754",
+      "price": 21,
+      "sold": 3,
+      "confirmations": 2,
+      "binding_key_started_s": 9.458,
+      "mpc_verification_started_s": 679.509,
+      "driver_seconds": 911.621,
+      "public_verification_seconds": 105.466,
+      "settle_job_seconds": 1024.253
+    },
+    "ui_own_shielded_receipts": [
+      {
+        "ticket": "01",
+        "won": true,
+        "refund": 79
+      },
+      {
+        "ticket": "04",
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "ui_receipt_tamper": "Corrupted receipt proof rejected before your viewing key was read",
+    "mobile_390px_no_horizontal_overflow": true,
+    "public_bundle": "demo/artifacts/browser-auction-nu7-v2",
+    "authority": "demo/authority/browser-auction-nu7-v2.json",
+    "committed_bundle_host_verification_seconds": 99.3,
+    "bundle_manifest_sha256": "29893f63b48e4f27c1a1843085155a02b4743e46b82394866db4f71b610c5a46",
+    "authority_sha256": "7b0b0fd96d9d9fc2ed39a4c82b7eee2d96c7d25ff70ff62ab5dd727b32ac6ca3",
+    "screenshots": [
+      "docs/img/02-bids-sealed.jpg",
+      "docs/img/03-funded.jpg",
+      "docs/img/05-settled.jpg",
+      "docs/img/06-shielded-receipt-tamper.jpg",
+      "docs/img/07-mobile-settled.jpg"
+    ]
   }
 }

@@ -23,16 +23,17 @@ receipt memo.
    On a host with the [pinned tools](reproduce.md), run:
 
    ```sh
-   ./verify.sh --funded demo/artifacts/browser-auction-nu7-v1 \
-     --authority demo/authority/browser-auction-nu7-v1.json
+   ./verify.sh --funded demo/artifacts/browser-auction-nu7-v2 \
+     --authority demo/authority/browser-auction-nu7-v2.json
    ./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 \
      --authority demo/authority/canonical-nu7-funded-v1.json
    ```
 
-   The first bundle comes from an auction that was created, cleared and settled
-   by clicking through the browser on October 18 (tx `3fee2c7c…`). The second is
-   the earlier recorded settlement with fixture bids. `fresh-book-nu7-v1` is a
-   third bundle: a browser-created book settled from the CLI.
+   The first bundle comes from an auction that was created, funded, cleared and
+   settled by clicking through the browser on October 19 (tx `e3ffa436…`). The
+   second is the earlier recorded settlement with fixture bids. Two more
+   browser-created books from October 18 are also committed:
+   `browser-auction-nu7-v1` and `fresh-book-nu7-v1`.
    Each check takes about two minutes. It needs no wallet key, PCZT, bid, mask
    or witness.
 3. **Exact records.** See

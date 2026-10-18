@@ -14,11 +14,11 @@ if [ "${1-}" = "--fixture-recorded" ]; then
     --authority "$TASK_ROOT/demo/authority/canonical-nu7-funded-v1.json" "$@"
 fi
 # Trusted local demo configuration, separately pinned from the proof bundle.
-# "Proof it settles" shows the Oct 18 auction that was created, cleared and
-# settled through this UI (tx 3fee2c7c...b5c0b5d7). Without its ignored local
-# run, the same committed bundle is served public-only.
+# "Proof it settles" shows the auction that was created, funded, cleared and
+# settled through this UI on Oct 19 (tx e3ffa436...84769754). Without its
+# ignored local run, the same committed bundle is served public-only.
 exec python3 "$TASK_ROOT/scripts/serve_demo.py" --canonical --funded \
-  --run settle-debcba7c01-settlement \
-  --bundle "$TASK_ROOT/demo/artifacts/browser-auction-nu7-v1" \
-  --authority "$TASK_ROOT/demo/authority/browser-auction-nu7-v1.json" \
-  --recorded-note "Created, cleared and settled in this UI on Oct 18 · isolated Zcash regtest" "$@"
+  --run settle-35b2a2569d-settlement \
+  --bundle "$TASK_ROOT/demo/artifacts/browser-auction-nu7-v2" \
+  --authority "$TASK_ROOT/demo/authority/browser-auction-nu7-v2.json" \
+  --recorded-note "Created, funded, cleared and settled in this UI on Oct 19 · isolated Zcash regtest" "$@"

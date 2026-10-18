@@ -11,8 +11,8 @@ The page offers two experiences:
   **Settle**. Settle funds the same sealed book on the isolated NU7 regtest and
   pays it out in one shielded transaction. Then you open your own shielded
   receipt. Details and exact scope: [local-rehearsal.md](local-rehearsal.md).
-- **Proof it settles** shows an auction that was created, cleared and settled
-  through this UI on Oct 18, tx `3fee2c7c…b5c0b5d7`. You can open each bidder's
+- **Proof it settles** shows an auction that was created, funded, cleared and
+  settled through this UI on Oct 19, tx `e3ffa436…84769754`. You can open each bidder's
   shielded receipt in about 3 s or verify the whole settlement in about two
   minutes when there is no time to settle a new auction.
   `./demo.sh --fixture-recorded` shows the Oct 5 settlement with fixture bids,

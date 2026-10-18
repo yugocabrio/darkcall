@@ -339,7 +339,7 @@ async function pollSettlement() {
 }
 $('fund-auction').addEventListener('click',async()=>{
   if (busy || !room || room.funding) return; rehearsalError(''); lock(true);
-  try { room.funding=await rehearsalRequest('fund',{auction_id:room.auction_id}); }
+  try { room.funding=await rehearsalRequest('fund',{auction_id:room.auction_id}); $('rehearsal-status').textContent=''; }
   catch(error) { rehearsalError(error.message); }
   finally { lock(false); refreshRoom(); }
 });
@@ -438,10 +438,10 @@ $('bid-form').addEventListener('submit',async event=>{
     if (!result.accepted || !result.client_input_proof_verified || result.share_pairs_verified!==3 || result.receipt_signatures_verified!==3 || result.chain_funding_verified || result.native_settlement_started || result.auction.auction_id!==room.auction_id) throw new Error('Incomplete signed acceptance.');
     lastAcceptance=result; showRoom(result.auction);
     myTickets.push({ticket:result.ticket,opening_token:result.opening_token,ticket_number:result.ticket_number}); selectedTicket=myTickets.length-1;
-    $('bid-accepted').hidden=false; $('bid-accepted').replaceChildren(element('h3','✓ Bid accepted'),element('p','Ticket '+String(result.ticket_number).padStart(2,'0')+' · Signed acceptance verified.'));
+    $('bid-accepted').hidden=false; $('bid-accepted').replaceChildren(element('h3','✓ Bid sealed'),element('p','Ticket '+String(result.ticket_number).padStart(2,'0')+' · proof, 3 share pairs and 3 operator signatures verified'+(room.funding_required?' · deposit after close':'')+'.'));
     $('copy-acceptance').hidden=false; $('acceptance-details').hidden=false;
     $('acceptance-public').textContent=JSON.stringify({client_input_proof_verified:true,share_pairs_verified:3,receipt_signatures_verified:3,ticket:result.ticket,commitment:result.commitment,receipt:result.receipt},null,2);
-    $('rehearsal-status').textContent='✓ Fresh signed acceptance ready. '+result.seconds.toFixed(1)+' seconds.';
+    $('rehearsal-status').textContent='✓ Bid sealed and pre-checked in '+result.seconds.toFixed(1)+' seconds.';
   } catch (error) {
     rehearsalError(error.message); $('rehearsal-status').textContent='';
     try {
@@ -457,7 +457,7 @@ $('close-auction').addEventListener('click',async()=>{
     const result=await rehearsalRequest('close',{auction_id:room.auction_id});
     if (!result.closed || result.funding_scope!=='offline-synthetic' || result.fresh_clearing_or_settlement) throw new Error('Unexpected book certification.');
     room.closed=true; room.accepted_root=result.accepted_root;
-    $('rehearsal-status').textContent='✓ Bids locked. Ready to clear.';
+    $('rehearsal-status').textContent=room.funding_required?'✓ Bids locked. Fund them on Zcash next.':'✓ Bids locked. Ready to clear.';
   } catch(error) { rehearsalError(error.message); }
   finally { lock(false); refreshRoom(); }
 });
