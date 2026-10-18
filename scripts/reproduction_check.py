@@ -61,7 +61,7 @@ def inspect():
             raise RuntimeError('Wrong source pin')
         expected=b''.join((ROOT/'patches'/name).read_bytes() for name in
                           ('barretenberg-apple-clang15.patch','barretenberg-macos-ipc.patch'))
-        if command('git','-C',source,'diff','--')!=expected: raise RuntimeError('Unknown verifier patch')
+        if command('git','-C',source,'-c','core.abbrev=7','diff','--')!=expected: raise RuntimeError('Unknown verifier patch')
         binary=pathlib.Path('.deps/barretenberg-src/barretenberg/cpp/build-darkcall/bin/bb')
         if not os.access(ROOT/binary,os.X_OK): raise RuntimeError('Verifier not executable')
         return {'source':BB_PIN,'exact_known_patches':True,**file_record(binary)}

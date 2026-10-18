@@ -72,7 +72,7 @@ class Rehearsal:
         if subprocess.check_output(['git','-C',str(SOURCE),'rev-parse','HEAD']).decode().strip()!=BB_PIN:
             raise RuntimeError('Pinned fixed verifier unavailable')
         patches=(ROOT/'patches/barretenberg-apple-clang15.patch').read_bytes()+(ROOT/'patches/barretenberg-macos-ipc.patch').read_bytes()
-        if subprocess.check_output(['git','-C',str(SOURCE),'diff','--'])!=patches:
+        if subprocess.check_output(['git','-C',str(SOURCE),'-c','core.abbrev=7','diff','--'])!=patches:
             raise RuntimeError('Fixed verifier source changed')
         local=ROOT/'.local'
         if local.is_symlink(): raise RuntimeError('Local directory symlink refused')

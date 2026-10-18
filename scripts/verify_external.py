@@ -40,7 +40,9 @@ def main():
     pin = subprocess.check_output(["git", "-C", str(SOURCE), "rev-parse", "HEAD"], text=True).strip()
     if pin != PIN or not BB.is_file():
         raise RuntimeError("Build the pinned C++ verifier first")
-    actual_patch = subprocess.check_output(["git", "-C", str(SOURCE), "diff", "--"], text=True)
+    # Fixed abbreviation: Git otherwise lengthens index hashes in larger clones,
+    # changing the diff text while the source change is identical.
+    actual_patch = subprocess.check_output(["git", "-C", str(SOURCE), "-c", "core.abbrev=7", "diff", "--"], text=True)
     expected_patch = (ROOT / "patches/barretenberg-apple-clang15.patch").read_text() + (ROOT / "patches/barretenberg-macos-ipc.patch").read_text()
     if actual_patch != expected_patch:
         raise RuntimeError("Unexpected source changes in the verifier checkout")
