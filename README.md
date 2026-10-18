@@ -88,6 +88,17 @@ bids. Exact records:
 [Oct 18 settlements](evidence/2026-10-18-fresh-book-native-settlement.json),
 [recorded settlement](evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
+<table>
+<tr><td><img src="docs/img/02-bids-sealed.jpg" alt="Four bids sealed with client ZK proofs and signed acceptances"></td>
+<td><img src="docs/img/03-cleared-own-result.jpg" alt="Clearing price 21, 3 of 3 sold, and one ticket's own verified result"></td></tr>
+<tr><td>Four sealed bids, each with a client ZK proof and three operator signatures.</td>
+<td>One public price from REP3 MPC; each ticket opens only its own result.</td></tr>
+<tr><td><img src="docs/img/04-own-receipt.jpg" alt="A bidder's receipt decrypted from the shielded settlement transaction"></td>
+<td><img src="docs/img/01-landing.jpg" alt="DarkCall landing page"></td></tr>
+<tr><td>After settlement: a bidder's memo receipt decrypted with only their own key.</td>
+<td>Two ways in: run an auction yourself, or check a settled one.</td></tr>
+</table>
+
 ## Try it
 
 **Verify every committed settlement in a clean Linux container, with one
