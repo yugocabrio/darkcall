@@ -17,6 +17,7 @@
     <section class="intro">
       <h1>Sealed bids.<br><em>Verifiable settlement.</em></h1>
       <p class="lead">A sealed-bid auction settled privately on Zcash.</p>
+      <div class="landing-facts"><span><b>Public</b>clearing price · units sold · proofs</span><span><b>Never published</b>any maximum bid · who won · refunds</span><span><b>Settled</b>one shielded transaction anyone can verify</span></div>
     </section>
     <nav class="experience-picker" aria-label="Choose an experience">
       <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-number">01 / TRY IT</span><span class="experience-heading">Try DarkCall <span aria-hidden="true">↗</span></span><span class="experience-caption">Create. Bid. Clear. Settle on Zcash.</span><span class="experience-scope">Demo bids · real shielded settlement on isolated regtest</span></button>
@@ -58,6 +59,7 @@
             <div class="market-stats"><div><span>CLEARING PRICE</span><strong id="fresh-price">—</strong><small>zatoshi / unit</small></div><div><span>SOLD</span><strong id="fresh-sold">—</strong><small>units</small></div></div>
             <p class="book-caption">One price for every winner.</p><p id="payment-status" class="payment-status">Demo funds · no payment sent yet</p>
             </div><div class="fresh-receipt">
+            <label class="ticket-pick" hidden>Ticket sealed in this page<select id="my-ticket"></select></label>
             <div id="fresh-result" class="result-box" aria-live="polite"><h3>Still sealed.</h3><p>Open the ticket accepted in this browser session.</p></div>
             <button id="open-fresh-result" class="primary-button" type="button">Open my result <span>↗</span></button>
             </div></div>
@@ -69,7 +71,7 @@
         <section id="settle-section" class="fresh-settlement" hidden aria-label="Settle this auction on Zcash regtest">
           <div class="panel-top"><span class="eyebrow">SETTLE ON ZCASH</span><span class="recorded-label">ISOLATED REGTEST</span></div>
           <h3 id="settle-title">Pay it out, privately.</h3>
-          <p class="settle-lead">Fund these same four sealed bids with shielded regtest deposits, then pay the seller and every refund in one shielded transaction. About 20–30 minutes on this Mac.</p>
+          <p class="settle-lead">Fund these same four sealed bids with shielded regtest deposits, then pay the seller and every refund in one shielded transaction. About 20 minutes on this Mac.</p>
           <button id="settle-auction" class="primary-button" type="button">Settle on Zcash <span>→</span></button>
           <p id="settle-note" class="form-note" hidden></p>
           <ol id="settle-steps" class="settle-steps" hidden>
@@ -81,8 +83,15 @@
           </ol>
           <p id="settle-status" class="check-result" aria-live="polite"></p>
           <div id="settle-outcome" hidden>
+            <div class="knowledge-grid" aria-label="Who learned what">
+              <div><span>EVERYONE</span><p id="know-public">Clearing price, units sold, one shielded transaction and its proofs.</p></div>
+              <div><span>EACH BIDDER</span><p>Only their own result and refund, from their own encrypted memo.</p></div>
+              <div><span>OPERATORS</span><p>Winners and refunds. Each one holds only shares of the bids.</p></div>
+              <div><span>NEVER PUBLISHED</span><p>Any maximum bid. Not even the winners'.</p></div>
+            </div>
             <dl class="settle-facts"><dt>Settlement transaction</dt><dd id="settle-txid">—</dd><dt>Deposit transaction</dt><dd id="settle-deposit">—</dd><dt>Same sealed book</dt><dd id="settle-root">—</dd><dt>Outcome</dt><dd id="settle-price">—</dd></dl>
-            <div class="fresh-receipt settle-receipt">
+ <div class="fresh-receipt settle-receipt">
+              <label class="ticket-pick" hidden>Ticket sealed in this page<select id="my-native-ticket"></select></label>
               <div id="native-result" class="result-box"><h3>Your receipt is encrypted.</h3><p>Only your viewing key can open your memo in this transaction.</p></div>
               <button id="open-native-result" class="primary-button" type="button">Open my shielded receipt <span>↗</span></button>
             </div>

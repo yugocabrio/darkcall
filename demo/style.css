@@ -779,3 +779,14 @@ input:focus {outline:1px solid var(--accent);outline-offset:1px}
   .settle-facts dd {margin-bottom:10px}
   .auction-progress li {font-size:9px}
 }
+.ticket-pick {display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:#a9bb9a;margin-bottom:6px}
+.ticket-pick select {width:auto;min-width:130px;padding:8px 10px;font-size:12px}
+.knowledge-grid {display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0 4px}
+.knowledge-grid div {border:1px solid #33422e;border-radius:8px;padding:14px;background:#1a2417}
+.knowledge-grid span {font:9px var(--mono);letter-spacing:1.4px;color:#9fbf86}
+.knowledge-grid p {font-size:12px;line-height:1.55;color:#cfdcc4;margin:8px 0 0}
+@media(max-width:760px) {.knowledge-grid {grid-template-columns:1fr 1fr}}
+.landing-facts {display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 6px;max-width:900px}
+.landing-facts span {display:grid;gap:6px;border-top:1px solid #3a4934;padding-top:12px;font-size:13px;color:#c4d2b8;line-height:1.5}
+.landing-facts b {font:10px var(--mono);letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);font-weight:400}
+@media(max-width:700px) {.landing-facts {grid-template-columns:1fr}}

@@ -23,7 +23,7 @@ python3 scripts/regtest_nu7_node.py start
 
 Open `http://127.0.0.1:8877` and choose **Try DarkCall**. The default terms
 (3 units, reserve 20, budget 100 zatoshi) are the terms the native settlement
-prototype supports, and the close time defaults to five minutes ahead. Seal four
+prototype supports, and the close time defaults to two minutes ahead. Seal four
 demo bids. You can share the local link with another browser on this PC. After
 the deadline, **Certify closed book**, **Clear this auction** and **Open my
 result**. Then press **Settle on Zcash** and watch the five stages:

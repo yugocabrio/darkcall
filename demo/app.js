@@ -121,6 +121,25 @@ fetch('/api/state').then(async response => {
 
 // Interactive entry is an OFFLINE rehearsal. It never alters the recorded book.
 let room = null, lastAcceptance = null, freshClearingVerified = false, freshResultVerified = false;
+// Every ticket sealed in THIS page keeps its own local opening capability. The page
+// simulates four bidders; each opening uses only that ticket's capability and key.
+let myTickets = [], selectedTicket = 0;
+const currentTicket = () => myTickets[selectedTicket] || null;
+function renderTicketPickers() {
+  for (const id of ['my-ticket','my-native-ticket']) {
+    const select=$(id), label=select.closest('label');
+    label.hidden=myTickets.length<2;
+    if (select.options.length!==myTickets.length) select.replaceChildren(...myTickets.map((t,i)=>{ const option=document.createElement('option'); option.value=String(i); option.textContent='Ticket '+String(t.ticket_number).padStart(2,'0'); return option; }));
+    select.value=String(selectedTicket); select.disabled=busy;
+  }
+}
+function pickTicket(value) {
+  selectedTicket=Number(value); freshResultVerified=false; nativeResultVerified=false;
+  $('fresh-result').className='result-box'; $('fresh-result').replaceChildren(element('h3','Still sealed.'),element('p','Open this ticket\'s result.'));
+  $('native-result').className='result-box'; $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','Only this ticket\'s viewing key can open its memo.'));
+  $('fresh-tamper-result').textContent=''; $('native-tamper-result').textContent='';
+  refreshRoom();
+}
 const integer = id => { const text=$(id).value; if (!/^\d+$/.test(text)) throw new Error('Use whole-number demo values.'); return Number(text); };
 function rehearsalError(message) { $('rehearsal-error').textContent=message; $('rehearsal-error').hidden=!message; }
 function refreshRoom() {
@@ -143,8 +162,9 @@ function refreshRoom() {
   $('close-auction').disabled=busy || !available || room.stopped_after_incomplete_admission || remaining>0 || room.accepted!==4 || room.closed;
   $('clear-auction').disabled=busy || !available || !room.clearing_available || !room.closed || room.clearing_stopped || Boolean(room.clearing);
   const settling=Boolean(room.settlement && room.settlement.state==='running');
-  $('open-fresh-result').disabled=busy || settling || !room.clearing || !lastAcceptance;
-  $('tamper-fresh').disabled=busy || settling || !room.clearing || !lastAcceptance;
+  $('open-fresh-result').disabled=busy || settling || !room.clearing || !currentTicket();
+  $('tamper-fresh').disabled=busy || settling || !room.clearing || !currentTicket();
+  renderTicketPickers();
   renderSettlement();
   $('clear-auction').hidden=Boolean(room.clearing);
   $('rehearsal-title').textContent=settled?'Your auction settled on Zcash.':room.clearing?'Your auction cleared.':room.closed?'Ready to clear.':room.accepted===4?'Bids are sealed.':'Place your bid.';
@@ -156,7 +176,7 @@ function refreshRoom() {
 function showRoom(value) {
   if (!value || value.funding_scope!=='offline-synthetic' || value.chain_funding_verified || value.native_settlement_started!==Boolean(value.settlement)) throw new Error('Unexpected rehearsal scope.');
   if (room && room.auction_id!==value.auction_id) {
-    lastAcceptance=null; $('bid-accepted').hidden=true; $('copy-acceptance').hidden=true; $('acceptance-details').hidden=true;
+    lastAcceptance=null; myTickets=[]; selectedTicket=0; $('bid-accepted').hidden=true; $('copy-acceptance').hidden=true; $('acceptance-details').hidden=true;
     resetFresh();
   }
   room=value; $('create-form').hidden=true; $('auction-room').hidden=false;
@@ -205,13 +225,13 @@ $('clear-auction').addEventListener('click',async()=>{
   } finally { lock(false); refreshRoom(); }
 });
 async function openFresh(action) {
-  if (busy || !room || !lastAcceptance || !room.clearing) return;
+  const mine=currentTicket(); if (busy || !room || !mine || !room.clearing) return;
   rehearsalError(''); lock(true);
   if (action==='open') { freshResultVerified=false; $('fresh-result').replaceChildren(element('h3','Verifying…'),element('p','Checking your proof and signed book.')); }
   else $('fresh-tamper-result').textContent='Submitting a corrupted clearing proof to the fixed verifier…';
   try {
-    const result=await rehearsalRequest('result',{auction_id:room.auction_id,ticket:lastAcceptance.ticket,opening_token:lastAcceptance.opening_token,action});
-    if (result.auction_id!==room.auction_id || result.ticket!==lastAcceptance.ticket || result.native_settlement) throw new Error('Unexpected result scope.');
+    const result=await rehearsalRequest('result',{auction_id:room.auction_id,ticket:mine.ticket,opening_token:mine.opening_token,action});
+    if (result.auction_id!==room.auction_id || result.ticket!==mine.ticket || result.native_settlement) throw new Error('Unexpected result scope.');
     if (action==='tamper') {
       if (!result.rejected || result.private_pad_read) throw new Error('Unexpected tamper check.');
       $('fresh-tamper-result').textContent='✓ Corrupted proof rejected. Your ticket pads were not read.';
@@ -275,11 +295,12 @@ function renderSettlement() {
   if (job.state==='done') {
     if (result.accepted_root!==room.accepted_root || result.price!==room.clearing.price || result.sold!==room.clearing.sold) { $('settle-status').textContent='Settlement result does not match this auction.'; $('settle-outcome').hidden=true; return; }
     $('settle-txid').textContent=result.txid; $('settle-deposit').textContent=result.deposit_txid;
+    $('know-public').textContent='Price '+result.price+' zatoshi, '+result.sold+' of '+room.units+' sold, one shielded transaction and its proofs.';
     $('settle-root').textContent='✓ '+shortId(result.accepted_root)+' · same tickets and accepted root as your browser book';
     $('settle-price').textContent=result.price+' zatoshi × '+result.sold+' sold · matches the browser clearing · '+result.confirmations+' regtest confirmations';
-    $('open-native-result').disabled=busy || !lastAcceptance;
-    $('tamper-native').disabled=busy || !lastAcceptance;
-    if (!lastAcceptance && !nativeResultVerified) $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','This page no longer holds a ticket capability. Reloading loses it by design.'));
+    $('open-native-result').disabled=busy || !currentTicket();
+    $('tamper-native').disabled=busy || !currentTicket();
+    if (!currentTicket() && !nativeResultVerified) $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','This page no longer holds a ticket capability. Reloading loses it by design.'));
   }
   if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
 }
@@ -298,13 +319,13 @@ $('settle-auction').addEventListener('click',async()=>{
   finally { lock(false); refreshRoom(); }
 });
 async function openNative(action) {
-  if (busy || !room || !lastAcceptance || !room.settlement || room.settlement.state!=='done') return;
+  const mine=currentTicket(); if (busy || !room || !mine || !room.settlement || room.settlement.state!=='done') return;
   rehearsalError(''); lock(true);
   if (action==='native-open') { nativeResultVerified=false; $('native-result').className='result-box loading'; $('native-result').replaceChildren(element('h3','Decrypting…'),element('p','Verifying the proofs and signed book first, then using only your viewing key.')); }
   else $('native-tamper-result').textContent='Submitting a corrupted receipt proof to the fixed verifier…';
   try {
-    const result=await rehearsalRequest('result',{auction_id:room.auction_id,ticket:lastAcceptance.ticket,opening_token:lastAcceptance.opening_token,action});
-    if (result.auction_id!==room.auction_id || result.ticket!==lastAcceptance.ticket) throw new Error('Unexpected receipt scope.');
+    const result=await rehearsalRequest('result',{auction_id:room.auction_id,ticket:mine.ticket,opening_token:mine.opening_token,action});
+    if (result.auction_id!==room.auction_id || result.ticket!==mine.ticket) throw new Error('Unexpected receipt scope.');
     if (action==='native-tamper') {
       if (!result.rejected || result.key_read || result.memo_decrypted) throw new Error('Unexpected tamper check.');
       $('native-tamper-result').textContent='✓ Corrupted receipt proof rejected before your viewing key was read.';
@@ -329,6 +350,8 @@ async function openNative(action) {
 $('open-native-result').addEventListener('click',()=>openNative('native-open'));
 $('tamper-native').addEventListener('click',()=>openNative('native-tamper'));
 $('open-fresh-result').addEventListener('click',()=>openFresh('open'));
+$('my-ticket').addEventListener('change',event=>pickTicket(event.target.value));
+$('my-native-ticket').addEventListener('change',event=>pickTicket(event.target.value));
 $('tamper-fresh').addEventListener('click',()=>openFresh('tamper'));
 $('start-auction').addEventListener('click',()=>{
   selectExperience('try');
@@ -353,7 +376,7 @@ $('show-recording').addEventListener('click',showRecording);
 $('continue-recording').addEventListener('click',showRecording);
 $('new-auction').addEventListener('click',()=>{
   if (busy) return;
-  room=null; lastAcceptance=null; history.replaceState(null,'',location.pathname);
+  room=null; lastAcceptance=null; myTickets=[]; selectedTicket=0; history.replaceState(null,'',location.pathname);
   resetFresh();
   $('auction-room').hidden=true; $('create-form').hidden=false; $('rehearsal-title').textContent='Create your auction.';
   document.querySelector('.rehearsal-scope').textContent='Set the terms. Invite four bidders.';
@@ -381,6 +404,7 @@ $('bid-form').addEventListener('submit',async event=>{
     const result=await rehearsalRequest('bid',{auction_id:room.auction_id,maximum_bid:maximum});
     if (!result.accepted || !result.client_input_proof_verified || result.share_pairs_verified!==3 || result.receipt_signatures_verified!==3 || result.chain_funding_verified || result.native_settlement_started || result.auction.auction_id!==room.auction_id) throw new Error('Incomplete signed acceptance.');
     lastAcceptance=result; showRoom(result.auction);
+    myTickets.push({ticket:result.ticket,opening_token:result.opening_token,ticket_number:result.ticket_number}); selectedTicket=myTickets.length-1;
     $('bid-accepted').hidden=false; $('bid-accepted').replaceChildren(element('h3','✓ Bid accepted'),element('p','Ticket '+String(result.ticket_number).padStart(2,'0')+' · Signed acceptance verified.'));
     $('copy-acceptance').hidden=false; $('acceptance-details').hidden=false;
     $('acceptance-public').textContent=JSON.stringify({client_input_proof_verified:true,share_pairs_verified:3,receipt_signatures_verified:3,ticket:result.ticket,commitment:result.commitment,receipt:result.receipt},null,2);
@@ -429,6 +453,6 @@ async function joinRehearsal() {
   } catch (error) { $('rehearsal').hidden=false; rehearsalError(error.message); }
 }
 window.addEventListener('hashchange',joinRehearsal);
-function setDefaultClose() { const close=new Date(Date.now()+300000); $('create-close').value=new Date(close-close.getTimezoneOffset()*60000).toISOString().slice(0,19); }
+function setDefaultClose() { const close=new Date(Date.now()+120000); $('create-close').value=new Date(close-close.getTimezoneOffset()*60000).toISOString().slice(0,19); }
 setDefaultClose();
 setInterval(refreshRoom,1000);
