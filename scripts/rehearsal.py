@@ -278,6 +278,10 @@ class Rehearsal:
         if not self.settlement_available: raise ValueError('Regtest settlement tools are unavailable on this checkout')
         if not standard_terms(a): raise ValueError('Regtest settlement supports 3 units, budget 100 and reserve 0 or 20')
         if a['clearing'] is None: raise ValueError('Clear and verify this auction first')
+        import shutil
+        from settle_fresh_book import MIN_START_DISK
+        if shutil.disk_usage(ROOT).free < MIN_START_DISK:
+            raise ValueError('Free at least 10 GiB of disk before settling; the proof guard would refuse later')
         from regtest_nu7_node import status
         try: status()
         except Exception: raise ValueError('Start the local NU7 regtest node first: python3 scripts/regtest_nu7_node.py start')

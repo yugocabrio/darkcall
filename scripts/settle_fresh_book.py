@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 import threading
@@ -27,6 +28,9 @@ from regtest_prepared_gate import write_bytes
 from funded_public_bundle import export, verify
 
 BANK = ROOT / '.local/nu7-bank-20261005'
+# The funded settlement driver refuses to start proving below this headroom;
+# check it before any deposit so a refusal never strands funded tickets.
+MIN_START_DISK = 10 * 1024 ** 3
 TERMS = {'units': 3, 'budget': 100, 'processing_fee': 15000}
 # Every executable the existing funded drivers invoke; refuse before funding
 # instead of discovering a missing tool after deposits are already made.
@@ -133,6 +137,8 @@ def settle(auction, name, progress, bank=BANK, threads=2, expected=None):
     missing = [p.name for p in REQUIRED if not p.is_file()]
     if missing:
         raise RuntimeError('Build the pinned tools first; missing ' + ', '.join(missing))
+    if shutil.disk_usage(ROOT).free < MIN_START_DISK:
+        raise RuntimeError('At least 10 GiB of free disk is required before funding a settlement')
     snapshot = status()
     birthday = json.loads(private_read(bank / 'nu7-birthday.json'))
     bank_scan, bank_notes = capture(bank, birthday, snapshot)
