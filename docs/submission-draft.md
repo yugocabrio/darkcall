@@ -5,8 +5,8 @@ submission itself.
 
 ## One line
 
-Sealed-bid uniform-price auctions on Zcash: the price is public, who bid what
-never is, and settlement is one shielded transaction that anyone can verify.
+Sealed-bid uniform-price auctions on Zcash: one public price, bids that no
+operator reconstructs, and one shielded settlement that anyone can verify.
 
 ## The problem
 
@@ -42,8 +42,10 @@ does who paid whom.
 ## Why it is different
 
 Auditable sealed-bid designs usually **disclose the bids to prove the result**.
-DarkCall **proves the result without disclosing them**. Nobody learns who bid
-what, and no winner's maximum bid is ever published. Only the clearing price
+DarkCall **proves the result without disclosing them**. Neither the public nor
+any single operator learns who bid what, and no winner's maximum bid is ever
+published. In this one-machine demo, the local bidder helper does see the typed
+bid. Only the clearing price
 and the units sold are public. By the auction rule, the price equals the
 highest losing bid or the reserve. This needs all three parts. MPC keeps the bids hidden from any one
 operator. Zero-knowledge proofs make the hidden computation checkable. Native

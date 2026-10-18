@@ -62,6 +62,21 @@ own receipts were opened through the same server function from the CLI
 it settles", and `--fixture-recorded` keeps the Oct 5 run. Its recorded view
 was checked over HTTP: four receipts plus the tamper refusal.
 
+**Whole flow in one open browser page (Oct 19, 00:20–00:45 CEST).** First,
+Docker Desktop was restarted with the author's approval. Its 16 GiB VM
+allocation had kept macOS swap at 18.8 GiB. Afterwards swap was 7.6 GiB and
+free disk 20 GiB. The other project's node (`shielded-swap-zebra-nu7`) was
+restarted with `docker start` and resumed at its tip of 6803. Then, in one
+page: four bids via the one-click chips, certify, clear (8.4 s), and Ticket 01
+WON/79. An earlier Settle press at 9.9 GiB free was refused before any deposit.
+Settle gave deposits `b0fe3394…9a5b8ccf` and settlement
+`ac06fc31b6777e53cfb1e74cacd57b1abfbad896893fc22242e9fa39c50dc074` (driver
+933.0 s), public check 99.4 s, Settle → verified 1161.5 s. In the same page,
+**Open my shielded receipt** showed Ticket 01 WON/79 and Ticket 04 LOST/100,
+each decrypted with its own key only. **Tamper with receipt** was rejected
+before the key was read. Screenshots: `docs/img/05-settled.jpg` and
+`06-shielded-receipt-tamper.jpg`.
+
 New code: `scripts/settle_fresh_book.py` is the orchestrator: tool preflight,
 bank rescan, deposits/admission, settlement, export/verify, own-FVK export and
 public progress events. `scripts/rehearsal.py` adds a Settle job that owns the

@@ -32,17 +32,19 @@ submission package. Do not start 8/16/32 scaling or new cryptography.
 - [x] README screenshots (sealed bids, cleared price + per-ticket result, own
   receipt, landing). Disk-headroom guard verified in the UI: Settle was refused
   before funding with 9.9 GiB free.
-- [ ] Next session: once ≥10 GiB disk and swap headroom return, run one Settle
-  with the pane open. Exercise Open my shielded receipt and Tamper with receipt
-  in the UI, and capture the settled view for the README.
+- [x] One open page: Settle → own shielded receipts (Ticket 01 WON/79, 04
+  LOST/100) → receipt tamper rejected, tx `ac06fc31…`; README screenshots.
+- [ ] Fund before Clear in the UI (protocol order: deposit → chain admission →
+  REP3 clearing → settlement). This splits `settle_fresh_book.py` into fund
+  and settle phases, with no new cryptography.
 - [ ] Final consistency pass, then the human decides on visibility and submission.
 
 ### Human actions before Oct 28 23:59 UTC
 - Record the demo using `docs/demo.md` → "Capture-ready demo plan".
 - Make the repository public (rule 3) and submit in **Private Markets** using
   `docs/submission-draft.md`.
-- Optional: restart Docker Desktop when the other project's node can stop, to
-  release the 16 GiB VM allocation that keeps macOS swap near 19 GiB.
+- Docker Desktop was restarted on Oct 19 with approval; the other project's node
+  was restored with `docker start`.
 
 Latest human instruction: start development, commit and push regularly, continue
 autonomously, incorporate later human/ChatGPT reviews.

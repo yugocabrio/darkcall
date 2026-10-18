@@ -270,5 +270,58 @@
     "authority": "demo/authority/browser-auction-nu7-v1.json",
     "bundle_manifest_sha256": "0a6a3c4eda690113aa63e1dab5a9953f00f26aa6be1cf10b514b5001bdb9600f",
     "authority_sha256": "97aaa9fe6e1af7e29c12085b421efaa6cc60b806944a2a4ba974fc30c23f8db1"
+  },
+  "browser_ui_full_run": {
+    "date": "2026-10-19 (CEST)",
+    "scope": "one browser page, kept open: create, four bids via one-click chips, certify, clear, own result, Settle, own shielded receipts for two tickets, receipt tamper; after a Docker Desktop restart freed host swap (authorized by the author)",
+    "terms": {
+      "units": 3,
+      "reserve": 20,
+      "budget": 100
+    },
+    "demo_bids": "77, 61, 43, 21",
+    "accepted_root": "12ebb7c5cb3638310976861a07cd0f6f4ac4bead8a46a19a03f010890d8af53e",
+    "browser_clearing": {
+      "price": 21,
+      "sold": 3,
+      "seconds_displayed": 8.4
+    },
+    "own_browser_result_before_settlement": {
+      "ticket": "01",
+      "won": true,
+      "refund_entitlement": 79
+    },
+    "pre_check": "an earlier Settle press with 9.9 GiB free disk was refused before any deposit (new headroom guard)",
+    "deposit_txid": "b0fe33940f5bc9683ecae1557b32f73100ce8e17ab112ada3db8f4ff9a5b8ccf",
+    "txid": "ac06fc31b6777e53cfb1e74cacd57b1abfbad896893fc22242e9fa39c50dc074",
+    "price": 21,
+    "sold": 3,
+    "confirmations": 2,
+    "stage_elapsed_seconds": {
+      "funding_done": 120.863,
+      "settlement_done": 1054.008,
+      "public_verification_done": 1161.483
+    },
+    "settlement_driver_seconds": 932.958,
+    "public_verification_seconds": 99.394,
+    "ui_own_shielded_receipts": [
+      {
+        "ticket": "01",
+        "won": true,
+        "refund": 79,
+        "decrypted_with_own_viewing_key_only": true
+      },
+      {
+        "ticket": "04",
+        "won": false,
+        "refund": 100,
+        "decrypted_with_own_viewing_key_only": true
+      }
+    ],
+    "ui_receipt_tamper": "Corrupted receipt proof rejected before your viewing key was read",
+    "screenshots": [
+      "docs/img/05-settled.jpg",
+      "docs/img/06-shielded-receipt-tamper.jpg"
+    ]
   }
 }

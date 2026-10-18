@@ -1,9 +1,16 @@
 # DarkCall
 
-**Sealed-bid auctions on Zcash where the price is public, who bid what never is,
-and settlement is one shielded transaction anyone can verify.**
+**Sealed-bid auctions on Zcash: one public price, bids that no operator
+reconstructs, and one shielded settlement that anyone can verify.**
 
 ZECATHON 2026 · Private Markets track.
+
+> **Demo scope, up front.** This prototype runs every role on one machine. The
+> local bidder helper that builds each bid's proof and shares sees the typed
+> demo bid, and the three operators share a host. The protocol keeps bids from
+> the operators and the public; this demo shows that machinery working, not
+> isolation between separate parties. Details are under
+> [Trust model and limits](#trust-model-and-limits).
 
 A seller offers identical units. Bidders commit secret maximum bids that are
 split into secret shares for three operators. The operators compute one uniform
@@ -38,16 +45,16 @@ reserved compute. A uniform-price sealed-bid auction is the fair format: every
 winner pays the same price, set by the highest losing bid (or the reserve), so a
 bidder who wants one unit does best by bidding their true value.
 DarkCall adds what on-chain auctions lack. Outsiders cannot see what you bid or
-whether you won, no single operator holds your bid, payment is shielded ZEC,
-and the result is still verifiable.
+whether you won. By design, no single operator holds your bid. Payment is
+shielded ZEC, and the result is still verifiable.
 
 ## What is different
 
 Typical sealed-bid designs either trust an auctioneer with every bid or **reveal
 the bids after the close** so that anyone can audit the result (commit-reveal, or
 publishing a viewing key). DarkCall checks the result **without opening the
-bids**. Nobody learns who bid what, and the winners' maximum bids are never
-revealed:
+bids**. Neither the public nor any single operator learns who bid what, and the
+winners' maximum bids are never revealed:
 
 | Public | Private |
 | --- | --- |
@@ -93,10 +100,10 @@ bids. Exact records:
 <td><img src="docs/img/03-cleared-own-result.jpg" alt="Clearing price 21, 3 of 3 sold, and one ticket's own verified result"></td></tr>
 <tr><td>Four sealed bids, each with a client ZK proof and three operator signatures.</td>
 <td>One public price from REP3 MPC; each ticket opens only its own result.</td></tr>
-<tr><td><img src="docs/img/04-own-receipt.jpg" alt="A bidder's receipt decrypted from the shielded settlement transaction"></td>
-<td><img src="docs/img/01-landing.jpg" alt="DarkCall landing page"></td></tr>
-<tr><td>After settlement: a bidder's memo receipt decrypted with only their own key.</td>
-<td>Two ways in: run an auction yourself, or check a settled one.</td></tr>
+<tr><td><img src="docs/img/05-settled.jpg" alt="Five settlement stages done, who learned what, and the settlement transaction"></td>
+<td><img src="docs/img/06-shielded-receipt-tamper.jpg" alt="A losing ticket's shielded refund decrypted, and a corrupted receipt proof rejected"></td></tr>
+<tr><td>Settle on Zcash: same sealed book funded, cleared by MPC, bound, signed, confirmed and publicly verified.</td>
+<td>Each ticket opens only its own shielded receipt; a corrupted proof is rejected before the key is read.</td></tr>
 </table>
 
 ## Try it
