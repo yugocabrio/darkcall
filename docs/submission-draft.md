@@ -5,8 +5,8 @@ submission itself.
 
 ## One line
 
-Sealed-bid uniform-price auctions on Zcash: the price is public, the bids never
-are, and settlement is one shielded transaction that anyone can verify.
+Sealed-bid uniform-price auctions on Zcash: the price is public, who bid what
+never is, and settlement is one shielded transaction that anyone can verify.
 
 ## The problem
 
@@ -42,9 +42,10 @@ does who paid whom.
 ## Why it is different
 
 Auditable sealed-bid designs usually **disclose the bids to prove the result**.
-DarkCall **proves the result without disclosing them**. No maximum bid is ever
-published, not even the winners'. Only the clearing price and the units sold
-are public. This needs all three parts. MPC keeps the bids hidden from any one
+DarkCall **proves the result without disclosing them**. Nobody learns who bid
+what, and no winner's maximum bid is ever published. Only the clearing price
+and the units sold are public. By the auction rule, the price equals the
+highest losing bid or the reserve. This needs all three parts. MPC keeps the bids hidden from any one
 operator. Zero-knowledge proofs make the hidden computation checkable. Native
 shielded settlement keeps the payments private while proofs tie them to the
 result.
@@ -75,8 +76,10 @@ result.
   operators can reconstruct bids. Not malicious-secure.
 - Custody: 2-of-3 FROST from DKG. Two colluders can move funds. No unilateral
   refund.
-- Operators learn winners and refunds and hold escrow viewing capability. The
-  public price allows inference in small markets.
+- Operators learn winners and refunds and hold escrow viewing capability.
+- The public clearing price equals the highest losing bid, or the reserve. That
+  one value is public by the rules; who placed it is not. Small markets allow
+  further inference.
 - Funding is attested by operator signatures, not proven in zero knowledge. The
   public bundle does not prove chain inclusion.
 - Demo scope: one host runs every party. The localhost helper sees typed demo

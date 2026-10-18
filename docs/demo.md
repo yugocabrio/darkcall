@@ -32,7 +32,7 @@ with a recording of another auction.
    about 15 GB of disk and 10 GB of memory headroom. Close other heavy jobs.
 2. **0:00–0:20 Create.** Keep the default terms (3 units, reserve 20, budget
    100) and set the close time to about 2 minutes ahead. Say: the price will be
-   public, bids never are.
+   public, who bid what never is.
 3. **0:20–0:45 Bid.** Seal four demo bids, for example 77, 61, 43, 21. Each
    shows "Bid accepted" after a client ZK proof, three share checks and three
    operator signatures. Mention that this local helper sees the typed demo bid.

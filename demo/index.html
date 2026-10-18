@@ -17,7 +17,7 @@
     <section class="intro">
       <h1>Sealed bids.<br><em>Verifiable settlement.</em></h1>
       <p class="lead">A sealed-bid auction settled privately on Zcash.</p>
-      <div class="landing-facts"><span><b>Public</b>clearing price · units sold · proofs</span><span><b>Never published</b>any maximum bid · who won · refunds</span><span><b>Settled</b>one shielded transaction anyone can verify</span></div>
+      <div class="landing-facts"><span><b>Public</b>clearing price · units sold · proofs</span><span><b>Never published</b>who bid what · who won · refunds</span><span><b>Settled</b>one shielded transaction anyone can verify</span></div>
     </section>
     <nav class="experience-picker" aria-label="Choose an experience">
       <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-number">01 / TRY IT</span><span class="experience-heading">Try DarkCall <span aria-hidden="true">↗</span></span><span class="experience-caption">Create. Bid. Clear. Settle on Zcash.</span><span class="experience-scope">Demo bids · real shielded settlement on isolated regtest</span></button>
@@ -87,7 +87,7 @@
               <div><span>EVERYONE</span><p id="know-public">Clearing price, units sold, one shielded transaction and its proofs.</p></div>
               <div><span>EACH BIDDER</span><p>Only their own result and refund, from their own encrypted memo.</p></div>
               <div><span>OPERATORS</span><p>Winners and refunds. Each one holds only shares of the bids.</p></div>
-              <div><span>NEVER PUBLISHED</span><p>Any maximum bid. Not even the winners'.</p></div>
+              <div><span>NEVER PUBLISHED</span><p>Who bid what. Winners' bids stay hidden; the price is the highest losing bid.</p></div>
             </div>
             <dl class="settle-facts"><dt>Settlement transaction</dt><dd id="settle-txid">—</dd><dt>Deposit transaction</dt><dd id="settle-deposit">—</dd><dt>Same sealed book</dt><dd id="settle-root">—</dd><dt>Outcome</dt><dd id="settle-price">—</dd></dl>
  <div class="fresh-receipt settle-receipt">

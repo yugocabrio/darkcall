@@ -1,7 +1,7 @@
 # DarkCall
 
-**Sealed-bid auctions on Zcash where the price is public, the bids never are, and
-settlement is one shielded transaction anyone can verify.**
+**Sealed-bid auctions on Zcash where the price is public, who bid what never is,
+and settlement is one shielded transaction anyone can verify.**
 
 ZECATHON 2026 · Private Markets track.
 
@@ -37,21 +37,26 @@ seats, allocation slots in a token or NFT drop, sponsorship or ad slots, or
 reserved compute. A uniform-price sealed-bid auction is the fair format: every
 winner pays the same price, set by the highest losing bid (or the reserve), so a
 bidder who wants one unit does best by bidding their true value.
-DarkCall adds what on-chain auctions lack. Nobody learns your maximum price or
-whether you won, payment is shielded ZEC, and the result is still verifiable.
+DarkCall adds what on-chain auctions lack. Outsiders cannot see what you bid or
+whether you won, no single operator holds your bid, payment is shielded ZEC,
+and the result is still verifiable.
 
 ## What is different
 
 Typical sealed-bid designs either trust an auctioneer with every bid or **reveal
 the bids after the close** so that anyone can audit the result (commit-reveal, or
-publishing a viewing key). DarkCall checks the result **without revealing any
-maximum bid, including the winners' bids**:
+publishing a viewing key). DarkCall checks the result **without opening the
+bids**. Nobody learns who bid what, and the winners' maximum bids are never
+revealed:
 
 | Public | Private |
 | --- | --- |
-| Auction terms, accepted-book root, clearing price, units sold | Every maximum bid |
+| Auction terms, accepted-book root, clearing price, units sold | Who bid what; every winner's maximum bid |
 | A shielded transaction and the proofs that bind its six outputs to the result | Who won and who lost; each refund; recipient addresses |
 | Operator signatures over the accepted book | Bidder ↔ deposit linkage (shielded) |
+
+The clearing price is, by the auction rule, the highest losing bid (or the
+reserve). That one number is public; who placed it is not.
 
 Correctness comes from proofs, not from disclosure: a coNoir (REP3) proof of the
 clearing over the committed bids, a Halo2 proof per transaction output, native
@@ -126,7 +131,11 @@ assumptions:
 - **Custody** is 2-of-3 FROST from a DKG. No escrow master key exists, but two
   colluding signers can move funds, and bidders have no unilateral refund path.
 - **Operators see outcomes.** They hold escrow viewing capability and learn refunds and
-  winners. The public price, small books and repeated auctions allow inference.
+  winners.
+- **The price is one bid.** Under these rules the public clearing price equals
+  the highest losing bid, or the reserve. That single value is public by design;
+  who placed it is not. Small books and repeated auctions allow further
+  inference.
 - **The demo helper sees typed bids.** In this local demo, the localhost helper that builds the client
   proof sees the typed demo bid. Deposits come from one local test wallet. All
   three operators run on one machine.

@@ -58,6 +58,7 @@ pinned native, Halo2 and C++ verifiers establish validity.
 | --- | --- |
 | Can one operator see the bid list? | No, under REP3 with at most one semi-honest corrupt operator. Two colluding operators can reconstruct it. |
 | Can operators see who won? | Yes. Operators learn refunds and winners and hold escrow viewing capability. |
+| What does the public price reveal? | The clearing price is the highest losing bid, or the reserve, so that one bid value is public by the rules. Who placed it, and every other bid, is not. |
 | Who controls funds? | Two of three DKG FROST signers. No master key exists, but two colluders can move funds, and bidders have no unilateral refund. |
 | Is funding proven publicly? | No. Operator signatures attest funding. The bundle proves transaction validity and output binding, not chain inclusion. |
 | Who saw the demo bids? | The localhost helper that builds the client proof sees typed demo bids. All operators, the bank and the bidder wallets run on one machine. |
