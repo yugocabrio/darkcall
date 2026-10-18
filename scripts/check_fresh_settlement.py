@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Fresh browser book → REP3 clearing → SAME-book NU7 regtest settlement, over HTTP.
+"""Fresh browser book → Fund → REP3 clearing → SAME-book NU7 settlement, over HTTP.
 
 Drives the running local demo exactly like the browser: create (default terms),
-four sealed demo bids, certified close, REP3 clearing, own results, then Settle.
+four sealed demo bids, certified close, Fund (actual deposits + chain admission
+over the same root), REP3 clearing, own results, then Settle.
 After the settlement completes it opens all four own shielded receipts and
 checks they equal the browser clearing results, and that a corrupted receipt
 proof and a foreign capability are refused. Synthetic demo bids only.
@@ -52,6 +53,17 @@ def run(port, bids, reserve):
     while int(time.time()) < auction['closes_at_utc']:
         time.sleep(.2)
     code, closed = call('/api/rehearsal/close', scope); assert code == 200, closed
+    # Protocol order: no clearing or settlement before actual funding/admission.
+    assert call('/api/rehearsal/clear', scope)[0] == 400
+    assert call('/api/rehearsal/settle', scope)[0] == 400
+    code, view = call('/api/rehearsal/fund', scope); assert code == 200 and view['state'] == 'running', view
+    while True:
+        time.sleep(5)
+        funding = call('/api/rehearsal/auction/' + auction['auction_id'])[1]['funding']
+        if funding['state'] != 'running':
+            break
+    assert funding['state'] == 'done' and funding['result']['accepted_root'] == closed['accepted_root'], funding
+    funded_at = time.monotonic()
     code, cleared = call('/api/rehearsal/clear', scope); assert code == 200, cleared
     assert cleared['rep3_clearing_verified'] and cleared['accepted_root'] == closed['accepted_root']
     fresh = []
@@ -62,6 +74,7 @@ def run(port, bids, reserve):
         fresh.append(opened)
 
     code, view = call('/api/rehearsal/settle', scope); assert code == 200 and view['state'] == 'running', view
+    settle_started = time.monotonic()
     # A second request while the job owns the proof lock is refused, not duplicated.
     assert call('/api/rehearsal/settle', scope)[0] == 409
     assert call('/api/verify', {'case': 'positive', 'ticket': 0, 'action': 'verify'})[0] == 409
@@ -101,6 +114,9 @@ def run(port, bids, reserve):
     return {'scope': 'fresh browser book settled on isolated NU7 regtest; synthetic demo bids; one host',
         'terms': {k: terms[k] for k in ('units', 'reserve', 'budget')}, 'auction_id': auction['auction_id'],
         'accepted_root': closed['accepted_root'], 'browser_clearing': {k: cleared[k] for k in ('price', 'sold', 'seconds')},
+        'funding': funding['result'], 'clearing_after_funding': True,
+        'clear_and_settle_before_funding_refused_400': True,
+        'seconds_from_funded_to_settle_request': round(settle_started - funded_at, 3),
         'settlement': settled, 'progress_phases': phases, 'own_native_receipts': receipts,
         'own_receipts_equal_browser_results': True, 'native_tamper_rejected_before_key_read': True,
         'foreign_capability_refused': True, 'settle_before_clear_refused': True,

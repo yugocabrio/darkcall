@@ -20,12 +20,12 @@
       <div class="landing-facts"><span><b>Public</b>clearing price · units sold · proofs</span><span><b>Never published</b>who bid what · who won · refunds</span><span><b>Settled</b>one shielded transaction anyone can verify</span></div>
     </section>
     <nav class="experience-picker" aria-label="Choose an experience">
-      <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-number">01 / TRY IT</span><span class="experience-heading">Try DarkCall <span aria-hidden="true">↗</span></span><span class="experience-caption">Create. Bid. Clear. Settle on Zcash.</span><span class="experience-scope">Demo bids · real shielded settlement on isolated regtest</span></button>
+      <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-number">01 / TRY IT</span><span class="experience-heading">Try DarkCall <span aria-hidden="true">↗</span></span><span class="experience-caption">Create. Bid. Fund. Clear. Settle on Zcash.</span><span class="experience-scope">Demo bids · real shielded settlement on isolated regtest</span></button>
       <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-number">02 / VERIFY IT</span><span class="experience-heading">Proof it settles <span aria-hidden="true">↗</span></span><span class="experience-caption">Check a recorded settlement in two minutes.</span><span id="proof-card-scope" class="experience-scope">Recorded auction · isolated regtest</span></button>
     </nav>
     <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">
       <div class="panel-top"><span class="eyebrow">TRY DARKCALL</span><span id="rehearsal-label" class="recorded-label">DEMO BIDS</span></div>
-      <ol class="auction-progress" aria-label="Auction progress"><li id="progress-create" aria-current="step"><span>01</span>Create</li><li id="progress-bid"><span>02</span>Bid</li><li id="progress-clear"><span>03</span>Clear</li><li id="progress-result"><span>04</span>Result</li><li id="progress-settle"><span>05</span>Settle</li></ol>
+      <ol class="auction-progress" aria-label="Auction progress"><li id="progress-create" aria-current="step"><span>01</span>Create</li><li id="progress-bid"><span>02</span>Bid</li><li id="progress-fund"><span>03</span>Fund</li><li id="progress-clear"><span>04</span>Clear</li><li id="progress-result"><span>05</span>Result</li><li id="progress-settle"><span>06</span>Settle</li></ol>
       <h2 id="rehearsal-title">Create your auction.</h2>
       <p class="rehearsal-scope">Set the terms. Invite four bidders.</p>
       <form id="create-form" class="create-form">
@@ -49,6 +49,18 @@
         <details id="acceptance-details" class="advanced-details" hidden><summary>Signed acceptance <span>+</span></summary><button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed acceptance ↓</button><pre id="acceptance-public"></pre></details>
         <div class="close-row"><p id="close-status"></p><button id="close-auction" class="secondary-button" type="button">Certify closed book →</button></div>
         </details>
+        <section id="fund-section" class="fresh-settlement fund-section" hidden aria-label="Fund this auction on Zcash regtest">
+          <div class="panel-top"><span class="eyebrow">FUND ON ZCASH</span><span class="recorded-label">ISOLATED REGTEST</span></div>
+          <h3 id="fund-title">Lock the deposits.</h3>
+          <p class="settle-lead">Each sealed ticket gets a real shielded deposit (budget + fee) on the isolated regtest, from one local test wallet. The operators decrypt the deposits, re-verify the same bid proofs and shares, and sign the closed book again over the same root. About 2 minutes.</p>
+          <button id="fund-auction" class="primary-button" type="button">Fund on Zcash <span>→</span></button>
+          <p id="fund-note" class="form-note" hidden></p>
+          <ol id="fund-steps" class="settle-steps" hidden>
+            <li id="fund-step-deposit"><b>Deposit &amp; admit</b><span>4 shielded deposits · same proofs + 12 share pairs re-verified · 12 receipts · signed book, same root</span><em></em></li>
+          </ol>
+          <p id="fund-status" class="check-result" aria-live="polite"></p>
+          <dl id="fund-facts" class="settle-facts" hidden><dt>Deposit transaction</dt><dd id="fund-deposit">—</dd><dt>Chain admission</dt><dd id="fund-admission">—</dd></dl>
+        </section>
         <section class="fresh-clearing" aria-label="Clear this new auction">
           <div class="panel-top"><span class="eyebrow">YOUR AUCTION</span><span class="recorded-label">FRESH PROOF</span></div>
           <h3 id="clearing-title">Discover the price.</h3>
@@ -71,12 +83,11 @@
         <section id="settle-section" class="fresh-settlement" hidden aria-label="Settle this auction on Zcash regtest">
           <div class="panel-top"><span class="eyebrow">SETTLE ON ZCASH</span><span class="recorded-label">ISOLATED REGTEST</span></div>
           <h3 id="settle-title">Pay it out, privately.</h3>
-          <p class="settle-lead">Fund these same four sealed bids with shielded regtest deposits, then pay the seller and every refund in one shielded transaction. About 20 minutes on this Mac.</p>
+          <p class="settle-lead">Pay the seller and every refund from the funded escrow in one shielded transaction, bound output by output to the proven result. About 17 minutes on this Mac.</p>
           <button id="settle-auction" class="primary-button" type="button">Settle on Zcash <span>→</span></button>
           <p id="settle-note" class="form-note" hidden></p>
           <ol id="settle-steps" class="settle-steps" hidden>
-            <li id="settle-step-funding"><b>Fund &amp; admit</b><span>4 shielded deposits · same sealed bids re-verified</span><em></em></li>
-            <li id="settle-step-mpc"><b>Re-clear by MPC</b><span>fresh REP3 run on the same shares</span><em></em></li>
+            <li id="settle-step-mpc"><b>MPC delivery</b><span>fresh REP3 run on the same shares; price must match</span><em></em></li>
             <li id="settle-step-bindings"><b>Bind every output</b><span>6 Halo2 proofs tie amounts to recipients</span><em></em></li>
             <li id="settle-step-sign"><b>Sign &amp; confirm</b><span>auction proof · 2-of-3 FROST · Zebra · 6 wallets</span><em></em></li>
             <li id="settle-step-verify"><b>Public check</b><span>verifier replays the public bundle, no secrets</span><em></em></li>
@@ -102,7 +113,7 @@
       </div>
       <p id="rehearsal-status" class="check-result" aria-live="polite"></p><p id="rehearsal-error" class="error" role="alert" hidden></p>
       <button id="new-auction" class="text-button" type="button">Start another auction +</button>
-      <details class="public-details demo-details"><summary>About this demo <span>+</span></summary><p>Bidding and clearing first use synthetic deposits for instant feedback. <b>Settle on Zcash</b> then funds the same sealed tickets with real deposits on an isolated NU7 regtest (budget +15,000 zatoshi each, from one local test wallet), re-admits them under a new chain-funded certificate over the same accepted root, and runs the full shielded settlement. The local helper sees typed demo bids and creates their proofs/shares on this PC.</p><p>Four tickets are required. After the actual cutoff, three operators sign the accepted book and run the same secret shares through REP3. The fixed proof and signed root are verified before your ticket pads are opened. One host, semi-honest MPC; privacy assumes at most one corrupt party.</p><p>The opening capability stays in page memory; reload loses access. This is not production authentication, private browser proving or native memo delivery.</p></details>
+      <details class="public-details demo-details"><summary>About this demo <span>+</span></summary><p>Sealing a bid gives instant signed pre-checks of its proof and shares. <b>Fund on Zcash</b> then makes a real deposit for every sealed ticket on an isolated NU7 regtest (budget +15,000 zatoshi each, from one local test wallet). The operators admit the deposits under a chain-funded certificate over the same accepted root. Only then does REP3 clear the book, and <b>Settle on Zcash</b> pays out in one shielded transaction. The local helper sees typed demo bids and creates their proofs/shares on this PC.</p><p>Four tickets are required. After the actual cutoff, three operators sign the accepted book and run the same secret shares through REP3. The fixed proof and signed root are verified before your ticket pads are opened. One host, semi-honest MPC; privacy assumes at most one corrupt party.</p><p>The opening capability stays in page memory; reload loses access. This is not production authentication, private browser proving or native memo delivery.</p></details>
       <div class="recording-transition"><div><span class="eyebrow">NO TIME TO WAIT?</span><h3>Check a recorded settlement.</h3><p>An auction created and settled in this UI earlier. Open its bidders&#8217; receipts or verify it in about two minutes. It does not settle these demo bids.</p></div><button id="continue-recording" class="secondary-button" type="button">Open recorded auction <span>→</span></button></div>
     </section>
     <div id="recorded-demo" hidden>

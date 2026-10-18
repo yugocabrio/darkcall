@@ -71,16 +71,17 @@ Zcash authorization and an operator-signed accepted book.
 
 ## It runs, end to end, for an auction you create
 
-On October 18, 2026 an auction was **created, bid on, cleared and settled by
-clicking through the browser UI**. It settled on an isolated Zebra 7.0.0-rc.0
+On October 18, 2026 an auction was **created, bid on, funded, cleared and
+settled by clicking through the browser UI**. That run funded at Settle time;
+the UI now funds right after the close, before clearing (protocol order). It settled on an isolated Zebra 7.0.0-rc.0
 NU7 regtest. The same sealed tickets, commitments, shares and accepted root
 carried through every step:
 
 | Step | Result |
 | --- | --- |
 | Create + 4 sealed demo bids (77, 61, 43, 21) | 4 client ZK input proofs, 12 REP3 share-pair checks, 12 signed acceptances |
-| Close + clear in the browser | REP3 price **21**, 3 sold, coNoir proof verified in 8.6 s |
-| Settle → fund & admit | 4 real shielded deposits, tx `d11efd9a…5fd04abd`, 2 confirmations. Same 4 proofs + 12 pairs re-verified; operator certificate over the **same root** `04728ac2…ccbc739a` (121 s) |
+| Fund & admit | 4 real shielded deposits, tx `d11efd9a…5fd04abd`, 2 confirmations. Same 4 proofs + 12 pairs re-verified; operator certificate over the **same root** `04728ac2…ccbc739a` (121 s) |
+| Clear in the browser | REP3 price **21**, 3 sold, coNoir proof verified in 8.6 s |
 | Settle → MPC, bind, sign | Fresh REP3 run inside settlement, 6 Halo2 output bindings, 2-of-3 DKG FROST; Zebra accepted tx `3fee2c7c…b5c0b5d7` with 2 confirmations (settlement 886 s) |
 | Payout | 6 wallets scanned their notes: refunds 79/79/100/79, seller 63, operator fee 30000 |
 | Public check | Public-only verifier passed (native authorization, 6 bindings, auction proof, certificate) in 102 s; Settle → verified 1117 s |
@@ -139,9 +140,9 @@ python3 scripts/regtest_nu7_node.py start
 ```
 
 Then: **Try DarkCall → Create auction** (default terms) → seal four demo bids →
-wait for the close → **Certify closed book → Clear this auction → Open my result
-→ Settle on Zcash**. Settlement shows live progress and takes about 20 minutes end
-to end on a 16 GiB M1. After it finishes, **Open my shielded receipt** decrypts your
+wait for the close → **Certify closed book → Fund on Zcash** (real deposits and
+chain admission, about 2 minutes) **→ Clear this auction → Open my result →
+Settle on Zcash** (about 17 minutes on a 16 GiB M1, with live progress). After it finishes, **Open my shielded receipt** decrypts your
 memo from the settlement transaction, and **Tamper with receipt** shows a
 corrupted proof being refused before your key is read.
 `./demo.sh --public-only` serves a key-less view that can verify and reject

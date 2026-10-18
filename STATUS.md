@@ -77,6 +77,21 @@ each decrypted with its own key only. **Tamper with receipt** was rejected
 before the key was read. Screenshots: `docs/img/05-settled.jpg` and
 `06-shielded-receipt-tamper.jpg`.
 
+**Fund before Clear (protocol order) is now the UI and API flow.**
+`settle_fresh_book.py` has two phases. `--phase fund` makes the deposits, the
+chain admission and the final-book certificate over the same root and writes
+`NAME-funded.json`. `--phase settle` rechecks root and tickets, rescans the
+escrow at the current tip, then settles. `--phase all` is the old CLI path. The
+server adds `/api/rehearsal/fund` as a lock-owning job. Clear is refused until
+funding is done whenever regtest settlement is available, and Settle requires
+funding plus clearing. The UI has six steps (Create, Bid, Fund, Clear, Result,
+Settle) and a Fund section showing the deposit txid and the same-root
+admission. Harness run: clear and settle before funding were refused with 400.
+Funding took 120.7 s (deposits `e1e4d627…bdded9`). Clearing ran after funding.
+Settlement `94a093e9a5ddcb92117ac32beecb5473b1d13b12f556295dfa1594db4663b0d8`
+took 885.3 s for the driver and 104.9 s for the public check. The four own
+receipts equal the browser results, and all refusals pass; total 1189.2 s.
+
 New code: `scripts/settle_fresh_book.py` is the orchestrator: tool preflight,
 bank rescan, deposits/admission, settlement, export/verify, own-FVK export and
 public progress events. `scripts/rehearsal.py` adds a Settle job that owns the

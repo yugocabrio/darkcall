@@ -10,11 +10,12 @@ receipt memo.
 
 ## What to look at
 
-1. **The product, live.** `./demo.sh`, then **Try DarkCall**: create an
-   auction, seal four demo bids, clear it, open your result, then **Settle on
-   Zcash**. The same browser book is funded, re-admitted, cleared again by MPC
-   inside settlement, paid out in one shielded regtest transaction and publicly
-   verified. Then open your own shielded receipt and try the tamper check. See
+1. **The product, live.** `./demo.sh`, then **Try DarkCall**. Create an
+   auction, seal four demo bids, certify the book, then **Fund on Zcash**: real
+   deposits and chain admission over the same root. Clear it by MPC and open
+   your result. Then **Settle on Zcash**: one shielded regtest transaction,
+   bound output by output to the result and publicly verified. Finally open
+   your own shielded receipt and try the tamper check. See
    [local-rehearsal.md](local-rehearsal.md).
 2. **Verification without secrets.** The easiest route is
    `scripts/docker_verify.sh`. It builds every pinned tool from committed source

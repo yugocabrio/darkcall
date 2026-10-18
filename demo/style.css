@@ -651,7 +651,7 @@ input:focus {outline:1px solid var(--accent)}
 .rehearsal-panel {padding:32px 36px;margin:0 0 32px;border-radius:12px;background:#171e17;border-color:#374333}
 .rehearsal-panel h2 {font-size:38px;margin:32px 0 10px}
 .rehearsal-scope {font-size:14px;margin:0 0 28px;color:#aabca0}
-.auction-progress {list-style:none;display:grid;grid-template-columns:repeat(5,1fr);padding:0;margin:26px 0 0;gap:12px}
+.auction-progress {list-style:none;display:grid;grid-template-columns:repeat(6,1fr);padding:0;margin:26px 0 0;gap:12px}
 .auction-progress li {display:flex;align-items:center;gap:10px;font-size:12px;color:#788775;border-top:2px solid #313e2f;padding-top:12px}
 .auction-progress li span {font:10px var(--mono)}
 .auction-progress li[aria-current] {color:#d2eca9;border-color:#c7ed9e}
@@ -793,3 +793,5 @@ input:focus {outline:1px solid var(--accent);outline-offset:1px}
 .bid-suggest {margin-left:8px;white-space:nowrap}
 .bid-suggest button {border:1px solid #4a5b40;background:#1a2417;color:var(--accent);border-radius:12px;padding:2px 9px;margin-left:5px;font:11px var(--mono);cursor:pointer}
 .bid-suggest button:hover {border-color:var(--accent)}
+.fund-section {border-top:0;margin-top:8px}
+.fund-section .settle-steps li {grid-template-columns:20px 170px 1fr auto}

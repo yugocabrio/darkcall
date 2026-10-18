@@ -34,9 +34,10 @@ submission package. Do not start 8/16/32 scaling or new cryptography.
   before funding with 9.9 GiB free.
 - [x] One open page: Settle → own shielded receipts (Ticket 01 WON/79, 04
   LOST/100) → receipt tamper rejected, tx `ac06fc31…`; README screenshots.
-- [ ] Fund before Clear in the UI (protocol order: deposit → chain admission →
-  REP3 clearing → settlement). This splits `settle_fresh_book.py` into fund
-  and settle phases, with no new cryptography.
+- [x] Fund before Clear (deposit → chain admission → REP3 clearing →
+  settlement): fund/settle phases, `/api/rehearsal/fund`, six-step UI; harness
+  tx `94a093e9…`, clear/settle-before-fund refused.
+- [ ] Browser run of the six-step flow for screenshots (Fund section).
 - [ ] Final consistency pass, then the human decides on visibility and submission.
 
 ### Human actions before Oct 28 23:59 UTC

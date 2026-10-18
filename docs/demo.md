@@ -37,12 +37,13 @@ with a recording of another auction.
 3. **0:20–0:45 Bid.** Seal four demo bids, for example 77, 61, 43, 21. Each
    shows "Bid accepted" after a client ZK proof, three share checks and three
    operator signatures. Mention that this local helper sees the typed demo bid.
-4. **0:45–1:05 Clear.** After the deadline (cut the wait): Certify closed book →
-   Clear this auction (about 9 s of real MPC) → Open my result (WON / refund
-   entitlement). Optionally show Tamper with proof.
-5. **1:05–1:35 Settle on Zcash.** Press it. Show the five live stages and cut
-   the waits with on-screen elapsed times: Fund & admit, then Re-clear by MPC,
-   Bind every output, Sign & confirm and Public check. Show the settlement facts:
+4. **0:45–1:10 Fund, then clear.** After the deadline (cut the wait): Certify
+   closed book → Fund on Zcash. Show the deposit txid and "same root"; cut the
+   about 2 minute wait. Then Clear this auction (about 9 s of real MPC) → Open my
+   result (WON / refund entitlement). Optionally show Tamper with proof.
+5. **1:10–1:35 Settle on Zcash.** Press it. Show the four live stages and cut
+   the waits with on-screen elapsed times: MPC delivery, Bind every output, Sign
+   & confirm, Public check. Show the settlement facts:
    the transaction ID, the same sealed book root, the price matching the browser
    clearing, and 2 confirmations.
 6. **1:35–1:55 Your private receipt.** Open my shielded receipt shows WON or LOST

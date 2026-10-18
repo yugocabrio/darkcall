@@ -147,9 +147,10 @@ function refreshRoom() {
   $('create-auction').disabled=busy || !available;
   $('new-auction').hidden=!room;
   const settled=Boolean(room && room.settlement && room.settlement.state==='done');
-  const complete=[Boolean(room),Boolean(room && room.accepted===4),freshClearingVerified,freshResultVerified,settled];
+  const funded=Boolean(room && room.funding && room.funding.state==='done');
+  const complete=[Boolean(room),Boolean(room && room.accepted===4),funded || Boolean(room && !room.funding_required && freshClearingVerified),freshClearingVerified,freshResultVerified,settled];
   const current=complete.findIndex(done=>!done);
-  ['create','bid','clear','result','settle'].forEach((name,i)=>{
+  ['create','bid','fund','clear','result','settle'].forEach((name,i)=>{
     const step=$('progress-'+name); step.classList.toggle('done',complete[i]);
     if (i===current) step.setAttribute('aria-current','step'); else step.removeAttribute('aria-current');
   });
@@ -160,15 +161,16 @@ function refreshRoom() {
   $('maximum-bid').max=room.budget;
   $('seal-bid').disabled=busy || !available || room.stopped_after_incomplete_admission || remaining===0 || room.accepted>=4 || room.closed;
   $('close-auction').disabled=busy || !available || room.stopped_after_incomplete_admission || remaining>0 || room.accepted!==4 || room.closed;
-  $('clear-auction').disabled=busy || !available || !room.clearing_available || !room.closed || room.clearing_stopped || Boolean(room.clearing);
-  const settling=Boolean(room.settlement && room.settlement.state==='running');
+  const fundingPending=Boolean(room.funding_required) && !(room.funding && room.funding.state==='done');
+  $('clear-auction').disabled=busy || !available || !room.clearing_available || !room.closed || room.clearing_stopped || Boolean(room.clearing) || fundingPending;
+  const settling=Boolean(room.settlement && room.settlement.state==='running') || Boolean(room.funding && room.funding.state==='running');
   $('open-fresh-result').disabled=busy || settling || !room.clearing || !currentTicket();
   $('tamper-fresh').disabled=busy || settling || !room.clearing || !currentTicket();
-  renderTicketPickers();
+  renderTicketPickers(); renderFunding();
   renderSettlement();
   $('clear-auction').hidden=Boolean(room.clearing);
-  $('rehearsal-title').textContent=settled?'Your auction settled on Zcash.':room.clearing?'Your auction cleared.':room.closed?'Ready to clear.':room.accepted===4?'Bids are sealed.':'Place your bid.';
-  document.querySelector('.rehearsal-scope').textContent=settled?'Same sealed book. One shielded transaction. Publicly verified.':room.clearing?'Fresh outcome. Verified against your accepted bids.':room.closed?'Four sealed bids. One verified outcome.':room.accepted===4?'Waiting for the scheduled close.':'Use demo amounts. Get a signed acceptance.';
+  $('rehearsal-title').textContent=settled?'Your auction settled on Zcash.':room.clearing?'Your auction cleared.':room.closed?(fundingPending?'Fund the sealed book.':'Ready to clear.'):room.accepted===4?'Bids are sealed.':'Place your bid.';
+  document.querySelector('.rehearsal-scope').textContent=settled?'Same sealed book. One shielded transaction. Publicly verified.':room.clearing?'Fresh outcome. Verified against your accepted bids.':room.closed?(fundingPending?'Every sealed ticket gets a real shielded deposit before clearing.':'Four sealed bids. One verified outcome.'):room.accepted===4?'Waiting for the scheduled close.':'Use demo amounts. Get a signed acceptance.';
   $('close-status').textContent=room.stopped_after_incomplete_admission ? 'Admission stopped. The checkpoint is preserved.' : room.closed ? '✓ Closed bids certified.' :
     remaining>0 ? 'Bidding closes in '+Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')+'.' :
     room.accepted===4 ? 'Deadline reached. Confirm the accepted bids.' : 'Closed. Four tickets are required.';
@@ -255,7 +257,7 @@ async function openFresh(action) {
 }
 // Same-book settlement: every state comes from the server's recorded driver progress.
 // [step, begins at phase:state, ends at phase:state]; later phases also finish earlier steps.
-const SETTLE_STEPS=[['funding','preflight:started','funding:done'],['mpc','mpc_delivery:started','binding_key:started'],
+const SETTLE_STEPS=[['mpc','settle_preflight:started','binding_key:started'],
   ['bindings','binding_key:started','mpc_verification:started'],['sign','mpc_verification:started','settlement:done'],
   ['verify','public_verification:started','public_verification:done']];
 let settlePoll=null, nativeResultVerified=false;
@@ -289,6 +291,7 @@ function renderSettlement() {
     li.querySelector('em').textContent=label;
   });
   const total=minutes(now-job.started_at_unix);
+  if (room.funding && room.funding.result) $('settle-deposit').textContent=room.funding.result.deposit_txid;
   const result=job.result;
   $('settle-status').textContent=failed?(job.error||'Settlement stopped.'):job.state==='done'?'✓ Settled and publicly verified · '+minutes(result.settlement_seconds+result.public_verification_seconds)+' of proving and checks':'Running · '+total+' elapsed · other proofs wait until this finishes';
   $('settle-outcome').hidden=job.state!=='done';
@@ -304,12 +307,42 @@ function renderSettlement() {
   }
   if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
 }
+function renderFunding() {
+  const section=$('fund-section'), job=room && room.funding;
+  section.hidden=!(room && room.funding_required && room.closed);
+  if (section.hidden) return;
+  $('fund-auction').hidden=Boolean(job);
+  $('fund-auction').disabled=busy || Boolean(job);
+  $('fund-steps').hidden=!job;
+  $('fund-facts').hidden=!(job && job.state==='done');
+  if (!job) { $('fund-status').textContent='Clearing waits until the deposits are admitted.'; return; }
+  const at={}; for (const e of job.events||[]) { const key=e.phase+':'+e.state; if (!(key in at)) at[key]=e.at_unix; }
+  const now=Math.floor(Date.now()/1000), li=$('fund-step-deposit');
+  const done=job.state==='done', failed=job.state==='failed';
+  li.className=done?'done':failed?'failed':'running';
+  const begin=at['preflight:started']||job.started_at_unix;
+  li.querySelector('em').textContent=done?minutes((at['funding:done']||now)-begin):failed?'stopped':minutes(now-begin);
+  $('fund-title').textContent=done?'Deposits locked.':'Lock the deposits.';
+  $('fund-status').textContent=failed?(job.error||'Funding stopped.'):done?'✓ Funded and admitted on regtest. Now clear the book.':'Running · '+minutes(now-job.started_at_unix)+' elapsed · includes a 120 s admission window';
+  if (done && job.result) {
+    if (job.result.accepted_root!==room.accepted_root) { $('fund-status').textContent='Funding does not match this book.'; return; }
+    $('fund-deposit').textContent=job.result.deposit_txid;
+    $('fund-admission').textContent='✓ '+job.result.client_proofs+' bid proofs + '+job.result.share_pairs+' share pairs re-verified · '+job.result.receipt_signatures+' receipts · '+job.result.final_book_signatures+' book signatures · same root '+shortId(job.result.accepted_root);
+  }
+  if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
+}
 async function pollSettlement() {
   settlePoll=null; if (!room) return;
   try { const response=await fetch('/api/rehearsal/auction/'+room.auction_id); if (response.ok) showRoom(await response.json()); }
   catch { /* Retry on the next tick. */ }
-  if (room && room.settlement && room.settlement.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
+  if (room && ((room.settlement && room.settlement.state==='running') || (room.funding && room.funding.state==='running')) && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
 }
+$('fund-auction').addEventListener('click',async()=>{
+  if (busy || !room || room.funding) return; rehearsalError(''); lock(true);
+  try { room.funding=await rehearsalRequest('fund',{auction_id:room.auction_id}); }
+  catch(error) { rehearsalError(error.message); }
+  finally { lock(false); refreshRoom(); }
+});
 $('settle-auction').addEventListener('click',async()=>{
   if (busy || !room || room.settlement) return; rehearsalError(''); lock(true);
   try {

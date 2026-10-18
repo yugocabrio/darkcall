@@ -94,10 +94,12 @@ class Rehearsal:
             'clearing_available':self.clearing_available,'clearing':a['clearing'],
             'clearing_stopped':a['clearing_failed'],
             'settlement_available':self.settlement_available and standard_terms(a),
+            'funding_required':self.funding_required(a),
+            'funding':self.settlement_view(a,'funding'),
             'settlement':self.settlement_view(a)}
 
-    def settlement_view(self,a):
-        job=a['settlement']
+    def settlement_view(self,a,kind='settlement'):
+        job=a[kind]
         if job is None: return None
         events=[]
         try:
@@ -107,8 +109,12 @@ class Rehearsal:
         view={'state':job['state'],'started_at_unix':job['started_at_unix'],'events':events,
             'funding_scope':'actual isolated NU7 regtest deposits from a local test bank',
             'public_testnet':False,'result':job['public']}
-        if job['state']=='failed': view['error']='Settlement stopped. Its private checkpoint is retained.'
+        if job['state']=='failed': view['error']=('Funding' if kind=='funding' else 'Settlement')+' stopped. Its private checkpoint is retained.'
         return view
+
+    def funding_required(self,a):
+        # With regtest settlement available, chain funding/admission precedes clearing.
+        return self.settlement_available and standard_terms(a)
 
     def lookup(self,identifier):
         if type(identifier) is not str or not ID.fullmatch(identifier) or identifier not in self.auctions:
@@ -137,7 +143,7 @@ class Rehearsal:
         a={'id':identifier,'units':units,'reserve':reserve,'budget':budget,'closes_at_utc':cutoff,
             'digest':list(digest),'path':path,'authority':initialized['authority'],'receipts':[],
             'clients':[],'opening_tokens':{},'certificate':None,'poisoned':False,
-            'clearing':None,'clearing_run':None,'clearing_failed':False,'settlement':None}
+            'clearing':None,'clearing_run':None,'clearing_failed':False,'funding':None,'settlement':None}
         self.auctions[identifier]=a
         return self.public(a)
 
@@ -203,9 +209,10 @@ class Rehearsal:
         if a['clearing_failed']: raise ValueError('Incomplete clearing retained; start a new demo auction')
         if a['poisoned'] or not a['certificate'] or len(a['clients'])!=4:
             raise ValueError('Four complete acceptances and a certified closed book required')
+        if self.funding_required(a) and (a['funding'] is None or a['funding']['state']!='done'):
+            raise ValueError('Fund this auction on Zcash first: deposits and chain admission precede clearing')
         try:
-            self.call([HELPER,'prepare-clearing',a['path']],a['path'],'prepare-clearing',
-                      json.dumps(list(map(str,a['clients']))).encode(),parse=True)
+            self.prepare_book(a)
             result,folder=self.worker('clear',a)
             if (not result['fixed_cpp_proof_verified'] or not result['rep3_clearing_verified']
                     or not result['certified_book_matches'] or result['certificate_signatures_verified']!=3
@@ -217,6 +224,12 @@ class Rehearsal:
         except Exception:
             a['clearing_failed']=True
             raise
+
+    def prepare_book(self,a):
+        # Canonical clearing book: certified order, reindexed unchanged shares.
+        if not (a['path']/'clearing-book').exists():
+            self.call([HELPER,'prepare-clearing',a['path']],a['path'],'prepare-clearing',
+                      json.dumps(list(map(str,a['clients']))).encode(),parse=True)
 
     def result(self,value):
         if (type(value) is not dict or set(value)!={'auction_id','ticket','opening_token','action'}
@@ -269,53 +282,70 @@ class Rehearsal:
             'own_viewing_key_only','receipt_in_same_six_output_transaction')}
         return {**public,'ticket':ticket,'auction_id':a['id'],'native_settlement':True}
 
-    def start_settlement(self,value):
-        """Start the long same-book settlement. Returns (view, started); a started
-        job owns the proof lock until the driver ends, so no other proof overlaps."""
+    def start_job(self,kind,value):
+        """Start funding or settlement in the background. Returns (view, started); a
+        started job owns the proof lock until its driver ends, so no proofs overlap."""
         if type(value) is not dict or set(value)!={'auction_id'}: raise ValueError('Expected auction ID')
         a=self.lookup(value['auction_id'])
-        if a['settlement'] is not None: return self.settlement_view(a),False
+        if a[kind] is not None: return self.settlement_view(a,kind),False
         if not self.settlement_available: raise ValueError('Regtest settlement tools are unavailable on this checkout')
         if not standard_terms(a): raise ValueError('Regtest settlement supports 3 units, budget 100 and reserve 0 or 20')
-        if a['clearing'] is None: raise ValueError('Clear and verify this auction first')
+        if a['poisoned'] or not a['certificate'] or len(a['clients'])!=4:
+            raise ValueError('Certify the closed book with four tickets first')
+        if kind=='settlement':
+            if a['funding'] is None or a['funding']['state']!='done': raise ValueError('Fund this auction on Zcash first')
+            if a['clearing'] is None: raise ValueError('Clear and verify this auction first')
         import shutil
         from settle_fresh_book import MIN_START_DISK
         if shutil.disk_usage(ROOT).free < MIN_START_DISK:
-            raise ValueError('Free at least 10 GiB of disk before settling; the proof guard would refuse later')
+            raise ValueError('Free at least 10 GiB of disk before funding or settling; the proof guard would refuse later')
         from regtest_nu7_node import status
         try: status()
         except Exception: raise ValueError('Start the local NU7 regtest node first: python3 scripts/regtest_nu7_node.py start')
-        name='settle-'+secrets.token_hex(5)
-        job={'state':'running','name':name,'progress':a['path']/(name+'-progress.jsonl'),
+        if kind=='funding':
+            self.prepare_book(a)
+            name='settle-'+secrets.token_hex(5)
+            args=['--phase','fund']
+        else:
+            name=a['funding']['name']
+            args=['--phase','settle','--expect',f"{a['clearing']['price']},{a['clearing']['sold']}"]
+        job={'state':'running','name':name,'progress':a['path']/(name+'-'+kind+'-progress.jsonl'),
             'started_at_unix':int(time.time()),'public':None,'paths':None}
         def work():
             try:
-                with (a['path']/(name+'.log')).open('xb') as log:
+                with (a['path']/(name+'-'+kind+'.log')).open('xb') as log:
                     r=subprocess.run([sys.executable,'-B',str(SETTLE),str(a['path']),'--name',name,
-                        '--progress',str(job['progress']),'--expect',f"{a['clearing']['price']},{a['clearing']['sold']}"],
+                        '--progress',str(job['progress']),*args],
                         cwd=ROOT,stdout=subprocess.DEVNULL,stderr=log,timeout=7200)
-                if r.returncode: raise RuntimeError('Settlement driver stopped')
-                settled=json.loads(private_read(ROOT/'.local'/(name+'-settled.json'),65536))
-                if (settled['public']['accepted_root']!=a['certificate']['accepted_root']
-                        or (settled['public']['price'],settled['public']['sold'])!=(a['clearing']['price'],a['clearing']['sold'])):
-                    raise RuntimeError('Settled a different book or outcome')
-                job['paths']=settled['paths']; job['public']=settled['public']; job['state']='done'
+                if r.returncode: raise RuntimeError('Driver stopped')
+                if kind=='funding':
+                    funded=json.loads(private_read(ROOT/'.local'/(name+'-funded.json'),65536))
+                    if funded['public']['accepted_root']!=a['certificate']['accepted_root']:
+                        raise RuntimeError('Funded a different book')
+                    job['public']=funded['public']
+                else:
+                    settled=json.loads(private_read(ROOT/'.local'/(name+'-settled.json'),65536))
+                    if (settled['public']['accepted_root']!=a['certificate']['accepted_root']
+                            or (settled['public']['price'],settled['public']['sold'])!=(a['clearing']['price'],a['clearing']['sold'])):
+                        raise RuntimeError('Settled a different book or outcome')
+                    job['paths']=settled['paths']; job['public']=settled['public']
+                job['state']='done'
             except Exception:
                 job['state']='failed'
             finally: self.lock.release()
-        a['settlement']=job
-        try: threading.Thread(target=work,name='darkcall-settlement',daemon=True).start()
+        a[kind]=job
+        try: threading.Thread(target=work,name='darkcall-'+kind,daemon=True).start()
         except BaseException:
-            a['settlement']=None; raise
-        return self.settlement_view(a),True
+            a[kind]=None; raise
+        return self.settlement_view(a,kind),True
 
     def post(self,action,value):
         if not self.enabled: return 409,{'error':'Local input prover/admission helper required. Recorded verification remains available.'}
         if not self.lock.acquire(blocking=False): return 409,{'error':'Another local proof, verification or settlement is running'}
-        if action=='settle':
+        if action in ('fund','settle'):
             started=False
             try:
-                view,started=self.start_settlement(value)
+                view,started=self.start_job('funding' if action=='fund' else 'settlement',value)
                 return 200,view
             finally:
                 if not started: self.lock.release()

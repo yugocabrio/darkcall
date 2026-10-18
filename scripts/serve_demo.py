@@ -277,7 +277,7 @@ def handler(demo, port):
                     or self.headers.get('X-DarkCall-Token') != demo.token):
                 return self.reply(403,{'error':'Same origin and session token required'})
             rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close',
-                '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result','/api/rehearsal/settle':'settle'}
+                '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result','/api/rehearsal/fund':'fund','/api/rehearsal/settle':'settle'}
             if self.path not in ('/api/verify','/api/settlement',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
             try:
                 length = int(self.headers.get('Content-Length','0'))

@@ -54,15 +54,17 @@ result.
 
 ## What works (single-host prototype, isolated Zebra NU7 regtest)
 
-- **The full flow in the browser.** Create an auction, seal four bids (client
-  ZK proof + REP3 shares + signed acceptance), certify the book, clear it by MPC
-  in about 9 s, then open your own result.
-- **Settle on Zcash, same book.** Four real shielded deposits and chain
-  admission re-verify the same proofs and shares under a certificate over the
-  same root. Then come a fresh MPC clearing inside settlement, six Halo2 output
-  bindings, 2-of-3 DKG FROST signing, Zebra acceptance, two confirmations and
-  six wallet scans. On Oct 18 a browser-created auction settled as tx
-  `54941ffd…c76ee6`: price 21, 3 sold, refunds 79/79/100/79, seller 63.
+- **The full flow in the browser, in protocol order.** Create an auction and
+  seal four bids (client ZK proof + REP3 shares + signed pre-check). Certify the
+  book, then **Fund on Zcash**: four real shielded deposits and a chain
+  admission that re-verifies the same proofs and shares under a certificate
+  over the same root. Then clear the book by MPC (about 9 s) and open your own
+  result.
+- **Settle on Zcash, same book.** A fresh MPC delivery inside settlement, six
+  Halo2 output bindings, 2-of-3 DKG FROST signing, Zebra acceptance, two
+  confirmations and six wallet scans. On Oct 18 browser-created auctions settled
+  this way, e.g. tx `3fee2c7c…b5c0b5d7`: price 21, 3 sold, refunds
+  79/79/100/79, seller 63.
 - **Public verification without secrets.** About 2 minutes. It covers native
   authorization, six output bindings, the auction proof and the operator
   certificate. Corrupted proofs, transactions, books and authorities are

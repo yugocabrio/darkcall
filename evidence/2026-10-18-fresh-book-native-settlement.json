@@ -323,5 +323,61 @@
       "docs/img/05-settled.jpg",
       "docs/img/06-shielded-receipt-tamper.jpg"
     ]
+  },
+  "fund_first_http_harness": {
+    "date": "2026-10-19 (CEST)",
+    "order": "create, bids, close, FUND (deposits + chain admission + certificate), CLEAR (REP3), own results, SETTLE",
+    "command": "python3 -B scripts/check_fresh_settlement.py --port 8877 --output .local/claude-20261018/fresh-settlement-check-2.json",
+    "accepted_root": "06626f532d9358b89389fedf3193ab165362e51d6b4a94ec699a3eb52856ad49",
+    "funding": {
+      "deposit_txid": "e1e4d627e7e3351734c0d3266b41af84e2a03a1a39181cf685c2276482bdded9",
+      "confirmations": 2,
+      "client_proofs": 4,
+      "share_pairs": 12,
+      "receipt_signatures": 12,
+      "final_book_signatures": 3,
+      "same_accepted_root": true,
+      "accepted_root": "06626f532d9358b89389fedf3193ab165362e51d6b4a94ec699a3eb52856ad49"
+    },
+    "funding_seconds": 120.66,
+    "clear_and_settle_before_funding_refused_400": true,
+    "clearing_after_funding": true,
+    "browser_clearing": {
+      "price": 21,
+      "sold": 3,
+      "seconds": 8.648358291015029
+    },
+    "txid": "94a093e9a5ddcb92117ac32beecb5473b1d13b12f556295dfa1594db4663b0d8",
+    "price": 21,
+    "sold": 3,
+    "confirmations": 2,
+    "settle_phase_rescans_escrow_at_current_tip": true,
+    "settlement_driver_seconds": 885.26,
+    "public_verification_seconds": 104.867,
+    "settle_job_seconds": 997.91,
+    "own_native_receipts": [
+      {
+        "won": true,
+        "refund": 79
+      },
+      {
+        "won": true,
+        "refund": 79
+      },
+      {
+        "won": true,
+        "refund": 79
+      },
+      {
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "own_receipts_equal_browser_results": true,
+    "native_tamper_rejected_before_key_read": true,
+    "foreign_capability_refused_403": true,
+    "concurrent_settle_and_recorded_proof_refused_409": true,
+    "non_default_terms_not_settleable": true,
+    "total_seconds": 1189.173
   }
 }

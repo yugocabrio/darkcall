@@ -3,13 +3,15 @@
 The browser's **Try DarkCall** mode runs one auction from creation to a shielded
 payout:
 
-**Create → seal four bids → certify the closed book → REP3 clearing → own result
-→ Settle on Zcash → own shielded receipt → tamper refusal.**
+**Create → seal four bids → certify the closed book → Fund on Zcash → REP3
+clearing → own result → Settle on Zcash → own shielded receipt → tamper refusal.**
 
-Everything after **Settle on Zcash** uses the SAME sealed tickets, bid
-commitments, REP3 shares and accepted root as the browser book. The settlement
-is a real transaction on an isolated Zebra NU7 regtest, built by the existing
-funded drivers. It is not a recording and not a different auction.
+The order follows the protocol: real deposits and chain admission come before
+the clearing, and the clearing comes before the payout. **Fund** and **Settle**
+use the SAME sealed tickets, bid commitments, REP3 shares and accepted root as
+the browser book. They are real transactions on an isolated Zebra NU7 regtest,
+built by the existing funded drivers. They are not recordings, and they belong
+to the same auction.
 
 ## Start
 
@@ -25,13 +27,15 @@ Open `http://127.0.0.1:8877` and choose **Try DarkCall**. The default terms
 (3 units, reserve 20, budget 100 zatoshi) are the terms the native settlement
 prototype supports, and the close time defaults to two minutes ahead. Seal four
 demo bids. You can share the local link with another browser on this PC. After
-the deadline, **Certify closed book**, **Clear this auction** and **Open my
-result**. Then press **Settle on Zcash** and watch the five stages:
+the deadline, press **Certify closed book**, then **Fund on Zcash** (about
+2 minutes). Clearing stays locked until the deposits are admitted. Then
+**Clear this auction**, **Open my result**, and **Settle on Zcash**:
 
 | Stage | What actually runs |
 | --- | --- |
-| Fund & admit | 4 shielded deposits (budget + 15000 fee each) from a local test wallet to a fresh 2-of-3 DKG escrow. Zebra accepts them; 2 confirmations; the escrow scanner decrypts the 4 notes. Operators re-verify the same 4 client ZK proofs and 12 share pairs, check each signed deposit claim, issue 12 receipts and, after a 120 s admission window, sign the final book. Its root must equal the browser book's root. |
-| Re-clear by MPC | Fresh REP3 `delivery_flags4/v2` run on the same shares, with new masks/blinders, fixed C++ verification. The price/sold must equal the browser clearing. |
+| Fund on Zcash | 4 shielded deposits (budget + 15000 fee each) from a local test wallet to a fresh 2-of-3 DKG escrow. Zebra accepts them; 2 confirmations; the escrow scanner decrypts the 4 notes. Operators re-verify the same 4 client ZK proofs and 12 share pairs, check each signed deposit claim, issue 12 receipts and, after a 120 s admission window, sign the final book. Its root must equal the browser book's root. |
+| Clear this auction | Three-party REP3 `delivery_flags4/v2` proof on the admitted shares, fixed C++ verification against the signed book (about 9 s). |
+| Settle → MPC delivery | The escrow is rescanned at the current tip. A fresh REP3 run on the same shares, with new masks/blinders, gets fixed C++ verification. The price/sold must equal the browser clearing. |
 | Bind every output | Six Halo2 (shared18) proofs bind each settlement row (role, ticket, amount, recipient) to the native note commitment at its action index. |
 | Sign & confirm | REP3 settlement proof over the six rows, certificate/statement links, then 2-of-3 FROST signing of the four escrow spends. Zebra accepts the transaction; 2 confirmations; six wallets scan their exact notes; the escrow shows all four deposits spent; three operator journals finalize. |
 | Public check | The public bundle (no keys, PCZT, witnesses or pads) is verified with the separately configured authority. |
@@ -53,9 +57,9 @@ funding about 2 min, settlement about 15 min, public check about 2 min.
 | Seller conditions | Bounded terms, random auction ID, conditions digest including cutoff, three fresh admission keys |
 | Bid commitment / shares | Poseidon2 commitment and REP3 bid/salt pairs, fresh OS randomness |
 | Input ZK proof | Noir `bid_input` circuit, pinned plaindriver `--zk`, fixed C++ verification |
-| Preview admission | Three signed receipts against a **synthetic** unmined note in an offline domain, for instant feedback |
-| Browser clearing | Actual three-party REP3 `delivery_flags4/v2` proof, fixed C++ verification against the signed book |
-| Chain funding | **Actual** NU7 regtest deposits, made by one local test bank on behalf of the four local bidders, when settlement starts |
+| Bid pre-check | Three signed receipts at bid time against a **synthetic** unmined note in an offline domain: instant proof/share feedback, not funding |
+| Chain funding | **Actual** NU7 regtest deposits after the close, made by one local test bank on behalf of the four local bidders, BEFORE clearing |
+| Browser clearing | Actual three-party REP3 `delivery_flags4/v2` proof, fixed C++ verification against the signed book, only after chain admission |
 | Chain admission | Actual: deposit decryption, claim signatures, the same client proofs and share pairs, 12 receipts, final-book certificate over the same root |
 | Settlement | Actual funded six-output NU7 transaction, Zebra acceptance, controlled confirmations, wallet scans |
 | Own receipt | Encrypted memo in the bidder's own refund note, opened with only that bidder's viewing key |
@@ -66,10 +70,11 @@ three operators, the bank and every bidder wallet run on one host. Privacy
 assumes at most one corrupt semi-honest REP3 party.
 
 The chain admission is a second admission over the same book. Its certificate
-uses the chain-funded operator authority; the browser's preview certificate uses
-an offline authority. In a deployment, each bidder's wallet would deposit before
-admission. The demo makes the four deposits at settlement time so that a
-browser auction can be settled without four separate wallets.
+uses the chain-funded operator authority; the bid-time pre-check certificate
+uses an offline authority. In a deployment, each bidder's own wallet would
+deposit before admission, before the close. The demo makes the four deposits
+from one test wallet right after the close, so a browser auction can be funded
+without four separate wallets. Clearing still waits for that funding.
 
 ## Boundaries and restart
 
