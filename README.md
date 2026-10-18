@@ -30,6 +30,16 @@ secret. Each bidder decrypts only their own outcome.
  anyone: verify public bundle (proofs + tx + certificate), no secrets
 ```
 
+## Who it is for
+
+Anyone who sells a batch of identical units and wants one fair price: event
+seats, allocation slots in a token or NFT drop, sponsorship or ad slots, or
+reserved compute. A uniform-price sealed-bid auction is the fair format: every
+winner pays the same price, set by the highest losing bid (or the reserve), so a
+bidder who wants one unit does best by bidding their true value.
+DarkCall adds what on-chain auctions lack. Nobody learns your maximum price or
+whether you won, payment is shielded ZEC, and the result is still verifiable.
+
 ## What is different
 
 Typical sealed-bid designs either trust an auctioneer with every bid or **reveal

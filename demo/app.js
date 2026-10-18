@@ -428,6 +428,7 @@ $('close-auction').addEventListener('click',async()=>{
   } catch(error) { rehearsalError(error.message); }
   finally { lock(false); refreshRoom(); }
 });
+document.querySelectorAll('[data-bid]').forEach(button=>button.addEventListener('click',()=>{ $('maximum-bid').value=button.dataset.bid; $('maximum-bid').focus(); }));
 $('copy-auction-link').addEventListener('click',async()=>{
   try { await navigator.clipboard.writeText($('auction-link').value); $('rehearsal-status').textContent='✓ Local auction link copied.'; }
   catch { $('auction-link').select(); $('rehearsal-status').textContent='Select and copy the local link.'; }

@@ -48,6 +48,20 @@ proof before key read, a foreign capability (403), and non-default terms marked
 not settleable. Public state carried no capabilities or private paths. Total
 1263.8 s. Evidence: `evidence/2026-10-18-fresh-book-native-settlement.json`.
 
+**Clicked through the actual browser UI as well.** In the built-in browser pane:
+create (defaults), four bids, certify, clear (8.6 s), own result (ticket 04 LOST,
+refund 100), then Settle. Deposits `d11efd9a…5fd04abd`, settlement
+`3fee2c7ce3b64689c28700904a5b31e13272b41030ae5eedd58a6a87b5c0b5d7`
+(driver 886.3 s), public check 102.0 s, Settle → verified 1117.0 s. Root
+`04728ac2…ccbc739a` matched the browser book. The UI showed all five stages
+done, the settlement facts and the who-learned-what panel. The pane was closed
+during settlement, so the page-memory capability was lost by design. The four
+own receipts were opened through the same server function from the CLI
+(79/79/100/79). Its public bundle is committed as
+`demo/artifacts/browser-auction-nu7-v1`. `./demo.sh` now serves it as "Proof
+it settles", and `--fixture-recorded` keeps the Oct 5 run. Its recorded view
+was checked over HTTP: four receipts plus the tamper refusal.
+
 New code: `scripts/settle_fresh_book.py` is the orchestrator: tool preflight,
 bank rescan, deposits/admission, settlement, export/verify, own-FVK export and
 public progress events. `scripts/rehearsal.py` adds a Settle job that owns the

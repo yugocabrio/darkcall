@@ -15,8 +15,13 @@ submission package. Do not start 8/16/32 scaling or new cryptography.
 - [x] HTTP end-to-end harness (`check_fresh_settlement.py`): uninterrupted
   Settle job, tx `0e77bc23…f3325`, 1263.8 s total, all refusals pass. Fresh-book
   public bundle/authority and evidence JSON committed.
-- [ ] Browser run with screenshots at desktop and 390px (ticket picker,
-  who-learned-what panel, live stages).
+- [x] Browser run through the UI: tx `3fee2c7c…`, five live stages, facts,
+  who-learned-what panel; bundle committed and served as "Proof it settles".
+- [ ] Repeat with the pane kept open to exercise own shielded receipt/tamper
+  buttons in the UI; check 390px layout of the new sections.
+- [ ] Docker clean-room verifier (`docker/verify/Dockerfile`,
+  `scripts/docker_verify.sh`): first Linux build needed Node/corepack for
+  Barretenberg's configure step; build in progress.
 - [ ] Docs: README (rewritten), judge-review, submission-draft, demo, local
   rehearsal, reproduce (full local product). Capture-ready demo plan.
 - [ ] Independent reproduction of the public verifier in a clean Linux container

@@ -278,6 +278,9 @@ class Rehearsal:
         if not self.settlement_available: raise ValueError('Regtest settlement tools are unavailable on this checkout')
         if not standard_terms(a): raise ValueError('Regtest settlement supports 3 units, budget 100 and reserve 0 or 20')
         if a['clearing'] is None: raise ValueError('Clear and verify this auction first')
+        from regtest_nu7_node import status
+        try: status()
+        except Exception: raise ValueError('Start the local NU7 regtest node first: python3 scripts/regtest_nu7_node.py start')
         name='settle-'+secrets.token_hex(5)
         job={'state':'running','name':name,'progress':a['path']/(name+'-progress.jsonl'),
             'started_at_unix':int(time.time()),'public':None,'paths':None}

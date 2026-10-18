@@ -790,3 +790,6 @@ input:focus {outline:1px solid var(--accent);outline-offset:1px}
 .landing-facts span {display:grid;gap:6px;border-top:1px solid #3a4934;padding-top:12px;font-size:13px;color:#c4d2b8;line-height:1.5}
 .landing-facts b {font:10px var(--mono);letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);font-weight:400}
 @media(max-width:700px) {.landing-facts {grid-template-columns:1fr}}
+.bid-suggest {margin-left:8px;white-space:nowrap}
+.bid-suggest button {border:1px solid #4a5b40;background:#1a2417;color:var(--accent);border-radius:12px;padding:2px 9px;margin-left:5px;font:11px var(--mono);cursor:pointer}
+.bid-suggest button:hover {border-color:var(--accent)}
