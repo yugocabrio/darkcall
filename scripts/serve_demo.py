@@ -31,8 +31,9 @@ AUTHORITY = ROOT / '.local/regtest-shared-v2-deposit4-20261005-admission/manifes
 
 
 class Demo:
-    def __init__(self, cases, canonical=None, bundle=None, public_only=False, funded=False, authority=None):
+    def __init__(self, cases, canonical=None, bundle=None, public_only=False, funded=False, authority=None, note=None):
         self.funded = funded
+        self.note = note
         self.authority = authority
         if funded and (not canonical or authority is None):
             raise RuntimeError("Funded demo requires canonical run and separate trusted authority")
@@ -95,6 +96,7 @@ class Demo:
             'recipient_identities_available':not self.public_only,
             'live_admission':False, 'local_rehearsal_available':self.rehearsal.enabled,
             'regtest_settlement_available':self.rehearsal.settlement_available,
+            'recorded_note':self.note,
             'independent_hosts':False, 'operators_know_results':True,
             'six_output_memo_e2e':bool(self.canonical), 'accepted_book_certified':False,
             'chain_inclusion_verified':False}
@@ -319,6 +321,7 @@ def main():
     parser.add_argument('--public-only',action='store_true',help='Use only committed public artifacts; no synthetic identities')
     parser.add_argument('--funded',action='store_true',help='Recorded certified actual-note isolated NU7 run')
     parser.add_argument('--authority',type=pathlib.Path,help='Separate caller-trusted admission manifest')
+    parser.add_argument('--recorded-note',help='Short public description of the recorded auction')
     args = parser.parse_args()
     if args.funded and (not args.canonical or args.authority is None):
         parser.error('--funded requires --canonical and explicit separate --authority')
@@ -334,9 +337,10 @@ def main():
             else:
                 frozen=snapshot(bundle,'demo-public')
             demo=Demo({'positive':frozen.name},canonical=True,bundle=bundle,public_only=True,
-                funded=args.funded,authority=args.authority)
+                funded=args.funded,authority=args.authority,note=args.recorded_note)
         else:
-            demo = Demo({'positive':args.run},canonical=args.run,bundle=bundle,funded=args.funded,authority=args.authority)
+            demo = Demo({'positive':args.run},canonical=args.run,bundle=bundle,funded=args.funded,authority=args.authority,
+                note=args.recorded_note)
     else:
         demo = Demo({'positive':args.positive,'zero':args.zero})
     demo.state()  # Fail before binding if fixtures are missing or wrong scope.

@@ -20,4 +20,5 @@ fi
 exec python3 "$TASK_ROOT/scripts/serve_demo.py" --canonical --funded \
   --run settle-debcba7c01-settlement \
   --bundle "$TASK_ROOT/demo/artifacts/browser-auction-nu7-v1" \
-  --authority "$TASK_ROOT/demo/authority/browser-auction-nu7-v1.json" "$@"
+  --authority "$TASK_ROOT/demo/authority/browser-auction-nu7-v1.json" \
+  --recorded-note "Created, cleared and settled in this UI on Oct 18 · isolated Zcash regtest" "$@"
