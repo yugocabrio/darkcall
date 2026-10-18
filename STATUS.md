@@ -72,6 +72,27 @@ stages, settlement facts, the own shielded receipt and a receipt tamper check.
 path stays pinned to the default terms (3 units, budget 100, reserve 0/20); other
 terms show "not settleable" in the UI.
 
+**Clean-room Linux reproduction of the public verifier.**
+`docker/verify/Dockerfile` builds Noir rc.2 (published digest), the co-snarks
+CRS, patched Barretenberg `bb` (566.5 s), native-gate and the SDK (449.7 s)
+inside `rust:1.93.0-trixie` from a `git archive` only. It then verified
+`browser-auction-nu7-v1`, `fresh-book-nu7-v1` and `canonical-nu7-funded-v1` in
+323 s and cryptographically refused a corrupted receipt proof for each
+(evidence `2026-10-18-clean-room-linux-verification.json`). It exposed two
+defects, both fixed:
+
+- `.gitignore`'s `**/*witness*` hid `vendor/halo2_gadgets/src/ecc/chip/witness_point.rs`,
+  so a fresh clone could not build.
+- The exact patch check depended on Git's clone-size hash abbreviation; it now
+  uses `core.abbrev=7`.
+
+A later full rebuild during 19 GiB host swap drove free disk below 1 GiB. That
+build stopped. I removed my verifier image and build cache, dropped the Docker
+VM page cache, and deleted only rebuildable caches (root
+`target/release/{deps,build}` and `.deps/frost-tools/target/debug`). Free disk
+recovered to about 10 GiB. Docker Desktop was not restarted, because another
+project's node runs there.
+
 Environment notes: the NU7 container had been removed, but its state survived.
 `regtest_nu7_node.py start` recreated it at height 112 with tx `47019e02…`
 still canonical (2 confirmations). The bank was rescanned at 112 (415571266

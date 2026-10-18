@@ -19,13 +19,16 @@ submission package. Do not start 8/16/32 scaling or new cryptography.
   who-learned-what panel; bundle committed and served as "Proof it settles".
 - [ ] Repeat with the pane kept open to exercise own shielded receipt/tamper
   buttons in the UI; check 390px layout of the new sections.
-- [ ] Docker clean-room verifier (`docker/verify/Dockerfile`,
-  `scripts/docker_verify.sh`): first Linux build needed Node/corepack for
-  Barretenberg's configure step; build in progress.
+- [x] Docker clean-room verifier (`docker/verify/Dockerfile`,
+  `scripts/docker_verify.sh`). All three committed bundles verified in a
+  container built from `git archive`, and corrupted receipt proofs were
+  cryptographically refused. Found and fixed a hidden vendored source file
+  (`witness_point.rs`) and a host-dependent `git diff` abbreviation in the
+  exact patch check.
+- [ ] Only rebuild the container with ≥12 GiB free disk; a rebuild during heavy
+  swap exhausted the disk on Oct 18 (recovered by removing my image/cache).
 - [ ] Docs: README (rewritten), judge-review, submission-draft, demo, local
   rehearsal, reproduce (full local product). Capture-ready demo plan.
-- [ ] Independent reproduction of the public verifier in a clean Linux container
-  (Docker), if it fits the time budget.
 - [ ] Final consistency pass, then the human decides on visibility and submission.
 
 Latest human instruction: start development, commit and push regularly, continue
