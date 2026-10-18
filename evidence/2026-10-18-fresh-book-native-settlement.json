@@ -136,5 +136,68 @@
     "Admission signatures attest funding; the public bundle does not prove chain inclusion.",
     "Isolated regtest, not public testnet or mainnet."
   ],
-  "http_harness": "pending in a separate run (scripts/check_fresh_settlement.py)"
+  "http_harness": {
+    "command": "python3 -B scripts/check_fresh_settlement.py --port 8877 --output .local/claude-20261018/fresh-settlement-check-1.json",
+    "scope": "same server handlers as the browser UI; one uninterrupted Settle job (no resume)",
+    "terms": {
+      "units": 3,
+      "reserve": 20,
+      "budget": 100
+    },
+    "demo_bids": "77, 61, 43, 21",
+    "accepted_root": "26514c04289facb69c6dc1cf2018934920137146ebae091ba5a642fbbdc1830c",
+    "browser_clearing": {
+      "price": 21,
+      "sold": 3,
+      "seconds": 8.147
+    },
+    "deposit_txid": "f73ef5939d2c3ed269924fd0a7aeb3de54d8e1188ba682b8dbdd73ba3fbf6dcf",
+    "txid": "0e77bc23fc1efce0ab63a8710c2f41c3cc85cbb8dcec4bafb6484d37ed2f3325",
+    "price": 21,
+    "sold": 3,
+    "confirmations": 2,
+    "same_accepted_root_and_tickets": true,
+    "browser_clearing_matches": true,
+    "native_row_proofs_verified": true,
+    "normal_cpp_auction_proof_verified": true,
+    "accepted_book_and_recipients_authenticated": true,
+    "native_proof_and_signatures_verified": true,
+    "stage_elapsed_seconds": {
+      "funding_done": 120.908,
+      "binding_key_started": 130.44,
+      "binding_row_0_started": 240.665,
+      "mpc_verification_started": 834.199,
+      "settlement_done": 1072.188,
+      "public_verification_done": 1198.409
+    },
+    "settlement_driver_seconds": 951.053,
+    "public_verification_seconds": 119.038,
+    "own_native_receipts": [
+      {
+        "won": true,
+        "refund": 79
+      },
+      {
+        "won": true,
+        "refund": 79
+      },
+      {
+        "won": true,
+        "refund": 79
+      },
+      {
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "own_receipts_equal_browser_results": true,
+    "native_tamper_rejected_before_key_read": true,
+    "foreign_capability_refused_403": true,
+    "settle_before_clear_refused_400": true,
+    "concurrent_settle_and_recorded_proof_refused_409": true,
+    "non_default_terms_not_settleable": true,
+    "public_state_contains_no_capabilities_or_private_paths": true,
+    "recorded_canonical_txid_unchanged": true,
+    "total_seconds": 1263.783
+  }
 }

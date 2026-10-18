@@ -12,9 +12,11 @@ submission package. Do not start 8/16/32 scaling or new cryptography.
   over the same root → funded settlement `54941ffd…` → public verify → four own
   receipts equal to the browser results.
 - [x] Server Settle job + UI step 05 Settle + own native receipt and tamper.
-- [ ] HTTP end-to-end harness (`check_fresh_settlement.py`) evidence; browser
-  run with screenshots at desktop and 390px; commit the fresh-book public
-  bundle and authority; evidence JSON.
+- [x] HTTP end-to-end harness (`check_fresh_settlement.py`): uninterrupted
+  Settle job, tx `0e77bc23…f3325`, 1263.8 s total, all refusals pass. Fresh-book
+  public bundle/authority and evidence JSON committed.
+- [ ] Browser run with screenshots at desktop and 390px (ticket picker,
+  who-learned-what panel, live stages).
 - [ ] Docs: README (rewritten), judge-review, submission-draft, demo, local
   rehearsal, reproduce (full local product). Capture-ready demo plan.
 - [ ] Independent reproduction of the public verifier in a clean Linux container

@@ -32,6 +32,20 @@ existing funded pipeline. There is no new cryptography and no weakened check:
   Four own-FVK receipt openings, about 2.7–2.9 s each, matched the browser
   results: three won with refund 79, one lost with refund 100.
 
+**The same flow passes through the server's own Settle job without any manual step.**
+`scripts/check_fresh_settlement.py` ran it over HTTP: create, 4 bids, close,
+clear (8.1 s), 4 own results, then Settle. Deposits `f73ef593…bf6dcf`
+(funding done at 121 s), binding key from 130 s, rows from 241 s, MPC check at
+834 s, settlement `0e77bc23fc1efce0ab63a8710c2f41c3cc85cbb8dcec4bafb6484d37ed2f3325`
+done at 1072 s (driver 951.1 s, uninterrupted), public verification 119.0 s,
+complete at 1198 s. The root and tickets equal the browser book; price 21 and
+3 sold equal the browser clearing. Four own native receipts (3 won/79, 1
+lost/100) equal the four browser results. Refusals: settle before clear (400),
+a second settle and a recorded proof while settling (409), a corrupted receipt
+proof before key read, a foreign capability (403), and non-default terms marked
+not settleable. Public state carried no capabilities or private paths. Total
+1263.8 s. Evidence: `evidence/2026-10-18-fresh-book-native-settlement.json`.
+
 New code: `scripts/settle_fresh_book.py` is the orchestrator: tool preflight,
 bank rescan, deposits/admission, settlement, export/verify, own-FVK export and
 public progress events. `scripts/rehearsal.py` adds a Settle job that owns the
