@@ -1,4 +1,10 @@
-# Recorded demo draft
+# Recorded demo draft (Oct 5, superseded)
+
+> **Superseded on Oct 18.** This draft predates **Settle on Zcash**, so it
+> switches to a different recorded auction for payment. The current flow
+> settles the same browser auction. Use the capture plan in
+> [demo.md](demo.md#capture-ready-demo-plan-about-2-minutes-edited) for a new
+> recording. The text below describes the old draft only.
 
 The latest local video draft is an **edited still-image demonstration**, with
 captions and no audio. Seven new browser screenshots show the two experience
