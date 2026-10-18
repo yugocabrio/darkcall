@@ -110,6 +110,48 @@ digests and public artifact/context links. It invokes no keys, RPC or verifier.
 Reported local replay was 112.431s on a shared M1; timings on other hosts must be
 measured rather than inferred.
 
+## Full local product
+
+Creating auctions, clearing them and settling them on the local NU7 regtest
+needs every pinned tool. After the public-replay tools above, also build the
+following:
+
+```sh
+cargo build --release --locked --manifest-path .deps/co-snarks/Cargo.toml --bin plaindriver -j 2
+CARGO_TARGET_DIR="$PWD/.deps/co-snarks/target-aes-native" RUSTFLAGS='-C target-cpu=native --cfg aes_armv8' \
+  cargo build --release --locked --manifest-path .deps/co-snarks/Cargo.toml --bin co-noir -j 2
+cargo build --release --locked -p darkcall-native-gate -p darkcall-input-tool \
+  -p darkcall-output-binding -p darkcall-wallet-bridge --bins --examples -j 4
+.deps/noir-1.0.0-rc.2/nargo compile --program-dir circuits/bid_input
+```
+
+`darkcall-output-binding` provides `poseidon_batch`, which the settlement
+re-verifies before FROST signing. A settlement attempt on Oct 18 without it
+stopped at that check, before any reservation or signature, and was resumed from
+the exact prepared transaction once the binary was built. `settle_fresh_book.py`
+and the server now refuse to start settlement when a tool is missing.
+
+The chain side needs Docker, the pinned Zebra 7.0.0-rc.0 archive and one funded
+local test bank ([regtest.md](regtest.md)):
+
+```sh
+python3 scripts/regtest_nu7_node.py prepare
+python3 scripts/regtest_nu7_node.py start
+python3 scripts/regtest_nu7_node.py mine 2              # fresh chain only
+python3 scripts/regtest_nu7_funding.py --name nu7-bank-20261005   # fresh chain only
+./demo.sh
+```
+
+`settle_fresh_book.py` uses `.local/nu7-bank-20261005` by default (`--bank`
+selects another). It rescans the bank at the current tip before every
+settlement. Each settlement spends 4 × 15100 + 25000 zatoshi of regtest funds
+and mines 4 controlled blocks. A CLI settlement of a certified browser book is:
+
+```sh
+python3 -B scripts/settle_fresh_book.py .local/browser-rehearsal-SESSION/AUCTION_ID \
+  --name settle-new --expect PRICE,SOLD --progress .local/settle-new-progress.jsonl
+```
+
 ## Recipient demo and regeneration
 
 The development demo has ignored fixture own-FVK exports and can open all four

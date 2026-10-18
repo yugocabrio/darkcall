@@ -651,7 +651,7 @@ input:focus {outline:1px solid var(--accent)}
 .rehearsal-panel {padding:32px 36px;margin:0 0 32px;border-radius:12px;background:#171e17;border-color:#374333}
 .rehearsal-panel h2 {font-size:38px;margin:32px 0 10px}
 .rehearsal-scope {font-size:14px;margin:0 0 28px;color:#aabca0}
-.auction-progress {list-style:none;display:grid;grid-template-columns:repeat(4,1fr);padding:0;margin:26px 0 0;gap:12px}
+.auction-progress {list-style:none;display:grid;grid-template-columns:repeat(5,1fr);padding:0;margin:26px 0 0;gap:12px}
 .auction-progress li {display:flex;align-items:center;gap:10px;font-size:12px;color:#788775;border-top:2px solid #313e2f;padding-top:12px}
 .auction-progress li span {font:10px var(--mono)}
 .auction-progress li[aria-current] {color:#d2eca9;border-color:#c7ed9e}
@@ -746,4 +746,36 @@ input:focus {outline:1px solid var(--accent);outline-offset:1px}
   .experience-scope {margin-top:4px}
   .has-experience .experience-picker {grid-template-columns:1fr 1fr}
   .has-experience .experience-heading {font-size:18px}
+}
+
+/* Same-book shielded settlement. States follow the driver's recorded progress. */
+.fresh-settlement {border-top:1px solid #384930;margin-top:30px;padding-top:26px}
+.fresh-settlement h3 {font:400 30px Georgia,serif;letter-spacing:-.5px;margin:14px 0 10px}
+.settle-lead {font-size:13px;line-height:1.7;color:#abbc9b;max-width:640px;margin:0 0 20px}
+.fresh-settlement > .primary-button {max-width:320px}
+.settle-steps {list-style:none;padding:0;margin:22px 0 12px;display:grid;gap:8px;max-width:760px}
+.settle-steps li {display:grid;grid-template-columns:20px 170px 1fr auto;align-items:baseline;gap:12px;padding:12px 14px;border:1px solid #2f3b2b;border-radius:7px;color:#7f8e78;font-size:12px}
+.settle-steps li:before {content:"○";color:#56664f}
+.settle-steps li b {font-weight:500;color:#9fae95}
+.settle-steps li em {font:11px var(--mono);font-style:normal;color:#8fa385;white-space:nowrap}
+.settle-steps li.running {border-color:#8fb56a;color:#c3d6b1;background:#1f2b19}
+.settle-steps li.running:before {content:"◐";color:var(--accent)}
+.settle-steps li.running b {color:var(--accent)}
+.settle-steps li.done {color:#a9bf97}
+.settle-steps li.done:before {content:"✓";color:var(--accent)}
+.settle-steps li.done b {color:#d3e7bf}
+.settle-steps li.failed {border-color:#b5705d;color:#e2b5a7}
+.settle-steps li.failed:before {content:"×";color:#ef9f86}
+#settle-status {font:11px var(--mono);color:#b9daa3;line-height:1.7}
+.settle-facts {display:grid;grid-template-columns:170px 1fr;gap:8px 16px;margin:20px 0 24px;font-size:12px}
+.settle-facts dt {color:#9fb093}
+.settle-facts dd {margin:0;font:11px var(--mono);color:#dbe9cd;overflow-wrap:anywhere}
+.settle-receipt {max-width:520px}
+#native-tamper-result {font-size:12px;color:var(--accent);line-height:1.7}
+@media(max-width:760px) {
+  .settle-steps li {grid-template-columns:18px 1fr;gap:4px 10px}
+  .settle-steps li span,.settle-steps li em {grid-column:2}
+  .settle-facts {grid-template-columns:1fr;gap:2px}
+  .settle-facts dd {margin-bottom:10px}
+  .auction-progress li {font-size:9px}
 }

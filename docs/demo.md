@@ -1,61 +1,57 @@
-# One-run DarkCall demo
+# DarkCall demo guide
 
 ```sh
-./demo.sh
-./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 \
-  --authority demo/authority/canonical-nu7-funded-v1.json
+python3 scripts/regtest_nu7_node.py start   # only for Settle on Zcash
+./demo.sh                                   # http://127.0.0.1:8877
 ```
 
-Open `http://127.0.0.1:8877`. Both commands use the recorded actual-funded NU7
-transaction `47019e02…a211938`: four accepted deposits, authenticated final book,
-blinded-v2 delivery, four encrypted memos in the SAME six-output transaction,
-six native bindings, fixed MPC proof, existing2-of-3 DKG, Zebra acceptance,
-two controlled confirmations, six exact wallet scans and three Finalized journals.
-Price50zatoshi/sold3;21790bytes/30000fee. Fixture clients/tickets/terms and committed
-input proofs/shares remain local. This is controlled regtest, not public testnet.
+The page offers two experiences:
 
-After building [pinned tools](toolchains.md), the154KB public-only bundle verifies
-without bids, keys, PCZT, witness or funding journal. The explicit authority contains
-public admission keys/conditions in a **separate** local setup file. This is demo
-registration configuration, not production service discovery. A verifier must obtain
-its intended auction authority independently; never use keys selected by a bundle.
-Admission certification is operator attestation, not public ZK proof of funding.
-Native/proof verification does not prove chain inclusion or public-chain finality.
+- **Try DarkCall** walks one auction through Create → Bid → Clear → Result →
+  **Settle**. Settle funds the same sealed book on the isolated NU7 regtest and
+  pays it out in one shielded transaction. Then you open your own shielded
+  receipt. Details and exact scope: [local-rehearsal.md](local-rehearsal.md).
+- **Proof it settles** shows a previously recorded funded settlement,
+  `47019e02…a211938` (fixture bids). You can verify it in about two minutes when
+  there is no time to settle a new auction.
 
-The verifier snapshots bounded allowlisted files, invokes fixed native/Halo2/C++
-verifiers and matches actual commitments/action mapping. Packaging hashes detect
-damage, not authenticity. Supplied VK bytes must match keys derived from pinned
-circuits. Keys/private pads and recipient associations stay ignored under `.local`.
+`./demo.sh --public-only` serves a key-less view. It verifies settlement and
+rejects tampering, and refuses own-receipt opening without a key.
 
-`./demo.sh` uses four exported **own FVK** fixtures on this development machine.
-Their setup may read that actor's ordinary SK to derive FVK; the receipt client
-reads only the exported own FVK. All test identities remain on one host. A fresh
-checkout automatically starts a public-only view when the ignored run is absent.
-`./demo.sh --public-only` forces that view. It verifies settlement and rejects
-corrupt proofs, but refuses own receipt opening without a key. No keys ship in Git.
-The local server's recorded two confirmations are not a chain-inclusion proof.
+## Capture-ready demo plan (about 2 minutes edited)
 
-## Seller / bidder entry
+Settle takes minutes, so the human records it in one continuous session and
+cuts the waits, labelling each cut. Never shorten a deadline or replace a stage
+with a recording of another auction.
 
-The entry screen offers two distinct experiences: **Try DarkCall** for
-Create → Bid → Clear → Result with demo funds, and **Proof it settles** for the
-separate recorded native transaction. A compact mode bar keeps both scopes visible.
-After successful clearing, price and own result sit side by side; bidding and
-signed acceptances remain expandable. Progress advances only after the existing
-verification gates pass. Switching modes retains the local ticket capability;
-opening a separate page does not grant one. Technical and trust details stay
-available below the main interaction.
+1. **Before recording.** Start the node and `./demo.sh`, open the page and
+   check the clock. Run `python3 scripts/regtest_nu7_node.py status` and keep
+   about 15 GB of disk and 10 GB of memory headroom. Close other heavy jobs.
+2. **0:00–0:20 Create.** Keep the default terms (3 units, reserve 20, budget
+   100) and set the close time to about 2 minutes ahead. Say: the price will be
+   public, bids never are.
+3. **0:20–0:45 Bid.** Seal four demo bids, for example 77, 61, 43, 21. Each
+   shows "Bid accepted" after a client ZK proof, three share checks and three
+   operator signatures. Mention that this local helper sees the typed demo bid.
+4. **0:45–1:05 Clear.** After the deadline (cut the wait): Certify closed book →
+   Clear this auction (about 9 s of real MPC) → Open my result (WON / refund
+   entitlement). Optionally show Tamper with proof.
+5. **1:05–1:35 Settle on Zcash.** Press it. Show the five live stages and cut
+   the waits with on-screen elapsed times: Fund & admit, then Re-clear by MPC,
+   Bind every output, Sign & confirm and Public check. Show the settlement facts:
+   the transaction ID, the same sealed book root, the price matching the browser
+   clearing, and 2 confirmations.
+6. **1:35–1:55 Your private receipt.** Open my shielded receipt shows WON or LOST
+   and the refund received, decrypted with your own key only. Then Tamper with
+   receipt shows the refusal before the key is read.
+7. **1:55–2:10 Close.** Show the trust model in one card: semi-honest REP3 with
+   at most 1 corrupt party, 2-of-3 custody, operators see outcomes, regtest on
+   one host. Show the verifier command for the public bundle.
 
-[Local entry rehearsal](local-rehearsal.md) adds actual fresh client ZK input
-proofs, REP3 share-pair checks and signed synthetic acceptance before this
-recorded result. Create/share/bid/close operate on a new offline book. Its
-localhost helper sees typed demo bids; deposits are synthetic. Clear this auction
-runs fresh REP3 on those exact accepted shares, verifies the fixed proof against
-the signed book, then opens the accepted ticket's own outcome. A local capability
-gates opening; it is not production authentication or native memo delivery.
-No native settlement runs for the new book. The optional native example explicitly
-switches to a different recorded auction. `--public-only` disables entry;
-the canonical verifier is unchanged.
+Expected timings on the 16 GiB M1: bid about 1 s each, clearing about 9 s,
+funding + admission about 2 min (it includes a 120 s admission window), and
+settlement 5.5–25 min depending on memory pressure. Public check about 2 min,
+own receipt about 3 s.
 
 ## Recorded settlement story
 

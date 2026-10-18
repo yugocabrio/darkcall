@@ -1,0 +1,140 @@
+{
+  "scope": "fresh browser-created auction book settled on isolated Zebra 7.0.0-rc.0 NU7 regtest through the existing funded pipeline; synthetic demo bids, all actors on one host",
+  "date": "2026-10-18",
+  "implementation_base_commit": "ead74fe1e33b57743d34158d11c5e0348ee8a630",
+  "network": {
+    "node": "Zebra 7.0.0-rc.0",
+    "consensus_branch": "77190ad9",
+    "genesis": "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327",
+    "public_testnet": false,
+    "start_height": 112,
+    "settled_height": 116
+  },
+  "book": {
+    "created_via": "browser rehearsal HTTP API (same handlers as the UI)",
+    "terms": {
+      "units": 3,
+      "reserve": 20,
+      "budget": 100,
+      "processing_fee": 15000
+    },
+    "demo_bids": "77, 61, 43, 21 (synthetic; seen by the localhost client helper)",
+    "accepted_root": "1997750157502ab27c2e24a623d6f5879159abb87db7b11a116b8938b3e76f7a",
+    "browser_clearing": {
+      "price": 21,
+      "sold": 3,
+      "rep3_delivery_flags4_v2": true,
+      "fixed_cpp_verified": true
+    }
+  },
+  "funding_and_admission": {
+    "command": "python3 -B scripts/regtest_nu7_deposits.py BANK BANK_NOTES_112 AUCTION/clearing-book --name fresh-ae3d-funding",
+    "deposit_txid": "5d80367f782efa958b60c56a8c277f36b9d42755ca9bd3af20647bf636513673",
+    "deposits": 4,
+    "amount_per_deposit_zatoshi": 15100,
+    "full_node_accepted": true,
+    "confirmations": 2,
+    "escrow_notes_decrypted": 4,
+    "client_zk_proofs_reverified": 4,
+    "share_pairs_reverified": 12,
+    "claim_signatures_verified": 4,
+    "receipt_signatures": 12,
+    "final_book_signatures": 3,
+    "funded_certificate_root_equals_browser_root": true,
+    "funded_certificate_tickets_equal_browser_tickets": true,
+    "seconds_including_120s_admission_window": 121.2,
+    "maximum_bids_read": false
+  },
+  "settlement": {
+    "first_attempt": {
+      "stopped_at": "pre-FROST settlement-MPC check (native-proof-verification)",
+      "cause": "target/release/poseidon_batch missing after the root target directory was rebuilt without output-binding bins; not a cryptographic rejection",
+      "six_binding_proofs_completed": true,
+      "reservation_signature_or_broadcast": false
+    },
+    "resumed": {
+      "command": "python3 -B scripts/regtest_nu7_settlement.py ESCROW ESCROW_NOTES_114 AUCTION/clearing-book RECEIVERS ADMISSION --recipient-wallet x6 --name fresh-ae3d-settlement-r1 --resume-prepared .local/fresh-ae3d-settlement --native-threads 2",
+      "prepared_pczt_reused": true,
+      "seconds": 327.917
+    },
+    "txid": "54941ffd845509ee5dc7b23e08b0756526bf97b3123017d581c9c40345c76ee6",
+    "transaction_bytes": 21790,
+    "fee_zatoshi": 30000,
+    "price": 21,
+    "sold": 3,
+    "matches_browser_clearing": true,
+    "full_node_accepted": true,
+    "confirmations": 2,
+    "recipient_scans_zatoshi": {
+      "refunds_by_canonical_ticket": [
+        79,
+        79,
+        100,
+        79
+      ],
+      "seller": 63,
+      "operator": 30000
+    },
+    "escrow_deposits_spent": 4,
+    "escrow_balance_after": 0,
+    "journals_finalized": 3,
+    "dkg_2_of_3": true,
+    "master_spending_key_read": false,
+    "maximum_bids_read": false
+  },
+  "public_verification": {
+    "command": "./verify.sh --funded demo/artifacts/fresh-book-nu7-v1 --authority demo/authority/fresh-book-nu7-v1.json",
+    "seconds": 103.084,
+    "native_proof_and_signatures_verified": true,
+    "native_row_proofs_verified": true,
+    "normal_cpp_auction_proof_verified": true,
+    "accepted_book_and_recipients_authenticated": true,
+    "private_openings_keys_pczt_read": false,
+    "chain_inclusion_verified": false,
+    "bundle_manifest_sha256": "aaa4882860949dc86d390bdc3609fe48a1dbdf961476b0d2ebd2e7f4f3b4c72c",
+    "authority_sha256": "3a49997d4d5f5e076569c4675e866ef113cdf8a6082fff2db0a147759ca795b9"
+  },
+  "own_receipts": {
+    "opened_with_own_exported_fvk_only": true,
+    "results": [
+      {
+        "ticket_index": 0,
+        "won": true,
+        "refund": 79
+      },
+      {
+        "ticket_index": 1,
+        "won": true,
+        "refund": 79
+      },
+      {
+        "ticket_index": 2,
+        "won": false,
+        "refund": 100
+      },
+      {
+        "ticket_index": 3,
+        "won": true,
+        "refund": 79
+      }
+    ],
+    "seconds_each": [
+      2.767,
+      2.689,
+      2.886,
+      2.772
+    ],
+    "equal_to_browser_rep3_results": true
+  },
+  "machine": "shared 16 GiB Apple M1, macOS 14; other unrelated processes running; not a controlled benchmark",
+  "limitations": [
+    "One host runs all operators, bidders, bank and node.",
+    "REP3 privacy assumes at most one semi-honest corrupt operator.",
+    "Operators learn winners/refunds; 2-of-3 custody, no unilateral refund.",
+    "The localhost helper saw the typed demo bids.",
+    "Deposits were made by one local test bank at settlement time, followed by a second, chain-funded admission over the same root.",
+    "Admission signatures attest funding; the public bundle does not prove chain inclusion.",
+    "Isolated regtest, not public testnet or mainnet."
+  ],
+  "http_harness": "pending in a separate run (scripts/check_fresh_settlement.py)"
+}

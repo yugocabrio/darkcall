@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Loopback-only recorded demo and separate offline seller/bidder rehearsal.
+"""Loopback-only recorded demo and seller/bidder auction with optional regtest settlement.
 
 Canonical synthetic and certified isolated-regtest runs are separate explicit
 configurations. Rehearsal creates input proofs and signed synthetic acceptances;
-it also clears those exact shares with REP3. No native funding, signing or broadcast.
-No spending keys, viewing keys, masks or raw memos are served to the browser.
+it also clears those exact shares with REP3. Its explicit Settle action funds and
+settles that SAME certified book on the isolated NU7 regtest through the existing
+funded drivers. No spending keys, viewing keys, masks or raw memos are served to the browser.
 """
 import argparse
 import json
@@ -93,6 +94,7 @@ class Demo:
             'funded_canonical':self.funded,'recorded_local_confirmations':2 if self.funded and not self.public_only else None,
             'recipient_identities_available':not self.public_only,
             'live_admission':False, 'local_rehearsal_available':self.rehearsal.enabled,
+            'regtest_settlement_available':self.rehearsal.settlement_available,
             'independent_hosts':False, 'operators_know_results':True,
             'six_output_memo_e2e':bool(self.canonical), 'accepted_book_certified':False,
             'chain_inclusion_verified':False}
@@ -273,7 +275,7 @@ def handler(demo, port):
                     or self.headers.get('X-DarkCall-Token') != demo.token):
                 return self.reply(403,{'error':'Same origin and session token required'})
             rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close',
-                '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result'}
+                '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result','/api/rehearsal/settle':'settle'}
             if self.path not in ('/api/verify','/api/settlement',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
             try:
                 length = int(self.headers.get('Content-Length','0'))

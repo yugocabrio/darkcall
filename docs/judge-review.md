@@ -1,74 +1,82 @@
-# DarkCall — private bids, verifiable shielded settlement
+# DarkCall — review guide
 
-Four bidders submit secret maximum bids for three identical units. DarkCall
-computes one clearing price without reconstructing the bid list, pays the seller
-and returns shielded refunds. Each bidder decrypts an authenticated result from
-the memo of their own refund note. A public proof package checks that the auction
-result and all six outputs belong to the same Zcash transaction.
+DarkCall runs sealed-bid, uniform-price auctions on Zcash. Bidders' maximum
+bids are secret-shared among three operators and are never reconstructed. The
+operators compute one clearing price with REP3 MPC and prove it with a coNoir
+zero-knowledge proof. One shielded NU7 transaction pays the seller and refunds
+every bidder; six Halo2 proofs bind its outputs to the proven result. Anyone can
+verify the public bundle without secrets. Each bidder decrypts only their own
+receipt memo.
 
-**One funded NU7 auction completes on an isolated regtest.** Transaction
-`47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938`
-connects four actual deposits, client/share checks, a signed final book, REP3
-clearing, four encrypted receipts, six native bindings and 2-of-3 DKG signing.
-Zebra accepted it; two controlled confirmations, six exact recipient scans,
-four spent source notes, zero escrow balance and three finalized journals were
-recorded. The public bundle is 153,557 bytes.
+## What to look at
 
-## Review in three steps
-
-In this archive, `source/` contains the committed project. In a Git checkout,
-use the repository root directly. The archive carries source and public
-artifacts; it carries no dependency binaries or private fixture identities.
-
-1. Read `source/docs/submission-draft.md` for the product and threat model,
-   and `source/evidence/2026-10-05-canonical-funded-nu7-memo-auction.json`
-   for exact measurements and the controlled-chain record.
-2. From `source/`, run `./demo.sh --public-only`. This starts a loopback browser
-   view with no recipient keys. Opening private results requires an owner's
-   own viewing identity, which is deliberately excluded from the archive.
-3. Build the pinned tools using `docs/reproduce.md`, run the preflight and then:
+1. **The product, live.** `./demo.sh`, then **Try DarkCall**: create an
+   auction, seal four demo bids, clear it, open your result, then **Settle on
+   Zcash**. The same browser book is funded, re-admitted, cleared again by MPC
+   inside settlement, paid out in one shielded regtest transaction and publicly
+   verified. Then open your own shielded receipt and try the tamper check. See
+   [local-rehearsal.md](local-rehearsal.md).
+2. **Verification without secrets.** After building the
+   [pinned tools](reproduce.md), run:
 
    ```sh
+   ./verify.sh --funded demo/artifacts/fresh-book-nu7-v1 \
+     --authority demo/authority/fresh-book-nu7-v1.json
    ./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 \
      --authority demo/authority/canonical-nu7-funded-v1.json
    ```
 
-The authority is **separate caller-trusted demo configuration**. Obtain the
-intended authority independently in a deployment; a producer-provided archive
-does not establish trust in its own authority keys. Manifest hashes detect
-packaging damage; pinned native/Halo2/C++ verifiers establish proof validity.
-The public verifier needs no wallet key, PCZT, private bid, mask or witness.
+   The first bundle comes from an auction created in the browser and settled on
+   October 18. The second is the earlier recorded settlement with fixture bids.
+   Each check takes about two minutes. It needs no wallet key, PCZT, bid, mask
+   or witness.
+3. **Exact records.** See
+   [fresh-book settlement](../evidence/2026-10-18-fresh-book-native-settlement.json)
+   and [recorded settlement](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
-## What is demonstrated, and what is assumed
+The authority file is separate, caller-trusted configuration. A verifier must
+obtain an auction's admission authority independently and never trust keys
+chosen by the bundle producer. Manifest hashes detect packaging damage; the
+pinned native, Halo2 and C++ verifiers establish validity.
+
+## What each proof establishes
+
+| Check | Proven by | Fails when |
+| --- | --- | --- |
+| A bid commitment matches its three REP3 share pairs | Client Noir proof (`bid_input`), checked at admission | Shares or commitment changed |
+| The accepted book is the four admitted tickets | Three operator signatures over the root; root equals the MPC statement's root | A ticket is omitted, swapped or added |
+| The clearing price, winners and refunds follow the rule | REP3 coNoir proofs (`delivery_flags4`, `settlement_poseidon4`) over committed bids | Price, plan or a row changes |
+| Each transaction output pays the planned amount to the planned recipient | Six Halo2 output-binding proofs against native note commitments | Amount, recipient, cmx or action index changes |
+| The transaction is authorized and valid | Native Zcash proof and 2-of-3 FROST signatures | Any byte of the effects changes |
+| A bidder's own result is authentic | Fixed receipt proof plus memo opening with the bidder's own viewing key | The receipt proof or the book is altered; this is refused before the key is read |
+
+## What is assumed
 
 | Question | Answer |
 | --- | --- |
-| Can one operator see the bid list? | REP3 keeps inputs shared under an at-most-one semi-honest corruption assumption. Two colluding operators can reconstruct it. |
-| Can operators see who won? | Yes. Operators receive refunds/status and have escrow viewing capability. This is confidential maximum-bid computation, not operator-blind outcomes. |
-| Who controls funds? | Two of three DKG signers. Two colluders can move funds; there is no unilateral user refund. All three currently run on one host. |
-| What does admission prove? | Operator signatures attest funding and the accepted book. This is not a public ZK funding proof. |
-| Does the public package prove confirmation? | No. Chain acceptance/scans are a separate controlled regtest observation. Public verification checks authorization, output bindings and auction/certificate validity. |
-| Is item delivery covered? | No. Goods, identity/Sybil control and network anonymity are outside this prototype. |
-| Is public testnet / mainnet demonstrated? | No. The completed funded run is one-host isolated regtest. |
+| Can one operator see the bid list? | No, under REP3 with at most one semi-honest corrupt operator. Two colluding operators can reconstruct it. |
+| Can operators see who won? | Yes. Operators learn refunds and winners and hold escrow viewing capability. |
+| Who controls funds? | Two of three DKG FROST signers. No master key exists, but two colluders can move funds, and bidders have no unilateral refund. |
+| Is funding proven publicly? | No. Operator signatures attest funding. The bundle proves transaction validity and output binding, not chain inclusion. |
+| Who saw the demo bids? | The localhost helper that builds the client proof sees typed demo bids. All operators, the bank and the bidder wallets run on one machine. |
+| Public testnet or mainnet? | No. This is an isolated Zebra 7.0.0-rc.0 NU7 regtest with controlled confirmations. |
+| How large can an auction be? | The circuits have four bid slots and six outputs. The native settlement path supports the default terms: 3 units, budget 100, reserve 0 or 20. |
 
-The earlier unblinded delivery commitment leaked two-candidate refunds; the
-attack was reproduced and its privacy claim withdrawn. Current v2 uses uniform
-fresh masks plus independent secret commitment blinders. The circuit does not
-prove CSPRNG quality. Details: `source/docs/operator-fill-delivery.md`.
+An earlier delivery commitment let a public observer guess refunds from two
+candidates. We reproduced the attack, withdrew the claim and replaced it with
+independently blinded v2 commitments:
+[attack and fix](operator-fill-delivery.md).
 
-## Latency and remaining work
+## Performance (shared 16 GiB M1, single host)
 
-Actual REP3 witness/proof: 1.423s / 10.824s. Full funded recovery: 1847.653s on
-a shared 16GiB M1 with one native thread, excluding a separate 190.563s disk-guard
-stop. Six sequential native row services (1295.846s) dominate. Public replay:
-112.431s. Warm PK reuse works; Linux 2/3/6-way speedup remains unmeasured.
-No two-minute settlement or independent-machine reproduction is claimed.
+| Scope | Time |
+| --- | --- |
+| Browser REP3 clearing incl. proof + verification | ~9 s |
+| Funding + chain admission + certificate (120 s admission window) | ~2 min |
+| Native settlement of a fresh browser book | 5.5–25 min depending on memory pressure |
+| Public-only verification | ~2 min |
+| Own receipt opening | ~3 s |
 
-Remaining: second-machine reproduction, public testnet, independent operators,
-larger bid counts, general live-wallet recovery and live browser admission.
-The present four-slot/six-output statements and verifiers are frozen for demo
-and reproduction. See `source/STATUS.md`, `source/TASKS.md` and licenses in
-`source/LICENSE`, `source/vendor/halo2_gadgets/` and `source/docs/dependencies.md`.
-
-This kit is prepared locally for review. Repository publication, external
-deployment and contest submission remain under the human's control.
+No independent operator hosts, second-machine reproduction or public-chain
+settlement is claimed. Repository publication, deployment and contest submission
+are the author's decisions.

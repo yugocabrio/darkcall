@@ -1,5 +1,26 @@
 # DarkCall task queue
 
+## Oct 18 handoff to Claude Code (overrides older queues)
+
+Deadline: Oct 28 23:59 UTC. Keep the proof/security model. Close the two-auction
+gap if it can be done safely, make the judge experience coherent, finish the
+submission package. Do not start 8/16/32 scaling or new cryptography.
+
+- [x] Restore the environment: restart the NU7 node from preserved state, rescan
+  the bank, and rebuild root binaries (the output-binding bins were missing).
+- [x] CLI feasibility: a browser book (default terms) → actual deposits/admission
+  over the same root → funded settlement `54941ffd…` → public verify → four own
+  receipts equal to the browser results.
+- [x] Server Settle job + UI step 05 Settle + own native receipt and tamper.
+- [ ] HTTP end-to-end harness (`check_fresh_settlement.py`) evidence; browser
+  run with screenshots at desktop and 390px; commit the fresh-book public
+  bundle and authority; evidence JSON.
+- [ ] Docs: README (rewritten), judge-review, submission-draft, demo, local
+  rehearsal, reproduce (full local product). Capture-ready demo plan.
+- [ ] Independent reproduction of the public verifier in a clean Linux container
+  (Docker), if it fits the time budget.
+- [ ] Final consistency pass, then the human decides on visibility and submission.
+
 Latest human instruction: start development, commit and push regularly, continue
 autonomously, incorporate later human/ChatGPT reviews.
 

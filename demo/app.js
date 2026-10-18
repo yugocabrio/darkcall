@@ -87,7 +87,7 @@ $('settlement').addEventListener('click', async () => {
 lock(true);
 fetch('/api/state').then(async response => {
   const data=await response.json(); if (!response.ok) throw new Error(data.error || 'Demo unavailable'); state=data;
-  $('proof-card-scope').textContent=state.funded_canonical?'Separate auction · isolated regtest':'Separate example · synthetic transactions';
+  $('proof-card-scope').textContent=state.funded_canonical?'Recorded auction · isolated regtest':'Separate example · synthetic transactions';
   if (state.six_output_memo_e2e) {
     $('case-tabs').hidden = true;
     $('scope-description').textContent = 'Recorded proof-backed demo · synthetic funding, no broadcast.';
@@ -96,7 +96,7 @@ fetch('/api/state').then(async response => {
     $('remaining-scope').textContent = 'Local trusted-dealer threshold setup; all parties on one host. Public testnet funding, DKG admission and confirmations remain to be integrated into this same NU7 execution.';
     if (state.funded_canonical) {
       $('scope-description').textContent = 'Recorded proof-backed demo on isolated Zcash regtest.';
-      $('remaining-scope').textContent = 'This recorded auction is separate from fresh local clearing. New books use synthetic deposits and a helper that sees typed demo bids. Their outcomes are proof-verified, but native settlement is not constructed. Independent hosts, public testnet and larger bid counts remain unverified.';
+      $('remaining-scope').textContent = 'This recorded auction used fixture bids and is separate from your own auctions. Auctions you create under Try DarkCall can be settled the same way with Settle on Zcash. Independent hosts, public testnet and larger bid counts remain unverified.';
       $('chain-scope').textContent = state.recorded_local_confirmations ? 'Two controlled regtest confirmations recorded; public bundle does not prove chain inclusion' : 'Recorded regtest run; no chain inclusion proof in the public bundle';
     }
     if (!state.recipient_identities_available) {
@@ -127,9 +127,10 @@ function refreshRoom() {
   const available=Boolean(state && state.local_rehearsal_available);
   $('create-auction').disabled=busy || !available;
   $('new-auction').hidden=!room;
-  const complete=[Boolean(room),Boolean(room && room.accepted===4),freshClearingVerified,freshResultVerified];
+  const settled=Boolean(room && room.settlement && room.settlement.state==='done');
+  const complete=[Boolean(room),Boolean(room && room.accepted===4),freshClearingVerified,freshResultVerified,settled];
   const current=complete.findIndex(done=>!done);
-  ['create','bid','clear','result'].forEach((name,i)=>{
+  ['create','bid','clear','result','settle'].forEach((name,i)=>{
     const step=$('progress-'+name); step.classList.toggle('done',complete[i]);
     if (i===current) step.setAttribute('aria-current','step'); else step.removeAttribute('aria-current');
   });
@@ -141,17 +142,19 @@ function refreshRoom() {
   $('seal-bid').disabled=busy || !available || room.stopped_after_incomplete_admission || remaining===0 || room.accepted>=4 || room.closed;
   $('close-auction').disabled=busy || !available || room.stopped_after_incomplete_admission || remaining>0 || room.accepted!==4 || room.closed;
   $('clear-auction').disabled=busy || !available || !room.clearing_available || !room.closed || room.clearing_stopped || Boolean(room.clearing);
-  $('open-fresh-result').disabled=busy || !room.clearing || !lastAcceptance;
-  $('tamper-fresh').disabled=busy || !room.clearing || !lastAcceptance;
+  const settling=Boolean(room.settlement && room.settlement.state==='running');
+  $('open-fresh-result').disabled=busy || settling || !room.clearing || !lastAcceptance;
+  $('tamper-fresh').disabled=busy || settling || !room.clearing || !lastAcceptance;
+  renderSettlement();
   $('clear-auction').hidden=Boolean(room.clearing);
-  $('rehearsal-title').textContent=room.clearing?'Your auction cleared.':room.closed?'Ready to clear.':room.accepted===4?'Bids are sealed.':'Place your bid.';
-  document.querySelector('.rehearsal-scope').textContent=room.clearing?'Fresh outcome. Verified against your accepted bids.':room.closed?'Four sealed bids. One verified outcome.':room.accepted===4?'Waiting for the scheduled close.':'Use demo amounts. Get a signed acceptance.';
+  $('rehearsal-title').textContent=settled?'Your auction settled on Zcash.':room.clearing?'Your auction cleared.':room.closed?'Ready to clear.':room.accepted===4?'Bids are sealed.':'Place your bid.';
+  document.querySelector('.rehearsal-scope').textContent=settled?'Same sealed book. One shielded transaction. Publicly verified.':room.clearing?'Fresh outcome. Verified against your accepted bids.':room.closed?'Four sealed bids. One verified outcome.':room.accepted===4?'Waiting for the scheduled close.':'Use demo amounts. Get a signed acceptance.';
   $('close-status').textContent=room.stopped_after_incomplete_admission ? 'Admission stopped. The checkpoint is preserved.' : room.closed ? '✓ Closed bids certified.' :
     remaining>0 ? 'Bidding closes in '+Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')+'.' :
     room.accepted===4 ? 'Deadline reached. Confirm the accepted bids.' : 'Closed. Four tickets are required.';
 }
 function showRoom(value) {
-  if (!value || value.funding_scope!=='offline-synthetic' || value.chain_funding_verified || value.native_settlement_started) throw new Error('Unexpected rehearsal scope.');
+  if (!value || value.funding_scope!=='offline-synthetic' || value.chain_funding_verified || value.native_settlement_started!==Boolean(value.settlement)) throw new Error('Unexpected rehearsal scope.');
   if (room && room.auction_id!==value.auction_id) {
     lastAcceptance=null; $('bid-accepted').hidden=true; $('copy-acceptance').hidden=true; $('acceptance-details').hidden=true;
     resetFresh();
@@ -166,7 +169,10 @@ async function rehearsalRequest(action,payload) {
   const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Local rehearsal stopped.'); return result;
 }
 function resetFresh() {
-  freshClearingVerified=false; freshResultVerified=false; $('book-details').open=true;
+  $('rehearsal-label').textContent='DEMO BIDS';
+  freshClearingVerified=false; freshResultVerified=false; nativeResultVerified=false; $('book-details').open=true;
+  $('native-result').className='result-box'; $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','Only your viewing key can open your memo in this transaction.'));
+  $('native-tamper-result').textContent='';
   $('clearing-title').textContent='Discover the price.';
   $('fresh-outcome').hidden=true; $('clearing-status').textContent=''; $('fresh-tamper-result').textContent='';
   $('fresh-result').className='result-box';
@@ -227,6 +233,101 @@ async function openFresh(action) {
   }
   finally { lock(false); refreshRoom(); }
 }
+// Same-book settlement: every state comes from the server's recorded driver progress.
+// [step, begins at phase:state, ends at phase:state]; later phases also finish earlier steps.
+const SETTLE_STEPS=[['funding','preflight:started','funding:done'],['mpc','mpc_delivery:started','binding_key:started'],
+  ['bindings','binding_key:started','mpc_verification:started'],['sign','mpc_verification:started','settlement:done'],
+  ['verify','public_verification:started','public_verification:done']];
+let settlePoll=null, nativeResultVerified=false;
+const shortId=value=>value?value.slice(0,10)+'…'+value.slice(-8):'—';
+function minutes(seconds) { seconds=Math.max(0,Math.round(seconds)); return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0'); }
+function renderSettlement() {
+  const section=$('settle-section'), job=room && room.settlement, settledState=Boolean(job && job.state==='done');
+  $('rehearsal-label').textContent=settledState?'SETTLED · REGTEST':job?'SETTLING · REGTEST':'DEMO BIDS';
+  $('payment-status').textContent=settledState?'Paid in one shielded regtest transaction ↓':job?'Settlement on regtest in progress ↓':'Demo funds · no payment sent yet';
+  section.hidden=!(room && room.clearing);
+  if (section.hidden) return;
+  const available=Boolean(room.settlement_available);
+  $('settle-auction').hidden=Boolean(job);
+  $('settle-auction').disabled=busy || !available || Boolean(job);
+  $('settle-note').hidden=available || Boolean(job);
+  $('settle-note').textContent=room.units===3 && room.budget===100 && [0,20].includes(room.reserve) ? 'Regtest settlement tools are not available on this checkout.' : 'The native settlement prototype supports the default terms: 3 units, budget 100, reserve 0 or 20.';
+  $('settle-steps').hidden=!job;
+  if (!job) { $('settle-status').textContent=''; $('settle-outcome').hidden=true; return; }
+  const events=job.events||[], at={};
+  for (const e of events) { const key=e.phase+':'+e.state; if (!(key in at)) at[key]=e.at_unix; }
+  const rows=events.filter(e=>/^binding_row_\d$/.test(e.phase)).length;
+  const now=Math.floor(Date.now()/1000), failed=job.state==='failed';
+  SETTLE_STEPS.forEach(([id,begin,end],i)=>{
+    const li=$('settle-step-'+id);
+    const finished=end in at || SETTLE_STEPS.slice(i+1).some(([,later])=>later in at) && id!=='verify';
+    const active=!finished && begin in at;
+    li.className=finished?'done':active?(failed?'failed':'running'):'';
+    let label='';
+    if (finished && begin in at) label=minutes((at[end]||SETTLE_STEPS.slice(i+1).map(([,later])=>at[later]).find(Boolean)||now)-at[begin]);
+    if (active) { label=failed?'stopped':minutes(now-at[begin]); if (id==='bindings' && rows) label='row '+rows+'/6 · '+label; }
+    li.querySelector('em').textContent=label;
+  });
+  const total=minutes(now-job.started_at_unix);
+  const result=job.result;
+  $('settle-status').textContent=failed?(job.error||'Settlement stopped.'):job.state==='done'?'✓ Settled and publicly verified · '+minutes(result.settlement_seconds+result.public_verification_seconds)+' of proving and checks':'Running · '+total+' elapsed · other proofs wait until this finishes';
+  $('settle-outcome').hidden=job.state!=='done';
+  if (job.state==='done') {
+    if (result.accepted_root!==room.accepted_root || result.price!==room.clearing.price || result.sold!==room.clearing.sold) { $('settle-status').textContent='Settlement result does not match this auction.'; $('settle-outcome').hidden=true; return; }
+    $('settle-txid').textContent=result.txid; $('settle-deposit').textContent=result.deposit_txid;
+    $('settle-root').textContent='✓ '+shortId(result.accepted_root)+' · same tickets and accepted root as your browser book';
+    $('settle-price').textContent=result.price+' zatoshi × '+result.sold+' sold · matches the browser clearing · '+result.confirmations+' regtest confirmations';
+    $('open-native-result').disabled=busy || !lastAcceptance;
+    $('tamper-native').disabled=busy || !lastAcceptance;
+    if (!lastAcceptance && !nativeResultVerified) $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','This page no longer holds a ticket capability. Reloading loses it by design.'));
+  }
+  if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
+}
+async function pollSettlement() {
+  settlePoll=null; if (!room) return;
+  try { const response=await fetch('/api/rehearsal/auction/'+room.auction_id); if (response.ok) showRoom(await response.json()); }
+  catch { /* Retry on the next tick. */ }
+  if (room && room.settlement && room.settlement.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
+}
+$('settle-auction').addEventListener('click',async()=>{
+  if (busy || !room || room.settlement) return; rehearsalError(''); lock(true);
+  try {
+    const view=await rehearsalRequest('settle',{auction_id:room.auction_id});
+    room.settlement=view; room.native_settlement_started=true;
+  } catch(error) { rehearsalError(error.message); }
+  finally { lock(false); refreshRoom(); }
+});
+async function openNative(action) {
+  if (busy || !room || !lastAcceptance || !room.settlement || room.settlement.state!=='done') return;
+  rehearsalError(''); lock(true);
+  if (action==='native-open') { nativeResultVerified=false; $('native-result').className='result-box loading'; $('native-result').replaceChildren(element('h3','Decrypting…'),element('p','Verifying the proofs and signed book first, then using only your viewing key.')); }
+  else $('native-tamper-result').textContent='Submitting a corrupted receipt proof to the fixed verifier…';
+  try {
+    const result=await rehearsalRequest('result',{auction_id:room.auction_id,ticket:lastAcceptance.ticket,opening_token:lastAcceptance.opening_token,action});
+    if (result.auction_id!==room.auction_id || result.ticket!==lastAcceptance.ticket) throw new Error('Unexpected receipt scope.');
+    if (action==='native-tamper') {
+      if (!result.rejected || result.key_read || result.memo_decrypted) throw new Error('Unexpected tamper check.');
+      $('native-tamper-result').textContent='✓ Corrupted receipt proof rejected before your viewing key was read.';
+    } else {
+      const job=room.settlement.result;
+      if (!result.native_settlement || result.txid!==job.txid || result.price!==job.price || result.sold!==job.sold || !result.fixed_cpp_ticket_and_auction_proofs_verified
+          || !result.accepted_book_and_recipients_authenticated || !result.own_ticket_opening_verified || !result.native_amount_matches_refund
+          || !result.native_proof_and_signatures_verified || !result.own_viewing_key_only || !result.receipt_in_same_six_output_transaction) throw new Error('Incomplete shielded receipt verification.');
+      nativeResultVerified=true;
+      const box=$('native-result'); box.className='result-box verified';
+      box.replaceChildren(element('h3',result.won?'YOU WON':'YOU LOST'),element('p',result.won?'1 unit @ '+result.price+' zatoshi · paid from your deposit':'No unit allocated · full budget refunded'));
+      const amounts=element('div','','receipt-amounts'), column=element('div','');
+      column.append(element('span','Shielded refund received · zatoshi'),element('strong',String(result.refund))); amounts.append(column);
+      box.append(amounts,element('p','✓ Decrypted from '+shortId(result.txid)+' with your viewing key only'));
+    }
+  } catch(error) {
+    if (action==='native-open') { $('native-result').className='result-box'; $('native-result').replaceChildren(element('h3','Opening stopped.'),element('p','No receipt was opened.')); }
+    else $('native-tamper-result').textContent='';
+    rehearsalError(error.message);
+  } finally { $('native-result').classList.remove('loading'); lock(false); refreshRoom(); }
+}
+$('open-native-result').addEventListener('click',()=>openNative('native-open'));
+$('tamper-native').addEventListener('click',()=>openNative('native-tamper'));
 $('open-fresh-result').addEventListener('click',()=>openFresh('open'));
 $('tamper-fresh').addEventListener('click',()=>openFresh('tamper'));
 $('start-auction').addEventListener('click',()=>{

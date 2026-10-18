@@ -1,8 +1,60 @@
 # DarkCall status
 
-Updated: 2026-10-05 (two-mode visual polish and refreshed video; no new cryptography; git HEAD is authoritative).
+Updated: 2026-10-18 (same-book settlement of browser auctions; git HEAD is authoritative).
 
-## Current outcome
+## Current outcome (Oct 18)
+
+**An auction created in the browser now settles on Zcash.** The fresh book's
+own tickets, commitments, REP3 shares and accepted root flow through the
+existing funded pipeline. There is no new cryptography and no weakened check:
+
+- Create + 4 sealed demo bids (77/61/43/21) → browser REP3 clearing price 21,
+  3 sold, root `1997750157502ab27c2e24a623d6f5879159abb87db7b11a116b8938b3e76f7a`.
+- `regtest_nu7_deposits.py` on the browser's `clearing-book/`: 4 actual NU7
+  deposits from the local test bank, tx `5d80367f782efa958b60c56a8c277f36b9d42755ca9bd3af20647bf636513673`.
+  Zebra accepted it with 2 confirmations, and the escrow scan decrypted 4 notes.
+  Admission re-verified 4 client ZK proofs, 12 share pairs and 4 claim
+  signatures and issued 12 receipts. After the 120 s window, 3 final-book
+  signatures. The funded certificate root and tickets equal the browser
+  certificate (121 s).
+- Funded settlement of the same book: fresh REP3 delivery, six shared18
+  bindings, settlement MPC and 2-of-3 DKG FROST. Zebra accepted
+  `54941ffd845509ee5dc7b23e08b0756526bf97b3123017d581c9c40345c76ee6` with 2
+  confirmations. Six wallet scans: refunds 79/79/100/79, seller 63, operator
+  30000. The escrow spent all 4 deposits and the 3 journals finalized.
+- First attempt stopped at the pre-FROST settlement-MPC check: the rebuilt
+  workspace lacked `target/release/poseidon_batch` (output-binding bins were not
+  rebuilt after the Oct 7 `target/` removal). No reservation/signature/broadcast
+  had happened. After building it, `--resume-prepared` reused the exact prepared
+  PCZT/rows and completed in 327.9 s (2 native threads).
+- Public bundle export + public-only verification passed in 103.1 s (native
+  authorization, 6 row proofs, C++ auction proof, accepted book/recipients).
+  Four own-FVK receipt openings, about 2.7–2.9 s each, matched the browser
+  results: three won with refund 79, one lost with refund 100.
+
+New code: `scripts/settle_fresh_book.py` is the orchestrator: tool preflight,
+bank rescan, deposits/admission, settlement, export/verify, own-FVK export and
+public progress events. `scripts/rehearsal.py` adds a Settle job that owns the
+proof lock, a public progress view, and own native receipt open/tamper.
+`/api/rehearsal/settle` is new. The UI adds a fifth step **Settle** with live
+stages, settlement facts, the own shielded receipt and a receipt tamper check.
+`scripts/check_fresh_settlement.py` is the HTTP end-to-end harness. The native
+path stays pinned to the default terms (3 units, budget 100, reserve 0/20); other
+terms show "not settleable" in the UI.
+
+Environment notes: the NU7 container had been removed, but its state survived.
+`regtest_nu7_node.py start` recreated it at height 112 with tx `47019e02…`
+still canonical (2 confirmations). The bank was rescanned at 112 (415571266
+zatoshi). Root `target/` was rebuilt with locked release builds of native-gate,
+input-tool, wallet-bridge (bins+examples) and output-binding bins. The SDK
+binary in `.deps/nu7-compat-target` is unchanged.
+
+Boundaries remain: one host, semi-honest REP3, operators see outcomes, the
+localhost helper sees typed demo bids, deposits come from one local test bank
+at settlement time (a second, chain-funded admission over the same root), and
+this is isolated regtest, not public testnet. No public chain inclusion proof.
+
+## Previous outcome (Oct 5, ead74fe)
 
 **Try DarkCall / Proof it settles** are now visibly separate modes. Landing cards
 become a compact switch with each scope still visible. Create/Bid/Clear/Result

@@ -1,133 +1,106 @@
-# Seller and bidder entry rehearsal
+# Seller and bidder flow, with same-book settlement
 
-The browser now has a working entry loop before the recorded settlement:
+The browser's **Try DarkCall** mode runs one auction from creation to a shielded
+payout:
 
-**Create → share locally → seal a demo bid → signed acceptance → certify the
-closed book → fresh REP3 clearing → own verified result → tamper refusal.**
+**Create → seal four bids → certify the closed book → REP3 clearing → own result
+→ Settle on Zcash → own shielded receipt → tamper refusal.**
 
-The entry and recorded settlement are **different auctions**. New inputs have
-fresh conditions, tickets, randomness and admission keys. They do not become
-part of transaction47019e02…a211938 or select its winning ticket. They now produce
-their own fresh MPC clearing for the exact certified root, followed by local
-opening of that ticket's refund entitlement and winning status. They do not
-produce a native settlement. The optional recorded settlement remains separate.
-Existing funded transaction/proofs and verifier remain intact.
+Everything after **Settle on Zcash** uses the SAME sealed tickets, bid
+commitments, REP3 shares and accepted root as the browser book. The settlement
+is a real transaction on an isolated Zebra NU7 regtest, built by the existing
+funded drivers. It is not a recording and not a different auction.
 
 ## Start
 
-Build the [pinned tools](toolchains.md), including the plaindriver client prover,
-fixed C++ Barretenberg verifier and `circuits/bid_input` artifact. Then:
+Build the [pinned tools](reproduce.md#full-local-product), start the local NU7
+node, then the demo:
 
 ```sh
-cargo build --locked --release -p darkcall-input-tool
-cargo build --locked --release -p darkcall-wallet-bridge --example rehearsal_admission
+python3 scripts/regtest_nu7_node.py start
 ./demo.sh
 ```
 
-Open `http://127.0.0.1:8877`, choose **Create an auction**, set units1–3, reserve,
-fixed budget and a local close time30seconds–24hours ahead. Default cutoff is
-five minutes ahead. Share the generated localhost link in another browser on
-this PC. It neither publishes a hosted market nor allows remote operator access.
-The rehearsal is available on the development checkout with ignored fixture
-identities and built input tools. `--public-only` disables it; fresh public-only
-checkouts still verify the recorded bundle and reject tampering without keys.
+Open `http://127.0.0.1:8877` and choose **Try DarkCall**. The default terms
+(3 units, reserve 20, budget 100 zatoshi) are the terms the native settlement
+prototype supports, and the close time defaults to five minutes ahead. Seal four
+demo bids. You can share the local link with another browser on this PC. After
+the deadline, **Certify closed book**, **Clear this auction** and **Open my
+result**. Then press **Settle on Zcash** and watch the five stages:
 
-Enter a **demo** maximum≤budget and press **Seal bid**. Copy the public signed
-acceptance if needed. Four accepted tickets are required for this fixed prototype
-book. After its actual wall-clock deadline, **Certify closed book** verifies the
-four receipt quorums and issues three final-book signatures. It does not compute
-the winners. **Clear this auction** uses those exact commitments/root and the
-previously accepted shares in the existing `delivery_flags4/v2` REP3 circuit,
-with fresh masks/blinders. No bid-opening files are read during this connection.
-A fixed C++ verifier checks the new proof; a separate certificate gate compares
-its exact public book fields with the signed book. **Open this ticket's result**
-opens the ticket accepted in this page session, after both gates. The refund is
-an entitlement, not a sent payment. **Tamper with clearing proof** runs a real
-negative verification without reading ticket pads. The optional **Explore recorded
-native settlement** opens the separate funded example and its native memo receipts.
+| Stage | What actually runs |
+| --- | --- |
+| Fund & admit | 4 shielded deposits (budget + 15000 fee each) from a local test wallet to a fresh 2-of-3 DKG escrow. Zebra accepts them; 2 confirmations; the escrow scanner decrypts the 4 notes. Operators re-verify the same 4 client ZK proofs and 12 share pairs, check each signed deposit claim, issue 12 receipts and, after a 120 s admission window, sign the final book. Its root must equal the browser book's root. |
+| Re-clear by MPC | Fresh REP3 `delivery_flags4/v2` run on the same shares, with new masks/blinders, fixed C++ verification. The price/sold must equal the browser clearing. |
+| Bind every output | Six Halo2 (shared18) proofs bind each settlement row (role, ticket, amount, recipient) to the native note commitment at its action index. |
+| Sign & confirm | REP3 settlement proof over the six rows, certificate/statement links, then 2-of-3 FROST signing of the four escrow spends. Zebra accepts the transaction; 2 confirmations; six wallets scan their exact notes; the escrow shows all four deposits spent; three operator journals finalize. |
+| Public check | The public bundle (no keys, PCZT, witnesses or pads) is verified with the separately configured authority. |
+
+Then **Open my shielded receipt** verifies the fixed proofs and the signed book
+first. Only after that does it use this ticket's own viewing key to decrypt its
+memo from the settlement transaction. It shows won/lost and the refund the
+wallet actually received. **Tamper with receipt** flips one proof byte and shows
+the refusal happening before the key is read.
+
+The settlement job owns the local proof lock, so other proofs wait until it
+finishes. It takes about 6 minutes when warm and 25 minutes or more under memory
+pressure on a 16 GiB M1.
 
 ## What is real and what is simulated
 
 | Step | Behavior |
 | --- | --- |
-| Seller conditions | New bounded terms, random auction ID, conditions digest including cutoff, three fresh admission signing keys |
-| Bid commitment / shares | Existing Poseidon2 commitment and REP3 bid/salt pairs, generated with fresh OS randomness |
-| Input ZK proof | Existing Noir `bid_input` circuit and pinned plaindriver `--zk`; fixed C++ verifier checks the proof |
-| Share admission | All three delivered pairs checked against the proof's exact public statement and intended conditions |
-| Funding | **Synthetic**, unmined V3 note and fabricated journal Observe/Confirm events under a disjoint offline network genesis; no chain claim |
-| Client intent | Existing signed claim, note/memo/receiver checks, using generated offline fixture identities |
-| Acceptance | Three existing signed durable admission receipts combined and verified before the response |
-| Closed book | Existing canonical ticket ordering/root and three signed endorsements, only after the declared cutoff |
-| Fresh clearing | Existing three-party REP3 `delivery_flags4/v2`, fresh UltraHonk ZK proof and fixed C++ verification; public price/sold, blinded refund/status |
-| Book continuity | Canonical ticket order, unchanged share values reindexed to those slots, exact first169 public fields matched against the signed certificate |
-| Fresh own result | Only accepted ticket's pads opened after proof/certificate verification; local ticket capability, not native memo transport |
-| Payment | **Recorded different auction**, unchanged native/public verification; no settlement of newly typed bids |
+| Seller conditions | Bounded terms, random auction ID, conditions digest including cutoff, three fresh admission keys |
+| Bid commitment / shares | Poseidon2 commitment and REP3 bid/salt pairs, fresh OS randomness |
+| Input ZK proof | Noir `bid_input` circuit, pinned plaindriver `--zk`, fixed C++ verification |
+| Preview admission | Three signed receipts against a **synthetic** unmined note in an offline domain, for instant feedback |
+| Browser clearing | Actual three-party REP3 `delivery_flags4/v2` proof, fixed C++ verification against the signed book |
+| Chain funding | **Actual** NU7 regtest deposits, made by one local test bank on behalf of the four local bidders, when settlement starts |
+| Chain admission | Actual: deposit decryption, claim signatures, the same client proofs and share pairs, 12 receipts, final-book certificate over the same root |
+| Settlement | Actual funded six-output NU7 transaction, Zebra acceptance, controlled confirmations, wallet scans |
+| Own receipt | Encrypted memo in the bidder's own refund note, opened with only that bidder's viewing key |
 
-The localhost client helper **sees the typed demo maximum** while generating its
-proof/shares. This is not in-browser witness generation, operator-blind browser
-admission or a production wallet. The acceptance omits the maximum and private
-opening, but that does not hide the input from this helper. All three application
-keys/shares are on one host. Input proofs are single-client proofs; the separate
-fresh clearing proof uses three actual REP3 processes. Privacy assumes at most
-one corrupt semi-honest party, not malicious MPC security.
+The localhost client helper **sees the typed demo maximum** while it creates the
+proof and shares. This is not in-browser proving or a production wallet. All
+three operators, the bank and every bidder wallet run on one host. Privacy
+assumes at most one corrupt semi-honest REP3 party.
+
+The chain admission is a second admission over the same book. Its certificate
+uses the chain-funded operator authority; the browser's preview certificate uses
+an offline authority. In a deployment, each bidder's wallet would deposit before
+admission. The demo makes the four deposits at settlement time so that a
+browser auction can be settled without four separate wallets.
 
 ## Boundaries and restart
 
-The API keeps loopback binding, strict Origin/session-token checks and bounded
-JSON requests. Requests cannot select paths, keys, circuits, operator authorities,
-RPC endpoints or canonical funding. The fixed input VK is prepared from the pinned
-circuit, separately from the generated client artifacts. Maximum bids travel in
-POST bodies and stdin to the helper, never command arguments or public replies.
-Private logs/openings/keys/shares/journals stay under ignored mode0700 session
-directories; secret files are mode0600. There is no browser local-storage export.
+The API binds loopback only and checks Origin and a session token. It accepts
+bounded JSON. Requests cannot choose paths, keys, circuits, authorities, RPC
+endpoints or funding sources. Maximum bids travel only in POST bodies and the
+helper's stdin, never in arguments or public replies. Private logs, keys,
+shares, journals and settlement checkpoints stay under ignored `0700`
+directories. The public auction state exposes only phase names, timings,
+transaction IDs, counts and the accepted root.
 
-At most eight auctions/four tickets per auction are allowed in one server session.
-Proof work uses the same server lock as recorded verification. Resource checks
-run before each bounded subprocess; two Rayon threads and180-second command
-timeouts are used for admission. Clearing/result workers use the existing owned
-process-group guard with a600-second ceiling,4GiB disk/8GiB root-worker RSS/10%
-system-memory headroom checks. This does not measure summed descendant RSS or
-guarantee crash prevention. No six-row native proving is started.
+One server session allows at most eight auctions with four tickets each. A
+partial admission stops that auction and keeps its checkpoint. A completed
+clearing or settlement is idempotent. A failed settlement keeps its private
+checkpoint, and no automatic retry or replacement transaction is made. Reloading
+the page loses the local ticket capability. Restarting the server starts a new
+namespace, and old links stop working.
 
-If admission partially fails, the session stops that auction and preserves its
-checkpoint instead of silently retrying a quorum. Restart intentionally creates
-a new namespace; old local links are no longer active and ignored artifacts are
-retained. Network-response/idempotent bid recovery and general wallet recovery
-are not implemented. Opening capabilities stay in server/page memory and are
-returned only with the corresponding successful admission; they are absent from
-public GET/copy responses. Reload loses that page capability. This is a local
-demonstration, not a production login. Copied acceptances contain public signatures
-and the synthetic authority, never capabilities, viewing keys or bid openings.
-
-Incomplete clearing is preserved and stops that auction. A completed clearing is
-idempotent: another clear request returns the same verified result without
-regenerating proofs. Own opening re-verifies proof and certificate before pads.
-
-## Actual check
+## Checks
 
 Against a running local demo:
 
 ```sh
-python3 -B scripts/check_rehearsal.py --port 8877 \
-  --output .local/rehearsal-check-FRESH.json
+python3 -B scripts/check_rehearsal.py --port 8877 --output .local/rehearsal-check-FRESH.json
+python3 -B scripts/check_rehearsal_clearing.py --port 8877 --output .local/fresh-clearing-check.json
+python3 -B scripts/check_fresh_settlement.py --port 8877 --output .local/fresh-settlement-check.json
 ```
 
-This makes four fresh input ZK proofs, twelve pair checks, twelve acceptance
-signatures and three final-book signatures after a75-second real cutoff. It
-rejects invalid terms/bids, Origin/token attacks, fifth/late tickets, early close
-and actual proof/share/context substitutions before journal mutation. It does
-not run fresh MPC clearing, native signing or RPC. The earlier measured run and browser
-checks are in [entry evidence](../evidence/2026-10-05-seller-bidder-rehearsal.json).
-
-For actual new-book REP3 clearing, four own results and tamper/capability/context
-refusals (40-second real cutoff), run:
-
-```sh
-python3 -B scripts/check_rehearsal_clearing.py --port 8877 \
-  --output .local/fresh-clearing-check.json
-python3 -B scripts/check_rehearsal_clearing.py --port 8877 --zero \
-  --output .local/fresh-zero-clearing-check.json
-```
-
-Run sequentially. Neither command funds or settles the new book; the plaintext
-fixture oracle only checks independently computed MPC output.
+The last one creates a default-terms book and settles it. It checks that the
+settled root, price and sold units equal the browser book and clearing, opens
+all four own shielded receipts, and checks their won/refund values against the
+browser results. It also checks that the following are refused: settling before
+clearing, a concurrent proof, a corrupted receipt proof (before key access) and
+a foreign capability. Run these checks one at a time.
