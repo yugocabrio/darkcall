@@ -1,5 +1,54 @@
 # Reproduce the public verification
 
+## One command: clean-room Linux container
+
+With Docker and at least 12 GB of free disk (more while building), from a checkout:
+
+```sh
+scripts/docker_verify.sh          # or: scripts/docker_verify.sh REVISION
+```
+
+This pipes `git archive` of a committed revision into `docker build`, so the
+image sees committed files only: no `.local` state, keys, wallets or host
+binaries. Inside Debian trixie (`rust:1.93.0-trixie`, pinned by digest) it
+builds every tool from source at its pin:
+
+- Noir rc.2, checked against GitHub's published release digest.
+- The co-snarks CRS.
+- Barretenberg `bb` with exactly the two committed patches.
+- `darkcall-native-gate` and the NU7 SDK, from their lockfiles.
+
+It then runs `scripts/docker_verify_all.py`. That script verifies every
+committed funded bundle against its separately committed authority, then flips
+one byte of each bundle's receipt proof and requires the fixed verifier to
+reject it cryptographically.
+
+On Oct 18 on the 16 GiB M1 (Docker Desktop, linux/arm64): `bb` 567 s, both
+Rust helpers 450 s, then all three bundles verified in 5 min 23 s
+(`browser-auction-nu7-v1` 112 s, `fresh-book-nu7-v1` 101 s,
+`canonical-nu7-funded-v1` 110 s). Every corrupted receipt proof was refused.
+This is a clean build environment on the same machine, not a second host.
+A later rebuild run alongside heavy host swap exhausted the disk. Build only
+with ample headroom and no concurrent proving, then remove the image with
+`docker image rm` when you are done. See
+[the record](../evidence/2026-10-18-clean-room-linux-verification.json).
+amd64 is supported by the Dockerfile but was not run.
+
+The first container builds also found two portability defects that a same-host
+checkout hid. Both were fixed without weakening any check:
+
+- `.gitignore`'s `**/*witness*` rule had excluded the vendored source
+  `vendor/halo2_gadgets/src/ecc/chip/witness_point.rs`, so a fresh clone could
+  not compile.
+- The exact Barretenberg patch check compared `git diff` text, which
+  abbreviates index hashes differently in larger clones. The check now pins
+  `core.abbrev=7`.
+
+Barretenberg's configure step also needs Node and Yarn for its N-API module;
+the image provides them through pinned corepack.
+
+## Manual setup
+
 The canonical four-bid funded auction is already proved. Public replay needs
 the committed source, the 154KB public bundle and a separate caller-trusted
 authority. It needs no private fixture, live node, deposit or proof generation.

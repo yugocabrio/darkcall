@@ -16,8 +16,10 @@ receipt memo.
    inside settlement, paid out in one shielded regtest transaction and publicly
    verified. Then open your own shielded receipt and try the tamper check. See
    [local-rehearsal.md](local-rehearsal.md).
-2. **Verification without secrets.** After building the
-   [pinned tools](reproduce.md), run:
+2. **Verification without secrets.** The easiest route is
+   `scripts/docker_verify.sh`. It builds every pinned tool from committed source
+   in a clean Linux container and verifies all three bundles plus a tamper case.
+   On a host with the [pinned tools](reproduce.md), run:
 
    ```sh
    ./verify.sh --funded demo/artifacts/browser-auction-nu7-v1 \

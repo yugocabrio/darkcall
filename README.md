@@ -90,7 +90,18 @@ bids. Exact records:
 
 ## Try it
 
-**Verify a recorded settlement, with no secrets.** First build the pinned tools
+**Verify every committed settlement in a clean Linux container, with one
+command.** It needs Docker and about 12 GB of free disk; the build takes about
+20 minutes the first time:
+
+```sh
+scripts/docker_verify.sh
+```
+
+It builds every pinned tool from source using only committed files, verifies
+all three public bundles, and checks that a corrupted proof is rejected.
+
+**Or verify on the host.** Build the pinned tools
 ([reproduce.md](docs/reproduce.md)), then run:
 
 ```sh

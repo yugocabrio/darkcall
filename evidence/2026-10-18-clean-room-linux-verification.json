@@ -1,0 +1,135 @@
+{
+  "scope": "clean-room Linux container verification of every committed funded settlement bundle; same physical Mac (Docker Desktop linux/arm64), not a second host",
+  "date": "2026-10-18",
+  "build": {
+    "context": "git archive of the committed revision (no .local, keys, wallets or host binaries)",
+    "dockerfile": "docker/verify/Dockerfile",
+    "base_image": "rust:1.93.0-trixie@sha256:bbde3ca426faeebab3eb58b8005d3d6da70607817a14bb92a55c94611d4d905f",
+    "pins": {
+      "noir": "v1.0.0-rc.2 linux release asset, GitHub-published sha256 checked",
+      "co_snarks": "467a2abbad940d40ed78f38d424cc21920988976",
+      "barretenberg": "87aa5283d5b0cab6632ed49fdd25f6548d2ba91f + the two committed patches (exact diff check)",
+      "rust_lockfiles": "Cargo.lock and tools/nu7-compat/Cargo.lock with --locked",
+      "corepack": "0.34.0 (yarn@4.13.0 for Barretenberg configure)"
+    },
+    "seconds": {
+      "barretenberg_bb": 566.5,
+      "rust_native_gate_and_sdk": 449.7
+    },
+    "jobs": 4
+  },
+  "defects_found_and_fixed": [
+    {
+      "defect": ".gitignore **/*witness* excluded vendor/halo2_gadgets/src/ecc/chip/witness_point.rs; a fresh clone could not compile",
+      "fix_commit": "d05ce00"
+    },
+    {
+      "defect": "exact Barretenberg patch check compared git diff text whose index-hash abbreviation depends on clone size (e8c3071 vs e8c307134b)",
+      "fix": "git -c core.abbrev=7 diff; the comparison stays exact",
+      "fix_commit": "ee55335"
+    },
+    {
+      "defect": "Barretenberg configure requires node/yarn for its N-API module",
+      "fix": "image installs nodejs/npm and pinned corepack"
+    }
+  ],
+  "run_initial": {
+    "image_revision": "ee55335 plus docker files",
+    "total_seconds": 323.2,
+    "results": [
+      {
+        "bundle": "browser-auction-nu7-v1",
+        "scope": "auction created and settled by clicking through the browser UI, Oct 18",
+        "txid": "3fee2c7ce3b64689c28700904a5b31e13272b41030ae5eedd58a6a87b5c0b5d7",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 112.319
+      },
+      {
+        "bundle": "fresh-book-nu7-v1",
+        "scope": "browser-created book settled from the CLI driver (resumed), Oct 18",
+        "txid": "54941ffd845509ee5dc7b23e08b0756526bf97b3123017d581c9c40345c76ee6",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 100.62
+      },
+      {
+        "bundle": "canonical-nu7-funded-v1",
+        "scope": "recorded Oct 5 settlement with fixture bids",
+        "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 109.593
+      }
+    ],
+    "tamper_check": "any verifier refusal"
+  },
+  "run_strict": {
+    "note": "same image with the committed strict docker_verify_all.py mounted read-only; requires the fixed verifier log to contain Proof verification failed",
+    "results": [
+      {
+        "bundle": "browser-auction-nu7-v1",
+        "scope": "auction created and settled by clicking through the browser UI, Oct 18",
+        "txid": "3fee2c7ce3b64689c28700904a5b31e13272b41030ae5eedd58a6a87b5c0b5d7",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 198.507
+      },
+      {
+        "bundle": "fresh-book-nu7-v1",
+        "scope": "browser-created book settled from the CLI driver (resumed), Oct 18",
+        "txid": "54941ffd845509ee5dc7b23e08b0756526bf97b3123017d581c9c40345c76ee6",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 186.01
+      },
+      {
+        "bundle": "canonical-nu7-funded-v1",
+        "scope": "recorded Oct 5 settlement with fixture bids",
+        "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 184.67
+      }
+    ],
+    "all_passed": true,
+    "environment": "clean Linux container built from git archive; Linux 6.10.14-linuxkit aarch64",
+    "timing_note": "slower than the initial run because host swap was exhausted during this run"
+  },
+  "resource_incident": "A second full image rebuild through scripts/docker_verify.sh plus host swap growth (19 GiB) drove free disk below 1 GiB. That build stopped without completing; the image and build cache were removed and the Docker VM page cache dropped, restoring headroom. No project state was lost. Run the container build only with at least 12 GiB free disk and no concurrent proving.",
+  "not_claimed": [
+    "second physical host",
+    "amd64 run",
+    "chain inclusion or public funding proof"
+  ]
+}
