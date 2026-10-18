@@ -26,7 +26,9 @@ existing funded pipeline. There is no new cryptography and no weakened check:
   workspace lacked `target/release/poseidon_batch` (output-binding bins were not
   rebuilt after the Oct 7 `target/` removal). No reservation/signature/broadcast
   had happened. After building it, `--resume-prepared` reused the exact prepared
-  PCZT/rows and completed in 327.9 s (2 native threads).
+  PCZT and re-verified (did not regenerate) all six cached binding proofs in
+  95.2 s, completing in 327.9 s (2 native threads). That is a recovery time,
+  not an uninterrupted settlement time (see the HTTP run below: 951.1 s).
 - Public bundle export + public-only verification passed in 103.1 s (native
   authorization, 6 row proofs, C++ auction proof, accepted book/recipients).
   Four own-FVK receipt openings, about 2.7–2.9 s each, matched the browser

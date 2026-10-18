@@ -20,14 +20,16 @@ receipt memo.
    [pinned tools](reproduce.md), run:
 
    ```sh
-   ./verify.sh --funded demo/artifacts/fresh-book-nu7-v1 \
-     --authority demo/authority/fresh-book-nu7-v1.json
+   ./verify.sh --funded demo/artifacts/browser-auction-nu7-v1 \
+     --authority demo/authority/browser-auction-nu7-v1.json
    ./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 \
      --authority demo/authority/canonical-nu7-funded-v1.json
    ```
 
-   The first bundle comes from an auction created in the browser and settled on
-   October 18. The second is the earlier recorded settlement with fixture bids.
+   The first bundle comes from an auction that was created, cleared and settled
+   by clicking through the browser on October 18 (tx `3fee2c7c…`). The second is
+   the earlier recorded settlement with fixture bids. `fresh-book-nu7-v1` is a
+   third bundle: a browser-created book settled from the CLI.
    Each check takes about two minutes. It needs no wallet key, PCZT, bid, mask
    or witness.
 3. **Exact records.** See
@@ -73,7 +75,8 @@ independently blinded v2 commitments:
 | --- | --- |
 | Browser REP3 clearing incl. proof + verification | ~9 s |
 | Funding + chain admission + certificate (120 s admission window) | ~2 min |
-| Native settlement of a fresh browser book | 5.5–25 min depending on memory pressure |
+| Native settlement of a fresh browser book, uninterrupted | about 15 min (886–951 s) |
+| Settle → publicly verified, end to end | about 19–20 min |
 | Public-only verification | ~2 min |
 | Own receipt opening | ~3 s |
 

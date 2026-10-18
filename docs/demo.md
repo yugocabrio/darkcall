@@ -50,7 +50,7 @@ with a recording of another auction.
 
 Expected timings on the 16 GiB M1: bid about 1 s each, clearing about 9 s,
 funding + admission about 2 min (it includes a 120 s admission window), and
-settlement 5.5–25 min depending on memory pressure. Public check about 2 min,
+settlement about 15 min. Public check about 2 min,
 own receipt about 3 s.
 
 ## Recorded settlement story

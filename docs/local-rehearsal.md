@@ -43,8 +43,8 @@ wallet actually received. **Tamper with receipt** flips one proof byte and shows
 the refusal happening before the key is read.
 
 The settlement job owns the local proof lock, so other proofs wait until it
-finishes. It takes about 6 minutes when warm and 25 minutes or more under memory
-pressure on a 16 GiB M1.
+finishes. From Settle to publicly verified it took 1117–1198 s on a 16 GiB M1:
+funding about 2 min, settlement about 15 min, public check about 2 min.
 
 ## What is real and what is simulated
 

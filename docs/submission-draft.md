@@ -97,9 +97,10 @@ frost-tools and Zebra at pinned versions. See `docs/dependencies.md`.
 
 ## Measured (shared 16 GiB M1)
 
-Browser clearing: about 9 s. Funding + admission: about 2 min. Settlement of a
-fresh book: 5.5–25 min depending on memory pressure. Public verification: about
-2 min. Own receipt: about 3 s.
+Browser clearing: about 9 s. Funding + admission: about 2 min. Native settlement
+of a fresh book: about 15 min (886–951 s, uninterrupted). Public verification:
+about 2 min. Settle to verified, end to end: about 19–20 min. Own receipt: about
+3 s.
 
 ## Links
 
