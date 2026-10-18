@@ -96,10 +96,10 @@ recorded settlement `47019e02…a211938` with fixture bids. Exact records:
 [recorded settlement](evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
 <table>
-<tr><td><img src="docs/img/02-bids-sealed.jpg" alt="Four bids sealed with client ZK proofs and operator pre-check signatures"></td>
-<td><img src="docs/img/03-funded.jpg" alt="Deposits locked on Zcash regtest and admitted over the same root"></td></tr>
-<tr><td>Four sealed bids, each with a client ZK proof and three operator signatures.</td>
-<td>Fund on Zcash: real shielded deposits, admitted over the same root, before any clearing.</td></tr>
+<tr><td><img src="docs/img/01-landing.jpg" alt="Landing: a typical audited auction opens every bid; DarkCall proves the price without opening them"></td>
+<td><img src="docs/img/02-bids-sealed.jpg" alt="Six steps, four sealed tickets, and real deposits locked before clearing"></td></tr>
+<tr><td>The difference in one glance: prove the price without opening the bids.</td>
+<td>Four sealed tickets; real shielded deposits admitted over the same root before any clearing.</td></tr>
 <tr><td><img src="docs/img/05-settled.jpg" alt="Settlement stages done, who learned what, and the settlement transaction"></td>
 <td><img src="docs/img/06-shielded-receipt-tamper.jpg" alt="A losing ticket's shielded refund decrypted, and a corrupted receipt proof rejected"></td></tr>
 <tr><td>Settle: MPC delivery, six output bindings, FROST signing, confirmations, public check.</td>

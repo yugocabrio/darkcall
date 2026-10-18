@@ -795,3 +795,23 @@ input:focus {outline:1px solid var(--accent);outline-offset:1px}
 .bid-suggest button:hover {border-color:var(--accent)}
 .fund-section {border-top:0;margin-top:8px}
 .fund-section .settle-steps li {grid-template-columns:20px 170px 1fr auto}
+
+/* Landing contrast: the one idea a judge should take away in seconds. */
+.contrast {display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 0 8px;max-width:900px}
+.contrast-side {border:1px solid #33422e;border-radius:10px;padding:16px 18px;background:#141c13}
+.contrast-side.darkcall {border-color:#6f9351;background:#1b2717}
+.contrast-label {font:10px var(--mono);letter-spacing:1.4px;text-transform:uppercase;color:#93a387}
+.darkcall .contrast-label {color:var(--accent)}
+.contrast-bids {display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 10px}
+.contrast-bids b {font:500 15px var(--mono);border:1px solid #44523d;border-radius:6px;padding:6px 10px;color:#d6dfcc;min-width:42px;text-align:center}
+.typical .contrast-bids b {text-decoration:line-through;text-decoration-color:#c98a72;color:#e5b9a8}
+.darkcall .contrast-bids b {color:#8fa385;letter-spacing:2px}
+.contrast-bids i {font:600 13px var(--mono);font-style:normal;color:var(--accent);margin-left:4px}
+.contrast-side p {margin:0;font-size:13px;line-height:1.55;color:#c2cfb7}
+/* Orientation: keep the step bar visible while the auction scrolls. */
+.auction-progress {position:sticky;top:0;z-index:5;background:#171e17;padding-bottom:10px;margin-left:-4px;margin-right:-4px;padding-left:4px;padding-right:4px}
+.sealed-slots {display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 6px}
+.sealed-slots span {border:1px dashed #3a4934;border-radius:7px;padding:10px 12px;font:11px var(--mono);color:#6f7d69;display:flex;justify-content:space-between;align-items:center}
+.sealed-slots span.filled {border-style:solid;border-color:#5f7d47;color:#cfe4b6;background:#1d2a18}
+.sealed-slots span b {font-weight:400;letter-spacing:2px;color:#8fa385}
+@media(max-width:760px) {.contrast {grid-template-columns:1fr} .sealed-slots {grid-template-columns:1fr 1fr}}
