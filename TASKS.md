@@ -36,6 +36,12 @@ Done:
       "six" first appears; binding section led by "Proving the payment is the other half", labelled
       multi-party ZK proving × Halo2 output binding, with the curve bridge, the check split and the
       performance note kept apart. README image recaptured from the landing.
+- [x] First-read gaps (Oct 19): why the price is 21 (demo bids 77/61/43/21, top three win), what the
+      15,100 deposit is (100 budget + 15,000 processing fee covering the 30,000 network fee and the
+      operator fee), demo-sized amounts, price and units sold both public, three signatures on the
+      book vs any two FROST signers for the payout, clearing 9 s vs settlement 19 min, comparison
+      heading narrowed to commit–reveal. Testnet txids link to ZecBlock (third-party explorer;
+      both resolve, v6, blocks match the record) on the landing, evidence page and README.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.

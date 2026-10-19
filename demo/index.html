@@ -30,12 +30,12 @@
             <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-heading">See a settled auction</span><span class="experience-caption">Open a bidder's receipt or verify the settlement.</span><span id="proof-card-scope" class="experience-scope">Recorded on isolated regtest</span></button>
           </nav>
           <a class="watch-link" href="/media/darkcall-demo-v2.mp4">Watch this auction settle on testnet, in 2 minutes →</a>
-          <p class="hero-note">Beyond the auction terms, one number is public: the clearing price, which by the auction rule equals the highest losing bid or the reserve. In this demo each bidder's own client runs as a local service; operators receive only shares and proofs, never a bid.</p>
+          <p class="hero-note">Beyond the auction terms, the public learns the clearing price and the units sold, never the bid book or any payout. By the auction rule the price equals the highest losing bid or the reserve, so that one amount is implied. In this demo each bidder's own client runs as a local service; operators receive only shares and proofs, never a bid.</p>
         </div>
         <aside class="hero-receipt" aria-label="A settled DarkCall auction">
           <div class="receipt-head"><span id="hero-label">Settled auction</span><span id="hero-chain">Zcash NU7 · regtest</span></div>
           <div class="receipt-bids"><span id="hero-tickets">4 sealed bids</span><div aria-hidden="true"><b></b><b></b><b></b><b></b></div><small>Never opened or reconstructed</small></div>
-          <div class="receipt-price"><span>Clearing price</span><strong><span id="hero-price">21</span><i>zatoshi</i></strong><small id="hero-sold">3 of 3 units sold · every winner pays the same</small></div>
+          <div class="receipt-price"><span>Clearing price</span><strong><span id="hero-price">21</span><i>zatoshi</i></strong><small id="hero-sold">3 of 3 units sold · every winner pays the same</small><small class="receipt-scale">Demo-sized amounts · 1 zatoshi = 0.00000001 ZEC</small></div>
           <ul class="receipt-checks">
             <li><span><em>coNoir</em> Multi-party ZK proof over the sealed bids</span></li>
             <li><span><em>Halo2</em> 4 refunds, seller and fee, each proven</span></li>
@@ -96,7 +96,7 @@
         <div class="walk-stage" id="walk-stage" data-step="1">
           <div class="w-bidders"><div class="w-bidder"><span>Ticket 01</span><b class="w-seal w-bid"><i>77</i></b><div class="w-shares w-from" data-from="1"><i class="s1">1</i><i class="s2">2</i><i class="s3">3</i><small>3 shares</small></div></div><div class="w-bidder"><span>Ticket 02</span><b class="w-seal w-bid"><i>61</i></b><div class="w-shares w-from" data-from="1"><i class="s1">1</i><i class="s2">2</i><i class="s3">3</i><small>3 shares</small></div></div><div class="w-bidder"><span>Ticket 03</span><b class="w-seal w-bid"><i>43</i></b><div class="w-shares w-from" data-from="1"><i class="s1">1</i><i class="s2">2</i><i class="s3">3</i><small>3 shares</small></div></div><div class="w-bidder"><span>Ticket 04</span><b class="w-seal w-bid"><i>21</i></b><div class="w-shares w-from" data-from="1"><i class="s1">1</i><i class="s2">2</i><i class="s3">3</i><small>3 shares</small></div></div></div>
           <div class="w-ops"><div class="w-op w-from" data-from="1" data-now="1 3"><span>Operator A holds ①③</span><div class="w-held"><div><em>T01</em><i class="s1">1</i><i class="s3">3</i></div><div><em>T02</em><i class="s1">1</i><i class="s3">3</i></div><div><em>T03</em><i class="s1">1</i><i class="s3">3</i></div><div><em>T04</em><i class="s1">1</i><i class="s3">3</i></div></div><small>Never all three shares of any bid</small></div><div class="w-op w-from" data-from="1" data-now="1 3"><span>Operator B holds ②①</span><div class="w-held"><div><em>T01</em><i class="s2">2</i><i class="s1">1</i></div><div><em>T02</em><i class="s2">2</i><i class="s1">1</i></div><div><em>T03</em><i class="s2">2</i><i class="s1">1</i></div><div><em>T04</em><i class="s2">2</i><i class="s1">1</i></div></div><small>Never all three shares of any bid</small></div><div class="w-op w-from" data-from="1" data-now="1 3"><span>Operator C holds ③②</span><div class="w-held"><div><em>T01</em><i class="s3">3</i><i class="s2">2</i></div><div><em>T02</em><i class="s3">3</i><i class="s2">2</i></div><div><em>T03</em><i class="s3">3</i><i class="s2">2</i></div><div><em>T04</em><i class="s3">3</i><i class="s2">2</i></div></div><small>Never all three shares of any bid</small></div></div>
-          <div class="w-escrow w-from" data-from="2"><span>Shielded 2-of-3 escrow</span><b>4 × 15,100 zatoshi</b><small>Accepted book signed by A, B and C</small></div>
+          <div class="w-escrow w-from" data-from="2"><span>Shielded 2-of-3 escrow</span><b>4 × 15,100 zatoshi</b><small>Each: 100 budget + 15,000 processing fee (demo values). All three operators sign the accepted book.</small></div>
           <div class="w-result w-from" data-from="3"><span>Computed on shares</span><b>Price 21 · 3 of 3 sold</b><small class="w-proof">coNoir proof ✓ · no bid list rebuilt</small></div>
           <div class="w-settle w-from" data-from="4"><span>One shielded transaction · six outputs</span><ol><li><span>Refund · Ticket 01</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 02</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 03</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 04</span><b class="w-seal"><i>100</i></b><em>Halo2 ✓ note</em></li><li><span>Seller · payment</span><b class="w-seal"><i>63</i></b><em>Halo2 ✓ note</em></li><li><span>Operator · fee</span><b class="w-seal"><i>30,000</i></b><em>Halo2 ✓ note</em></li></ol></div>
           <div class="w-public w-from" data-from="5"><div><span>Anyone sees</span><b>Price 21 · 3 sold · proofs ✓</b><small>No secrets needed to verify</small></div><div class="w-own"><span>Ticket 01's private receipt</span><b>Won · refund 79</b><small>Decrypted from its own memo with its own key</small></div></div>
@@ -125,7 +125,7 @@
       </div>
       <div class="bind-facts">
         <p><b>Across two curves.</b> The auction proof lives on BN254, while Zcash's shielded notes are commitments on Pallas, so the auction proof cannot speak about them directly. Each Halo2 proof recomputes one row's BN254 Poseidon2 commitment inside a Pallas circuit and shows that it holds the same amount and recipient as one native note commitment.</p>
-        <p><b>What checks what.</b> The Zcash network validates the native transaction. DarkCall's public verifier checks the auction proof, the six output bindings and the operator-signed accepted book from the published bundle, with no secrets. Honest signers sign only after every proof checks out.</p>
+        <p><b>What checks what.</b> The Zcash network validates the native transaction. DarkCall's public verifier checks the auction proof, the six output bindings and the operator-signed accepted book from the published bundle, with no secrets. All three operators sign the accepted book; any two of the three FROST signers authorize the settlement, and honest signers do so only after every proof checks out.</p>
       </div>
       <p class="bind-design"><b>Performance note.</b> In an earlier experiment, coNoir's joint proof of the six-row plan took 1,655 s with SHA-256 row commitments and 8.2 s with field-native Poseidon2. Both figures cover that proving step only, not the six Halo2 proofs.</p>
     </section>
@@ -135,17 +135,17 @@
       <h2 id="proven-title">It ran end to end on testnet.</h2>
       <p class="section-lead">On October 19 this auction was created, funded, cleared and settled <b>in this UI on standard public Zcash testnet (NU7)</b>. It is the auction in the video and under "See a settled auction".</p>
       <dl class="proven-facts">
-        <div><dt>Deposits</dt><dd><code>af6cf7cf…eff6354</code><small>Block 4,518,254 · 2 confirmations</small></dd></div>
+        <div><dt>Deposits</dt><dd><a href="https://testnet.zecblock.com/tx/af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354"><code>af6cf7cf…eff6354</code></a><small>Block 4,518,254 · 2 confirmations</small></dd></div>
         <div><dt>Clearing proof</dt><dd><strong>8.1 s</strong><small>Price 21 · 3 of 3 sold</small></dd></div>
-        <div><dt>Settlement</dt><dd><code>be1157c8…a1c8ad67</code><small>Block 4,518,315 · 2 confirmations</small></dd></div>
+        <div><dt>Settlement</dt><dd><a href="https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67"><code>be1157c8…a1c8ad67</code></a><small>Block 4,518,315 · 2 confirmations · settled in 19&nbsp;min</small></dd></div>
         <div><dt>Public check</dt><dd><strong>102 s</strong><small>No secrets · tampered proof refused</small></dd></div>
       </dl>
-      <p class="fine-print">Chain data came from one lightwalletd provider (testnet.zec.rocks). Record: evidence/2026-10-19-public-testnet-settlement.json in the repository.</p>
+      <p class="fine-print">Zcash validated these native transactions; DarkCall's public verifier checked the auction proof, the six output bindings and the signed accepted book. Transaction links open ZecBlock, a third-party testnet explorer. The run read chain data from one lightwalletd provider (testnet.zec.rocks). <a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
     </section>
 
     <section class="landing-more" aria-labelledby="compare-title">
-      <h2 id="compare-title">Other auctions open the bids to prove the price.</h2>
-      <p class="section-lead">Commit–reveal and published viewing keys show every bid amount after the close. That matters wherever amounts are strategic: allocation rounds, ad slots, procurement. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
+      <h2 id="compare-title">Commit–reveal opens the bids to prove the price.</h2>
+      <p class="section-lead">So does publishing a viewing key: every bid amount is visible after the close. That matters wherever amounts are strategic: allocation rounds, ad slots, procurement. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
       <div class="compare-wrap">
         <table class="compare">
           <thead><tr><th scope="col"><span class="visually-hidden">Property</span></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or key committee</th></tr></thead>
@@ -161,7 +161,7 @@
       <div class="measured" aria-label="Measured on one 16 GiB laptop">
         <div><strong>0.6 s</strong><span>to seal a bid with its zero-knowledge proof</span></div>
         <div><strong>9 s</strong><span>to clear four sealed bids by MPC, proof included</span></div>
-        <div><strong>1 tx</strong><span>pays the seller and refunds all four bidders</span></div>
+        <div><strong>19 min</strong><span>to settle on testnet: every output proven, signed and confirmed</span></div>
         <div><strong>~100 s</strong><span>for anyone to verify a settlement, no secrets needed</span></div>
       </div>
       <details class="landing-trust"><summary>Trust model: what DarkCall does not prove</summary><ul>

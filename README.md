@@ -19,7 +19,7 @@ can verify pays the seller and refunds every bidder exactly as proven.**
 ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
 one real auction, from creation to shielded receipts, with every time cut labeled.
 **Settled on public Zcash testnet** from the browser on Oct 19: settlement tx
-`be1157c8…a1c8ad67` at block 4,518,315 ([record](#settled-on-public-zcash-testnet)).
+[`be1157c8…a1c8ad67`](https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67) at block 4,518,315 ([record](#settled-on-public-zcash-testnet)).
 
 ![DarkCall landing page: no bid is ever opened, the price is still proven, settled on Zcash; split, prove and pay as multi-party computation, multi-party ZK proving and proof-bound settlement; beside it, a real auction settled in this UI on public Zcash testnet](demo/media/landing-hero.jpg)
 
@@ -143,11 +143,15 @@ auction in the video and under "See a settled auction":
 
 | Step | Public testnet record |
 | --- | --- |
-| Fund | Deposit tx `af6cf7cf…eff6354`, block 4,518,254, 2 confirmations. 4 client proofs and 12 share pairs re-verified; 3 operators signed the same root |
+| Fund | Deposit tx [`af6cf7cf…eff6354`](https://testnet.zecblock.com/tx/af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354), block 4,518,254, 2 confirmations. 4 client proofs and 12 share pairs re-verified; 3 operators signed the same root |
 | Clear | REP3 price **21**, 3 of 3 sold, 8.1 s, after funding |
-| Settle | Settlement tx `be1157c8…a1c8ad67`, block 4,518,315, 2 confirmations. Six output bindings, 2-of-3 DKG FROST |
+| Settle | Settlement tx [`be1157c8…a1c8ad67`](https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67), block 4,518,315, 2 confirmations. Six output bindings, 2-of-3 DKG FROST |
 | Public check | 102 s with no secrets; a corrupted receipt proof is refused by the fixed verifier |
 | Own receipts | Ticket 01 won, refund 79; Ticket 04 lost, refund 100; each decrypted from its own memo |
+
+Transaction links open ZecBlock, a third-party testnet explorer. The Zcash network
+validated these native transactions; DarkCall's public verifier checks the auction
+proof and the six output bindings:
 
 ```sh
 ./verify.sh --funded demo/artifacts/testnet-auction-nu7-v2 \

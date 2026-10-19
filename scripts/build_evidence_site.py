@@ -17,6 +17,7 @@ DOCS = ROOT / 'docs'
 SITE = DOCS / 'site'
 MEDIA = ROOT / 'demo/media/v2'
 REPO = 'https://github.com/yugocabrio/ZECATHON/blob/main/'
+EXPLORER = 'https://testnet.zecblock.com/tx/'
 FRAMES = ['01-landing', '02-create', '04-sealed', '07-funded', '09-cleared', '10-own-result',
           '16-settled', '18-receipt-won', '19-receipt-lost', '20-receipt-tamper']
 e = html.escape
@@ -115,7 +116,7 @@ def build():
         bundle_path=e(tn_bundle['bundle']), authority_path=e(tn_bundle['authority']),
         tn_deposit=e(browser_run['deposit_txid']), tn_deposit_height=f"{browser_run['deposit_block']['height']:,}",
         tn_txid=e(browser_run['settlement_txid']), tn_height=f"{browser_run['settlement_block']['height']:,}",
-        tn_settle_s=round(browser_run['settlement_driver_seconds']), tn_check_s=round(browser_run['public_verification_seconds']),
+        tn_settle_s=round(browser_run['settlement_driver_seconds']), tn_settle_min=round(browser_run['settlement_driver_seconds'] / 60), explorer=EXPLORER, tn_check_s=round(browser_run['public_verification_seconds']),
         tn_price=testnet['clearing']['price'], tn_sold=testnet['clearing']['sold'],
         tn_api_txid=e(short(testnet['settlement']['txid'])),
         how_html=how_html, how_css=how_css)
@@ -259,16 +260,16 @@ footer a {{color:var(--ink-2)}}
 <h2>Settled on public Zcash testnet.</h2>
 <p class="sub">On October 19 the auction in the video was created, funded, cleared and settled by clicking through the browser on standard public testnet (NU7), with testnet coins and the same admission, proofs and signing as everything below.</p>
 <dl class="facts">
-<dt>Deposits</dt><dd><code>{tn_deposit}</code><br>block {tn_deposit_height}, two confirmations; four client proofs and twelve share pairs re-verified</dd>
+<dt>Deposits</dt><dd><a href="{explorer}{tn_deposit}"><code>{tn_deposit}</code></a><br>block {tn_deposit_height}, two confirmations; four client proofs and twelve share pairs re-verified</dd>
 <dt>Clearing</dt><dd>REP3 price {tn_price} zatoshi, {tn_sold} of 3 sold, after funding</dd>
-<dt>Settlement</dt><dd><code>{tn_txid}</code><br>block {tn_height}, two confirmations; six output bindings and 2-of-3 FROST, {tn_settle_s} s</dd>
+<dt>Settlement</dt><dd><a href="{explorer}{tn_txid}"><code>{tn_txid}</code></a><br>block {tn_height}, two confirmations; six output bindings and 2-of-3 FROST, {tn_settle_s} s</dd>
 <dt>Public check</dt><dd>{tn_check_s} s with no secrets; a corrupted receipt proof is refused</dd>
 <dt>Own receipts</dt><dd>Ticket 01 won, refund 79; Ticket 04 lost, refund 100; each decrypted from its own memo</dd>
 </dl>
-<p class="caption">An earlier testnet auction driven by the HTTP harness (settlement {tn_api_txid}) also passed every refusal check. Chain data came from one lightwalletd provider (testnet.zec.rocks) over validated TLS. <a href="{repo}evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
+<p class="caption">An earlier testnet auction driven by the HTTP harness (settlement {tn_api_txid}) also passed every refusal check. Zcash validated the native transactions; DarkCall's public verifier checked the auction proof, the six output bindings and the signed accepted book. Transaction links open ZecBlock, a third-party testnet explorer. Chain data came from one lightwalletd provider (testnet.zec.rocks) over validated TLS. <a href="{repo}evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
 
-<h2>Other auctions open the bids to prove the price.</h2>
-<p class="sub">Commit–reveal and published viewing keys show every bid amount after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
+<h2>Commit–reveal opens the bids to prove the price.</h2>
+<p class="sub">So does publishing a viewing key: every bid amount is visible after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
 <div class="compare-wrap"><table class="compare">
 <thead><tr><th scope="col"></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or key committee</th></tr></thead>
 <tbody>
@@ -281,7 +282,7 @@ footer a {{color:var(--ink-2)}}
 <div class="measured">
 <div><strong>0.6 s</strong><span>to seal a bid with its zero-knowledge proof</span></div>
 <div><strong>{clearing_s} s</strong><span>to clear four sealed bids by MPC in this run, proof included</span></div>
-<div><strong>1 tx</strong><span>pays the seller and refunds all four bidders</span></div>
+<div><strong>{tn_settle_min} min</strong><span>to settle on testnet: every output proven, signed and confirmed</span></div>
 <div><strong>~100 s</strong><span>for anyone to verify a settlement, no secrets needed</span></div>
 </div>
 <p class="caption">Common designs compared, not specific projects. Timings from one 16 GiB laptop.</p>
@@ -291,8 +292,8 @@ footer a {{color:var(--ink-2)}}
 <dl class="facts">
 <dt>Auction</dt><dd><code>{auction}</code></dd>
 <dt>Accepted root (same book throughout)</dt><dd><code>{root}</code></dd>
-<dt>Deposit transaction</dt><dd><code>{deposit}</code></dd>
-<dt>Settlement transaction</dt><dd><code>{txid}</code></dd>
+<dt>Deposit transaction</dt><dd><a href="{explorer}{deposit}"><code>{deposit}</code></a></dd>
+<dt>Settlement transaction</dt><dd><a href="{explorer}{txid}"><code>{txid}</code></a></dd>
 <dt>Outcome</dt><dd>{price} zatoshi per unit, {sold} of 3 sold. Each winner gets {winner_refund} back, the loser gets 100, and the seller receives {seller}.</dd>
 </dl>
 {steps}

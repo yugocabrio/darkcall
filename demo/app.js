@@ -549,8 +549,8 @@ setInterval(refreshRoom,1000);
   const stage=$('walk-stage'); if (!stage) return;
   const captions=[
     [['Seal. ',1],['Each bid becomes a commitment and three secret shares, ① ② ③. Operator A holds ① ③, B holds ② ①, C holds ③ ②: ',0],['no operator ever holds all three, so none can read a bid',1],['. A zero-knowledge proof ties every commitment to its shares.',0]],
-    [['Fund. ',1],['Each ticket locks its budget plus fee in a ',0],['shielded 2-of-3 escrow',1],['. The operators check the deposits against the same proofs and shares, then all three ',0],['sign the accepted book',1],['.',0]],
-    [['Prove. ',1],['The three operators compute together on their shares and generate one proof jointly: multi-party ZK proving with coNoir. Three units for four bids gives a ',0],['price of 21',1],[', the highest losing bid. The proof shows it follows the rules over exactly the committed bids; ',0],['no bid list is ever rebuilt',1],['.',0]],
+    [['Fund. ',1],['Each ticket locks 15,100 zatoshi, its 100 budget plus a 15,000 processing fee for the network and operator fees, in a ',0],['shielded 2-of-3 escrow',1],['. The operators check the deposits against the same proofs and shares, then all three ',0],['sign the accepted book',1],['; any two can later authorize the payout.',0]],
+    [['Prove. ',1],['The three operators compute together on their shares and generate one proof jointly: multi-party ZK proving with coNoir. With the demo bids 77, 61, 43 and 21 and three units, the top three win and each pays the ',0],['price of 21',1],[', the highest losing bid. The proof shows it follows the rules over exactly the committed bids; ',0],['no bid list is ever rebuilt',1],['.',0]],
     [['Settle. ',1],['The same computation yields six payment rows: refunds of 79, 79, 79 and 100, 63 to the seller, and the operator fee. ',0],['Six Halo2 proofs bind each row to a real note',1],[' in one shielded transaction.',0]],
     [['Verify. ',1],['Anyone checks the proofs ',0],['with no secrets',1],[': price 21, three sold, every output bound to the result. Ticket 01 decrypts its own memo with its own key: ',0],['won, refund 79',1],['.',0]],
   ];
