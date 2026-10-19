@@ -88,6 +88,20 @@ Correctness comes from proofs, not from disclosure: a coNoir (REP3) proof of the
 clearing over the committed bids, a Halo2 proof per transaction output, native
 Zcash authorization and an operator-signed accepted book.
 
+### Why hiding the amounts matters, not only the bidders
+
+Hiding who bid is not enough when the amounts are published after the close:
+
+- **A bid is a willingness to pay.** Publishing every amount gives the seller,
+  and every rival, the full demand curve for the next sale.
+- **Repeated sales leak strategy.** Bidders in a series of drops or allocation
+  rounds can be profiled and outbid by their past amounts.
+- **Amounts identify.** A distinctive amount, together with its timing, can link a
+  pseudonymous bid back to a wallet or a person.
+
+DarkCall publishes one number, the clearing price, and proves that it follows
+from bids that are never opened.
+
 ## It runs, end to end, for an auction you create
 
 On October 19, 2026 an auction was **created, bid on, funded, cleared and

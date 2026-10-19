@@ -59,6 +59,12 @@ and the units sold are public; by the auction rule the price equals the highest
 losing bid or the reserve. Neither the public nor any single operator learns
 who bid what, and no winner's maximum bid is ever published.
 
+Hiding who bid is not enough when the amounts are published after the close.
+A bid is a willingness to pay: published amounts give the seller and rivals the
+demand curve for the next sale, profile bidders across repeated drops, and can
+link a distinctive amount back to a wallet. DarkCall publishes one number, the
+clearing price, and proves it from bids that are never opened.
+
 All three parts are needed:
 - MPC keeps the bids away from any one operator.
 - Zero-knowledge proofs make that hidden computation checkable.
