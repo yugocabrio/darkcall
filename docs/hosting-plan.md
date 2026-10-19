@@ -25,6 +25,16 @@ rejects a tampered proof.
 | C. Interactive MPC | create, seal bids, clear by REP3, open own result; no Fund/Settle | <1 s per bid, about 9 s per clearing, ~2 GB | probably, one auction at a time | the server's helper sees every typed demo bid; must be labeled as such |
 | D. Full settlement | Fund + Settle with Zebra regtest and FROST | peak prover RSS up to ~8 GB, 10 GB disk headroom, about 17 min per auction | **no** | memory guard aborts; keep local, show recorded evidence |
 
+**Tier A is built (Oct 19).** `docs/index.html` and `docs/site/` form a static
+evidence page: the video, the one-auction walkthrough with real frames and
+timestamps, both transaction IDs, who learned what, the verify commands, the
+bundle table and the trust model. `python3 -B scripts/build_evidence_site.py`
+generates it from the capture manifest and the evidence JSON, so nothing is
+typed by hand. It needs no scripts or external resources. It was previewed
+locally at 1280 px and 390 px. To publish after the repository is public:
+Settings → Pages → Deploy from a branch → `main` / `/docs`. That is the
+author's step; nothing is deployed.
+
 **Recommendation.** Ship tier A when the repository becomes public. Offer B only
 if the author wants a live verify button for judges. Keep C and D on the local
 machine, used for the video and live demos.

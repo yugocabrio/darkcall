@@ -70,7 +70,7 @@ CARGO_TARGET_DIR=.deps/nu7-compat-target cargo test --release --locked --manifes
 On this Mac, the installed Homebrew `protoc` cannot load its old Abseil library.
 The upstream SDK intentionally supports building its checked-in generated Rust
 types when `protoc` is absent. The recorded build used
-`PATH=/Users/yugo/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin` before Cargo so that it
+`PATH=$HOME/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin` before Cargo so that it
 took that path. No SDK files or system installations were modified. On another
 host, use its working toolchain path or a working `protoc`; do not copy the local
 absolute PATH blindly.

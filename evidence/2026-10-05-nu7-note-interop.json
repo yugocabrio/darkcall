@@ -2,11 +2,11 @@
   "recorded_utc": "2026-10-05T08:10:33.038610+00:00",
   "scope": "standalone NU7/new-to-working V3 note byte gate; no workspace migration or public funding",
   "commands": [
-    "PATH=/Users/yugo/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo build --release --offline --locked --manifest-path tools/nu7-compat/Cargo.toml",
+    "PATH=$HOME/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo build --release --offline --locked --manifest-path tools/nu7-compat/Cargo.toml",
     "cargo fmt --manifest-path tools/nu7-compat/Cargo.toml",
     ".deps/nu7-compat-target/release/darkcall-nu7-compat note-interop",
     ".deps/nu7-compat-target/release/darkcall-nu7-compat synthetic-native",
-    "PATH=/Users/yugo/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo clippy --release --offline --locked --all-targets --manifest-path tools/nu7-compat/Cargo.toml -- -D warnings",
+    "PATH=$HOME/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo clippy --release --offline --locked --all-targets --manifest-path tools/nu7-compat/Cargo.toml -- -D warnings",
     "python3 scripts/dependency_inventory.py --manifest tools/nu7-compat/Cargo.toml --output evidence/2026-10-05-nu7-note-interop-dependencies.json"
   ],
   "initial_compile_failure": "Private V3 witness accessors require upstream unstable-voting-circuits features; enabled on both exact Orchard pins. rand::Rng import required for rand 0.10. No upstream sources changed.",

@@ -504,6 +504,31 @@
         "funding and chain admission",
         "settlement proving, signing, confirmation and public check"
       ]
+    },
+    "public_bundle": {
+      "path": "demo/artifacts/browser-auction-nu7-v3",
+      "authority": "demo/authority/browser-auction-nu7-v3.json",
+      "host_verification_seconds": 103.2,
+      "bundle_manifest_sha256": "33f38edb76ee1098fd2e6bd4b0118709ff73a7d545155da5a1068901edb1d746",
+      "authority_sha256": "302849d0ede64d19341a5df649a426d488c3fc1ce26c939385074a82e529c592"
+    },
+    "receipts_seen_in_frames": [
+      {
+        "ticket": "01",
+        "frame": "18-receipt-won.jpg",
+        "won": true,
+        "refund": 79
+      },
+      {
+        "ticket": "04",
+        "frame": "19-receipt-lost.jpg",
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "tamper_frame": {
+      "frame": "20-receipt-tamper.jpg",
+      "text": "Corrupted receipt proof rejected before your viewing key was read."
     }
   }
 }

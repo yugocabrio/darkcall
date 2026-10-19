@@ -1,16 +1,18 @@
 # DarkCall demo guide
 
 ```sh
-python3 scripts/regtest_nu7_node.py start   # only for Settle on Zcash
+python3 scripts/regtest_nu7_node.py start   # needed for Fund and Settle on Zcash
 ./demo.sh                                   # http://127.0.0.1:8877
 ```
 
 The page offers two experiences:
 
-- **Try DarkCall** walks one auction through Create → Bid → Clear → Result →
-  **Settle**. Settle funds the same sealed book on the isolated NU7 regtest and
-  pays it out in one shielded transaction. Then you open your own shielded
-  receipt. Details and exact scope: [local-rehearsal.md](local-rehearsal.md).
+- **Try DarkCall** walks one auction through Create → Bid → **Fund** → Clear →
+  Result → **Settle**. Fund makes real shielded deposits for the sealed tickets
+  on the isolated NU7 regtest, and the operators admit them over the same root
+  before any clearing. Settle pays everyone out in one shielded transaction.
+  Then you open your own shielded receipt. Details and exact scope:
+  [local-rehearsal.md](local-rehearsal.md).
 - **Proof it settles** shows an auction that was created, funded, cleared and
   settled through this UI on Oct 19, tx `e3ffa436…84769754`. You can open each bidder's
   shielded receipt in about 3 s or verify the whole settlement in about two

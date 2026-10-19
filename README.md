@@ -218,6 +218,9 @@ These are single-host measurements, not a controlled benchmark.
 | `docker/verify/` | Clean-room Linux build of the public verifier (`scripts/docker_verify.sh`) |
 | `evidence/` | Measured, public-only run records |
 
+Static evidence page for GitHub Pages: [docs/index.html](docs/index.html), built by
+`scripts/build_evidence_site.py` and not yet published.
+
 More: [judge review](docs/judge-review.md) · [submission](docs/submission-draft.md) ·
 [demo guide](docs/demo.md) · [reproduction](docs/reproduce.md) ·
 [protocol (Japanese design spec)](docs/protocol.md) · [status](STATUS.md) · [tasks](TASKS.md).

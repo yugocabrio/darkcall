@@ -76,7 +76,7 @@
     "main_dependency_inventory_unchanged": true
   },
   "commands": [
-    "PATH=/Users/yugo/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo build --release --locked --manifest-path tools/nu7-compat/Cargo.toml",
+    "PATH=$HOME/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin CARGO_TARGET_DIR=.deps/nu7-compat-target CARGO_BUILD_JOBS=2 cargo build --release --locked --manifest-path tools/nu7-compat/Cargo.toml",
     "RAYON_NUM_THREADS=4 .deps/nu7-compat-target/release/darkcall-nu7-compat synthetic-native",
     ".deps/nu7-compat-target/release/darkcall-nu7-compat probe-testnet https://testnet.zec.rocks:443",
     "RAYON_NUM_THREADS=4 .deps/nu7-compat-target/release/darkcall-nu7-compat verify-old-native .local/regtest-auction4-public-20261005/regtest-transaction.bin"

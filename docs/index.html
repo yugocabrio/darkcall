@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DarkCall evidence</title>
+<meta name="description" content="DarkCall: sealed-bid auctions on Zcash. One real auction from creation to shielded receipts, with its transactions and verification.">
+<style>
+:root {--bg:#10160f;--panel:#171e17;--panel2:#1c2818;--line:#34422e;--text:#eff3e9;--muted:#a9b5a0;--accent:#c7ed9e;--warn:#e5b9a8;--mono:ui-monospace,SFMono-Regular,Menlo,monospace;--serif:Georgia,"Times New Roman",serif;--sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+* {box-sizing:border-box}
+html {background:var(--bg)}
+body {margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans)}
+a {color:var(--accent)}
+code {font:13px var(--mono);color:#dbe9cd;overflow-wrap:anywhere}
+.wrap {max-width:1120px;margin:0 auto;padding:0 24px}
+header {display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px 0;border-bottom:1px solid var(--line)}
+.brand {font:600 20px var(--sans);letter-spacing:1px;color:var(--text);text-decoration:none}
+.brand span {color:var(--accent)}
+.tag {font:11px var(--mono);letter-spacing:1.4px;color:var(--muted);text-transform:uppercase}
+h1 {font:400 clamp(40px,7vw,68px)/1.05 var(--serif);letter-spacing:-1.5px;margin:56px 0 18px}
+h1 em {color:var(--accent)}
+h2 {font:400 clamp(28px,4vw,38px)/1.15 var(--serif);margin:72px 0 10px;letter-spacing:-.5px}
+h3 {font:500 20px var(--sans);margin:4px 0 8px}
+.lead {font-size:19px;color:#c9d6be;max-width:760px;margin:0}
+.sub {color:var(--muted);max-width:760px;margin:0 0 26px}
+.scope {margin:26px 0 0;padding:14px 18px;border:1px solid #5a6b4c;border-radius:8px;background:var(--panel);color:#cdd9c2;font-size:14px;max-width:820px}
+.scope b {color:var(--accent)}
+video {display:block;width:100%;margin:34px 0 8px;border:1px solid var(--line);border-radius:10px;background:#000}
+.caption {font-size:13px;color:var(--muted)}
+.contrast {display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0 0}
+.side {border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:var(--panel)}
+.side.dc {border-color:#6f9351;background:var(--panel2)}
+.side .tag {display:block;margin-bottom:12px}
+.side.dc .tag {color:var(--accent)}
+.bids {display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.bids b {font:500 15px var(--mono);border:1px solid #44523d;border-radius:6px;padding:6px 10px;min-width:44px;text-align:center}
+.typical .bids b {text-decoration:line-through;text-decoration-color:#c98a72;color:var(--warn)}
+.dc .bids b {color:#8fa385;letter-spacing:2px}
+.bids i {font:600 13px var(--mono);font-style:normal;color:var(--accent)}
+.side p {margin:0;color:#c2cfb7;font-size:15px}
+.facts {display:grid;grid-template-columns:200px 1fr;gap:8px 18px;margin:26px 0 0;padding:20px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.facts dt {color:var(--muted);font-size:14px}
+.facts dd {margin:0}
+.step {display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:30px;align-items:center;padding:30px 0;border-top:1px solid var(--line)}
+.step:first-of-type {border-top:0}
+.shot img {display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px}
+.step-no {font:12px var(--mono);color:var(--accent);letter-spacing:1px}
+.step p {margin:0 0 10px;color:#cbd7c0}
+.clock {font:12px var(--mono);color:var(--muted)}
+.grid4 {display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.grid4 div {border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--panel)}
+.grid4 p {margin:8px 0 0;font-size:14px;color:#cfdcc4}
+pre {margin:14px 0;padding:16px 18px;border:1px solid var(--line);border-radius:8px;background:#0b100a;overflow-x:auto}
+pre code {color:#d6e6c6}
+table {width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+th,td {text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th {color:var(--muted);font-weight:500}
+.limits li {margin:6px 0;color:#cfdcc4}
+footer {margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 22px}
+@media (max-width:760px) {
+  .wrap {padding:0 16px}
+  .contrast,.grid4 {grid-template-columns:1fr}
+  .facts {grid-template-columns:1fr;gap:2px}
+  .facts dd {margin-bottom:10px}
+  .step {grid-template-columns:1fr;gap:14px}
+  .table-scroll {overflow-x:auto}
+  .table-scroll table {min-width:680px}
+  header .tag {display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><a class="brand" href="https://github.com/yugocabrio/ZECATHON/blob/main/README.md">DARKCALL<span>.</span></a><span class="tag">ZECATHON 2026 · Private Markets</span></header>
+
+<h1>Sealed bids.<br><em>Verifiable settlement.</em></h1>
+<p class="lead">Bids stay secret-shared. Three operators compute one fair price by MPC and prove it. One shielded Zcash transaction pays everyone, bound to that proof.</p>
+<p class="scope"><b>Demo scope, up front.</b> Every party runs on one machine, and the local helper that builds a bid's proof sees the typed demo bid. The chain is an isolated Zebra NU7 regtest, not testnet or mainnet. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
+
+<video controls preload="metadata" poster="site/01-landing.jpg">
+<source src="site/darkcall-demo-v2.mp4" type="video/mp4">
+<track kind="captions" src="site/darkcall-demo-v2.vtt" srclang="en" label="English" default>
+</video>
+<p class="caption">119 s, edited from one real auction (b9c23d7dae…9ac80e6e). Every time cut states the real elapsed time, and every frame is SHA-256-checked against the <a href="https://github.com/yugocabrio/ZECATHON/blob/main/demo/media/v2/manifest.json">capture manifest</a>.</p>
+
+<h2>The difference</h2>
+<p class="sub">Auditable auctions usually prove the price by opening the bids. DarkCall proves it without opening them.</p>
+<div class="contrast">
+<div class="side typical"><span class="tag">Typical audited auction</span><div class="bids"><b>77</b><b>61</b><b>43</b><b>21</b></div><p>Opens every bid after the close so anyone can check the price.</p></div>
+<div class="side dc"><span class="tag">DarkCall</span><div class="bids"><b>••</b><b>••</b><b>••</b><b>••</b><i>price 21 ✓ proof</i></div><p>Proves the price without opening the bids. Each bidder decrypts only their own result.</p></div>
+</div>
+
+<h2>One real auction, start to finish</h2>
+<p class="sub">Captured in a headless browser driving the real UI, with no shortcuts. Total 19:44 from the first click to the tamper refusal.</p>
+<dl class="facts">
+<dt>Auction</dt><dd><code>b9c23d7dae678f3eb97fd76c9ac80e6e</code></dd>
+<dt>Accepted root (same book throughout)</dt><dd><code>0a66754982…d301780c</code></dd>
+<dt>Deposit transaction</dt><dd><code>7a219347c961cdaee423c7dc91fff457851debcdcdde503cd6b9885e8de301a3</code></dd>
+<dt>Settlement transaction</dt><dd><code>e305699514938d382be010260533f01725e5970c895e11f0a843843351caf779</code></dd>
+<dt>Outcome</dt><dd>21 zatoshi per unit, 3 of 3 sold. Each winner gets 79 back, the loser gets 100, and the seller receives 63.</dd>
+</dl>
+<article class="step"><a class="shot" href="site/02-create.jpg"><img src="site/02-create.jpg" alt="Create" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">01</span><h3>Create</h3><p>The seller sets 3 identical units, reserve 20 and a deposit budget of 100 zatoshi. Bidding closes in two minutes.</p><span class="clock">t + 0:04</span></div></article>
+<article class="step"><a class="shot" href="site/04-sealed.jpg"><img src="site/04-sealed.jpg" alt="Seal four bids" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">02</span><h3>Seal four bids</h3><p>Each bid becomes a commitment plus three REP3 secret shares, one per operator. A client zero-knowledge proof binds them, and the three operators check it and sign. The page shows no values.</p><span class="clock">t + 0:10</span></div></article>
+<article class="step"><a class="shot" href="site/07-funded.jpg"><img src="site/07-funded.jpg" alt="Fund on Zcash" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">03</span><h3>Fund on Zcash</h3><p>After the close, every ticket gets a real shielded deposit on an isolated NU7 regtest (tx 7a219347c9…8de301a3). The operators re-verify the same proofs and shares, then sign the book again over the same root. Took 2:04.</p><span class="clock">t + 4:10</span></div></article>
+<article class="step"><a class="shot" href="site/09-cleared.jpg"><img src="site/09-cleared.jpg" alt="Clear by MPC" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">04</span><h3>Clear by MPC</h3><p>The three operators compute on secret shares and jointly prove the result (coNoir), verified in 7.6 s. Price 21 zatoshi, 3 of 3 sold. No bid was reconstructed.</p><span class="clock">t + 4:19</span></div></article>
+<article class="step"><a class="shot" href="site/10-own-result.jpg"><img src="site/10-own-result.jpg" alt="Only your result" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">05</span><h3>Only your result</h3><p>Ticket 01 opens only its own verified outcome. No other ticket&#x27;s result is shown.</p><span class="clock">t + 4:21</span></div></article>
+<article class="step"><a class="shot" href="site/16-settled.jpg"><img src="site/16-settled.jpg" alt="Settle on Zcash" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">06</span><h3>Settle on Zcash</h3><p>One shielded transaction pays the seller and refunds all four bidders (tx e305699514…51caf779). It has six Halo2 output bindings and 2-of-3 FROST signatures, Zebra accepted it with 2 confirmations, and a public verifier replayed it. Took 15:13.</p><span class="clock">t + 19:34</span></div></article>
+<article class="step"><a class="shot" href="site/18-receipt-won.jpg"><img src="site/18-receipt-won.jpg" alt="A winner&#x27;s receipt" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">07</span><h3>A winner&#x27;s receipt</h3><p>Ticket 01 decrypts its own memo with its own viewing key: won, 79 zatoshi refunded.</p><span class="clock">t + 19:39</span></div></article>
+<article class="step"><a class="shot" href="site/19-receipt-lost.jpg"><img src="site/19-receipt-lost.jpg" alt="A losing ticket" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">08</span><h3>A losing ticket</h3><p>Ticket 04 decrypts its own memo: lost, the full 100 zatoshi refunded.</p><span class="clock">t + 19:43</span></div></article>
+<article class="step"><a class="shot" href="site/20-receipt-tamper.jpg"><img src="site/20-receipt-tamper.jpg" alt="Try to cheat" loading="lazy" width="1120" height="1080"></a>
+<div class="step-text"><span class="step-no">09</span><h3>Try to cheat</h3><p>Flipping one byte of the receipt proof makes the fixed verifier reject it before the viewing key is read.</p><span class="clock">t + 19:44</span></div></article>
+
+<h2>Who learned what</h2>
+<div class="grid4">
+<div><span class="tag">Everyone</span><p>The clearing price, the units sold, one shielded transaction and its proofs.</p></div>
+<div><span class="tag">Each bidder</span><p>Only their own result and refund, from their own encrypted memo.</p></div>
+<div><span class="tag">Operators</span><p>Winners and refunds. Each one holds only shares of the bids.</p></div>
+<div><span class="tag">Never published</span><p>Who bid what, and every winner's maximum bid. The price is the highest losing bid, or the reserve.</p></div>
+</div>
+
+<h2>Verify it yourself</h2>
+<p class="sub">No wallet key, bid, mask or witness is needed. The authority file is configured separately from each bundle.</p>
+<pre><code>scripts/docker_verify.sh        # clean Linux container from committed source; about 20 min to build</code></pre>
+<pre><code>./verify.sh --funded demo/artifacts/browser-auction-nu7-v3 \
+  --authority demo/authority/browser-auction-nu7-v3.json</code></pre>
+<div class="table-scroll"><table>
+<thead><tr><th>Bundle</th><th>Settlement tx</th><th>What it is</th><th>Verified</th></tr></thead>
+<tbody>
+<tr><td><code>browser-auction-nu7-v3</code></td><td><code>e305699514…51caf779</code></td><td>The auction in the video</td><td>host-verified 103 s; added after the container run</td></tr>
+<tr><td><code>browser-auction-nu7-v2</code></td><td><code>e3ffa436a2…84769754</code></td><td>six-step browser auction: funded before clearing, then settled, Oct 19</td><td>clean Linux container, 100 s, tamper refused</td></tr>
+<tr><td><code>browser-auction-nu7-v1</code></td><td><code>3fee2c7ce3…b5c0b5d7</code></td><td>auction created and settled by clicking through the browser UI, Oct 18</td><td>clean Linux container, 100 s, tamper refused</td></tr>
+<tr><td><code>fresh-book-nu7-v1</code></td><td><code>54941ffd84…45c76ee6</code></td><td>browser-created book settled from the CLI driver (resumed), Oct 18</td><td>clean Linux container, 99 s, tamper refused</td></tr>
+<tr><td><code>canonical-nu7-funded-v1</code></td><td><code>47019e02e4…3a211938</code></td><td>recorded Oct 5 settlement with fixture bids</td><td>clean Linux container, 100 s, tamper refused</td></tr>
+</tbody></table></div>
+<p class="caption">Container: clean Linux container built from git archive; Linux 6.10.14-linuxkit aarch64. Each check covers native authorization, six output bindings, the auction proof and the operator certificate, and requires a cryptographic rejection of a corrupted receipt proof.</p>
+
+<h2>Trust model and limits</h2>
+<ul class="limits">
+<li>Bid secrecy holds against at most one semi-honest corrupt operator (REP3). Two colluding operators can reconstruct bids. This is not malicious-secure MPC.</li>
+<li>Custody is 2-of-3 FROST from a DKG. Two colluding signers can move funds, and there is no unilateral refund.</li>
+<li>Operators hold escrow viewing capability and learn winners and refunds.</li>
+<li>The public price is the highest losing bid, or the reserve.</li>
+<li>In the demo, deposits come from one local test wallet right after the close; each bidder's own wallet would deposit in a deployment. Admission signatures attest funding; they are not a ZK funding proof. The bundle does not prove chain inclusion.</li>
+<li>The circuits have four bid slots and six outputs, and native settlement supports the default terms. Settlement takes about 17 minutes on a 16 GiB M1.</li>
+</ul>
+
+<footer><a href="https://github.com/yugocabrio/ZECATHON/blob/main/README.md">README</a><a href="https://github.com/yugocabrio/ZECATHON/blob/main/docs/judge-review.md">Review guide</a><a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-18-fresh-book-native-settlement.json">Run evidence</a><a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-18-clean-room-linux-verification.json">Clean-room record</a><a href="https://github.com/yugocabrio/ZECATHON/blob/main/docs/reproduce.md">Reproduce</a><span>MIT licensed</span></footer>
+</div>
+</body>
+</html>
