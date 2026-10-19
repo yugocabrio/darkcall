@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id);
 let state, selected = 'positive', busy = false, receiptVerified = false, settlementVerified = false;
 function stages() {
-  $('stage-status').textContent = (receiptVerified ? 'Clearing and your result verified. ' : 'Recorded clearing; own result unopened. ') + (settlementVerified ? 'Shielded settlement verified.' : 'Shielded settlement awaits public verification.');
+  $('stage-status').textContent = (receiptVerified ? 'Clearing and your result verified. ' : 'Recorded clearing; own result unopened. ') + (settlementVerified ? 'Shielded settlement re-verified in this session.' : 'Settlement verified when recorded; re-verify it here.');
   const checks = $('result-checks'); checks.replaceChildren();
   if (receiptVerified) checks.append(element('span','✓ Auction & receipt verified'),element('span','✓ Native Zcash transaction'));
   if (settlementVerified && state.six_output_memo_e2e) checks.append(element('span','✓ Settlement verified'));
@@ -116,8 +116,9 @@ fetch('/api/state').then(async response => {
   }
   lock(false);
   if (onTestnet()) {
-    $('local-pill').textContent='Local demo · Fund and Settle on Zcash testnet';
+    $('local-pill').textContent='Local demo · new auctions settle on Zcash testnet (experimental)';
     for (const id of ['fund-chain','settle-chain']) $(id).textContent='Public testnet';
+    for (const node of document.querySelectorAll('.chain-text')) node.textContent='public Zcash testnet (experimental)';
   }
   const recordedTx=state.cases[0].txid, hero=state.cases[0];
   $('hero-price').textContent=hero.price; $('hero-tickets').textContent=hero.tickets+' sealed bids';

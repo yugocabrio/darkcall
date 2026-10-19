@@ -108,8 +108,8 @@ class Rehearsal:
                 value=json.loads(line); events.append({k:v for k,v in value.items() if k in SETTLE_FIELDS})
         except FileNotFoundError: pass
         view={'state':job['state'],'started_at_unix':job['started_at_unix'],'events':events,
-            'funding_scope':'actual isolated NU7 regtest deposits from a local test bank',
-            'public_testnet':False,'result':job['public']}
+            'funding_scope':('actual public-testnet NU7 deposits' if self.chain=='testnet' else 'actual isolated NU7 regtest deposits')+' from a local test bank',
+            'public_testnet':self.chain=='testnet','result':job['public']}
         if job['state']=='failed': view['error']=('Funding' if kind=='funding' else 'Settlement')+' stopped. Its private checkpoint is retained.'
         return view
 

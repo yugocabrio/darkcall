@@ -219,7 +219,7 @@ footer a {{color:var(--ink-2)}}
 <tr><th scope="row">Bids hidden from the public</th><td class="us">Yes, never opened</td><td class="no">No</td><td>Only until the close</td><td>Yes</td></tr>
 <tr><th scope="row">Bids hidden from whoever runs it</th><td class="us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No, it decrypts them</td></tr>
 <tr><th scope="row">Anyone can check the price</th><td class="us">Yes, by zero-knowledge proof</td><td>Yes</td><td>Yes, by opening every bid amount</td><td class="no">No, you trust it</td></tr>
-<tr><th scope="row">Payments and refunds stay private</th><td class="us">Yes, one shielded transaction</td><td class="no">No</td><td class="no">No</td><td>Possible, if it pays shielded</td></tr>
+<tr><th scope="row">Payments and refunds stay private</th><td class="us">Yes, one shielded transaction</td><td class="no">No</td><td>Possible, if paid shielded</td><td>Possible, if it pays shielded</td></tr>
 <tr><th scope="row">Payout provably follows the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>Yes, by contract</td><td class="no">No, the signers decide</td></tr>
 </tbody></table></div>
 <div class="measured">

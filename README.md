@@ -62,7 +62,7 @@ DarkCall proves the price without opening them, then pays out in shielded ZEC.
 | Bids hidden from the public | **Yes, never opened** | No | Only until the close | Yes |
 | Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No, it decrypts them |
 | Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | No, you trust it |
-| Payments and refunds stay private | **Yes, one shielded transaction** | No | No | Possible, if it pays shielded |
+| Payments and refunds stay private | **Yes, one shielded transaction** | No | Possible, if paid shielded | Possible, if it pays shielded |
 | Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | Yes, by contract | No, the signers decide |
 
 Common designs compared, not specific projects. "Any single operator" is the
@@ -217,6 +217,10 @@ assumptions:
 - **Regtest only.** It runs on an isolated regtest: no public testnet or mainnet funds.
 - **Fixed size.** The circuits have four bid slots and six outputs. The native settlement path
   supports the default terms (3 units, budget 100, reserve 0 or 20).
+- **Demo-sized amounts.** Bids stay within a 100-zatoshi budget, and the fixed
+  15,000-zatoshi processing fee per ticket pays the settlement's 30,000-zatoshi
+  network fee and a 30,000-zatoshi operator fee output. The numbers exercise
+  the cryptography end to end; they are not a pricing proposal.
 
 An earlier delivery design leaked refunds to a two-candidate guess. We reproduced
 the attack, withdrew the claim and replaced it with blinded v2 commitments:
