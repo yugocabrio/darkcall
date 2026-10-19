@@ -484,7 +484,7 @@ pub fn execute(args: &[String]) -> Result<()> {
         &out.join("accepted-book.json"),
         &serde_json::to_vec_pretty(&accepted)?,
     )?;
-    let summary = serde_json::json!({"scope":"four actual scanned NU7 regtest deposit claims admitted; fixture tickets","funding_observations_fabricated":false,"client_zk_proofs_reverified":4,"delivered_share_pairs_reverified":12,"client_claim_signatures_verified":4,"operator_receipt_signatures":12,"accepted_root_matches":true,"receipt_locks_fsynced":true,"maximum_bids_read":false,"actual_wall_clock_admission_cutoff_checked":true,"canonical_chain_and_unspent_checks":"Python driver + SDK scanner; trusted local full-node RPC","final_book_signed":false,"native_settlement_broadcast":false});
+    let summary = serde_json::json!({"scope":if chain == crate::network::Chain::Testnet {"four actual scanned NU7 public-testnet deposit claims admitted; local test clients"} else {"four actual scanned NU7 regtest deposit claims admitted; fixture tickets"},"funding_observations_fabricated":false,"client_zk_proofs_reverified":4,"delivered_share_pairs_reverified":12,"client_claim_signatures_verified":4,"operator_receipt_signatures":12,"accepted_root_matches":true,"receipt_locks_fsynced":true,"maximum_bids_read":false,"actual_wall_clock_admission_cutoff_checked":true,"canonical_chain_and_unspent_checks":if chain == crate::network::Chain::Testnet {"Python driver + SDK scanner; trusted lightwalletd provider"} else {"Python driver + SDK scanner; trusted local full-node RPC"},"final_book_signed":false,"native_settlement_broadcast":false});
     write(
         &out.join("summary.json"),
         &serde_json::to_vec_pretty(&summary)?,
