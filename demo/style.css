@@ -69,6 +69,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 
 /* Experience choice: two actions on the landing, then a compact switch */
 .experience-picker {display:flex;flex-wrap:wrap;gap:12px;margin:36px 0 0}
+.hero-note {margin:20px 0 0;max-width:540px;font-size:13px;line-height:1.55;color:var(--ink-3)}
 .experience-card {display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);padding:13px 20px 12px;transition:border-color .15s,background .15s}
 .experience-card:hover {border-color:var(--ink)}
 .try-card {background:var(--ink);color:#fff;border-color:var(--ink)}

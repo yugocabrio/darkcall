@@ -122,9 +122,10 @@ accepted root `2d619728…558d12f9` carried through every step:
 The scripted run of the same API (`scripts/check_fresh_settlement.py`) repeats
 the flow. It also checks that clearing or settling before funding, a tampered
 receipt proof, a foreign ticket capability and a concurrent proof are all
-refused. Four committed public bundles can be verified without secrets: this
-six-step auction, two earlier browser-created books from Oct 18, and the Oct 5
-recorded settlement `47019e02…a211938` with fixture bids. Exact records:
+refused. Five committed public bundles can be verified without secrets: this
+six-step auction, the auction in the video, two earlier browser-created books
+from Oct 18, and the Oct 5 recorded settlement `47019e02…a211938` with fixture
+bids. Exact records:
 [browser settlements](evidence/2026-10-18-fresh-book-native-settlement.json),
 [recorded settlement](evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
@@ -153,9 +154,11 @@ scripts/docker_verify.sh
 ```
 
 It builds every pinned tool from source using only committed files, verifies
-all four committed bundles, and checks that a corrupted proof is rejected. It
-passed on Oct 19 on linux/arm64
-([record](evidence/2026-10-18-clean-room-linux-verification.json)). Remove the
+every committed bundle, and checks that a corrupted proof is rejected. On Oct 19
+it passed on linux/arm64 for the four bundles that existed then
+([record](evidence/2026-10-18-clean-room-linux-verification.json)); the fifth,
+the video run `browser-auction-nu7-v3`, was added later and verified on the
+host in 103 s. Remove the
 image afterwards with `docker image rm`.
 
 **Or verify on the host.** Build the pinned tools
