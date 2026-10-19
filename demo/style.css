@@ -83,7 +83,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .try-card .experience-scope {color:#b9b7ae}
 .has-experience .intro {padding:20px 0 28px}
 .has-experience .hero {display:block}
-.has-experience .hero-copy > :not(.experience-picker),.has-experience .hero-receipt,.has-experience .landing-more,.has-experience .how,.has-experience .bound,.has-experience .proven,.has-experience .protocol {display:none}
+.has-experience .hero-copy > :not(.experience-picker),.has-experience .hero-receipt,.has-experience .landing-more,.has-experience .how,.has-experience .proven {display:none}
 .has-experience .experience-picker {margin:0;display:inline-flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
 .has-experience .experience-card {padding:8px 18px;border:0;border-radius:999px;background:transparent;color:var(--ink-2)}
 .has-experience .experience-card.active {background:var(--ink);color:#fff}
@@ -110,6 +110,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .disclosure b {font-size:14px;font-weight:600}
 .disclosure p {margin:4px 0 0;font-size:14px;color:var(--ink-2)}
 .disclosure div:last-child p {color:#d8d6cf}
+.steps-title {font-size:22px;margin:64px 0 0}
 .steps {list-style:none;padding:0;margin:20px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .steps li {display:grid;grid-template-columns:36px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
 .step-n {width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:500 14px var(--mono);background:var(--gold-soft);color:var(--gold-ink)}
@@ -118,9 +119,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .steps .q {margin-top:2px;color:var(--ink-3);font-style:italic}
 .steps .pp {padding-top:10px;border-top:1px dashed var(--line-strong);font-size:13px;color:var(--ink)}
 .steps .pp em {font-style:normal;font-weight:600;color:var(--gold-ink)}
-.bound {margin-top:112px}
-.bound h2 {font-size:clamp(28px,3.2vw,40px);letter-spacing:-.03em;max-width:820px}
-.binding {display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;align-items:stretch;margin-top:32px}
+.binding {display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;align-items:stretch;margin-top:48px}
 .bind-box {background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
 .bind-box span {display:block;font-size:13px;color:var(--ink-3)}
 .bind-box b {display:block;margin:6px 0 4px;font-size:17px;font-weight:600}
@@ -141,16 +140,6 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .proven-facts code {font:500 15px var(--mono)}
 .proven-facts strong {font-size:32px;font-weight:500;letter-spacing:-.03em}
 .proven-facts small {display:block;margin-top:6px;font-size:13px;color:var(--ink-2)}
-.who-title {margin:32px 0 0;font-size:14px;font-weight:600;color:var(--ink)}
-.who {display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
-.who div {background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-.who b {font-size:14px;font-weight:600}
-.who p {margin:4px 0 0;font-size:14px;color:var(--ink-2)}
-.protocol {margin-top:80px}
-.protocol-details > summary {display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:var(--surface);border:1px solid var(--line-strong);border-radius:16px;font-size:18px;font-weight:600;color:var(--ink)}
-.protocol-details > summary:hover {border-color:var(--ink)}
-.protocol-details[open] > summary {margin-bottom:12px}
-.steps {margin-top:0}
 .landing-trust {margin-top:36px;border-top:1px solid var(--line);padding-top:16px;max-width:860px}
 .landing-trust ul {padding-left:20px;margin:14px 0 0}
 .landing-trust li {margin:6px 0;font-size:14px;color:var(--ink-2)}
@@ -356,8 +345,7 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .stages li:first-child {border-radius:14px 14px 0 0;margin-top:0}
   .stages li:last-child {border-radius:0 0 14px 14px}
   .stages li:not(:last-child)::after {right:auto;left:50%;top:auto;bottom:-7px;transform:translateX(-50%) rotate(135deg)}
-  .disclosure,.steps,.who {grid-template-columns:1fr}
-  .bound {margin-top:72px}
+  .disclosure,.steps {grid-template-columns:1fr}
   .binding {grid-template-columns:1fr;gap:0}
   .bind-arrow {height:28px}
   .bind-arrow::before {left:50%;right:auto;top:4px;bottom:8px;border-top:0;border-left:1.5px solid var(--ink-3)}

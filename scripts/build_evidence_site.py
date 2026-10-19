@@ -44,9 +44,7 @@ def build():
     testnet = json.loads((ROOT / 'evidence/2026-10-19-public-testnet-settlement.json').read_text())
     # The protocol explanation is the demo page's own section, so the two never drift.
     page = (ROOT / 'demo/index.html').read_text()
-    how_html = '\n'.join(re.search(pattern, page, re.S).group(0) for pattern in (
-        r'<section class="how".*?</section>', r'<section class="bound".*?</section>',
-        r'<details class="protocol-details">.*?</details>'))
+    how_html = re.search(r'<section class="how".*?</section>', page, re.S).group(0)
     style = (ROOT / 'demo/style.css').read_text()
     how_css = style[style.index('/* How it works'):style.index('/* Why it is different')]
     facts, at = manifest['facts'], {s['name']: s['elapsed_seconds'] for s in manifest['shots']}
@@ -196,9 +194,8 @@ table {{width:100%;border-collapse:collapse;font-size:14px}}
 footer {{margin:104px 0 48px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:8px 22px}}
 footer a {{color:var(--ink-2)}}
 {how_css}
-.how,.bound {{margin-top:104px}}
-.how h2,.bound h2 {{margin:0}}
-.protocol-details {{margin-top:48px}}
+.how {{margin-top:104px}}
+.how h2 {{margin:0}}
 .section-lead {{font-size:17px;color:var(--ink-2);margin:12px 0 0;max-width:680px}}
 @media (max-width:760px) {{
   .stages,.disclosure,.steps,.binding {{grid-template-columns:1fr}}
