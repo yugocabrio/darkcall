@@ -1,0 +1,121 @@
+{
+  "scope": "one fresh browser auction funded, cleared and settled on standard public Zcash testnet (NU7) through the demo API; synthetic demo bids; every party on one host",
+  "date": "2026-10-19 (CEST)",
+  "implementation_commit": "ecceac8 (SDK testnet transport, testnet drivers and settle_fresh_book --chain testnet as of that commit)",
+  "network": {
+    "name": "Zcash standard testnet",
+    "genesis": "05a60a92d99d85997cce3b87616c089f6124d7342af37106edc76126334a2c38",
+    "consensus_branch": "77190ad9 (NU7)",
+    "nu7_activation_height": 4465026,
+    "provider": "https://testnet.zec.rocks:443 (lightwalletd v0.5.4, commit c22ca9ba, protocol v0.5.0)",
+    "provider_trust": "chain data comes from one trusted lightwalletd provider over validated TLS; the SDK re-checks chain name, genesis and NU7 branch on every connection and the scanner checks every block Ironwood tree size and the final frontier root; no SPV or consensus validation by DarkCall itself"
+  },
+  "funding_of_local_test_bank": {
+    "source": "testnet faucet transfer arranged by the author",
+    "received_zatoshi": 12500000,
+    "mined_height": 4518124,
+    "bank_birthday_height": 4517560,
+    "note": "testnet coins only; the bank key never left .local"
+  },
+  "command": "python3 -B scripts/check_fresh_settlement.py --output .local/testnet-harness-20261019-1.json   (server: ./demo.sh --chain testnet)",
+  "auction": {
+    "auction_id": "161653c3fe5a6b3aae2a6d0ca3df6e10",
+    "terms": {
+      "units": 3,
+      "reserve": 20,
+      "budget": 100
+    },
+    "bids_typed_for_demo": [
+      77,
+      61,
+      43,
+      21
+    ],
+    "accepted_root": "21eda38157e9a521b3f8f52fb6fc49e771b558cb62ad74e118c2ea129a7899f9"
+  },
+  "funding": {
+    "deposit_txid": "d573a6510ff9e19225693f6288ef581056f9271296fad7c271649a6a3c7b1737",
+    "confirmations": 2,
+    "client_proofs": 4,
+    "share_pairs": 12,
+    "receipt_signatures": 12,
+    "final_book_signatures": 3,
+    "same_accepted_root": true,
+    "deposit_block": {
+      "height": 4518128,
+      "hash": "0000217c0238eb27f686d4cc84b5ac990c38db6f2da35da59aab5eb9b213afb6"
+    },
+    "admission_window_seconds": 600,
+    "funding_phase_seconds": 612.1
+  },
+  "clearing": {
+    "price": 21,
+    "sold": 3,
+    "rep3_and_conoir_seconds": 8.3,
+    "after_funding": true
+  },
+  "settlement": {
+    "txid": "8e6da99bc6ab58b941e3b3ec53dde1dbea99fd5886618c2f7aae7009034f0db7",
+    "block": {
+      "height": 4518182,
+      "hash": "00002685f8144c5cd9116f5d6b92490e1d30c2e9e342c0e9e1e516e258e09ce0"
+    },
+    "confirmations": 2,
+    "transaction_bytes": 21790,
+    "network_fee_zatoshi": 30000,
+    "driver_seconds": 983.559,
+    "outputs": "seller 63, refunds 79/79/79/100 with encrypted receipts, operator fee 30000",
+    "same_accepted_root_and_tickets": true,
+    "maximum_bids_read": false
+  },
+  "public_verification": {
+    "in_run_seconds": 97.684,
+    "host_rerun_seconds": 99.1,
+    "native_proof_and_signatures_verified": true,
+    "native_row_proofs_verified": true,
+    "normal_cpp_auction_proof_verified": true,
+    "accepted_book_and_recipients_authenticated": true,
+    "corrupted_receipt_proof_refused_cryptographically": true,
+    "bundle": "demo/artifacts/testnet-auction-nu7-v1",
+    "authority": "demo/authority/testnet-auction-nu7-v1.json",
+    "bundle_manifest_sha256": "6d60d76157037ec230c44ba6ee3e710a23db02831155e094d4025d1359cf4326",
+    "authority_sha256": "5201172bf9549bd4258ab992fa872def6703aa286a545f944f0f22e4b6dc932e",
+    "verify_command": "./verify.sh --funded demo/artifacts/testnet-auction-nu7-v1 --authority demo/authority/testnet-auction-nu7-v1.json"
+  },
+  "own_receipts": [
+    {
+      "won": true,
+      "refund": 79
+    },
+    {
+      "won": true,
+      "refund": 79
+    },
+    {
+      "won": true,
+      "refund": 79
+    },
+    {
+      "won": false,
+      "refund": 100
+    }
+  ],
+  "refusals": {
+    "clear_and_settle_before_funding_refused_400": true,
+    "native_tamper_rejected_before_key_read": true,
+    "foreign_capability_refused": true,
+    "settle_before_clear_refused": true,
+    "concurrent_settle_and_recorded_proof_refused_409": true,
+    "non_default_terms_not_settleable": true,
+    "own_receipts_equal_browser_results": true
+  },
+  "total_seconds": 1780.1,
+  "limitations": [
+    "every party runs on one host; the local helper sees the typed demo bids",
+    "deposits for all four tickets come from one local test bank, not four bidder wallets",
+    "REP3 assumes at most one semi-honest corrupt operator; two colluding FROST signers can move escrowed funds",
+    "admission signatures attest funding; they are not a public ZK funding proof; the public bundle does not prove chain inclusion",
+    "confirmations were observed through one trusted lightwalletd provider",
+    "demo-sized amounts: 100-zatoshi budget and 15,000-zatoshi processing fee per ticket"
+  ]
+}

@@ -4,6 +4,13 @@ Updated: 2026-10-19 (git HEAD is authoritative).
 
 ## Current state, in one screen
 
+- **Public Zcash testnet (Oct 19):** a fresh API-created auction was funded,
+  cleared and settled on standard testnet (NU7) through testnet.zec.rocks.
+  Deposits `d573a651…3c7b1737` (block 4,518,128), settlement
+  `8e6da99b…034f0db7` (block 4,518,182), 2 confirmations each; price 21 / 3
+  sold; public check 98 s; receipts 79/79/79/100; all refusals held. Record:
+  `evidence/2026-10-19-public-testnet-settlement.json`. Run with
+  `./demo.sh --chain testnet`.
 - **Product flow (browser and API):** Create → Bid → Fund on Zcash → Clear →
   Result → Settle on Zcash → own shielded receipt → tamper refusal. The same
   sealed tickets, commitments, REP3 shares and accepted root carry through every
@@ -25,9 +32,10 @@ Updated: 2026-10-19 (git HEAD is authoritative).
 - **Verification without secrets:** `./verify.sh --funded …` on the host, or
   `scripts/docker_verify.sh` in a clean Linux container built from `git archive`.
   On Oct 19 the script verified the four bundles committed then (about 100 s
-  each, strict tamper refusal); the fifth, video run v3, is host-verified (103 s). Recorded-mode HTTP check: 4 receipts plus 15 refusals.
+  each, strict tamper refusal); video run v3 (103 s) and the public-testnet
+  bundle (99 s, strict tamper refusal) are host-verified. Recorded-mode HTTP check: 4 receipts plus 15 refusals.
   Public-only mode: own receipt refused without a key, tamper refused.
-- **Committed bundles (5):** `browser-auction-nu7-v2` (headline),
+- **Committed bundles (6):** `testnet-auction-nu7-v1` (public testnet), `browser-auction-nu7-v2` (headline),
   `browser-auction-nu7-v3` (video run), `browser-auction-nu7-v1`,
   `fresh-book-nu7-v1` (Oct 18 browser books), and `canonical-nu7-funded-v1`
   (Oct 5, fixture bids).

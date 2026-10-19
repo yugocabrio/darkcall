@@ -111,7 +111,7 @@ def run(port, bids, reserve):
     foreign = call('/api/rehearsal/result', {**scope, 'ticket': accepted[0]['ticket'],
                    'opening_token': accepted[1]['opening_token'], 'action': 'native-open'})[0]
     assert foreign == 403
-    return {'scope': 'fresh browser book settled on isolated NU7 regtest; synthetic demo bids; one host',
+    return {'scope': 'fresh browser book settled on ' + ('public Zcash testnet' if state.get('live_chain') == 'testnet' else 'isolated NU7 regtest') + '; synthetic demo bids; one host',
         'terms': {k: terms[k] for k in ('units', 'reserve', 'budget')}, 'auction_id': auction['auction_id'],
         'accepted_root': closed['accepted_root'], 'browser_clearing': {k: cleared[k] for k in ('price', 'sold', 'seconds')},
         'funding': funding['result'], 'clearing_after_funding': True,

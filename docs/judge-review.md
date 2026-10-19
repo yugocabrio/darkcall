@@ -25,7 +25,8 @@ receipt memo.
    `scripts/docker_verify.sh`. It builds every pinned tool from committed source
    in a clean Linux container and verifies every committed bundle plus a tamper
    case for each. It passed on Oct 19 for the four bundles that existed then; the
-   fifth (the video run, `browser-auction-nu7-v3`) was verified on the host.
+   video run (`browser-auction-nu7-v3`) and the public-testnet run
+   (`testnet-auction-nu7-v1`) were added later and verified on the host.
    On a host with the [pinned tools](reproduce.md), run:
 
    ```sh

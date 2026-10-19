@@ -24,9 +24,10 @@ one byte of each bundle's receipt proof and requires the fixed verifier to
 reject it cryptographically.
 
 On Oct 19 the committed one-command script verified the four bundles committed
-at that time (about 100 s each) with the strict tamper check. The fifth, the
-video run `browser-auction-nu7-v3`, was added afterwards and verified on the
-host (103 s); the script now includes it. On Oct 18 on the 16 GiB M1
+at that time (about 100 s each) with the strict tamper check. Two were added
+afterwards and verified on the host: the video run `browser-auction-nu7-v3`
+(103 s) and the public-testnet run `testnet-auction-nu7-v1` (99 s, strict tamper
+refusal). The script now includes both. On Oct 18 on the 16 GiB M1
 (Docker Desktop, linux/arm64): `bb` 567 s, both
 Rust helpers 450 s, then all three bundles verified in 5 min 23 s
 (`browser-auction-nu7-v1` 112 s, `fresh-book-nu7-v1` 101 s,

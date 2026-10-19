@@ -18,7 +18,10 @@ Done:
 - [x] Strength-led redesign (Oct 19): claims + real settled card on the landing, comparison with
       open / commit–reveal / trusted designs, measured numbers; paper/ink/gold with self-hosted
       IBM Plex; evidence page, video overlays, README and submission draft aligned.
-- [ ] Re-capture the video run through the redesigned UI, export its public bundle, re-render.
+- [x] Public Zcash testnet settlement (Oct 19, approved by the author): deposits `d573a651…`,
+      settlement `8e6da99b…`, public check 98 s, tamper refused; bundle `testnet-auction-nu7-v1`.
+- [ ] Re-capture the video run through the redesigned UI (on testnet), export its public bundle, re-render.
+- [ ] Optional: re-run `scripts/docker_verify.sh` so the container record covers all six bundles.
 - [ ] Name: keep "DarkCall" with the descriptor "Sealed-bid auctions on Zcash" unless the
       author picks another (presentation-only rename; circuit domain separators stay).
 

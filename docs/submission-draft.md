@@ -73,9 +73,15 @@ All three parts are needed:
 
 In this one-machine demo, the local bidder helper does see the typed bid.
 
-## What works (single-host prototype, isolated Zebra NU7 regtest)
+## What works (single-host prototype)
 
-- **The full flow in the browser, in protocol order.** Create an auction and
+- **Settled on public Zcash testnet.** On Oct 19 a fresh auction was funded,
+  cleared and settled on standard testnet (NU7): deposits `d573a651…3c7b1737`
+  at block 4,518,128, settlement `8e6da99b…034f0db7` at block 4,518,182, two
+  confirmations each, public check in 98 s, and a corrupted receipt proof
+  refused. Chain data came from one trusted lightwalletd provider.
+
+- **The full flow in the browser, in protocol order (isolated regtest).** Create an auction and
   seal four bids (client ZK proof + REP3 shares + signed pre-check). Certify the
   book, then **Fund on Zcash**: four real shielded deposits and a chain
   admission that re-verifies the same proofs and shares under a certificate
