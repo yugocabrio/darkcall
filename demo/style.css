@@ -98,8 +98,11 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .proof-card .experience-scope {color:#b9b7ae}
 .has-experience .intro {padding:20px 0 28px}
 .has-experience .hero {display:block}
-.has-experience .hero-copy > :not(.experience-picker),.has-experience .hero-receipt,.has-experience .landing-more,.has-experience .how,.has-experience .proven {display:none}
-.has-experience .experience-picker {margin:0;display:inline-flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
+.back-overview {display:none}
+.has-experience .back-overview {display:inline-flex;align-items:center;margin:0 14px 0 0;padding:9px 4px;border:0;background:none;font:500 15px var(--sans);color:var(--ink-2);cursor:pointer;vertical-align:middle}
+.has-experience .back-overview:hover {color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.has-experience .hero-copy > :not(.experience-picker):not(.back-overview),.has-experience .hero-receipt,.has-experience .landing-more,.has-experience .how,.has-experience .proven {display:none}
+.has-experience .experience-picker {margin:0;vertical-align:middle;display:inline-flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
 .has-experience .experience-card {padding:8px 18px;border:0;border-radius:999px;background:transparent;color:var(--ink-2)}
 .has-experience .experience-card.active {background:var(--ink);color:#fff}
 .has-experience .experience-heading {font-size:15px;font-weight:500}
@@ -511,6 +514,7 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .proof-strip {grid-template-columns:1fr}
   .how-it-works ol {grid-template-columns:1fr 1fr}
   .has-experience .experience-picker {display:flex;width:100%}
+  .has-experience .back-overview {margin:0 0 10px;padding:4px 0}
   .has-experience .experience-card {flex:1 1 0;align-items:center;padding:8px 10px}
   .has-experience .experience-heading {font-size:14px;white-space:nowrap}
   footer {flex-direction:column}

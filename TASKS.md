@@ -65,6 +65,8 @@ Done:
       storyboard and stills 01-19); the current video is demo/media/v2. Ignored scratch under
       .local (old runs, logs, drafts) moved out; demo.sh's recorded runs, both banks and the regtest
       node data kept. Recorded-mode HTTP checks pass on testnet and regtest after the cleanup.
+- [x] Way back (Oct 19): "← Back to overview" beside the mode switch returns from either mode to the
+      hero and How it works without a reload; a running auction stays and "Run an auction" reopens it.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.

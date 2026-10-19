@@ -448,6 +448,15 @@ function selectExperience(mode) {
     $(id).classList.toggle('active',mode===name); $(id).setAttribute('aria-pressed',String(mode===name));
   }
 }
+// Leave either mode without reloading: a running auction stays on the server
+// and "Run an auction" reopens it.
+function showOverview() {
+  document.body.classList.remove('has-experience');
+  $('rehearsal').hidden=true; $('recorded-demo').hidden=true;
+  for (const id of ['start-auction','show-recording']) { $(id).classList.remove('active'); $(id).setAttribute('aria-pressed','false'); }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$('back-overview').addEventListener('click',showOverview);
 $('show-recording').addEventListener('click',showRecording);
 $('continue-recording').addEventListener('click',showRecording);
 function jobRunning() {
