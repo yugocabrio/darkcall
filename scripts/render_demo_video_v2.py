@@ -47,18 +47,18 @@ def render(output, font, bold):
     def text(name, value):
         path = work / name; path.write_text(value); return path
 
-    def draw(path, y, size, color='0xd2eca5', x='80', face=None):
+    def draw(path, y, size, color='0xffffff', x='80', face=None):
         return (f"drawtext=fontfile='{escaped(face or font)}':textfile='{escaped(path)}':expansion=none:"
                 f"fontsize={size}:fontcolor={color}:x={x}:y={y}:line_spacing=10")
 
-    badge = text('badge.txt', 'DARKCALL · EDITED DEMO FROM ONE REAL AUCTION · ISOLATED ZCASH REGTEST')
+    badge = text('badge.txt', 'DarkCall · edited from one real auction · isolated Zcash regtest')
     clips, used, subtitles, elapsed = [], {}, [], 0
     for index, scene in enumerate(story['scenes']):
         seconds = scene['seconds']
         if type(seconds) is not int or not 2 <= seconds <= 15:
             raise RuntimeError('Unbounded scene duration')
-        identity = text(f'id-{index}.txt', 'AUCTION ' + facts['auction_id'][:16] + '…'
-                        + ('   SETTLEMENT TX ' + facts['txid'][:16] + '…' if scene.get('after_settlement') else ''))
+        identity = text(f'id-{index}.txt', 'Auction ' + facts['auction_id'][:16] + '…'
+                        + ('   ·   Settlement tx ' + facts['txid'][:16] + '…' if scene.get('after_settlement') else ''))
         clip = work / f'scene-{index:02}.mp4'
         if 'shot' in scene:
             shot = shots[scene['shot']]
@@ -70,9 +70,10 @@ def render(output, font, bold):
             caption = text(f'caption-{index}.txt', scene['caption'])
             inputs = ['-loop', '1', '-framerate', '24', '-i', str(image)]
             # Keep the page's own step bar visible: every label lives in the bottom band.
-            filters = ['scale=1920:1080', 'drawbox=x=0:y=868:w=1920:h=212:color=0x0b100a@0.9:t=fill',
-                       draw(title, 886, 40, face=bold), draw(caption, 942, 28, '0xedeee5'),
-                       draw(identity, 1046, 17, '0x8c9986'), draw(badge, 1046, 17, '0x9fb88c', x='w-tw-80')]
+            # Same palette as the page: an ink band, white text, Zcash gold as the only accent.
+            filters = ['scale=1920:1080', 'drawbox=x=0:y=868:w=1920:h=212:color=0x141413@0.95:t=fill',
+                       draw(title, 886, 40, face=bold), draw(caption, 942, 28, '0xe9e7df'),
+                       draw(identity, 1046, 17, '0xa9a79e'), draw(badge, 1046, 17, '0xf4b728', x='w-tw-80')]
             subtitle = scene['caption']
         else:
             if 'cut' in scene:
@@ -84,9 +85,10 @@ def render(output, font, bold):
                 title_value, body_value = scene['title'], scene['body']
             title = text(f'title-{index}.txt', title_value)
             body = text(f'body-{index}.txt', body_value)
-            inputs = ['-f', 'lavfi', '-i', 'color=c=0x10160f:s=1920x1080:r=24']
-            filters = [draw(badge, 60, 20, '0x9fb88c'), draw(title, 330, 64, face=bold),
-                       draw(body, 450, 34, '0xedeee5'), draw(identity, 1000, 18, '0x8c9986')]
+            inputs = ['-f', 'lavfi', '-i', 'color=c=0xf6f4ee:s=1920x1080:r=24']
+            filters = ['drawbox=x=160:y=290:w=64:h=6:color=0xf4b728:t=fill', draw(badge, 60, 20, '0x8a6408', x='160'),
+                       draw(title, 330, 64, '0x141413', x='160', face=bold), draw(body, 450, 34, '0x4a4944', x='160'),
+                       draw(identity, 1000, 18, '0x86847b', x='160')]
             subtitle = title_value + ' — ' + body_value.replace('\n', ' ')
         subprocess.run([ffmpeg, '-nostdin', '-hide_banner', '-loglevel', 'error', '-n', *inputs,
                         '-vf', ','.join(filters), '-t', str(seconds), '-an', '-c:v', 'libx264', '-preset', 'fast',
@@ -113,8 +115,9 @@ def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=pathlib.Path, required=True)
-    parser.add_argument('--font', type=pathlib.Path, default=pathlib.Path('/System/Library/Fonts/Supplemental/Arial.ttf'))
-    parser.add_argument('--bold', type=pathlib.Path, default=pathlib.Path('/System/Library/Fonts/Supplemental/Arial Bold.ttf'))
+    # IBM Plex (SIL OFL 1.1), the same files the page serves.
+    parser.add_argument('--font', type=pathlib.Path, default=ROOT / 'demo/fonts/ibm-plex-sans-latin-400-normal.woff2')
+    parser.add_argument('--bold', type=pathlib.Path, default=ROOT / 'demo/fonts/ibm-plex-sans-latin-600-normal.woff2')
     args = parser.parse_args()
     print(json.dumps(render(args.output.absolute(), args.font.absolute(), args.bold.absolute()), indent=2))
 

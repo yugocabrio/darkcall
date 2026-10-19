@@ -2,8 +2,8 @@
   "format": 2,
   "scope": "edited stills from one real local auction captured by tools/demo-capture/capture.mjs; time cuts state real elapsed time from the capture manifest",
   "scenes": [
-    {"shot": "landing", "seconds": 9, "title": "Sealed bids. Verifiable settlement.",
-     "caption": "Typical audited auctions open every bid to prove the price.\nDarkCall proves the price without opening the bids, then settles in shielded ZEC."},
+    {"shot": "landing", "seconds": 9, "title": "Bids stay sealed. The price is proven. Settled on Zcash.",
+     "caption": "Other auctions make you choose: hide the bids, or let everyone check the price.\nDarkCall does both. On the right: a real auction settled in this UI."},
     {"shot": "create", "seconds": 5, "title": "1 · Create an auction",
      "caption": "3 identical units · reserve 20 · deposit budget 100 zatoshi · bidding closes in 2 minutes."},
     {"shot": "first-bid", "seconds": 8, "title": "2 · Seal a bid",

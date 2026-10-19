@@ -3,155 +3,189 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>DarkCall — sealed bids, verifiable settlement</title>
+  <title>DarkCall · Sealed-bid auctions on Zcash</title>
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/" aria-label="DarkCall home"><span class="brand-mark">◈</span> DARKCALL<span class="brand-dot">.</span></a>
-    <span class="top-label">PRIVATE MARKETS / ZCASH</span>
-    <span class="local-pill">PROOF-BACKED DEMO</span>
+    <a class="brand" href="/" aria-label="DarkCall home"><span class="brand-mark" aria-hidden="true"></span>DarkCall</a>
+    <span class="top-label">Sealed-bid auctions on Zcash</span>
+    <span class="local-pill">Local demo · isolated regtest</span>
   </header>
   <main>
     <section class="intro">
-      <h1>Sealed bids.<br><em>Verifiable settlement.</em></h1>
-      <p class="lead">Bids stay secret-shared. Three operators compute one fair price by MPC and prove it. One shielded Zcash transaction pays everyone, bound to that proof.</p>
-      <div class="contrast" aria-label="How DarkCall differs">
-        <div class="contrast-side typical"><span class="contrast-label">Typical audited auction</span><div class="contrast-bids"><b>77</b><b>61</b><b>43</b><b>21</b></div><p>Opens every bid after the close so anyone can check the price.</p></div>
-        <div class="contrast-side darkcall"><span class="contrast-label">DarkCall</span><div class="contrast-bids"><b>••</b><b>••</b><b>••</b><b>••</b><i>price 21 ✓ proof</i></div><p>Proves the price without opening the bids. Each bidder decrypts only their own result.</p></div>
+      <div class="hero">
+        <div class="hero-copy">
+          <p class="kicker">ZECATHON 2026 · Private Markets</p>
+          <h1>Bids stay sealed.<br>The price is proven.<br>Settled on Zcash.</h1>
+          <p class="lead">DarkCall is a sealed-bid auction. No single operator ever holds a bid, a zero-knowledge proof shows the clearing price follows the rules, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
+          <nav class="experience-picker" aria-label="Choose an experience">
+            <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-heading">Run an auction</span><span class="experience-caption">Create, bid, fund, clear and settle on Zcash.</span><span class="experience-scope">Demo bids · real shielded settlement</span></button>
+            <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-heading">See a settled auction</span><span class="experience-caption">Open a bidder's receipt or verify the settlement.</span><span id="proof-card-scope" class="experience-scope">Recorded on isolated regtest</span></button>
+          </nav>
+        </div>
+        <aside class="hero-receipt" aria-label="A settled DarkCall auction">
+          <div class="receipt-head"><span id="hero-label">Settled auction</span><span>Zcash NU7 · regtest</span></div>
+          <div class="receipt-bids"><span id="hero-tickets">4 sealed bids</span><div aria-hidden="true"><b></b><b></b><b></b><b></b></div><small>Never opened or reconstructed</small></div>
+          <div class="receipt-price"><span>Clearing price</span><strong><span id="hero-price">21</span><i>zatoshi</i></strong><small id="hero-sold">3 of 3 units sold · every winner pays the same</small></div>
+          <ul class="receipt-checks">
+            <li>Clearing proof over the sealed bids</li>
+            <li>Six proofs bind every output to the result</li>
+            <li>Valid shielded transaction, four encrypted receipts</li>
+          </ul>
+          <div class="receipt-tx"><span>Settlement transaction</span><code id="hero-txid">e3ffa436…84769754</code><small id="hero-note">Created, funded, cleared and settled in this UI.</small></div>
+        </aside>
       </div>
-      <div class="landing-facts"><span><b>Public</b>clearing price · units sold · proofs</span><span><b>Never published</b>who bid what · who won · refunds</span><span><b>Settled</b>one shielded transaction anyone can verify</span></div>
     </section>
-    <nav class="experience-picker" aria-label="Choose an experience">
-      <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-number">01 / TRY IT</span><span class="experience-heading">Try DarkCall <span aria-hidden="true">↗</span></span><span class="experience-caption">Create. Bid. Fund. Clear. Settle on Zcash.</span><span class="experience-scope">Demo bids · real shielded settlement on isolated regtest</span></button>
-      <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-number">02 / VERIFY IT</span><span class="experience-heading">Proof it settles <span aria-hidden="true">↗</span></span><span class="experience-caption">Check a recorded settlement in two minutes.</span><span id="proof-card-scope" class="experience-scope">Recorded auction · isolated regtest</span></button>
-    </nav>
+    <section class="landing-more" aria-labelledby="compare-title">
+      <h2 id="compare-title">Other auctions make you choose.</h2>
+      <p class="section-lead">Hide the bids, or let everyone check the price. DarkCall does both, then pays out in shielded ZEC.</p>
+      <div class="compare-wrap">
+        <table class="compare">
+          <thead><tr><th scope="col"><span class="visually-hidden">Property</span></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal</th><th scope="col">Trusted auctioneer</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Bids hidden from the public</th><td class="yes us">Yes, never opened</td><td class="no">No</td><td class="part">Until the reveal</td><td class="yes">Yes</td></tr>
+            <tr><th scope="row">Bids hidden from whoever runs it</th><td class="yes us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+            <tr><th scope="row">Anyone can check the price</th><td class="yes us">Yes, by zero-knowledge proof</td><td class="yes">Yes</td><td class="yes">Yes, by opening every bid</td><td class="no">No, you trust it</td></tr>
+            <tr><th scope="row">Payments and refunds stay private</th><td class="yes us">Yes, one shielded transaction</td><td class="no">No</td><td class="no">No</td><td class="part">Off-chain, trusted</td></tr>
+            <tr><th scope="row">Payout provably follows the result</th><td class="yes us">Yes, six output proofs</td><td class="yes">Yes, by contract</td><td class="yes">Yes, by contract</td><td class="no">No</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="measured" aria-label="Measured on one 16 GiB laptop">
+        <div><strong>0.6 s</strong><span>to seal a bid with its zero-knowledge proof</span></div>
+        <div><strong>9 s</strong><span>to clear four sealed bids by MPC, proof included</span></div>
+        <div><strong>1 tx</strong><span>pays the seller and refunds all four bidders</span></div>
+        <div><strong>~100 s</strong><span>for anyone to verify a settlement, no secrets needed</span></div>
+      </div>
+      <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop. DarkCall assumes semi-honest operators: two colluding operators could reconstruct bids or move escrowed funds. Prototype on an isolated Zcash regtest.</p>
+    </section>
     <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">
-      <div class="panel-top"><span class="eyebrow">TRY DARKCALL</span><span id="rehearsal-label" class="recorded-label">DEMO BIDS</span></div>
-      <ol class="auction-progress" aria-label="Auction progress"><li id="progress-create" aria-current="step"><span>01</span>Create</li><li id="progress-bid"><span>02</span>Bid</li><li id="progress-fund"><span>03</span>Fund</li><li id="progress-clear"><span>04</span>Clear</li><li id="progress-result"><span>05</span>Result</li><li id="progress-settle"><span>06</span>Settle</li></ol>
+      <div class="panel-top"><span class="eyebrow">Your auction</span><span id="rehearsal-label" class="recorded-label">Demo bids</span></div>
+      <ol class="auction-progress" aria-label="Auction progress"><li id="progress-create" aria-current="step"><span>1</span>Create</li><li id="progress-bid"><span>2</span>Bid</li><li id="progress-fund"><span>3</span>Fund</li><li id="progress-clear"><span>4</span>Clear</li><li id="progress-result"><span>5</span>Result</li><li id="progress-settle"><span>6</span>Settle</li></ol>
       <h2 id="rehearsal-title">Create your auction.</h2>
       <p class="rehearsal-scope">Set the terms. Invite four bidders.</p>
       <form id="create-form" class="create-form">
         <label>Units<input id="create-units" type="number" min="1" max="3" step="1" value="3" required></label>
-        <label>Reserve · zatoshi<input id="create-reserve" type="number" min="0" max="1000000" step="1" value="20" required></label>
-        <label>Bid deposit budget · zatoshi<input id="create-budget" type="number" min="0" max="1000000" step="1" value="100" required></label>
-        <label>Local close time<input id="create-close" type="datetime-local" step="1" required></label>
+        <label>Reserve (zatoshi)<input id="create-reserve" type="number" min="0" max="1000000" step="1" value="20" required></label>
+        <label>Deposit budget (zatoshi)<input id="create-budget" type="number" min="0" max="1000000" step="1" value="100" required></label>
+        <label>Bidding closes<input id="create-close" type="datetime-local" step="1" required></label>
         <button id="create-auction" class="primary-button" type="submit">Create auction <span>→</span></button>
       </form>
       <div id="auction-room" hidden>
-        <div class="room-summary"><span id="room-terms"></span><strong id="room-count">0 / 4 accepted</strong></div>
+        <div class="room-summary"><span id="room-terms"></span><strong id="room-count">0 / 4 sealed</strong></div>
         <div id="sealed-slots" class="sealed-slots" aria-label="Sealed tickets"></div>
-        <details id="book-details" class="book-details" open><summary>Bids &amp; receipts <span>+</span></summary>
-        <div class="share-row"><label for="auction-link">Share link</label><input id="auction-link" readonly><button id="copy-auction-link" class="secondary-button" type="button">Copy link</button></div>
-        <p class="form-note">Local link · works on this PC.</p>
+        <details id="book-details" class="book-details" open><summary>Bids and receipts</summary>
+        <div class="share-row"><label for="auction-link">Share link</label><input id="auction-link" readonly><button id="copy-auction-link" class="secondary-button" type="button">Copy</button></div>
+        <p class="form-note">Works in another browser on this computer.</p>
         <form id="bid-form" class="bid-form">
-          <label>Maximum demo bid · zatoshi<input id="maximum-bid" type="number" min="0" max="100" step="1" value="75" required></label>
-          <button id="seal-bid" class="primary-button" type="submit">Seal bid <span>↗</span></button>
-          <p class="form-note input-disclosure">Demo only. The local helper sees your input. <span class="bid-suggest">Try <button type="button" data-bid="77">77</button><button type="button" data-bid="61">61</button><button type="button" data-bid="43">43</button><button type="button" data-bid="21">21</button></span></p>
+          <label>Your maximum bid (zatoshi)<input id="maximum-bid" type="number" min="0" max="100" step="1" value="75" required></label>
+          <button id="seal-bid" class="primary-button" type="submit">Seal bid</button>
+          <p class="form-note input-disclosure">Demo only: the local helper sees what you type. <span class="bid-suggest">Try <button type="button" data-bid="77">77</button><button type="button" data-bid="61">61</button><button type="button" data-bid="43">43</button><button type="button" data-bid="21">21</button></span></p>
         </form>
         <div id="bid-accepted" class="bid-accepted" hidden aria-live="polite"></div>
-        <details id="acceptance-details" class="advanced-details" hidden><summary>Signed pre-check <span>+</span></summary><button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed pre-check ↓</button><pre id="acceptance-public"></pre></details>
-        <div class="close-row"><p id="close-status"></p><button id="close-auction" class="secondary-button" type="button">Certify closed book →</button></div>
+        <details id="acceptance-details" class="advanced-details" hidden><summary>Signed pre-check</summary><button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed pre-check</button><pre id="acceptance-public"></pre></details>
+        <div class="close-row"><p id="close-status"></p><button id="close-auction" class="secondary-button" type="button">Certify closed book</button></div>
         </details>
         <section id="fund-section" class="fresh-settlement fund-section" hidden aria-label="Fund this auction on Zcash regtest">
-          <div class="panel-top"><span class="eyebrow">FUND ON ZCASH</span><span class="recorded-label">ISOLATED REGTEST</span></div>
+          <div class="panel-top"><span class="eyebrow">Step 3 · Fund</span><span class="recorded-label">Isolated regtest</span></div>
           <h3 id="fund-title">Lock the deposits.</h3>
-          <p class="settle-lead">Each sealed ticket gets a real shielded deposit (budget + fee) on the isolated regtest, from one local test wallet. The operators decrypt the deposits, re-verify the same bid proofs and shares, and sign the closed book again over the same root. About 2 minutes.</p>
+          <p class="settle-lead">Every sealed ticket gets a real shielded deposit of budget plus fee, paid from one local test wallet. The operators decrypt the deposits, re-check the same bid proofs and shares, and sign the closed book again over the same root. About 2 minutes.</p>
           <button id="fund-auction" class="primary-button" type="button">Fund on Zcash <span>→</span></button>
           <p id="fund-note" class="form-note" hidden></p>
           <ol id="fund-steps" class="settle-steps" hidden>
-            <li id="fund-step-deposit"><b>Deposit &amp; admit</b><span>4 shielded deposits · same proofs + 12 share pairs re-verified · 12 receipts · signed book, same root</span><em></em></li>
+            <li id="fund-step-deposit"><b>Deposit and admit</b><span>4 shielded deposits · same proofs and 12 share pairs re-checked · book signed over the same root</span><em></em></li>
           </ol>
           <p id="fund-status" class="check-result" aria-live="polite"></p>
           <dl id="fund-facts" class="settle-facts" hidden><dt>Deposit transaction</dt><dd id="fund-deposit">—</dd><dt>Chain admission</dt><dd id="fund-admission">—</dd></dl>
         </section>
         <section id="clearing-section" class="fresh-clearing" hidden aria-label="Clear this new auction">
-          <div class="panel-top"><span class="eyebrow">YOUR AUCTION</span><span class="recorded-label">FRESH PROOF</span></div>
+          <div class="panel-top"><span class="eyebrow">Step 4 · Clear</span><span class="recorded-label">Fresh proof</span></div>
           <h3 id="clearing-title">Discover the price.</h3>
           <button id="clear-auction" class="primary-button" type="button">Clear this auction <span>→</span></button>
           <p id="clearing-status" class="check-result" aria-live="polite"></p>
           <div id="fresh-outcome" hidden>
             <div class="fresh-result-layout"><div class="fresh-market">
-            <div class="market-stats"><div><span>CLEARING PRICE</span><strong id="fresh-price">—</strong><small>zatoshi / unit</small></div><div><span>SOLD</span><strong id="fresh-sold">—</strong><small>units</small></div></div>
-            <p class="book-caption">One price for every winner. Computed by three operators on secret shares; no bid was reconstructed.</p><p id="payment-status" class="payment-status">No deposit yet · funding comes after the close</p>
+            <div class="market-stats"><div><span>Clearing price</span><strong id="fresh-price">—</strong><small>zatoshi per unit</small></div><div><span>Units sold</span><strong id="fresh-sold">—</strong><small>of 3</small></div></div>
+            <p class="book-caption">Every winner pays the same price. Three operators computed it on secret shares, and no bid was reconstructed.</p><p id="payment-status" class="payment-status">No deposit yet · funding comes after the close</p>
             </div><div class="fresh-receipt">
-            <label class="ticket-pick" hidden>Ticket sealed in this page<select id="my-ticket"></select></label>
-            <div id="fresh-result" class="result-box" aria-live="polite"><h3>Still sealed.</h3><p>Open the ticket accepted in this browser session.</p></div>
-            <button id="open-fresh-result" class="primary-button" type="button">Open my result <span>↗</span></button>
+            <label class="ticket-pick" hidden>Ticket<select id="my-ticket"></select></label>
+            <div id="fresh-result" class="result-box" aria-live="polite"><h3>Still sealed.</h3><p>Open the result of a ticket you sealed here.</p></div>
+            <button id="open-fresh-result" class="primary-button" type="button">Open my result</button>
             </div></div>
-            <div class="fresh-challenge"><div><span class="eyebrow">TRY TO CHEAT</span><p>Change a proof. See it rejected.</p></div><button id="tamper-fresh" class="secondary-button" type="button">Tamper with proof <span>→</span></button></div>
+            <div class="fresh-challenge"><div><span class="eyebrow">Try to cheat</span><p>Change one byte of the proof and watch it fail.</p></div><button id="tamper-fresh" class="secondary-button" type="button">Tamper with proof</button></div>
             <p id="fresh-tamper-result" class="check-result" aria-live="polite"></p>
-            <details class="advanced-details"><summary>Fresh clearing details <span>+</span></summary><p id="fresh-proof-details"></p><p id="fresh-root"></p><p>The localhost helper sees demo inputs. Three semi-honest REP3 parties run on this PC; privacy assumes at most one is corrupt. The local ticket capability is kept in this page’s memory; reloading loses it. It is not a production login or an encrypted native memo.</p></details>
+            <details class="advanced-details"><summary>Clearing details</summary><p id="fresh-proof-details"></p><p id="fresh-root"></p><p>The local helper sees demo inputs. Three semi-honest REP3 parties run on this computer; privacy assumes at most one is corrupt. The ticket capability lives only in this page's memory, so reloading loses it. It is not a production login.</p></details>
           </div>
         </section>
         <section id="settle-section" class="fresh-settlement" hidden aria-label="Settle this auction on Zcash regtest">
-          <div class="panel-top"><span class="eyebrow">SETTLE ON ZCASH</span><span class="recorded-label">ISOLATED REGTEST</span></div>
+          <div class="panel-top"><span class="eyebrow">Step 6 · Settle</span><span class="recorded-label">Isolated regtest</span></div>
           <h3 id="settle-title">Pay it out, privately.</h3>
-          <p class="settle-lead">Pay the seller and every refund from the funded escrow in one shielded transaction, bound output by output to the proven result. About 17 minutes on this Mac.</p>
+          <p class="settle-lead">One shielded transaction pays the seller and every refund from the funded escrow, and every output is bound to the proven result. About 17 minutes on this Mac.</p>
           <button id="settle-auction" class="primary-button" type="button">Settle on Zcash <span>→</span></button>
           <p id="settle-note" class="form-note" hidden></p>
           <ol id="settle-steps" class="settle-steps" hidden>
-            <li id="settle-step-mpc"><b>MPC delivery</b><span>fresh REP3 run on the same shares; price must match</span><em></em></li>
-            <li id="settle-step-bindings"><b>Bind every output</b><span>6 Halo2 proofs tie amounts to recipients</span><em></em></li>
-            <li id="settle-step-sign"><b>Sign &amp; confirm</b><span>auction proof · 2-of-3 FROST · Zebra · 6 wallets</span><em></em></li>
-            <li id="settle-step-verify"><b>Public check</b><span>verifier replays the public bundle, no secrets</span><em></em></li>
+            <li id="settle-step-mpc"><b>MPC delivery</b><span>A fresh REP3 run on the same shares; the price must match</span><em></em></li>
+            <li id="settle-step-bindings"><b>Bind every output</b><span>Six Halo2 proofs tie each amount to its recipient</span><em></em></li>
+            <li id="settle-step-sign"><b>Sign and confirm</b><span>Auction proof · 2-of-3 FROST · Zebra · six wallets</span><em></em></li>
+            <li id="settle-step-verify"><b>Public check</b><span>A verifier replays the public bundle, with no secrets</span><em></em></li>
           </ol>
           <p id="settle-status" class="check-result" aria-live="polite"></p>
           <div id="settle-outcome" hidden>
             <div class="knowledge-grid" aria-label="Who learned what">
-              <div><span>EVERYONE</span><p id="know-public">Clearing price, units sold, one shielded transaction and its proofs.</p></div>
-              <div><span>EACH BIDDER</span><p>Only their own result and refund, from their own encrypted memo.</p></div>
-              <div><span>OPERATORS</span><p>Winners and refunds. Each one holds only shares of the bids.</p></div>
-              <div><span>NEVER PUBLISHED</span><p>Who bid what. Winners' bids stay hidden; the price is the highest losing bid.</p></div>
+              <div><span>Everyone</span><p id="know-public">The clearing price, the units sold, and one shielded transaction with its proofs.</p></div>
+              <div><span>Each bidder</span><p>Only their own result and refund, from their own encrypted memo.</p></div>
+              <div><span>The operators</span><p>Who won and the refunds. Each one holds only shares of the bids.</p></div>
+              <div><span>Never published</span><p>Who bid what. Winning bids stay hidden; the price is the highest losing bid.</p></div>
             </div>
             <dl class="settle-facts"><dt>Settlement transaction</dt><dd id="settle-txid">—</dd><dt>Deposit transaction</dt><dd id="settle-deposit">—</dd><dt>Same sealed book</dt><dd id="settle-root">—</dd><dt>Outcome</dt><dd id="settle-price">—</dd></dl>
- <div class="fresh-receipt settle-receipt">
-              <label class="ticket-pick" hidden>Ticket sealed in this page<select id="my-native-ticket"></select></label>
+            <div class="fresh-receipt settle-receipt">
+              <label class="ticket-pick" hidden>Ticket<select id="my-native-ticket"></select></label>
               <div id="native-result" class="result-box"><h3>Your receipt is encrypted.</h3><p>Only your viewing key can open your memo in this transaction.</p></div>
-              <button id="open-native-result" class="primary-button" type="button">Open my shielded receipt <span>↗</span></button>
+              <button id="open-native-result" class="primary-button" type="button">Open my shielded receipt</button>
             </div>
-            <div class="fresh-challenge"><div><span class="eyebrow">TRY TO CHEAT</span><p>Corrupt the receipt proof. Your key is never read.</p></div><button id="tamper-native" class="secondary-button" type="button">Tamper with receipt <span>→</span></button></div>
+            <div class="fresh-challenge"><div><span class="eyebrow">Try to cheat</span><p>Corrupt the receipt proof. Your key is never read.</p></div><button id="tamper-native" class="secondary-button" type="button">Tamper with receipt</button></div>
             <p id="native-tamper-result" class="check-result" aria-live="polite"></p>
           </div>
         </section>
       </div>
       <p id="rehearsal-status" class="check-result" aria-live="polite"></p><p id="rehearsal-error" class="error" role="alert" hidden></p>
-      <button id="new-auction" class="text-button" type="button">Start another auction +</button>
-      <details class="public-details demo-details"><summary>About this demo <span>+</span></summary><p>Sealing a bid gives instant signed pre-checks of its proof and shares. <b>Fund on Zcash</b> then makes a real deposit for every sealed ticket on an isolated NU7 regtest (budget +15,000 zatoshi each, from one local test wallet). The operators admit the deposits under a chain-funded certificate over the same accepted root. Only then does REP3 clear the book, and <b>Settle on Zcash</b> pays out in one shielded transaction. The local helper sees typed demo bids and creates their proofs/shares on this PC.</p><p>Four tickets are required. After the actual cutoff, three operators sign the accepted book and run the same secret shares through REP3. The fixed proof and signed root are verified before your ticket pads are opened. One host, semi-honest MPC; privacy assumes at most one corrupt party.</p><p>The opening capability stays in page memory; reload loses access. This is not production authentication, private browser proving or native memo delivery.</p></details>
-      <div class="recording-transition"><div><span class="eyebrow">NO TIME TO WAIT?</span><h3>Check a recorded settlement.</h3><p>An auction created and settled in this UI earlier. Open its bidders&#8217; receipts or verify it in about two minutes. It does not settle these demo bids.</p></div><button id="continue-recording" class="secondary-button" type="button">Open recorded auction <span>→</span></button></div>
+      <button id="new-auction" class="text-button" type="button">Start another auction</button>
+      <details class="public-details demo-details"><summary>About this demo</summary><p>Sealing a bid gives an instant signed pre-check of its proof and shares. <b>Fund on Zcash</b> then makes a real deposit for every sealed ticket on an isolated NU7 regtest: budget plus 15,000 zatoshi each, from one local test wallet. The operators admit the deposits under a chain-funded certificate over the same accepted root. Only then does REP3 clear the book, and <b>Settle on Zcash</b> pays out in one shielded transaction. The local helper sees typed demo bids and creates their proofs and shares on this computer.</p><p>Four tickets are required. After the cutoff, three operators sign the accepted book and run the same secret shares through REP3. The fixed proof and signed root are verified before any ticket's result is opened. Everything runs on one host; the MPC is semi-honest, and privacy assumes at most one corrupt party.</p><p>The opening capability stays in page memory, so reloading loses access. This is not production authentication, in-browser proving or native memo delivery.</p></details>
+      <div class="recording-transition"><div><span class="eyebrow">No time to wait?</span><h3>See a settled auction.</h3><p>An auction that was created and settled in this UI earlier. Open its bidders' receipts, or verify it in about two minutes. It does not settle these demo bids.</p></div><button id="continue-recording" class="secondary-button" type="button">Open settled auction</button></div>
     </section>
     <div id="recorded-demo" hidden>
-    <div class="recorded-intro"><span class="eyebrow">PROOF IT SETTLES</span><h2>Private payments.<br>Public verification.</h2><p id="recording-banner" class="recording-banner">Separate recorded auction · these payments do not settle your demo bids.</p><p id="scope-description" class="scope-note">Loading the recorded demo…</p></div>
+    <div class="recorded-intro"><span class="eyebrow">A settled auction</span><h2>Private payments,<br>publicly verified.</h2><p id="recording-banner" class="recording-banner">Separate recorded auction · it does not settle your demo bids.</p><p id="scope-description" class="scope-note">Loading the recorded demo…</p></div>
     <section class="workspace" aria-label="Auction and private result">
       <article class="auction-panel">
-        <div class="panel-top"><span class="eyebrow">THE AUCTION</span><span class="recorded-label">RECORDED</span></div>
-        <h2>4 private bids <span>·</span> 3 units</h2>
+        <div class="panel-top"><span class="eyebrow">The auction</span><span class="recorded-label">Recorded</span></div>
+        <h2>Four sealed bids, three units</h2>
         <div id="case-tabs" class="case-tabs" role="group" aria-label="Auction scenario"><button data-case="positive" class="active" aria-pressed="true">Standard clearing</button><button data-case="zero" aria-pressed="false">Zero-price tie</button></div>
-        <div class="market-stats"><div><span>CLEARING PRICE</span><strong id="price">—</strong><small>zatoshi / unit</small></div><div><span>SOLD</span><strong id="sold">—<i>/ 3</i></strong><small>units</small></div></div>
-        <div class="sealed-tickets" aria-label="Four sealed bids"><div><span>01</span><b>••••</b><small>sealed</small></div><div><span>02</span><b>••••</b><small>sealed</small></div><div><span>03</span><b>••••</b><small>sealed</small></div><div><span>04</span><b>••••</b><small>sealed</small></div></div>
-        <p class="book-caption">One price for every winning bidder.<br>Maximum bids stay secret-shared.</p>
+        <div class="market-stats"><div><span>Clearing price</span><strong id="price">—</strong><small>zatoshi per unit</small></div><div><span>Units sold</span><strong id="sold">—<i>/ 3</i></strong><small>units</small></div></div>
+        <div class="sealed-tickets" aria-label="Four sealed bids"><div><span>01</span><b></b><small>sealed</small></div><div><span>02</span><b></b><small>sealed</small></div><div><span>03</span><b></b><small>sealed</small></div><div><span>04</span><b></b><small>sealed</small></div></div>
+        <p class="book-caption">Every winner paid the same price. The maximum bids stayed secret-shared.</p>
       </article>
       <article class="receipt-panel">
-        <div class="panel-top"><span class="eyebrow">ONLY YOUR RESULT</span><span class="lock-icon" aria-hidden="true">◇</span></div>
+        <div class="panel-top"><span class="eyebrow">Only your result</span></div>
         <h2>Your private result.</h2>
-        <div class="bidder-choice"><label for="ticket">Choose a bidder</label><select id="ticket"><option value="0">Bidder 01</option><option value="1">Bidder 02</option><option value="2">Bidder 03</option><option value="3">Bidder 04</option></select></div>
+        <div class="bidder-choice"><label for="ticket">Bidder</label><select id="ticket"><option value="0">Bidder 01</option><option value="1">Bidder 02</option><option value="2">Bidder 03</option><option value="3">Bidder 04</option></select></div>
         <div id="result" class="result-box" aria-live="polite"><h3>Still sealed.</h3><p>Open your encrypted receipt to see your result.</p></div>
         <div id="result-checks" class="result-checks" aria-live="polite" hidden></div>
-        <button id="verify" class="primary-button">Open my result <span>↗</span></button>
-        <details class="advanced-details"><summary>Advanced verification details <span>+</span></summary><ol class="verification-steps"><li id="step-proof">Verify the fixed auction and receipt proofs</li><li id="step-native">Authenticate the native transaction</li><li id="step-open">Decrypt and check your own ticket / refund</li></ol><p class="identity-note">Each opening reads only that bidder’s viewing key. This recorded demo stores all fixture identities on the same computer. Selecting a bidder is not a production login.</p></details>
+        <button id="verify" class="primary-button">Open my result</button>
+        <details class="advanced-details"><summary>What gets verified</summary><ol class="verification-steps"><li id="step-proof">The fixed auction and receipt proofs</li><li id="step-native">The native Zcash transaction</li><li id="step-open">Your own ticket and refund, decrypted with your key</li></ol><p class="identity-note">Each opening reads only that bidder's viewing key. All demo identities live on this computer, and choosing a bidder is not a login.</p></details>
       </article>
     </section>
     <p id="error" class="error" role="alert" hidden></p>
-    <section class="proof-strip settlement-strip"><div><span class="eyebrow">VERIFY THE COMPLETE SETTLEMENT</span><h3>One transaction. Every output checked.</h3><p id="settlement-scope">Verify that the shielded Zcash transaction matches the auction outcome — without seeing the bids.</p><small>6 output bindings · auction proof · native authorization · accepted book</small></div><button id="settlement" class="secondary-button">Verify public settlement <span>→</span></button><p id="settlement-result" class="check-result" aria-live="polite"></p></section>
-    <section class="proof-strip tamper-strip"><div><span class="eyebrow">TRY TO BREAK IT</span><h3>Try to cheat.</h3><p>Change the proof. Watch DarkCall reject it before your viewing key is touched.</p></div><button id="tamper" class="secondary-button">Run tamper check <span>→</span></button><p id="tamper-result" class="check-result" aria-live="polite"></p></section>
-    <section class="how-it-works"><span class="eyebrow">HOW IT WORKS</span><ol><li><span>01</span>Private bids</li><li><span>02</span>Confidential clearing</li><li><span>03</span>Shielded settlement</li><li><span>04</span>Your private receipt</li></ol></section>
+    <section class="proof-strip settlement-strip"><div><span class="eyebrow">Verify the whole settlement</span><h3>One transaction. Every output checked.</h3><p id="settlement-scope">Check that the shielded Zcash transaction matches the auction outcome, without seeing the bids.</p><small>Six output bindings · auction proof · native authorization · signed book</small></div><button id="settlement" class="secondary-button">Verify settlement</button><p id="settlement-result" class="check-result" aria-live="polite"></p></section>
+    <section class="proof-strip tamper-strip"><div><span class="eyebrow">Try to break it</span><h3>Change the proof.</h3><p>DarkCall rejects it before your viewing key is touched.</p></div><button id="tamper" class="secondary-button">Run tamper check</button><p id="tamper-result" class="check-result" aria-live="polite"></p></section>
+    <section class="how-it-works"><span class="eyebrow">How it works</span><ol><li><span>1</span>Sealed bids</li><li><span>2</span>Confidential clearing</li><li><span>3</span>Shielded settlement</li><li><span>4</span>Your private receipt</li></ol></section>
     <section class="technical-section" aria-label="Further details">
-      <details class="public-details"><summary>Technical details <span>+</span></summary><p>REP3 computation · FROST signing · Halo2 output bindings · NU7</p><dl><dt>Transaction ID</dt><dd id="txid">—</dd><dt>Accepted root</dt><dd id="root">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Verification stages</dt><dd id="stage-status">Recorded clearing; own receipt unopened. Settlement not reverified in this session.</dd><dt>Public check</dt><dd id="settlement-detailed-result">Not run in this page session.</dd></dl></details>
-      <details class="public-details"><summary>Trust model & limitations <span>+</span></summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds; users cannot force a unilateral refund.</li><li>Operators have escrow viewing capability and learn refunds and winning status. Public outcomes can allow inference.</li><li>One-host prototype on isolated regtest. No public-testnet, malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The configured admission authority is trusted separately.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded settlement; separate offline rehearsal with synthetic funding.</p></details>
+      <details class="public-details"><summary>Technical details</summary><p>REP3 computation · FROST signing · Halo2 output bindings · NU7</p><dl><dt>Transaction ID</dt><dd id="txid">—</dd><dt>Accepted root</dt><dd id="root">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Verification stages</dt><dd id="stage-status">Recorded clearing; own receipt unopened. Settlement not reverified in this session.</dd><dt>Public check</dt><dd id="settlement-detailed-result">Not run in this page session.</dd></dl></details>
+      <details class="public-details"><summary>Trust model and limits</summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds, and users cannot force a unilateral refund.</li><li>Operators have escrow viewing capability and learn refunds and who won. Public outcomes can allow inference.</li><li>One-host prototype on isolated regtest. No public-testnet, malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The admission authority is configured and trusted separately.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded settlement; separate offline rehearsal with synthetic funding.</p></details>
     </section>
     </div>
   </main>
-  <footer><span>DARKCALL / ZECATHON 2026</span><span>Private inputs. Public checks.</span><span>BUILT ON ZCASH</span></footer>
+  <footer><span>DarkCall</span><span>Private inputs, public checks.</span><span>Built on Zcash</span></footer>
 </body>
 </html>

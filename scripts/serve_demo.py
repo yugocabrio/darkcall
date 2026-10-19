@@ -261,6 +261,11 @@ def handler(demo, port):
             files = {'/':('index.html','text/html; charset=utf-8'),
                 '/app.js':('app.js','text/javascript; charset=utf-8'),
                 '/style.css':('style.css','text/css; charset=utf-8')}
+            # Fixed self-hosted fonts (IBM Plex, SIL OFL); no path is derived from the request.
+            files.update({f'/fonts/{name}':(f'fonts/{name}','font/woff2') for name in (
+                'ibm-plex-sans-latin-400-normal.woff2','ibm-plex-sans-latin-500-normal.woff2',
+                'ibm-plex-sans-latin-600-normal.woff2','ibm-plex-mono-latin-400-normal.woff2',
+                'ibm-plex-mono-latin-500-normal.woff2')})
             if self.path in files:
                 name,kind = files[self.path]
                 return self.reply(200,(WEB / name).read_bytes(),kind)

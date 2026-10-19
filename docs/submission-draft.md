@@ -5,8 +5,8 @@ submission itself.
 
 ## One line
 
-Sealed-bid uniform-price auctions on Zcash: one public price, bids that no
-operator reconstructs, and one shielded settlement that anyone can verify.
+Sealed-bid auctions on Zcash where bids stay sealed, the price is proven, and
+one shielded transaction that anyone can verify pays everyone.
 
 ## The problem
 
@@ -40,6 +40,17 @@ does who paid whom.
    key. Anyone can verify the public bundle with no secrets at all.
 
 ## Why it is different
+
+Other auctions make you choose: hide the bids, or let everyone check the price.
+DarkCall does both, then pays out in shielded ZEC.
+
+| | **DarkCall** | Open on-chain auction | Commit–reveal | Trusted auctioneer |
+| --- | --- | --- | --- | --- |
+| Bids hidden from the public | **Yes, never opened** | No | Until the reveal | Yes |
+| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No |
+| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid | No, you trust it |
+| Payments and refunds stay private | **Yes, one shielded transaction** | No | No | Off-chain, trusted |
+| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | Yes, by contract | No |
 
 Auditable sealed-bid designs usually **disclose the bids to prove the result**.
 DarkCall **proves the result without disclosing them**. Only the clearing price

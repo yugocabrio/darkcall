@@ -1,12 +1,12 @@
 # DarkCall
 
-**Sealed-bid auctions on Zcash: one public price, bids that no operator
-reconstructs, and one shielded settlement that anyone can verify.**
+**Sealed-bid auctions on Zcash. Bids stay sealed. The price is proven.
+Settlement is one shielded transaction that anyone can verify.**
 
 ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
 one real auction, from creation to shielded receipts, with every time cut labeled.
 
-![DarkCall: a typical audited auction opens every bid; DarkCall proves the price without opening them](demo/media/v2/01-landing.jpg)
+![DarkCall: bids stay sealed, the price is proven, settled on Zcash; beside it, a real auction settled in this UI](demo/media/v2/01-landing.jpg)
 
 > **Demo scope, up front.** This prototype runs every role on one machine. The
 > local bidder helper that builds each bid's proof and shares sees the typed
@@ -52,6 +52,21 @@ whether you won. By design, no single operator holds your bid. Payment is
 shielded ZEC, and the result is still verifiable.
 
 ## What is different
+
+Other auctions make you choose: hide the bids, or let everyone check the price.
+DarkCall does both, then pays out in shielded ZEC.
+
+| | **DarkCall** | Open on-chain auction | Commit–reveal | Trusted auctioneer |
+| --- | --- | --- | --- | --- |
+| Bids hidden from the public | **Yes, never opened** | No | Until the reveal | Yes |
+| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No |
+| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid | No, you trust it |
+| Payments and refunds stay private | **Yes, one shielded transaction** | No | No | Off-chain, trusted |
+| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | Yes, by contract | No |
+
+Common designs compared, not specific projects. "Any single operator" is the
+REP3 bound: two colluding operators could reconstruct bids (see
+[Trust model and limits](#trust-model-and-limits)).
 
 Typical sealed-bid designs either trust an auctioneer with every bid or **reveal
 the bids after the close** so that anyone can audit the result (commit-reveal, or

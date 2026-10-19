@@ -51,7 +51,7 @@ async function waitEnabled(selector, timeout) {
 
 try {
   await page.goto(BASE, { waitUntil: 'networkidle0' });
-  await shot('landing', null, 'Landing: typical audited auction opens bids; DarkCall proves the price without opening them');
+  await shot('landing', null, 'Landing: sealed bids, proven price, shielded settlement; a real settled auction beside the claim');
 
   await page.click('#start-auction');
   await waitEnabled('#create-auction', 30000);
@@ -119,7 +119,7 @@ try {
   await shot('receipt-won', '#native-result', 'Ticket 01 decrypts its own shielded receipt: WON');
   await page.select('#my-native-ticket', '3');
   await page.click('#open-native-result');
-  await waitText('#native-result', 'YOU LOST', 120000);
+  await waitText('#native-result', 'No unit this time', 120000);
   await shot('receipt-lost', '#native-result', 'Ticket 04 decrypts its own shielded receipt: LOST, full refund');
   await page.click('#tamper-native');
   await waitText('#native-tamper-result', 'rejected', 120000);
