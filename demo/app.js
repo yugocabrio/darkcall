@@ -115,7 +115,8 @@ fetch('/api/state').then(async response => {
     $('settlement-detailed-result').textContent = 'Previous public verification passed for transaction: '+state.last_settlement.txid+'. Not reverified in this page session.';
   }
   lock(false);
-  $('recording-banner').textContent='Separate recorded auction · these '+(state.funded_canonical?'regtest payments':'synthetic results')+' do not settle your demo bids.';
+  const recordedTx=state.cases[0].txid;
+  $('recording-banner').textContent='Separate recorded auction · settlement tx '+recordedTx.slice(0,10)+'…'+recordedTx.slice(-8)+' · it does not settle your demo bids.';
   refreshRoom(); joinRehearsal();
 }).catch(error => setError(error.message));
 
