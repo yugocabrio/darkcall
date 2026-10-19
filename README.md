@@ -188,12 +188,12 @@ the attack, withdrew the claim and replaced it with blinded v2 commitments:
 
 | Scope | Time |
 | --- | --- |
-| Client bid: input ZK proof + shares + 3 signed acceptances | 0.5–0.6 s |
-| Browser REP3 clearing incl. proof and verification | ~9 s |
-| Deposits + chain admission + certificate (includes a 120 s admission window) | ~2 min |
-| Native settlement of a fresh book, uninterrupted (2 threads) | 886–951 s |
-| End to end from Settle to publicly verified | 1117–1198 s |
-| Public-only verification of a settlement | 103–112 s |
+| Client bid: input ZK proof + shares + 3 operator signatures | 0.5–0.6 s |
+| Fund on Zcash: deposits + chain admission + certificate (includes a 120 s admission window) | 121 s |
+| Browser REP3 clearing incl. coNoir proof and verification | 7.6–9.4 s |
+| Native settlement of a fresh book, uninterrupted (2 threads) | 885–951 s |
+| Settle → publicly verified (fund-first flow) | 998–1024 s |
+| Public-only verification of a settlement (host or clean container) | 99–112 s |
 | Own receipt opening (proofs checked before key use) | ~3 s |
 | Recorded Oct 5 settlement (1 thread, memory pressure) | 1848 s |
 

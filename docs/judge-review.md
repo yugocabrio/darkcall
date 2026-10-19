@@ -85,8 +85,9 @@ independently blinded v2 commitments:
 | --- | --- |
 | Browser REP3 clearing incl. proof + verification | ~9 s |
 | Funding + chain admission + certificate (120 s admission window) | ~2 min |
-| Native settlement of a fresh browser book, uninterrupted | about 15 min (886–951 s) |
-| Settle → publicly verified, end to end | about 19–20 min |
+| Fund on Zcash (deposits, chain admission, certificate) | about 2 min (121 s) |
+| Native settlement of a fresh browser book, uninterrupted | about 15 min (885–951 s) |
+| Settle → publicly verified | about 17 min (998–1024 s) |
 | Public-only verification | ~2 min |
 | Own receipt opening | ~3 s |
 
