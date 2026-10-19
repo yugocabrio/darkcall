@@ -3,8 +3,17 @@
 *Verifiable sealed-bid auctions on Zcash.*
 
 **Sealed-bid auctions on Zcash where no bid is ever opened, not at the close and
-not for any single operator, and the price is still proven. One shielded
-transaction that anyone can verify pays everyone.**
+not for any single operator. Even the zero-knowledge proof of the clearing price
+is generated without opening the bids, and one shielded transaction that anyone
+can verify pays the seller and refunds every bidder exactly as proven.**
+
+- **Multi-party computation** (REP3). Each bid becomes secret shares; no single
+  operator can read one.
+- **Multi-party ZK proving** (coNoir). The operators compute the clearing price
+  and jointly generate one zero-knowledge proof from those shares; no single
+  prover ever sees the bid book.
+- **Proof-bound shielded settlement** (Halo2). Six proofs bind the proven payouts
+  to the outputs of one shielded Zcash transaction.
 
 ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
 one real auction, from creation to shielded receipts, with every time cut labeled.
@@ -23,8 +32,9 @@ one real auction, from creation to shielded receipts, with every time cut labele
 
 A seller offers identical units. Bidders commit secret maximum bids that are
 split into secret shares for three operators. The operators compute one uniform
-clearing price with multi-party computation (MPC) and jointly prove it with a
-zero-knowledge proof. The computation never reconstructs the bid list. One shielded NU7
+clearing price with multi-party computation (MPC) and generate its zero-knowledge
+proof jointly from the same shares (multi-party ZK proving with coNoir), so the
+bid list is never reconstructed, not even by a prover. One shielded NU7
 transaction pays the seller, refunds every bidder and carries each bidder's
 encrypted receipt. Six Halo2 proofs bind every output of that transaction to the
 proven auction result. A public verifier checks all of it without a single
@@ -38,7 +48,7 @@ secret. Each bidder decrypts only their own outcome.
  deposit budget+fee ────────────────────────────────────────────────────► 2-of-3 FROST (DKG) escrow
                                   cutoff → sign final book (root)
                                   REP3 MPC: price, winners, refunds  ─┐
-                                  coNoir proof (no bid reconstructed) │
+                                  multi-party ZK proof (coNoir)       │
                                   6 Halo2 output-binding proofs ──────┤
                                   2-of-3 FROST signatures ────────────┴─► one shielded tx:
                                                                           seller · 4 refunds+memos · fee
@@ -104,9 +114,10 @@ winners' maximum bids are never revealed:
 The clearing price is, by the auction rule, the highest losing bid (or the
 reserve). That one number is public; who placed it is not.
 
-Correctness comes from proofs, not from disclosure: a coNoir (REP3) proof of the
-clearing over the committed bids, a Halo2 proof per transaction output, native
-Zcash authorization and an operator-signed accepted book.
+Correctness comes from proofs, not from disclosure: a multi-party ZK proof
+(coNoir over REP3) of the clearing over the committed bids, a Halo2 proof per
+transaction output, native Zcash authorization and an operator-signed accepted
+book.
 
 ### Why hiding the amounts matters, not only the bidders
 

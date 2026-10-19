@@ -5,12 +5,23 @@ submission itself.
 
 ## One line
 
-DarkCall: verifiable sealed-bid auctions on Zcash. No bid is ever opened, not
-at the close and not for any single operator, and the price is still proven.
+DarkCall: verifiable sealed-bid auctions on Zcash. No bid is ever opened: not
+at the close, not for any single operator, and not even to generate the
+zero-knowledge proof of the price.
 
-Longer: sealed-bid auctions on Zcash where no bid is ever opened, not at the close and
-not for any single operator, and the price is still proven. One shielded
-transaction that anyone can verify pays everyone.
+Longer: sealed-bid auctions on Zcash where no bid is ever opened, not at the
+close and not for any single operator. Even the zero-knowledge proof of the
+clearing price is generated without opening the bids, and one shielded
+transaction that anyone can verify pays the seller and refunds every bidder
+exactly as proven.
+
+- **Multi-party computation** (REP3). Each bid becomes secret shares; no single
+  operator can read one.
+- **Multi-party ZK proving** (coNoir). The operators compute the clearing price
+  and jointly generate one zero-knowledge proof from those shares; no single
+  prover ever sees the bid book.
+- **Proof-bound shielded settlement** (Halo2). Six proofs bind the proven payouts
+  to the outputs of one shielded Zcash transaction.
 
 ## Against the four judging criteria
 
@@ -30,9 +41,11 @@ transaction that anyone can verify pays everyone.
   block 4,518,315), and that is the run in the video. Seven public bundles,
   both testnet runs included, verify in a clean Linux container with no network,
   and a tampered proof is refused.
-- **Originality.** MPC clearing with a collaborative zero-knowledge proof
-  (coNoir), plus six Halo2 proofs that bind every output of the native shielded
-  transaction to the proven result. All code was written for this hackathon,
+- **Originality.** Multi-party ZK proving: the operators generate the price's
+  zero-knowledge proof jointly from secret shares (coNoir over REP3), so no
+  single prover ever sees the bid book. Proof-bound shielded settlement: six
+  Halo2 proofs bind every output of the native shielded transaction to the
+  proven result. All code was written for this hackathon,
   starting Oct 4, 2026.
 
 ## The problem
@@ -53,9 +66,9 @@ does who paid whom.
 3. The bidder deposits budget + fee into a shielded 2-of-3 FROST escrow created
    by DKG. Operators check the deposit, the proof and the shares, sign
    acceptance receipts, and at the cutoff sign the final book (its root).
-4. The three operators run the clearing as MPC (coNoir/REP3). They produce a ZK
-   proof of the price, the winners and every refund without reconstructing any
-   bid. Refunds and winner flags are delivered privately with blinded
+4. The three operators run the clearing as REP3 MPC and generate its ZK proof
+   jointly from the same shares (multi-party ZK proving with coNoir): the price,
+   the winners and every refund, without reconstructing any bid. Refunds and winner flags are delivered privately with blinded
    commitments.
 5. One shielded NU7 transaction pays the seller, refunds all four bidders
    (budget − price for winners, full budget for losers) and pays the operator
