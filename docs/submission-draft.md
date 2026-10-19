@@ -12,6 +12,29 @@ Longer: sealed-bid auctions on Zcash where no bid is ever opened, not at the clo
 not for any single operator, and the price is still proven. One shielded
 transaction that anyone can verify pays everyone.
 
+## Against the four judging criteria
+
+- **Privacy.** No bid amount is ever opened, not at the close and not to any
+  single operator. Only the clearing price is public; by the auction rule it is
+  the highest losing bid or the reserve. Payouts and refunds are one shielded
+  transaction, and each bidder decrypts only their own receipt. Limits, stated
+  in full below: semi-honest REP3 (two colluding operators could reconstruct
+  bids or move escrowed funds), and operators learn winners and refunds.
+- **Usefulness.** Batch sales that close once, such as allocation rounds, ad
+  slots or blocks of seats, where published bid amounts hand the seller and
+  rivals the demand curve. Clearing takes about 9 s; settlement follows in
+  15–20 min with every output proven. It needs three independent operators;
+  this prototype handles four bids per auction.
+- **Execution.** An auction was created, funded, cleared and settled by clicking
+  through the browser on public Zcash testnet (settlement `be1157c8…a1c8ad67`,
+  block 4,518,315), and that is the run in the video. Seven public bundles,
+  both testnet runs included, verify in a clean Linux container with no network,
+  and a tampered proof is refused.
+- **Originality.** MPC clearing with a collaborative zero-knowledge proof
+  (coNoir), plus six Halo2 proofs that bind every output of the native shielded
+  transaction to the proven result. All code was written for this hackathon,
+  starting Oct 4, 2026.
+
 ## The problem
 
 Selling a batch of identical units fairly, such as tickets, allocation slots,

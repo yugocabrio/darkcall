@@ -31,7 +31,7 @@ proven auction result. A public verifier checks all of it without a single
 secret. Each bidder decrypts only their own outcome.
 
 ```
- browser / bidder                 three operators                         Zcash (NU7 regtest)
+ browser / bidder                 three operators                         Zcash (NU7 testnet)
  ────────────────                 ───────────────                         ───────────────────
  max bid ─► commitment + REP3 ──► check client ZK proof + shares
             shares + ZK proof     sign acceptance receipts
@@ -56,6 +56,21 @@ bidder who wants one unit does best by bidding their true value.
 DarkCall adds what on-chain auctions lack. Outsiders cannot see what you bid or
 whether you won. By design, no single operator holds your bid. Payment is
 shielded ZEC, and the result is still verifiable.
+
+**Why the settlement time is acceptable.** These are batch sales that close
+once: an allocation round, a weekly ad slot, a block of seats. Bidding takes
+minutes to days; settling in 15–20 minutes after the close, with every output
+proven, fits that rhythm. Clearing itself, the moment the price is known, takes
+about 9 seconds.
+
+**What running one takes.** A seller and three independent operators (for
+example the seller, a community member and an auditor), each with a laptop-class
+machine. In a deployment each bidder runs the DarkCall client and deposits from
+their own Zcash wallet, with the signed claim in the memo; in this demo one local
+test wallet funds all four tickets. The operators never see a bid, and anyone
+can check the outcome from the public bundle. Today this runs on public testnet;
+mainnet follows NU7 activation on mainnet. Four bid slots per auction is the
+size this prototype's circuits are compiled for.
 
 ## What is different
 
