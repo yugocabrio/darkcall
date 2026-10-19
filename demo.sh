@@ -24,12 +24,13 @@ if [ "${1-}" = "--regtest-recorded" ]; then
     --recorded-note "Created, funded, cleared and settled in this UI on Oct 19 · isolated Zcash regtest" "$@"
 fi
 # Trusted local demo configuration, separately pinned from the proof bundle.
-# "See a settled auction" shows the auction funded, cleared and settled on public
-# Zcash testnet on Oct 19 (tx 8e6da99b...034f0db7). Without its ignored local
-# run, the same committed bundle is served public-only. Add --chain testnet to
-# run Fund and Settle for new auctions on testnet as well.
+# "See a settled auction" shows the auction in the video: created, funded,
+# cleared and settled in this UI on public Zcash testnet on Oct 19 (tx
+# be1157c8...a1c8ad67). Without its ignored local run, the same committed bundle
+# is served public-only. Add --chain testnet to run Fund and Settle for new
+# auctions on testnet as well.
 exec python3 "$TASK_ROOT/scripts/serve_demo.py" --canonical --funded \
-  --run settle-b69f8e97f2-settlement \
-  --bundle "$TASK_ROOT/demo/artifacts/testnet-auction-nu7-v1" \
-  --authority "$TASK_ROOT/demo/authority/testnet-auction-nu7-v1.json" \
-  --recorded-note "Funded, cleared and settled on public Zcash testnet on Oct 19 · auction created through the demo API" "$@"
+  --run settle-aa36c45a6a-settlement \
+  --bundle "$TASK_ROOT/demo/artifacts/testnet-auction-nu7-v2" \
+  --authority "$TASK_ROOT/demo/authority/testnet-auction-nu7-v2.json" \
+  --recorded-note "Created, funded, cleared and settled in this UI on public Zcash testnet on Oct 19" "$@"

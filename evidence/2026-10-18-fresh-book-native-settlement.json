@@ -455,7 +455,56 @@
       "docs/img/07-mobile-settled.jpg"
     ]
   },
-  "video_capture_run": {
+  "redesigned_ui_capture_run": {
+    "date": "2026-10-19 (CEST)",
+    "scope": "the full six-step flow driven by tools/demo-capture/capture.mjs through the redesigned UI (paper/ink/gold, IBM Plex); end-to-end check of the redesign, not used for the video",
+    "facts": {
+      "auction_id": "c069504af50882c3529d410df9cc281e",
+      "deposit_txid": "29125c8f5e791e71d270d26fd5552e24b6f85926ec405f90c185d50b0ba7df4e",
+      "clearing": "✓ Auction verified · 8.0s",
+      "txid": "e23c4d50e7b3d2756366d81ca3dce9b3103c3df65b285271df0836b0f637a20d",
+      "same_book": "✓ 28a0a82b85…178455d0 · same tickets and accepted root as your browser book",
+      "outcome": "21 zatoshi × 3 sold · matches the browser clearing · 2 regtest confirmations",
+      "settle_status": "✓ Settled and publicly verified · 17:38 of proving and checks"
+    },
+    "total_seconds": 1339.6,
+    "shot_elapsed_seconds": {
+      "landing": 2.4,
+      "create": 3.2,
+      "first-bid": 5.9,
+      "sealed": 9.7,
+      "closed": 124.6,
+      "funding": 140.4,
+      "funded": 249.2,
+      "clearing": 251.4,
+      "cleared": 258.2,
+      "own-result": 260,
+      "settle-start": 272.8,
+      "settle-bindings": 273.6,
+      "settle-bindings-row4": 710.8,
+      "settle-sign": 987.5,
+      "settle-verify": 1218.6,
+      "settled": 1329.6,
+      "who-learned": 1330.4,
+      "receipt-won": 1334.1,
+      "receipt-lost": 1337.9,
+      "receipt-tamper": 1339.6
+    },
+    "receipts_seen_in_frames": [
+      {
+        "ticket": "01",
+        "won": true,
+        "refund": 79
+      },
+      {
+        "ticket": "04",
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "frames": "kept locally under .local; not committed (the video is recaptured after the final headline and name)"
+  },
+  "video_capture_run_regtest": {
     "date": "2026-10-19 (CEST)",
     "tool": "tools/demo-capture/capture.mjs (headless Brave, puppeteer-core 24.43.1, 1920x1080)",
     "scope": "one real auction driven through the browser UI from creation to shielded receipts; every wait on the UI's own verified status text",
@@ -529,55 +578,83 @@
     "tamper_frame": {
       "frame": "20-receipt-tamper.jpg",
       "text": "Corrupted receipt proof rejected before your viewing key was read."
-    }
-  },
-  "redesigned_ui_capture_run": {
-    "date": "2026-10-19 (CEST)",
-    "scope": "the full six-step flow driven by tools/demo-capture/capture.mjs through the redesigned UI (paper/ink/gold, IBM Plex); end-to-end check of the redesign, not used for the video",
-    "facts": {
-      "auction_id": "c069504af50882c3529d410df9cc281e",
-      "deposit_txid": "29125c8f5e791e71d270d26fd5552e24b6f85926ec405f90c185d50b0ba7df4e",
-      "clearing": "✓ Auction verified · 8.0s",
-      "txid": "e23c4d50e7b3d2756366d81ca3dce9b3103c3df65b285271df0836b0f637a20d",
-      "same_book": "✓ 28a0a82b85…178455d0 · same tickets and accepted root as your browser book",
-      "outcome": "21 zatoshi × 3 sold · matches the browser clearing · 2 regtest confirmations",
-      "settle_status": "✓ Settled and publicly verified · 17:38 of proving and checks"
     },
-    "total_seconds": 1339.6,
+    "superseded_by": "video_capture_run (same flow captured on public Zcash testnet through the redesigned UI)"
+  },
+  "video_capture_run": {
+    "date": "2026-10-19 (CEST)",
+    "tool": "tools/demo-capture/capture.mjs (headless Brave, puppeteer-core 24.43.1, 1920x1080)",
+    "scope": "one real auction driven through the browser UI on public Zcash testnet (NU7) from creation to shielded receipts; every wait on the UI's own verified status text",
+    "facts": {
+      "auction_id": "4dde6fcbc11bb931bcecb01a6617510f",
+      "deposit_txid": "af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354",
+      "clearing": "✓ Auction verified · 8.1s",
+      "txid": "be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67",
+      "same_book": "✓ 0636b15349…fb153498 · same tickets and accepted root as your browser book",
+      "outcome": "21 zatoshi × 3 sold · matches the browser clearing · 2 public testnet confirmations",
+      "settle_status": "✓ Settled and publicly verified · 20:23 of proving and checks"
+    },
+    "total_seconds": 2001,
+    "shots": 20,
     "shot_elapsed_seconds": {
-      "landing": 2.4,
+      "landing": 2.5,
       "create": 3.2,
-      "first-bid": 5.9,
-      "sealed": 9.7,
-      "closed": 124.6,
-      "funding": 140.4,
-      "funded": 249.2,
-      "clearing": 251.4,
-      "cleared": 258.2,
-      "own-result": 260,
-      "settle-start": 272.8,
-      "settle-bindings": 273.6,
-      "settle-bindings-row4": 710.8,
-      "settle-sign": 987.5,
-      "settle-verify": 1218.6,
-      "settled": 1329.6,
-      "who-learned": 1330.4,
-      "receipt-won": 1334.1,
-      "receipt-lost": 1337.9,
-      "receipt-tamper": 1339.6
+      "first-bid": 5.1,
+      "sealed": 9,
+      "closed": 123.8,
+      "funding": 139.6,
+      "funded": 742.4,
+      "clearing": 744.7,
+      "cleared": 752.6,
+      "own-result": 754.4,
+      "settle-start": 767.2,
+      "settle-bindings": 768,
+      "settle-bindings-row4": 1204.9,
+      "settle-sign": 1532.2,
+      "settle-verify": 1883.9,
+      "settled": 1989.8,
+      "who-learned": 1990.6,
+      "receipt-won": 1995.4,
+      "receipt-lost": 1999.2,
+      "receipt-tamper": 2001
+    },
+    "video": {
+      "file": "demo/media/v2/darkcall-demo-v2.mp4",
+      "seconds": 119,
+      "scenes": 21,
+      "audio": false,
+      "sha256": "919afbcb78cc03751553f2fa4d636e6e819d81dc42a25664473ab99998b3a7a6",
+      "renderer": "scripts/render_demo_video_v2.py; frames checked against demo/media/v2/manifest.json; time cuts computed from capture timestamps",
+      "cuts": [
+        "bidding deadline",
+        "funding and chain admission",
+        "settlement proving, signing, confirmation and public check"
+      ]
+    },
+    "public_bundle": {
+      "path": "demo/artifacts/testnet-auction-nu7-v2",
+      "authority": "demo/authority/testnet-auction-nu7-v2.json",
+      "host_verification_seconds": 105.7,
+      "bundle_manifest_sha256": "61524210a481429d1f19ac52eba4f2c078dfde24093a83c8fd183243c9c4a170",
+      "authority_sha256": "64f9c6640530fe8e3c06c0dfcdefb3db3829816a185bf39815a6381223937e60"
     },
     "receipts_seen_in_frames": [
       {
         "ticket": "01",
+        "frame": "18-receipt-won.jpg",
         "won": true,
         "refund": 79
       },
       {
         "ticket": "04",
+        "frame": "19-receipt-lost.jpg",
         "won": false,
         "refund": 100
       }
     ],
-    "frames": "kept locally under .local; not committed (the video is recaptured after the final headline and name)"
+    "tamper_frame": {
+      "frame": "20-receipt-tamper.jpg",
+      "text": "Corrupted receipt proof rejected before your viewing key was read."
+    }
   }
 }

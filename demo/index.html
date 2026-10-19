@@ -24,7 +24,7 @@
             <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-heading">Run an auction</span><span class="experience-caption">Create, bid, fund, clear and settle on Zcash.</span><span class="experience-scope">Demo bids · real shielded settlement</span></button>
             <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-heading">See a settled auction</span><span class="experience-caption">Open a bidder's receipt or verify the settlement.</span><span id="proof-card-scope" class="experience-scope">Recorded on isolated regtest</span></button>
           </nav>
-          <a class="watch-link" href="/media/darkcall-demo-v2.mp4">Watch the 2-minute verified run →</a>
+          <a class="watch-link" href="/media/darkcall-demo-v2.mp4">Watch this auction settle on testnet, in 2 minutes →</a>
           <p class="hero-note">Beyond the auction terms, one number is public: the clearing price, which by the auction rule equals the highest losing bid or the reserve. Your bid goes only to your own client, which in this demo runs as a local service on the same computer and builds the proof and shares; operators receive shares and a proof, never the bid.</p>
         </div>
         <aside class="hero-receipt" aria-label="A settled DarkCall auction">
@@ -104,12 +104,12 @@
     <section class="proven" aria-labelledby="proven-title">
       <p class="section-kicker">Proven on public Zcash testnet</p>
       <h2 id="proven-title">It ran end to end on testnet.</h2>
-      <p class="section-lead">On October 19 one auction was funded, cleared and settled on standard public Zcash testnet (NU7), with the same proofs, admission and signing.</p>
+      <p class="section-lead">On October 19 this auction was created, funded, cleared and settled <b>in this UI on standard public Zcash testnet (NU7)</b>. It is the auction in the video and under "See a settled auction".</p>
       <dl class="proven-facts">
-        <div><dt>Deposits</dt><dd><code>d573a651…3c7b1737</code><small>Block 4,518,128 · 2 confirmations</small></dd></div>
-        <div><dt>Clearing proof</dt><dd><strong>8.3 s</strong><small>Price 21 · 3 of 3 sold</small></dd></div>
-        <div><dt>Settlement</dt><dd><code>8e6da99b…034f0db7</code><small>Block 4,518,182 · 2 confirmations</small></dd></div>
-        <div><dt>Public check</dt><dd><strong>98 s</strong><small>No secrets · tampered proof refused</small></dd></div>
+        <div><dt>Deposits</dt><dd><code>af6cf7cf…eff6354</code><small>Block 4,518,254 · 2 confirmations</small></dd></div>
+        <div><dt>Clearing proof</dt><dd><strong>8.1 s</strong><small>Price 21 · 3 of 3 sold</small></dd></div>
+        <div><dt>Settlement</dt><dd><code>be1157c8…a1c8ad67</code><small>Block 4,518,315 · 2 confirmations</small></dd></div>
+        <div><dt>Public check</dt><dd><strong>102 s</strong><small>No secrets · tampered proof refused</small></dd></div>
       </dl>
       <p class="fine-print">Chain data came from one lightwalletd provider (testnet.zec.rocks). Record: evidence/2026-10-19-public-testnet-settlement.json in the repository.</p>
     </section>

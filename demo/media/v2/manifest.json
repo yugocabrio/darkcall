@@ -1,7 +1,7 @@
 {
   "format": 1,
-  "scope": "one real local auction driven through the browser UI; synthetic demo bids; isolated NU7 regtest",
-  "started_at": "2026-10-18T23:49:21.166Z",
+  "scope": "one real local auction driven through the browser UI; synthetic demo bids; public Zcash testnet (NU7)",
+  "started_at": "2026-10-19T09:59:13.466Z",
   "viewport": {
     "width": 1920,
     "height": 1080
@@ -16,195 +16,196 @@
     {
       "name": "landing",
       "file": "01-landing.jpg",
-      "at": "2026-10-18T23:49:24.165Z",
-      "elapsed_seconds": 3,
-      "note": "Landing: typical audited auction opens bids; DarkCall proves the price without opening them",
-      "png_sha256": "209363a9c46f4c2a2d14d14da685dc1f47e3143dacada8494e586a6f824a67b2",
-      "sha256": "7f78e8777cb4aecfb2d3a94a1f57a07789a36e0e424d025a2c2b08dd302de172"
+      "at": "2026-10-19T09:59:15.925Z",
+      "elapsed_seconds": 2.5,
+      "note": "Landing: sealed bids, proven price, shielded settlement; a real settled auction beside the claim",
+      "sha256": "334d19ff78fbca393f5a086c8682d647fb7f0d5d66c141ff976a0f28025c4fb5",
+      "png_sha256": "385007ece08e58922af948ec09d41a4fef066c18e536c7ec30d4e70c80daf3ef"
     },
     {
       "name": "create",
       "file": "02-create.jpg",
-      "at": "2026-10-18T23:49:24.993Z",
-      "elapsed_seconds": 3.8,
+      "at": "2026-10-19T09:59:16.708Z",
+      "elapsed_seconds": 3.2,
       "note": "Seller terms: 3 units, reserve 20, budget 100 zatoshi, close about 2 minutes ahead",
-      "png_sha256": "81b3a049d6a408437291be6f7dfc9783bd91b94b4008fe9aa6d7b44a637dded4",
-      "sha256": "7fac92fc6b4c5a1b28635aae202f7f38e61c37618b35152ff9210b6451a024d5"
+      "sha256": "69a4378f10cc09660bb12aff526972b4c5b51d80e00db125dc00ee1e06782d64",
+      "png_sha256": "66397efef0028dc8884ec62291b4e7ef7c027d1453b68ee1be7a62911377fa6e"
     },
     {
       "name": "first-bid",
       "file": "03-first-bid.jpg",
-      "at": "2026-10-18T23:49:26.906Z",
-      "elapsed_seconds": 5.7,
+      "at": "2026-10-19T09:59:18.604Z",
+      "elapsed_seconds": 5.1,
       "note": "Bid sealed: client ZK proof, 3 share pairs, 3 operator signatures",
-      "png_sha256": "9b297b40f2ea35499349abaff8b0905c7df77fb9812e470ba9676d5b73cf111d",
-      "sha256": "b1e3a921a368486af731ad3d1b587a869a0cad5d77bbeb06743ade6c13504ff0"
+      "sha256": "96409f335b98d53e7015e12d4412779caa602966ad34f7694531ab502f48a577",
+      "png_sha256": "6d05af9fa376dfc0fe9137c28017a7fcc5cd29e5f3bf9ec35b6fa80e83e5bc52"
     },
     {
       "name": "sealed",
       "file": "04-sealed.jpg",
-      "at": "2026-10-18T23:49:30.780Z",
-      "elapsed_seconds": 9.6,
+      "at": "2026-10-19T09:59:22.466Z",
+      "elapsed_seconds": 9,
       "note": "Four sealed tickets; no value is shown",
-      "png_sha256": "6e772f27c1311d9c5dea6f1e2be354bd65693fd32ac2d2f061e6c93f4dc84e82",
-      "sha256": "2eabd1c57c362135cc422b458baa177b4282e5c857de0beeb6c8d276da961960"
+      "sha256": "5ace8871ef533d098f5ebe1abb86eb145428964d83ef1e22328cbfbf6f88a07e",
+      "png_sha256": "ebbe443298f14825c133643d22922ecd6b8b27e1072a16dc179601d92075089b"
     },
     {
       "name": "closed",
       "file": "05-closed.jpg",
-      "at": "2026-10-18T23:51:26.564Z",
-      "elapsed_seconds": 125.4,
+      "at": "2026-10-19T10:01:17.286Z",
+      "elapsed_seconds": 123.8,
       "note": "Closed book certified; clearing waits for funding",
-      "png_sha256": "aa167a0cb5e82bf8427aad657d7d5bade615fb4c44a91edea1ac67842882176a",
-      "sha256": "883d0a86dd567f6ea8db849b15c910f5aefeb083f778e604e5611d7f85c7e15a"
+      "sha256": "bbfa77ac4d448a9a1d803e06beabf4169fcdb50dbd751e93a37e4be4c8027c5c",
+      "png_sha256": "0da4d07c834505a1eaa546b36c8343db44f61bfbfb417c1bf4fa178463ff92c0"
     },
     {
       "name": "funding",
       "file": "06-funding.jpg",
-      "at": "2026-10-18T23:51:42.385Z",
-      "elapsed_seconds": 141.2,
+      "at": "2026-10-19T10:01:33.083Z",
+      "elapsed_seconds": 139.6,
       "note": "Funding: real shielded deposits on regtest, then chain admission",
-      "png_sha256": "d06113f0df91434f240d9902e5e98e659dfc4a89040da040e233c08375afde6c",
-      "sha256": "44ff972f3711d2a3cf5d29437c649f88fe0f05d425ae8230a26c42b8f2e9167b"
+      "sha256": "18d947ec8db62951094b2b3a5fa8e72fc30dd7e60d4ec8951b9a64c92ae9d971",
+      "png_sha256": "1ad180ad83a7935823c1d30cd0d973738ecc198cda21ed2e27b2dae832ebc6e4"
     },
     {
       "name": "funded",
       "file": "07-funded.jpg",
-      "at": "2026-10-18T23:53:31.181Z",
-      "elapsed_seconds": 250,
+      "at": "2026-10-19T10:11:35.905Z",
+      "elapsed_seconds": 742.4,
       "note": "Deposits locked; same proofs and shares re-verified; same root",
-      "png_sha256": "51162915968006801fe6ca33f18016e4298b6c609e9a3443ae78da39ac3475e5",
-      "sha256": "b1505562ddd315f0096209e077adec11d89ee5512954d7bfa9deb5bb17126d75"
+      "sha256": "8bf4d058e2447b32926816ca1c15ce9396c84c46f5a20844a150cfb50acac692",
+      "png_sha256": "33e2d90749fb8eca60e11974e4c9931f7a40c41dda0c36177d34be5c13828470"
     },
     {
       "name": "clearing",
       "file": "08-clearing.jpg",
-      "at": "2026-10-18T23:53:33.445Z",
-      "elapsed_seconds": 252.3,
+      "at": "2026-10-19T10:11:38.160Z",
+      "elapsed_seconds": 744.7,
       "note": "Three operators clear the secret shares (REP3) and prove it (coNoir)",
-      "png_sha256": "88ec96aa387602a130fc1f81ebd6cd588af81315e7470ecb1ae267a794383d3a",
-      "sha256": "a6eece964cd2b6d5920c2061fd54bbfbf704d0c05fd9684323092c87c3f9b9e5"
+      "sha256": "02ed383412b78b333bd1d5e87a4840bce3ba9b1aae71d5e0a2a50eb58921966e",
+      "png_sha256": "f8bcccd76a05611958851c24cb3742008530ccae4840b291d64b01447b21c588"
     },
     {
       "name": "cleared",
       "file": "09-cleared.jpg",
-      "at": "2026-10-18T23:53:40.246Z",
-      "elapsed_seconds": 259.1,
+      "at": "2026-10-19T10:11:46.074Z",
+      "elapsed_seconds": 752.6,
       "note": "One public price; no bid reconstructed",
-      "png_sha256": "2dab0e4e829e340d6a0993d29f26c09e2a645c0ad5920c2f6b24f049a867cf77",
-      "sha256": "7d06918064e7886f1918ee4a36b850d5efff4e078b2a052ff259e27af102801c"
+      "sha256": "0fbb3f900399a6481051486479f5edbe80fa5d53295b2d5fc39bd3a6ad552e58",
+      "png_sha256": "7b0e7f86bcf050064a29edf4b841a26db4d915e90643ce6fe5f4d3a8ae0332f1"
     },
     {
       "name": "own-result",
       "file": "10-own-result.jpg",
-      "at": "2026-10-18T23:53:42.040Z",
-      "elapsed_seconds": 260.9,
+      "at": "2026-10-19T10:11:47.860Z",
+      "elapsed_seconds": 754.4,
       "note": "Ticket 01 opens only its own verified result",
-      "png_sha256": "1360d86bbc967efbd0626e153a8d157fd9e3220bc4e098c5422bdc264a6e2b48",
-      "sha256": "c57957e54f64d869da0796d05799720b41c98e037ee2a6e33478411c7dc12d9e"
+      "sha256": "b8fecaf389978c14642c1f14423273dc88cedbd93b35233c0b12d676f7ce6815",
+      "png_sha256": "cc222c8e06fbbd0adb6076cd93184f241bf991068bd107f08222c138774d3d31"
     },
     {
       "name": "settle-start",
       "file": "11-settle-start.jpg",
-      "at": "2026-10-18T23:53:54.794Z",
-      "elapsed_seconds": 273.6,
+      "at": "2026-10-19T10:12:00.640Z",
+      "elapsed_seconds": 767.2,
       "note": "Settle: MPC delivery on the same shares",
-      "png_sha256": "b85b70c029d091eea78a2a45df7fba16a6735e5275331f03c964ef4feaf6bfb2",
-      "sha256": "53ab4f01074365b9e909aec76a49e447007cacf61c7edbcf1e5fac392a94076e"
+      "sha256": "39bb7da95a509bc0fda58b4622062d111f32cdd9b67b771dad6bdaf3000a05e3",
+      "png_sha256": "3aa0af76a5bfd1b3fa5a76d0d9c7db8641509b8444eb773c082fb1176d4720db"
     },
     {
       "name": "settle-bindings",
       "file": "12-settle-bindings.jpg",
-      "at": "2026-10-18T23:53:55.559Z",
-      "elapsed_seconds": 274.4,
-      "note": "Settlement in progress: 0:04",
-      "png_sha256": "28241df184aa90e4415157255a6f5cfa730d6f0bba7c6fb0c6e7bea37a178996",
-      "sha256": "ffc7ee34bfc0aa8c2ac98cd148ba9a01c27023ca3b2ecfe6fe3695c0f4d0c383"
+      "at": "2026-10-19T10:12:01.440Z",
+      "elapsed_seconds": 768,
+      "note": "Settlement in progress: 0:01",
+      "sha256": "821a52ce99d4af324cd3286539ca154a9a1eb60d203849befab982ec3ada145b",
+      "png_sha256": "15e6e552e8a6ae9a4fd7fed21370377434b5d6cbc400030abfb3a53e7f851fdc"
     },
     {
       "name": "settle-bindings-row4",
       "file": "13-settle-bindings-row4.jpg",
-      "at": "2026-10-18T23:59:37.065Z",
-      "elapsed_seconds": 615.9,
-      "note": "Settlement in progress: row 4/6 \u00b7 5:45",
-      "png_sha256": "f5f8f4c799f8460d63120dee23ed1a64ac321f4fb67a74ea3a8d1bc0d15658e9",
-      "sha256": "56112687bddcd17dfd5298ed0d7171368e5906339fbcc04c688d75db4d5ce2b8"
+      "at": "2026-10-19T10:19:18.376Z",
+      "elapsed_seconds": 1204.9,
+      "note": "Settlement in progress: row 4/6 · 7:18",
+      "sha256": "0a93322a483bfa108283f63fc4656908ee699b4893a3fe3e049e605516ec76de",
+      "png_sha256": "9da54a639af6d82922a853e95521d2c9179c20ad309f7a2c4acbe9027388f361"
     },
     {
       "name": "settle-sign",
       "file": "14-settle-sign.jpg",
-      "at": "2026-10-19T00:03:33.330Z",
-      "elapsed_seconds": 852.2,
-      "note": "Settlement in progress: 0:05",
-      "png_sha256": "99bf3d5ddfa237fb1cdafbb79f63ad202484a90ee1862135a26d352fdf7fc5bb",
-      "sha256": "fbc293dd6f51ed269b01c592cacec6f5806416ee45fec2b8f2cad51c29c5bba7"
+      "at": "2026-10-19T10:24:45.707Z",
+      "elapsed_seconds": 1532.2,
+      "note": "Settlement in progress: 0:01",
+      "sha256": "981958c3a03511ebb599aecc95e67f35a0fefc4c06c6b65a5451ad1d10a20f75",
+      "png_sha256": "255fbaf7a64b426c28134c6b8aa19ffeb55c4dc74889dec208515ac8c48472c5"
     },
     {
       "name": "settle-verify",
       "file": "15-settle-verify.jpg",
-      "at": "2026-10-19T00:07:09.452Z",
-      "elapsed_seconds": 1068.3,
-      "note": "Settlement in progress: 0:05",
-      "png_sha256": "038f75a3d82551d53bee010013095dd6e3354ed0b1594ed81ba009850433cf51",
-      "sha256": "152e32077c95e9619ec21b8869636c414817f3c6ae8f059f8fcc01b4a9aa1633"
+      "at": "2026-10-19T10:30:37.345Z",
+      "elapsed_seconds": 1883.9,
+      "note": "Settlement in progress: 0:04",
+      "sha256": "f1e8f1194259f91335cad19dfdc40edba8b6076a663b43f12bfa1e02b4481d66",
+      "png_sha256": "6520917f47b2033f4c7102758ed78bc79f00fb259628989a1baf05d6b3b3fa4c"
     },
     {
       "name": "settled",
       "file": "16-settled.jpg",
-      "at": "2026-10-19T00:08:55.436Z",
-      "elapsed_seconds": 1174.3,
+      "at": "2026-10-19T10:32:23.291Z",
+      "elapsed_seconds": 1989.8,
       "note": "Settled and publicly verified",
-      "png_sha256": "c78870cc637a4287942a5ab214467c30155dfd365cd70ea4cc5bdc0ea366ac98",
-      "sha256": "5be2b5054c080ebc3846580bf25e832186371099bfde40e3f1d28420e5a54625"
+      "sha256": "cc75eb4f1696b2a5c8edf035beaede56fcfbf88be16f6e11b5e17e4a773390f7",
+      "png_sha256": "7eeca5464195fa77ac2c9edf1137372dd00def8ad2413f94892e87a28ffda1d7"
     },
     {
       "name": "who-learned",
       "file": "17-who-learned.jpg",
-      "at": "2026-10-19T00:08:56.217Z",
-      "elapsed_seconds": 1175.1,
+      "at": "2026-10-19T10:32:24.068Z",
+      "elapsed_seconds": 1990.6,
       "note": "Who learned what",
-      "png_sha256": "ec1e1fde91dd682f9d9b71a4cc25074631f1594bd27b4ad3d36a53a63e3c9e9c",
-      "sha256": "9e3dff94bc40edd5c664a0d691f8bc25fc71f02c300102430bcd02764e227494"
+      "sha256": "050e04b70954fe8e10d43104080286aed4b2690f716c02977519b60dfb90f7f0",
+      "png_sha256": "069c1c0037c5727047a23ddae5e107080394df856964e6978f0e088a27bf063d"
     },
     {
       "name": "receipt-won",
       "file": "18-receipt-won.jpg",
-      "at": "2026-10-19T00:09:00.042Z",
-      "elapsed_seconds": 1178.9,
+      "at": "2026-10-19T10:32:28.883Z",
+      "elapsed_seconds": 1995.4,
       "note": "Ticket 01 decrypts its own shielded receipt: WON",
-      "png_sha256": "9c20ffb8b11740f0e03aee31247f8c589981284e977316d95bc1588e0ae2101e",
-      "sha256": "f64607bfb4ebce6126e9142117206d92b64de0432d09598de8074cc630761118"
+      "sha256": "5db4a5333111297cd686a5c0a2f81834b98809ab40c8d7d2268cf0cc1b831e89",
+      "png_sha256": "6b6c6f9e80d200d3b38e357b0aff975acf1a38e2ab2fd70531fbebe15eb70147"
     },
     {
       "name": "receipt-lost",
       "file": "19-receipt-lost.jpg",
-      "at": "2026-10-19T00:09:03.864Z",
-      "elapsed_seconds": 1182.7,
+      "at": "2026-10-19T10:32:32.660Z",
+      "elapsed_seconds": 1999.2,
       "note": "Ticket 04 decrypts its own shielded receipt: LOST, full refund",
-      "png_sha256": "e79be9ef0428eee4fdd061f5d5b6f5e1632ffc9232ca39d0a5ac38beb3a7a640",
-      "sha256": "1ad8d026ec8e9cb470c91543b1ee063a0c943f65f94e3764b9407e38c8adb7bf"
+      "sha256": "86c562561c5613e86944eab908c79cd8d36f5d033f81c532faac2149dc6419d4",
+      "png_sha256": "87563fdd94db830a5d15dc102abd65d1bc8bededa8c3f3b5d9714e5ce9b85087"
     },
     {
       "name": "receipt-tamper",
       "file": "20-receipt-tamper.jpg",
-      "at": "2026-10-19T00:09:05.657Z",
-      "elapsed_seconds": 1184.5,
+      "at": "2026-10-19T10:32:34.460Z",
+      "elapsed_seconds": 2001,
       "note": "Corrupted receipt proof rejected before the key is read",
-      "png_sha256": "35c4f777ed43f23d779d66a4e2658de1c72621cc7feff37fb22aea67928a5cd6",
-      "sha256": "020f8138b4c0f473caecfa8117d368fe4349eec5a315374a498d81df3f7b1b73"
+      "sha256": "cdd10ff4800cb945e915ab9ff0a994342e73b3e0a3052a96a687b7f156c9eb54",
+      "png_sha256": "93ccbab561e9051adf4af19b1df97b7a9380fa0743b221e4a9bd35e40803c208"
     }
   ],
   "facts": {
-    "auction_id": "b9c23d7dae678f3eb97fd76c9ac80e6e",
-    "deposit_txid": "7a219347c961cdaee423c7dc91fff457851debcdcdde503cd6b9885e8de301a3",
-    "clearing": "\u2713 Auction verified \u00b7 7.6s",
-    "txid": "e305699514938d382be010260533f01725e5970c895e11f0a843843351caf779",
-    "same_book": "\u2713 0a66754982\u2026d301780c \u00b7 same tickets and accepted root as your browser book",
-    "outcome": "21 zatoshi \u00d7 3 sold \u00b7 matches the browser clearing \u00b7 2 regtest confirmations",
-    "settle_status": "\u2713 Settled and publicly verified \u00b7 14:59 of proving and checks"
+    "auction_id": "4dde6fcbc11bb931bcecb01a6617510f",
+    "deposit_txid": "af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354",
+    "clearing": "✓ Auction verified · 8.1s",
+    "txid": "be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67",
+    "same_book": "✓ 0636b15349…fb153498 · same tickets and accepted root as your browser book",
+    "outcome": "21 zatoshi × 3 sold · matches the browser clearing · 2 public testnet confirmations",
+    "settle_status": "✓ Settled and publicly verified · 20:23 of proving and checks"
   },
+  "chain": "testnet",
   "completed": true,
-  "finished_at": "2026-10-19T00:09:05.657Z",
-  "total_seconds": 1184.5,
+  "finished_at": "2026-10-19T10:32:34.460Z",
+  "total_seconds": 2001,
   "frames": "JPEG (quality 88) converted from the captured PNGs; png_sha256 is the original capture"
 }

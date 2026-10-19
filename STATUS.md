@@ -19,11 +19,14 @@ Updated: 2026-10-19 (git HEAD is authoritative).
   `5e9432e5…d72f14be`, root `2d619728…558d12f9`, price 21 / 3 sold. Settlement
   `e3ffa436…84769754`: driver 912 s, public check 105 s. Ticket 01 WON / 79 and
   Ticket 04 LOST / 100 from their own memos; tamper rejected before key use.
-  The bundle is `demo/artifacts/browser-auction-nu7-v2`, served by `./demo.sh`
-  as "See a settled auction".
+  The bundle is `demo/artifacts/browser-auction-nu7-v2`, served by
+  `./demo.sh --regtest-recorded`. `./demo.sh` now serves the testnet video run.
 - **Video:** `demo/media/v2/darkcall-demo-v2.mp4` (119 s), edited stills from
-  one real auction captured by `tools/demo-capture/capture.mjs` (auction
-  `b9c23d7d…`, settlement `e3056995…51caf779`). Frames are SHA-256-checked
+  one real auction on public Zcash testnet, created, funded, cleared and settled
+  in the browser (auction `4dde6fcb…`, deposits `af6cf7cf…` at block 4,518,254,
+  settlement `be1157c8…a1c8ad67` at block 4,518,315; bundle
+  `testnet-auction-nu7-v2`). Captions and cards are drawn in IBM Plex by the
+  browser (`tools/demo-capture/overlays.mjs`). Frames are SHA-256-checked
   against the manifest, and time cuts are computed from capture timestamps.
 - **Scripted E2E:** `scripts/check_fresh_settlement.py`, last run tx
   `94a093e9…`. Clear and settle before funding are refused (400), a tampered

@@ -8,8 +8,8 @@ transaction that anyone can verify pays everyone.**
 
 ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
 one real auction, from creation to shielded receipts, with every time cut labeled.
-**Settled on public Zcash testnet** on Oct 19: settlement tx `8e6da99b…034f0db7`
-at block 4,518,182 ([record](#settled-on-public-zcash-testnet)).
+**Settled on public Zcash testnet** from the browser on Oct 19: settlement tx
+`be1157c8…a1c8ad67` at block 4,518,315 ([record](#settled-on-public-zcash-testnet)).
 
 ![DarkCall: bids stay sealed, the price is proven, settled on Zcash; beside it, a real auction settled in this UI](demo/media/v2/01-landing.jpg)
 
@@ -109,27 +109,31 @@ from bids that are never opened.
 
 ## Settled on public Zcash testnet
 
-On October 19, 2026 a fresh auction created through the same demo API was
-funded, cleared and settled on **standard public Zcash testnet (NU7)**, with
-testnet coins and the same proofs, admission and signing as below:
+On October 19, 2026 an auction was **created, funded, cleared and settled by
+clicking through the browser UI on standard public Zcash testnet (NU7)**, with
+testnet coins and the same proofs, admission and signing as below. It is the
+auction in the video and under "See a settled auction":
 
 | Step | Public testnet record |
 | --- | --- |
-| Fund | Deposit tx `d573a651…3c7b1737`, block 4,518,128, 2 confirmations. 4 client proofs and 12 share pairs re-verified; 3 operators signed the same root |
-| Clear | REP3 price **21**, 3 of 3 sold, 8.3 s, after funding |
-| Settle | Settlement tx `8e6da99b…034f0db7`, block 4,518,182, 2 confirmations. Six output bindings, 2-of-3 DKG FROST, 984 s |
-| Public check | 98 s with no secrets; a corrupted receipt proof is refused by the fixed verifier |
-| Own receipts | Won 79 / 79 / 79 and lost 100, each decrypted from its own memo |
+| Fund | Deposit tx `af6cf7cf…eff6354`, block 4,518,254, 2 confirmations. 4 client proofs and 12 share pairs re-verified; 3 operators signed the same root |
+| Clear | REP3 price **21**, 3 of 3 sold, 8.1 s, after funding |
+| Settle | Settlement tx `be1157c8…a1c8ad67`, block 4,518,315, 2 confirmations. Six output bindings, 2-of-3 DKG FROST |
+| Public check | 102 s with no secrets; a corrupted receipt proof is refused by the fixed verifier |
+| Own receipts | Ticket 01 won, refund 79; Ticket 04 lost, refund 100; each decrypted from its own memo |
 
 ```sh
-./verify.sh --funded demo/artifacts/testnet-auction-nu7-v1 \
-  --authority demo/authority/testnet-auction-nu7-v1.json
+./verify.sh --funded demo/artifacts/testnet-auction-nu7-v2 \
+  --authority demo/authority/testnet-auction-nu7-v2.json
 ```
 
-Chain data came from one lightwalletd provider (`testnet.zec.rocks`) over
-validated TLS; the SDK re-checks the chain, genesis and NU7 branch on every
-connection, and the scanner checks every block's tree size and the final root.
-Full record: [testnet evidence](evidence/2026-10-19-public-testnet-settlement.json).
+An earlier testnet auction driven through the same API by the HTTP harness
+(settlement `8e6da99b…034f0db7`, bundle `testnet-auction-nu7-v1`) also passed
+every refusal check: tamper, foreign capability, early settle and concurrent
+proofs. Chain data came from one lightwalletd provider (`testnet.zec.rocks`)
+over validated TLS; the SDK re-checks the chain, genesis and NU7 branch on
+every connection, and the scanner checks every block's tree size and the final
+root. Full record: [testnet evidence](evidence/2026-10-19-public-testnet-settlement.json).
 `./demo.sh --chain testnet` runs Fund and Settle on testnet from the browser.
 
 ## It runs, end to end, for an auction you create
@@ -152,10 +156,10 @@ accepted root `2d619728…558d12f9` carried through every step:
 The scripted run of the same API (`scripts/check_fresh_settlement.py`) repeats
 the flow. It also checks that clearing or settling before funding, a tampered
 receipt proof, a foreign ticket capability and a concurrent proof are all
-refused. Six committed public bundles can be verified without secrets: the
-public-testnet auction, this six-step auction, the auction in the video, two
-earlier browser-created books from Oct 18, and the Oct 5 recorded settlement
-`47019e02…a211938` with fixture bids. Exact records:
+refused. Seven committed public bundles can be verified without secrets: the
+two public-testnet auctions (one is the auction in the video), this six-step
+regtest auction, the earlier regtest video run, two browser-created books from
+Oct 18, and the Oct 5 recorded settlement `47019e02…a211938` with fixture bids. Exact records:
 [browser settlements](evidence/2026-10-18-fresh-book-native-settlement.json),
 [recorded settlement](evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
@@ -170,7 +174,7 @@ earlier browser-created books from Oct 18, and the Oct 5 recorded settlement
 <td>Each ticket opens only its own shielded receipt; a corrupted proof is rejected before the key is read.</td></tr>
 </table>
 
-Frames from the video run (auction `b9c23d7d…`, settlement `e3056995…51caf779`); see
+Frames from the video run on public testnet (auction `4dde6fcb…`, settlement `be1157c8…a1c8ad67`); see
 [demo/media/v2/manifest.json](demo/media/v2/manifest.json).
 
 ## Try it
@@ -186,10 +190,11 @@ scripts/docker_verify.sh
 It builds every pinned tool from source using only committed files, verifies
 every committed bundle, and checks that a corrupted proof is rejected. On Oct 19
 it passed on linux/arm64 for the four bundles that existed then
-([record](evidence/2026-10-18-clean-room-linux-verification.json)). Two were
-added later and verified on the host: the video run `browser-auction-nu7-v3`
-(103 s) and the public-testnet run `testnet-auction-nu7-v1` (99 s, with the
-strict tamper refusal). Remove the
+([record](evidence/2026-10-18-clean-room-linux-verification.json)). Three were
+added later and verified on the host with the strict tamper refusal: the
+earlier regtest video run `browser-auction-nu7-v3` (103 s) and the two
+public-testnet runs `testnet-auction-nu7-v1` (99 s) and `testnet-auction-nu7-v2`
+(106 s, the auction in the video). Remove the
 image afterwards with `docker image rm`.
 
 **Or verify on the host.** Build the pinned tools

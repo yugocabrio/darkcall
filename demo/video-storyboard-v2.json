@@ -38,7 +38,7 @@
     {"shot": "receipt-tamper", "seconds": 6, "after_settlement": true, "title": "Try to cheat",
      "caption": "Flip one byte of the receipt proof: the fixed verifier rejects it before the key is read."},
     {"card": true, "seconds": 8, "after_settlement": true, "title": "What this prototype assumes",
-     "body": "Bid secrecy: at most one semi-honest corrupt operator (REP3).\nCustody: 2-of-3 FROST; two colluding signers can move funds.\nOperators learn winners and refunds. The price is the highest losing bid.\nDemo: all parties on one machine; the local helper sees typed bids.\nPublic Zcash testnet through one trusted lightwalletd provider; testnet coins only."},
+     "body": "Bid secrecy: at most one semi-honest corrupt operator (REP3).\nCustody: 2-of-3 FROST; two colluding signers can move funds.\nOperators learn winners and refunds. The price is the highest losing bid.\nDemo: all parties on one machine; each bidder's own client sees its typed bid.\nPublic Zcash testnet through one trusted lightwalletd provider; testnet coins only."},
     {"card": true, "seconds": 6, "after_settlement": true, "title": "Verify it yourself",
      "body": "scripts/docker_verify.sh\nBuilds every pinned tool from committed source in a clean Linux container,\nverifies every committed settlement and rejects a tampered proof."}
   ]

@@ -52,6 +52,9 @@ def build():
     style = (ROOT / 'demo/style.css').read_text()
     how_css = style[style.index('/* How it works'):style.index('/* Why it is different')]
     facts, at = manifest['facts'], {s['name']: s['elapsed_seconds'] for s in manifest['shots']}
+    on_testnet = manifest.get('chain') == 'testnet'
+    chain_name = 'public Zcash testnet (NU7)' if on_testnet else 'an isolated NU7 regtest'
+    accepted_by = 'the testnet accepted it' if on_testnet else 'Zebra accepted it'
     receipts = {r['ticket']: r for r in run['receipts_seen_in_frames']}
     price, sold = re.match(r'(\d+) zatoshi × (\d+) sold', facts['outcome']).groups()
     clearing_s = re.search(r'([\d.]+)s', facts['clearing']).group(1)
@@ -79,13 +82,13 @@ def build():
         ('02', 'Seal four bids', '04-sealed', at['sealed'],
          'Each bid becomes a commitment plus three REP3 secret shares, one per operator. A client zero-knowledge proof binds them, and the three operators check it and sign. The page shows no values.'),
         ('03', 'Fund on Zcash', '07-funded', at['funded'],
-         f'After the close, every ticket gets a real shielded deposit on an isolated NU7 regtest (tx {short(facts["deposit_txid"])}). The operators re-verify the same proofs and shares, then sign the book again over the same root. Took {mmss(at["funded"] - at["funding"] + 15)}.'),
+         f'After the close, every ticket gets a real shielded deposit on {chain_name} (tx {short(facts["deposit_txid"])}). The operators re-verify the same proofs and shares, then sign the book again over the same root. Took {mmss(at["funded"] - at["funding"] + 15)}.'),
         ('04', 'Clear by MPC', '09-cleared', at['cleared'],
          f'The three operators compute on secret shares and jointly prove the result (coNoir), verified in {clearing_s} s. Price {price} zatoshi, {sold} of 3 sold. No bid was reconstructed.'),
         ('05', 'Only your result', '10-own-result', at['own-result'],
          'Ticket 01 opens only its own verified outcome. No other ticket\'s result is shown.'),
         ('06', 'Settle on Zcash', '16-settled', at['settled'],
-         f'One shielded transaction pays the seller and refunds all four bidders (tx {short(facts["txid"])}). It has six Halo2 output bindings and 2-of-3 FROST signatures, Zebra accepted it with 2 confirmations, and a public verifier replayed it. Took {mmss(at["settled"] - at["settle-start"] + 12)}.'),
+         f'One shielded transaction pays the seller and refunds all four bidders (tx {short(facts["txid"])}). It has six Halo2 output bindings and 2-of-3 FROST signatures, {accepted_by} with 2 confirmations, and a public verifier replayed it. Took {mmss(at["settled"] - at["settle-start"] + 12)}.'),
         ('07', 'A winner\'s receipt', '18-receipt-won', at['receipt-won'],
          f'Ticket 01 decrypts its own memo with its own viewing key: {"won" if receipts["01"]["won"] else "lost"}, {receipts["01"]["refund"]} zatoshi refunded.'),
         ('08', 'A losing ticket', '19-receipt-lost', at['receipt-lost'],
@@ -100,6 +103,7 @@ def build():
 
     video_bundle = run['public_bundle']
     tn_bundle = testnet['public_verification']
+    browser_run = testnet['browser_video_run']
     bundles = [(pathlib.Path(tn_bundle['bundle']).name, testnet['settlement']['txid'], 'Settled on public Zcash testnet',
                 f'host-verified {tn_bundle["host_rerun_seconds"]:.0f} s, tamper refused; added after the container run')]
     bundles += [(pathlib.Path(video_bundle['path']).name, facts['txid'], 'The auction in the video',
@@ -113,11 +117,11 @@ def build():
         total=mmss(manifest['total_seconds']), steps=step_html, winner_refund=100 - int(price), seller=int(price) * int(sold), bundle_rows=bundle_rows, repo=REPO,
         clean_env=e(clean['environment']), clearing_s=clearing_s,
         bundle_path=e(tn_bundle['bundle']), authority_path=e(tn_bundle['authority']),
-        tn_deposit=e(testnet['funding']['deposit_txid']), tn_deposit_height=f"{testnet['funding']['deposit_block']['height']:,}",
-        tn_txid=e(testnet['settlement']['txid']), tn_height=f"{testnet['settlement']['block']['height']:,}",
-        tn_settle_s=round(testnet['settlement']['driver_seconds']), tn_check_s=round(tn_bundle['in_run_seconds']),
+        tn_deposit=e(browser_run['deposit_txid']), tn_deposit_height=f"{browser_run['deposit_block']['height']:,}",
+        tn_txid=e(browser_run['settlement_txid']), tn_height=f"{browser_run['settlement_block']['height']:,}",
+        tn_settle_s=round(browser_run['settlement_driver_seconds']), tn_check_s=round(browser_run['public_verification_seconds']),
         tn_price=testnet['clearing']['price'], tn_sold=testnet['clearing']['sold'],
-        tn_receipts=' / '.join(str(r['refund']) for r in testnet['own_receipts']),
+        tn_api_txid=e(short(testnet['settlement']['txid'])),
         how_html=how_html, how_css=how_css)
     (DOCS / 'index.html').write_text(page)
     return {'page': str(DOCS / 'index.html'), 'frames': len(FRAMES), 'site_bytes': sum(p.stat().st_size for p in SITE.rglob('*') if p.is_file())}
@@ -235,7 +239,7 @@ footer a {{color:var(--ink-2)}}
 <p class="kicker">Verifiable sealed-bid auctions on Zcash</p>
 <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
 <p class="lead">Not at the close, and not for any single operator. The clearing price is computed on secret shares and proven in zero knowledge, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
-<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and each bidder's own client, the only party that sees the typed bid, runs as a local service on that machine; operators receive shares and a proof. The video and the walkthrough below ran on an isolated Zebra NU7 regtest; one auction also settled on public Zcash testnet. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
+<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and each bidder's own client, the only party that sees the typed bid, runs as a local service on that machine; operators receive shares and a proof. The video and the walkthrough below are one auction on public Zcash testnet, run from the browser; earlier runs used an isolated regtest. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">
 <source src="site/darkcall-demo-v2.mp4" type="video/mp4">
@@ -246,15 +250,15 @@ footer a {{color:var(--ink-2)}}
 {how_html}
 
 <h2>Settled on public Zcash testnet.</h2>
-<p class="sub">On October 19 a fresh auction was funded, cleared and settled on standard public testnet (NU7) with testnet coins, through the same admission, proofs and signing as everything below.</p>
+<p class="sub">On October 19 the auction in the video was created, funded, cleared and settled by clicking through the browser on standard public testnet (NU7), with testnet coins and the same admission, proofs and signing as everything below.</p>
 <dl class="facts">
 <dt>Deposits</dt><dd><code>{tn_deposit}</code><br>block {tn_deposit_height}, two confirmations; four client proofs and twelve share pairs re-verified</dd>
 <dt>Clearing</dt><dd>REP3 price {tn_price} zatoshi, {tn_sold} of 3 sold, after funding</dd>
 <dt>Settlement</dt><dd><code>{tn_txid}</code><br>block {tn_height}, two confirmations; six output bindings and 2-of-3 FROST, {tn_settle_s} s</dd>
 <dt>Public check</dt><dd>{tn_check_s} s with no secrets; a corrupted receipt proof is refused</dd>
-<dt>Own receipts</dt><dd>Refunds {tn_receipts} zatoshi, each decrypted from its own memo</dd>
+<dt>Own receipts</dt><dd>Ticket 01 won, refund 79; Ticket 04 lost, refund 100; each decrypted from its own memo</dd>
 </dl>
-<p class="caption">Chain data came from one lightwalletd provider (testnet.zec.rocks) over validated TLS. <a href="{repo}evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
+<p class="caption">An earlier testnet auction driven by the HTTP harness (settlement {tn_api_txid}) also passed every refusal check. Chain data came from one lightwalletd provider (testnet.zec.rocks) over validated TLS. <a href="{repo}evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
 
 <h2>Other auctions open the bids to prove the price.</h2>
 <p class="sub">Commit–reveal and published viewing keys show every bid amount after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>

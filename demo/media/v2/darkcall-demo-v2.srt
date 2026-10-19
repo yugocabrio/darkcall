@@ -1,7 +1,7 @@
 1
 00:00:00,000 --> 00:00:09,000
-Typical audited auctions open every bid to prove the price.
-DarkCall proves the price without opening the bids, then settles in shielded ZEC.
+Other designs prove the price by opening the bid amounts at the close.
+DarkCall never opens them. On the right: an auction already settled on public Zcash testnet.
 
 2
 00:00:09,000 --> 00:00:14,000
@@ -18,7 +18,7 @@ Bids 77, 61, 43 and 21 were typed for this demo. Nothing here shows or publishes
 
 5
 00:00:27,000 --> 00:00:30,000
-Time cut · 1 min 56 s of real time — Bidding stays open until its real deadline.
+Time cut · 1 min 55 s of real time — Bidding stays open until its real deadline.
 
 6
 00:00:30,000 --> 00:00:35,000
@@ -26,11 +26,11 @@ The three operators sign the closed book. Clearing waits until every ticket is f
 
 7
 00:00:35,000 --> 00:00:40,000
-Each ticket gets a real shielded deposit on an isolated NU7 regtest, into a 2-of-3 FROST escrow.
+Each ticket gets a real shielded deposit on public Zcash testnet, into a 2-of-3 FROST escrow.
 
 8
 00:00:40,000 --> 00:00:43,000
-Time cut · 1 min 49 s of real time — Deposits confirm; operators decrypt them and re-verify the same proofs and shares.
+Time cut · 10 min 03 s of real time — Deposits confirm on testnet; operators decrypt them and re-verify the same proofs and shares.
 
 9
 00:00:43,000 --> 00:00:49,000
@@ -56,7 +56,7 @@ One shielded transaction will pay the seller and refund all four bidders.
 
 14
 00:01:11,000 --> 00:01:14,000
-Time cut · 15 min 01 s of real time — Six Halo2 output-binding proofs, the settlement proof, 2-of-3 FROST signing, Zebra acceptance, 2 confirmations, six wallet scans and the public check.
+Time cut · 20 min 23 s of real time — Six Halo2 output-binding proofs, the settlement proof, 2-of-3 FROST signing, broadcast to testnet, 2 confirmations, six wallet scans and the public check.
 
 15
 00:01:14,000 --> 00:01:21,000
@@ -81,7 +81,7 @@ Flip one byte of the receipt proof: the fixed verifier rejects it before the key
 
 20
 00:01:45,000 --> 00:01:53,000
-What this prototype assumes — Bid secrecy: at most one semi-honest corrupt operator (REP3). Custody: 2-of-3 FROST; two colluding signers can move funds. Operators learn winners and refunds. The price is the highest losing bid. Demo: all parties on one machine; the local helper sees typed bids. Isolated NU7 regtest, not testnet or mainnet.
+What this prototype assumes — Bid secrecy: at most one semi-honest corrupt operator (REP3). Custody: 2-of-3 FROST; two colluding signers can move funds. Operators learn winners and refunds. The price is the highest losing bid. Demo: all parties on one machine; each bidder's own client sees its typed bid. Public Zcash testnet through one trusted lightwalletd provider; testnet coins only.
 
 21
 00:01:53,000 --> 00:01:59,000

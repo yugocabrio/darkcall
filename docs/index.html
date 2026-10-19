@@ -219,13 +219,13 @@ footer a {color:var(--ink-2)}
 <p class="kicker">Verifiable sealed-bid auctions on Zcash</p>
 <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
 <p class="lead">Not at the close, and not for any single operator. The clearing price is computed on secret shares and proven in zero knowledge, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
-<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and each bidder's own client, the only party that sees the typed bid, runs as a local service on that machine; operators receive shares and a proof. The video and the walkthrough below ran on an isolated Zebra NU7 regtest; one auction also settled on public Zcash testnet. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
+<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and each bidder's own client, the only party that sees the typed bid, runs as a local service on that machine; operators receive shares and a proof. The video and the walkthrough below are one auction on public Zcash testnet, run from the browser; earlier runs used an isolated regtest. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">
 <source src="site/darkcall-demo-v2.mp4" type="video/mp4">
 <track kind="captions" src="site/darkcall-demo-v2.vtt" srclang="en" label="English" default>
 </video>
-<p class="caption">119 s, edited from one real auction (b9c23d7dae…9ac80e6e). Every time cut states the real elapsed time, and every frame is SHA-256-checked against the <a href="https://github.com/yugocabrio/ZECATHON/blob/main/demo/media/v2/manifest.json">capture manifest</a>.</p>
+<p class="caption">119 s, edited from one real auction (4dde6fcbc1…6617510f). Every time cut states the real elapsed time, and every frame is SHA-256-checked against the <a href="https://github.com/yugocabrio/ZECATHON/blob/main/demo/media/v2/manifest.json">capture manifest</a>.</p>
 
 <section class="how" aria-labelledby="how-title">
       <p class="section-kicker">How it works</p>
@@ -279,15 +279,15 @@ footer a {color:var(--ink-2)}
     </section>
 
 <h2>Settled on public Zcash testnet.</h2>
-<p class="sub">On October 19 a fresh auction was funded, cleared and settled on standard public testnet (NU7) with testnet coins, through the same admission, proofs and signing as everything below.</p>
+<p class="sub">On October 19 the auction in the video was created, funded, cleared and settled by clicking through the browser on standard public testnet (NU7), with testnet coins and the same admission, proofs and signing as everything below.</p>
 <dl class="facts">
-<dt>Deposits</dt><dd><code>d573a6510ff9e19225693f6288ef581056f9271296fad7c271649a6a3c7b1737</code><br>block 4,518,128, two confirmations; four client proofs and twelve share pairs re-verified</dd>
+<dt>Deposits</dt><dd><code>af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354</code><br>block 4,518,254, two confirmations; four client proofs and twelve share pairs re-verified</dd>
 <dt>Clearing</dt><dd>REP3 price 21 zatoshi, 3 of 3 sold, after funding</dd>
-<dt>Settlement</dt><dd><code>8e6da99bc6ab58b941e3b3ec53dde1dbea99fd5886618c2f7aae7009034f0db7</code><br>block 4,518,182, two confirmations; six output bindings and 2-of-3 FROST, 984 s</dd>
-<dt>Public check</dt><dd>98 s with no secrets; a corrupted receipt proof is refused</dd>
-<dt>Own receipts</dt><dd>Refunds 79 / 79 / 79 / 100 zatoshi, each decrypted from its own memo</dd>
+<dt>Settlement</dt><dd><code>be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67</code><br>block 4,518,315, two confirmations; six output bindings and 2-of-3 FROST, 1122 s</dd>
+<dt>Public check</dt><dd>102 s with no secrets; a corrupted receipt proof is refused</dd>
+<dt>Own receipts</dt><dd>Ticket 01 won, refund 79; Ticket 04 lost, refund 100; each decrypted from its own memo</dd>
 </dl>
-<p class="caption">Chain data came from one lightwalletd provider (testnet.zec.rocks) over validated TLS. <a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
+<p class="caption">An earlier testnet auction driven by the HTTP harness (settlement 8e6da99bc6…034f0db7) also passed every refusal check. Chain data came from one lightwalletd provider (testnet.zec.rocks) over validated TLS. <a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
 
 <h2>Other auctions open the bids to prove the price.</h2>
 <p class="sub">Commit–reveal and published viewing keys show every bid amount after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
@@ -302,39 +302,39 @@ footer a {color:var(--ink-2)}
 </tbody></table></div>
 <div class="measured">
 <div><strong>0.6 s</strong><span>to seal a bid with its zero-knowledge proof</span></div>
-<div><strong>7.6 s</strong><span>to clear four sealed bids by MPC in this run, proof included</span></div>
+<div><strong>8.1 s</strong><span>to clear four sealed bids by MPC in this run, proof included</span></div>
 <div><strong>1 tx</strong><span>pays the seller and refunds all four bidders</span></div>
 <div><strong>~100 s</strong><span>for anyone to verify a settlement, no secrets needed</span></div>
 </div>
 <p class="caption">Common designs compared, not specific projects. Timings from one 16 GiB laptop.</p>
 
 <h2>One real auction, start to finish.</h2>
-<p class="sub">Captured in a headless browser driving the real UI, with no shortcuts. Total 19:44 from the first click to the tamper refusal.</p>
+<p class="sub">Captured in a headless browser driving the real UI, with no shortcuts. Total 33:21 from the first click to the tamper refusal.</p>
 <dl class="facts">
-<dt>Auction</dt><dd><code>b9c23d7dae678f3eb97fd76c9ac80e6e</code></dd>
-<dt>Accepted root (same book throughout)</dt><dd><code>0a66754982…d301780c</code></dd>
-<dt>Deposit transaction</dt><dd><code>7a219347c961cdaee423c7dc91fff457851debcdcdde503cd6b9885e8de301a3</code></dd>
-<dt>Settlement transaction</dt><dd><code>e305699514938d382be010260533f01725e5970c895e11f0a843843351caf779</code></dd>
+<dt>Auction</dt><dd><code>4dde6fcbc11bb931bcecb01a6617510f</code></dd>
+<dt>Accepted root (same book throughout)</dt><dd><code>0636b15349…fb153498</code></dd>
+<dt>Deposit transaction</dt><dd><code>af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354</code></dd>
+<dt>Settlement transaction</dt><dd><code>be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67</code></dd>
 <dt>Outcome</dt><dd>21 zatoshi per unit, 3 of 3 sold. Each winner gets 79 back, the loser gets 100, and the seller receives 63.</dd>
 </dl>
 <article class="step"><a class="shot" href="site/02-create.jpg"><img src="site/02-create.jpg" alt="Create" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">01</span><h3>Create</h3><p>The seller sets 3 identical units, reserve 20 and a deposit budget of 100 zatoshi. Bidding closes in two minutes.</p><span class="clock">t + 0:04</span></div></article>
+<div class="step-text"><span class="step-no">01</span><h3>Create</h3><p>The seller sets 3 identical units, reserve 20 and a deposit budget of 100 zatoshi. Bidding closes in two minutes.</p><span class="clock">t + 0:03</span></div></article>
 <article class="step"><a class="shot" href="site/04-sealed.jpg"><img src="site/04-sealed.jpg" alt="Seal four bids" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">02</span><h3>Seal four bids</h3><p>Each bid becomes a commitment plus three REP3 secret shares, one per operator. A client zero-knowledge proof binds them, and the three operators check it and sign. The page shows no values.</p><span class="clock">t + 0:10</span></div></article>
+<div class="step-text"><span class="step-no">02</span><h3>Seal four bids</h3><p>Each bid becomes a commitment plus three REP3 secret shares, one per operator. A client zero-knowledge proof binds them, and the three operators check it and sign. The page shows no values.</p><span class="clock">t + 0:09</span></div></article>
 <article class="step"><a class="shot" href="site/07-funded.jpg"><img src="site/07-funded.jpg" alt="Fund on Zcash" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">03</span><h3>Fund on Zcash</h3><p>After the close, every ticket gets a real shielded deposit on an isolated NU7 regtest (tx 7a219347c9…8de301a3). The operators re-verify the same proofs and shares, then sign the book again over the same root. Took 2:04.</p><span class="clock">t + 4:10</span></div></article>
+<div class="step-text"><span class="step-no">03</span><h3>Fund on Zcash</h3><p>After the close, every ticket gets a real shielded deposit on public Zcash testnet (NU7) (tx af6cf7cf63…1eff6354). The operators re-verify the same proofs and shares, then sign the book again over the same root. Took 10:18.</p><span class="clock">t + 12:22</span></div></article>
 <article class="step"><a class="shot" href="site/09-cleared.jpg"><img src="site/09-cleared.jpg" alt="Clear by MPC" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">04</span><h3>Clear by MPC</h3><p>The three operators compute on secret shares and jointly prove the result (coNoir), verified in 7.6 s. Price 21 zatoshi, 3 of 3 sold. No bid was reconstructed.</p><span class="clock">t + 4:19</span></div></article>
+<div class="step-text"><span class="step-no">04</span><h3>Clear by MPC</h3><p>The three operators compute on secret shares and jointly prove the result (coNoir), verified in 8.1 s. Price 21 zatoshi, 3 of 3 sold. No bid was reconstructed.</p><span class="clock">t + 12:33</span></div></article>
 <article class="step"><a class="shot" href="site/10-own-result.jpg"><img src="site/10-own-result.jpg" alt="Only your result" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">05</span><h3>Only your result</h3><p>Ticket 01 opens only its own verified outcome. No other ticket&#x27;s result is shown.</p><span class="clock">t + 4:21</span></div></article>
+<div class="step-text"><span class="step-no">05</span><h3>Only your result</h3><p>Ticket 01 opens only its own verified outcome. No other ticket&#x27;s result is shown.</p><span class="clock">t + 12:34</span></div></article>
 <article class="step"><a class="shot" href="site/16-settled.jpg"><img src="site/16-settled.jpg" alt="Settle on Zcash" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">06</span><h3>Settle on Zcash</h3><p>One shielded transaction pays the seller and refunds all four bidders (tx e305699514…51caf779). It has six Halo2 output bindings and 2-of-3 FROST signatures, Zebra accepted it with 2 confirmations, and a public verifier replayed it. Took 15:13.</p><span class="clock">t + 19:34</span></div></article>
+<div class="step-text"><span class="step-no">06</span><h3>Settle on Zcash</h3><p>One shielded transaction pays the seller and refunds all four bidders (tx be1157c884…a1c8ad67). It has six Halo2 output bindings and 2-of-3 FROST signatures, the testnet accepted it with 2 confirmations, and a public verifier replayed it. Took 20:35.</p><span class="clock">t + 33:10</span></div></article>
 <article class="step"><a class="shot" href="site/18-receipt-won.jpg"><img src="site/18-receipt-won.jpg" alt="A winner&#x27;s receipt" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">07</span><h3>A winner&#x27;s receipt</h3><p>Ticket 01 decrypts its own memo with its own viewing key: won, 79 zatoshi refunded.</p><span class="clock">t + 19:39</span></div></article>
+<div class="step-text"><span class="step-no">07</span><h3>A winner&#x27;s receipt</h3><p>Ticket 01 decrypts its own memo with its own viewing key: won, 79 zatoshi refunded.</p><span class="clock">t + 33:15</span></div></article>
 <article class="step"><a class="shot" href="site/19-receipt-lost.jpg"><img src="site/19-receipt-lost.jpg" alt="A losing ticket" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">08</span><h3>A losing ticket</h3><p>Ticket 04 decrypts its own memo: lost, the full 100 zatoshi refunded.</p><span class="clock">t + 19:43</span></div></article>
+<div class="step-text"><span class="step-no">08</span><h3>A losing ticket</h3><p>Ticket 04 decrypts its own memo: lost, the full 100 zatoshi refunded.</p><span class="clock">t + 33:19</span></div></article>
 <article class="step"><a class="shot" href="site/20-receipt-tamper.jpg"><img src="site/20-receipt-tamper.jpg" alt="Try to cheat" loading="lazy" width="1120" height="1080"></a>
-<div class="step-text"><span class="step-no">09</span><h3>Try to cheat</h3><p>Flipping one byte of the receipt proof makes the fixed verifier reject it before the viewing key is read.</p><span class="clock">t + 19:44</span></div></article>
+<div class="step-text"><span class="step-no">09</span><h3>Try to cheat</h3><p>Flipping one byte of the receipt proof makes the fixed verifier reject it before the viewing key is read.</p><span class="clock">t + 33:21</span></div></article>
 
 <h2>Who learned what.</h2>
 <div class="grid4">
@@ -353,7 +353,7 @@ footer a {color:var(--ink-2)}
 <thead><tr><th>Bundle</th><th>Settlement tx</th><th>What it is</th><th>Verified</th></tr></thead>
 <tbody>
 <tr><td><code>testnet-auction-nu7-v1</code></td><td><code>8e6da99bc6…034f0db7</code></td><td>Settled on public Zcash testnet</td><td>host-verified 99 s, tamper refused; added after the container run</td></tr>
-<tr><td><code>browser-auction-nu7-v3</code></td><td><code>e305699514…51caf779</code></td><td>The auction in the video</td><td>host-verified 103 s; added after the container run</td></tr>
+<tr><td><code>testnet-auction-nu7-v2</code></td><td><code>be1157c884…a1c8ad67</code></td><td>The auction in the video</td><td>host-verified 106 s; added after the container run</td></tr>
 <tr><td><code>browser-auction-nu7-v2</code></td><td><code>e3ffa436a2…84769754</code></td><td>six-step browser auction: funded before clearing, then settled, Oct 19</td><td>clean Linux container, 100 s, tamper refused</td></tr>
 <tr><td><code>browser-auction-nu7-v1</code></td><td><code>3fee2c7ce3…b5c0b5d7</code></td><td>auction created and settled by clicking through the browser UI, Oct 18</td><td>clean Linux container, 100 s, tamper refused</td></tr>
 <tr><td><code>fresh-book-nu7-v1</code></td><td><code>54941ffd84…45c76ee6</code></td><td>browser-created book settled from the CLI driver (resumed), Oct 18</td><td>clean Linux container, 99 s, tamper refused</td></tr>

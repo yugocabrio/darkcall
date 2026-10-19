@@ -117,5 +117,42 @@
     "admission signatures attest funding; they are not a public ZK funding proof; the public bundle does not prove chain inclusion",
     "confirmations were observed through one trusted lightwalletd provider",
     "demo-sized amounts: 100-zatoshi budget and 15,000-zatoshi processing fee per ticket"
-  ]
+  ],
+  "browser_video_run": {
+    "scope": "a second auction, created, funded, cleared and settled entirely by clicking through the browser UI on public testnet; this is the run in the 2-minute video",
+    "auction_id": "4dde6fcbc11bb931bcecb01a6617510f",
+    "deposit_txid": "af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354",
+    "deposit_block": {
+      "height": 4518254,
+      "hash": "00002108bb624248d94524a6a40b903047252d9539752eff5f0c1ce5687bdc8f"
+    },
+    "clearing": "✓ Auction verified · 8.1s",
+    "settlement_txid": "be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67",
+    "settlement_block": {
+      "height": 4518315,
+      "hash": "00000b76fc4ba6ecc3b580625f7f7a7bc0c9febbb8dfe4be6bc73439f8c53a0f"
+    },
+    "confirmations": 2,
+    "settlement_driver_seconds": 1121.597,
+    "public_verification_seconds": 101.655,
+    "host_rerun_seconds": 105.7,
+    "corrupted_receipt_proof_refused_cryptographically": true,
+    "own_receipts_seen": [
+      {
+        "ticket": "01",
+        "won": true,
+        "refund": 79
+      },
+      {
+        "ticket": "04",
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "bundle": "demo/artifacts/testnet-auction-nu7-v2",
+    "authority": "demo/authority/testnet-auction-nu7-v2.json",
+    "bundle_manifest_sha256": "61524210a481429d1f19ac52eba4f2c078dfde24093a83c8fd183243c9c4a170",
+    "capture_manifest": "demo/media/v2/manifest.json",
+    "capture_total_seconds": 2001
+  }
 }
