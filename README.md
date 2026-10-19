@@ -3,7 +3,8 @@
 **Sealed-bid auctions on Zcash: one public price, bids that no operator
 reconstructs, and one shielded settlement that anyone can verify.**
 
-ZECATHON 2026 · Private Markets track.
+ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
+one real auction, from creation to shielded receipts, with every time cut labeled.
 
 > **Demo scope, up front.** This prototype runs every role on one machine. The
 > local bidder helper that builds each bid's proof and shares sees the typed
@@ -169,7 +170,8 @@ assumptions:
   who placed it is not. Small books and repeated auctions allow further
   inference.
 - **The demo helper sees typed bids.** In this local demo, the localhost helper that builds the client
-  proof sees the typed demo bid. Deposits come from one local test wallet. All
+  proof sees the typed demo bid. Deposits come from one local test wallet right
+  after the close; in a deployment each bidder's own wallet deposits. All
   three operators run on one machine.
 - **Funding is attested, not proven.** Admission signatures attest funding; they are not a public ZK funding
   proof. The public bundle proves transaction validity and output binding, not

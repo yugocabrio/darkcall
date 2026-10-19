@@ -120,7 +120,7 @@ fetch('/api/state').then(async response => {
 }).catch(error => setError(error.message));
 
 // Interactive entry is an OFFLINE rehearsal. It never alters the recorded book.
-let room = null, lastAcceptance = null, freshClearingVerified = false, freshResultVerified = false;
+let room = null, lastAcceptance = null, freshClearingVerified = false, freshResultVerified = false, bookFolded = false;
 // Every ticket sealed in THIS page keeps its own local opening capability. The page
 // simulates four bidders; each opening uses only that ticket's capability and key.
 let myTickets = [], selectedTicket = 0;
@@ -155,7 +155,7 @@ function refreshRoom() {
   $('new-auction').hidden=!room;
   const settled=Boolean(room && room.settlement && room.settlement.state==='done');
   const funded=Boolean(room && room.funding && room.funding.state==='done');
-  const complete=[Boolean(room),Boolean(room && room.accepted===4),funded || Boolean(room && !room.funding_required && freshClearingVerified),freshClearingVerified,freshResultVerified,settled];
+  const complete=[Boolean(room),Boolean(room && room.accepted===4),funded || Boolean(room && !room.funding_required && freshClearingVerified),freshClearingVerified,freshResultVerified || settled,settled];
   const current=complete.findIndex(done=>!done);
   ['create','bid','fund','clear','result','settle'].forEach((name,i)=>{
     const step=$('progress-'+name); step.classList.toggle('done',complete[i]);
@@ -194,14 +194,15 @@ function showRoom(value) {
   room=value; $('create-form').hidden=true; $('auction-room').hidden=false;
   $('auction-link').value=location.origin+'/#auction='+room.auction_id;
   refreshRoom();
-  if (room.clearing) { renderFresh(room.clearing); $('book-details').open=false; }
+  if (room.clearing) renderFresh(room.clearing);
+  if (room.closed && !bookFolded) { bookFolded=true; $('book-details').open=false; }
 }
 async function rehearsalRequest(action,payload) {
   const response=await fetch('/api/rehearsal/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify(payload)});
   const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Local rehearsal stopped.'); return result;
 }
 function resetFresh() {
-  $('rehearsal-label').textContent='DEMO BIDS'; fundedFocused=false; settledFocused=false;
+  $('rehearsal-label').textContent='DEMO BIDS'; fundedFocused=false; settledFocused=false; bookFolded=false;
   for (const id of ['clearing-section','fund-section','settle-section']) $(id).hidden=true;
   freshClearingVerified=false; freshResultVerified=false; nativeResultVerified=false; $('book-details').open=true;
   $('native-result').className='result-box'; $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','Only your viewing key can open your memo in this transaction.'));
@@ -475,6 +476,7 @@ $('close-auction').addEventListener('click',async()=>{
     if (!result.closed || result.funding_scope!=='offline-synthetic' || result.fresh_clearing_or_settlement) throw new Error('Unexpected book certification.');
     room.closed=true; room.accepted_root=result.accepted_root;
     $('rehearsal-status').textContent=room.funding_required?'✓ Bids locked. Fund them on Zcash next.':'✓ Bids locked. Ready to clear.';
+    $('book-details').open=false; // Bidding is over: fold the bid form away from the next step.
     refreshRoom(); focusNext(room.funding_required?'fund-auction':'clear-auction');
   } catch(error) { rehearsalError(error.message); }
   finally { lock(false); refreshRoom(); }

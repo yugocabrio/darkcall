@@ -21,6 +21,26 @@ The page offers two experiences:
 `./demo.sh --public-only` serves a key-less view. It verifies settlement and
 rejects tampering, and refuses own-receipt opening without a key.
 
+## Reproducible edited video (one real auction)
+
+`tools/demo-capture/capture.mjs` drives one real local auction through the
+browser UI in headless Brave at 1920×1080. It runs Create, four bids, Certify,
+Fund, Clear, own result, Settle, both shielded receipts and the receipt tamper
+check. It waits only on the UI's own verified status text and writes PNG stills
+plus a manifest with UTC times, elapsed seconds, SHA-256 and the public
+auction/transaction IDs. `scripts/render_demo_video_v2.py` renders the captioned
+video from those stills. It checks every frame against the manifest, and every
+time cut states the real elapsed time between the two captured states.
+
+```sh
+(cd tools/demo-capture && npm ci --ignore-scripts)
+node tools/demo-capture/capture.mjs .local/demo-capture-NEW     # ≈ 25 min, needs ./demo.sh + node
+python3 -B scripts/render_demo_video_v2.py --output .local/darkcall-demo-NEW.mp4
+```
+
+The committed stills and manifest for the rendered draft are in `demo/media/v2/`.
+The storyboard is `demo/video-storyboard-v2.json`.
+
 ## Capture-ready demo plan (about 2 minutes edited)
 
 Settle takes minutes, so the human records it in one continuous session and
@@ -58,29 +78,24 @@ funding + admission about 2 min (it includes a 120 s admission window), and
 settlement about 15 min. Public check about 2 min,
 own receipt about 3 s.
 
-## Recorded settlement story
+## Recorded settlement view ("Proof it settles")
 
-1. Four committed maximum bids remain secret-shared; recorded price/units are public.
-2. Choose a fixture bidder and **Open my result**. Both fixed C++ proofs,
-   exact context/price/sold and signed admission must pass before the own FVK is read.
-   The client verifies native authorization, decrypts its memo, checks the caller's
-   expected ticket/book and matches native amount to refund. No other identity copied.
-3. **Run tamper check** rejects an altered proof before key access/decryption.
-4. **Verify public settlement** checks the SAME native transaction, six binding proofs,
-   fixed MPC/receipt proofs and signed accepted book under the configured authority.
+1. The recorded auction's price and units are public; its four bids stay secret-shared.
+2. Choose a bidder and **Open my result**. The fixed C++ proofs, the exact
+   context/price/sold and the signed admission must all pass before that
+   bidder's own viewing key is read. The client then verifies native
+   authorization, decrypts its memo, checks the expected ticket and book, and
+   matches the native amount to the refund. No other identity is copied.
+3. **Run tamper check** rejects an altered proof before key access.
+4. **Verify public settlement** checks the same native transaction, the six
+   binding proofs, the fixed MPC and receipt proofs, and the signed book under
+   the configured authority (about 2 minutes).
 
-Receipt verification and full six-row settlement verification are separate stages.
-Recorded/previous results are labeled. The separate browser entry uses real
-input proofs/receipts with explicitly synthetic funding; it is not live chain
-admission or production bidder authentication. Selecting a recorded ticket is not login.
-The judge-facing view leads with sealed bids, price and the own result. Advanced
-receipt checks, transaction/root and trust/limitations are collapsed by default.
-A receipt pass displays auction/receipt and native checks; the settlement badge
-appears only after full public verification passes. Previous server verification
-is labeled separately and does not restore that badge after a page reload.
-The server binds IPv4 loopback, serves only three static files and a same-origin/
-session-token bounded API. It exposes no keys, pads, raw memos, signing or RPC.
-All operators know refunds/status; two MPC colluders can reconstruct maximum bids.
+Bidders here are listed in canonical ticket order, not sealing order. Choosing
+one is a demo convenience, not a login. The settlement badge appears only after
+a full public verification in this page session. The server binds IPv4
+loopback and serves three static files plus a same-origin, session-token API.
+It exposes no keys, pads, raw memos, signing or RPC.
 
 The historical synthetic story remains reproducible separately:
 

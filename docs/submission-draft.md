@@ -87,7 +87,8 @@ result.
 - Funding is attested by operator signatures, not proven in zero knowledge. The
   public bundle does not prove chain inclusion.
 - Demo scope: one host runs every party. The localhost helper sees typed demo
-  bids. Deposits come from one local test wallet when settlement starts. This is
+  bids. Deposits come from one local test wallet right after the close, before
+  clearing (in a deployment each bidder's own wallet deposits). This is
   isolated regtest, not testnet or mainnet. There are four bid slots and default
   terms only.
 - We found and fixed a refund-guessing leak in an earlier delivery commitment.

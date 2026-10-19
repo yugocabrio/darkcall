@@ -10,6 +10,10 @@ receipt memo.
 
 ## What to look at
 
+0. **The 2-minute video.** Watch [demo/media/v2/darkcall-demo-v2.mp4](../demo/media/v2/darkcall-demo-v2.mp4).
+   It is edited stills from one real auction (`b9c23d7d…`, settlement
+   `e3056995…`), captured by `tools/demo-capture/capture.mjs`. Every time cut
+   states the real elapsed time.
 1. **The product, live.** `./demo.sh`, then **Try DarkCall**. Create an
    auction, seal four demo bids, certify the book, then **Fund on Zcash**: real
    deposits and chain admission over the same root. Clear it by MPC and open

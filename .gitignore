@@ -17,3 +17,4 @@ __pycache__/
 *.pyc
 # Vendored upstream source whose name matches the witness rule above.
 !vendor/halo2_gadgets/src/ecc/chip/witness_point.rs
+node_modules/

@@ -454,5 +454,56 @@
       "docs/img/06-shielded-receipt-tamper.jpg",
       "docs/img/07-mobile-settled.jpg"
     ]
+  },
+  "video_capture_run": {
+    "date": "2026-10-19 (CEST)",
+    "tool": "tools/demo-capture/capture.mjs (headless Brave, puppeteer-core 24.43.1, 1920x1080)",
+    "scope": "one real auction driven through the browser UI from creation to shielded receipts; every wait on the UI's own verified status text",
+    "facts": {
+      "auction_id": "b9c23d7dae678f3eb97fd76c9ac80e6e",
+      "deposit_txid": "7a219347c961cdaee423c7dc91fff457851debcdcdde503cd6b9885e8de301a3",
+      "clearing": "\u2713 Auction verified \u00b7 7.6s",
+      "txid": "e305699514938d382be010260533f01725e5970c895e11f0a843843351caf779",
+      "same_book": "\u2713 0a66754982\u2026d301780c \u00b7 same tickets and accepted root as your browser book",
+      "outcome": "21 zatoshi \u00d7 3 sold \u00b7 matches the browser clearing \u00b7 2 regtest confirmations",
+      "settle_status": "\u2713 Settled and publicly verified \u00b7 14:59 of proving and checks"
+    },
+    "total_seconds": 1184.5,
+    "shots": 20,
+    "shot_elapsed_seconds": {
+      "landing": 3,
+      "create": 3.8,
+      "first-bid": 5.7,
+      "sealed": 9.6,
+      "closed": 125.4,
+      "funding": 141.2,
+      "funded": 250,
+      "clearing": 252.3,
+      "cleared": 259.1,
+      "own-result": 260.9,
+      "settle-start": 273.6,
+      "settle-bindings": 274.4,
+      "settle-bindings-row4": 615.9,
+      "settle-sign": 852.2,
+      "settle-verify": 1068.3,
+      "settled": 1174.3,
+      "who-learned": 1175.1,
+      "receipt-won": 1178.9,
+      "receipt-lost": 1182.7,
+      "receipt-tamper": 1184.5
+    },
+    "video": {
+      "file": "demo/media/v2/darkcall-demo-v2.mp4",
+      "seconds": 119,
+      "scenes": 21,
+      "audio": false,
+      "sha256": "6c03fb42d01c1877aca89a4a3f616ca8683ef643e2f5d50cd176045f88cb04c8",
+      "renderer": "scripts/render_demo_video_v2.py; frames checked against demo/media/v2/manifest.json; time cuts computed from capture timestamps",
+      "cuts": [
+        "bidding deadline",
+        "funding and chain admission",
+        "settlement proving, signing, confirmation and public check"
+      ]
+    }
   }
 }

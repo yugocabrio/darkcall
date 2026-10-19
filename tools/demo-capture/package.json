@@ -1,0 +1,9 @@
+{
+  "name": "darkcall-demo-capture",
+  "private": true,
+  "description": "Headless capture of one real local DarkCall auction for the edited demo video",
+  "type": "module",
+  "dependencies": {
+    "puppeteer-core": "24.43.1"
+  }
+}
