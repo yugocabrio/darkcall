@@ -20,10 +20,20 @@ Done:
       IBM Plex; evidence page, video overlays, README and submission draft aligned.
 - [x] Public Zcash testnet settlement (Oct 19, approved by the author): deposits `d573a651…`,
       settlement `8e6da99b…`, public check 98 s, tamper refused; bundle `testnet-auction-nu7-v1`.
-- [ ] Re-capture the video run through the redesigned UI (on testnet), export its public bundle, re-render.
-- [ ] Optional: re-run `scripts/docker_verify.sh` so the container record covers all six bundles.
-- [ ] Name: keep "DarkCall" with the descriptor "Sealed-bid auctions on Zcash" unless the
-      author picks another (presentation-only rename; circuit domain separators stay).
+- [x] Final video on public testnet from the browser (Oct 19): auction `4dde6fcb…`, deposits
+      `af6cf7cf…` (block 4,518,254), settlement `be1157c8…` (block 4,518,315), receipts 79 / 100,
+      tamper refused; bundle `testnet-auction-nu7-v2`; captions drawn in IBM Plex by the browser.
+- [x] Landing, "See a settled auction", evidence page and README all show that one run.
+- [x] How it works: four stages, "Follow one auction" figure (share ownership 1/2/3 per
+      operator), six steps with what stays private / what is proven, Halo2 binding diagram.
+- [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
+      "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
+      helper is described as the bidder's own client; colluding-signer caveat stated.
+- [x] Name kept: "DarkCall", descriptor "Verifiable sealed-bid auctions on Zcash".
+- [ ] Optional: re-run `scripts/docker_verify.sh` so the container record covers all seven
+      bundles (needs about 15 GB free disk; three are host-verified so far).
+- [ ] Optional (about a day): four bidder wallets each funding their own deposit instead of one
+      local test bank, to remove the "one wallet funds all four" limit.
 
 Open:
 - [x] Container re-run via `scripts/docker_verify.sh`: all four committed bundles verified, strict tamper refusal.
@@ -31,9 +41,12 @@ Open:
 - [ ] Optional, needs approval: tier-A static viewer or tier-B public verifier (see hosting plan).
 
 ### Human actions before Oct 28 23:59 UTC
-- Record the demo using `docs/demo.md` → "Capture-ready demo plan".
-- Make the repository public (rule 3) and submit in **Private Markets** using
-  `docs/submission-draft.md`.
+- Make the repository public (rule 3) and enable GitHub Pages from `main` / `/docs`
+  (the author will do both).
+- Submit in **Private Markets** using `docs/submission-draft.md`; one submission per
+  account, so Zatomic needs a separate account if both are entered.
+- The 2-minute video is `demo/media/v2/darkcall-demo-v2.mp4` (testnet run); a narrated
+  live recording is optional (`docs/demo.md` → "Capture-ready demo plan").
 - Docker Desktop was restarted on Oct 19 with approval; the other project's node
   was restored with `docker start`.
 

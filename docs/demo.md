@@ -1,20 +1,26 @@
 # DarkCall demo guide
 
 ```sh
-python3 scripts/regtest_nu7_node.py start   # needed for Fund and Settle on Zcash
+./demo.sh --chain testnet                   # Fund and Settle on public Zcash testnet
+# or, on the owned local regtest:
+python3 scripts/regtest_nu7_node.py start
 ./demo.sh                                   # http://127.0.0.1:8877
 ```
+
+Testnet mode needs the funded local test bank `.local/testnet-bank-*` (created
+with `darkcall-nu7-compat testnet-init`) and reaches `testnet.zec.rocks`.
 
 The page offers two experiences:
 
 - **Run an auction** walks one auction through Create → Bid → **Fund** → Clear →
   Result → **Settle**. Fund makes real shielded deposits for the sealed tickets
-  on the isolated NU7 regtest, and the operators admit them over the same root
+  on public Zcash testnet (or the isolated NU7 regtest), and the operators admit them over the same root
   before any clearing. Settle pays everyone out in one shielded transaction.
   Then you open your own shielded receipt. Details and exact scope:
   [local-rehearsal.md](local-rehearsal.md).
-- **See a settled auction** shows an auction that was created, funded, cleared and
-  settled through this UI on Oct 19, tx `e3ffa436…84769754`. You can open each bidder's
+- **See a settled auction** shows the auction in the video: created, funded, cleared and
+  settled through this UI on public Zcash testnet on Oct 19, tx `be1157c8…a1c8ad67`.
+  `./demo.sh --regtest-recorded` shows the regtest six-step run `e3ffa436…84769754`. You can open each bidder's
   shielded receipt in about 3 s or verify the whole settlement in about two
   minutes when there is no time to settle a new auction.
   `./demo.sh --fixture-recorded` shows the Oct 5 settlement with fixture bids,
@@ -55,10 +61,10 @@ with a recording of another auction.
 2. **0:00–0:20 Create.** Keep the default terms (3 units, reserve 20, budget
    100) and set the close time to about 2 minutes ahead. Say: the price will be
    public; operators never reconstruct the bids (here all roles share one
-   machine, and the local helper sees the typed demo bid).
+   machine, and each bidder's own client, a local service here, sees the typed demo bid).
 3. **0:20–0:45 Bid.** Seal four demo bids, for example 77, 61, 43, 21. Each
    shows "Bid accepted" after a client ZK proof, three share checks and three
-   operator signatures. Mention that this local helper sees the typed demo bid.
+   operator signatures. Mention that only the bidder's own client sees the typed bid.
 4. **0:45–1:10 Fund, then clear.** After the deadline (cut the wait): Certify
    closed book → Fund on Zcash. Show the deposit txid and "same root"; cut the
    about 2 minute wait. Then Clear this auction (about 9 s of real MPC) → Open my
@@ -72,12 +78,13 @@ with a recording of another auction.
    and the refund received, decrypted with your own key only. Then Tamper with
    receipt shows the refusal before the key is read.
 7. **1:55–2:10 Close.** Show the trust model in one card: semi-honest REP3 with
-   at most 1 corrupt party, 2-of-3 custody, operators see outcomes, regtest on
-   one host. Show the verifier command for the public bundle.
+   at most 1 corrupt party, 2-of-3 custody, operators see outcomes, every party
+   on one host, testnet coins only. Show the verifier command for the public bundle.
 
 Expected timings on the 16 GiB M1: bid about 1 s each, clearing about 9 s,
-funding + admission about 2 min (it includes a 120 s admission window), and
-settlement about 15 min. Public check about 2 min,
+funding + admission about 2 min on regtest (120 s admission window) or about
+10 min on testnet (10-minute window plus real confirmations), and settlement
+about 15–20 min. Public check about 2 min,
 own receipt about 3 s.
 
 ## Recorded settlement view ("See a settled auction")

@@ -23,7 +23,7 @@ rejects a tampered proof.
 | A. Static evidence viewer | HTML only: screenshots, video, facts, commands | none | yes (any static host, e.g. GitHub Pages once public) | none beyond publishing the repo |
 | B. Public verifier | `serve_demo.py --public-only`: open the recorded auction, run the public settlement check and the tamper check; no keys, no bids | ~2 min CPU and a few GB RAM per check | yes, with one job at a time | CPU exhaustion by repeated clicks; must not expose private runs |
 | C. Interactive MPC | create, seal bids, clear by REP3, open own result; no Fund/Settle | <1 s per bid, about 9 s per clearing, ~2 GB | probably, one auction at a time | the server's helper sees every typed demo bid; must be labeled as such |
-| D. Full settlement | Fund + Settle with Zebra regtest and FROST | peak prover RSS up to ~8 GB, 10 GB disk headroom, about 17 min per auction | **no** | memory guard aborts; keep local, show recorded evidence |
+| D. Full settlement | Fund + Settle on public testnet (via a lightwalletd provider) or regtest, with FROST | peak prover RSS up to ~8 GB, 10 GB disk headroom, about 17 min per auction | **no** | memory guard aborts; keep local, show recorded evidence |
 
 **Tier A is built (Oct 19).** `docs/index.html` and `docs/site/` form a static
 evidence page: the video, the one-auction walkthrough with real frames and

@@ -42,11 +42,13 @@ Updated: 2026-10-19 (git HEAD is authoritative).
   `browser-auction-nu7-v3` (video run), `browser-auction-nu7-v1`,
   `fresh-book-nu7-v1` (Oct 18 browser books), and `canonical-nu7-funded-v1`
   (Oct 5, fixture bids).
-- **Unchanged limits:** one host runs every party; the localhost helper sees
-  typed demo bids; REP3 assumes at most one semi-honest corrupt operator; two
-  colluding FROST signers can move funds; operators learn outcomes; the public
-  price is the highest losing bid or the reserve; deposits come from one local
-  test wallet after the close; isolated regtest, no public chain inclusion proof.
+- **Unchanged limits:** one host runs every party; each bidder's client is a
+  localhost service and the only party that sees the typed bid; REP3 assumes at
+  most one semi-honest corrupt operator; two colluding FROST signers can move
+  funds; operators learn outcomes; the public price is the highest losing bid or
+  the reserve; deposits come from one local test wallet after the close; testnet
+  chain data comes from one trusted lightwalletd provider; the public bundle
+  does not prove chain inclusion.
 
 Details of every run follow, newest first.
 

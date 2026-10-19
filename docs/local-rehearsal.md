@@ -9,8 +9,9 @@ clearing → own result → Settle on Zcash → own shielded receipt → tamper 
 The order follows the protocol: real deposits and chain admission come before
 the clearing, and the clearing comes before the payout. **Fund** and **Settle**
 use the SAME sealed tickets, bid commitments, REP3 shares and accepted root as
-the browser book. They are real transactions on an isolated Zebra NU7 regtest,
-built by the existing funded drivers. They are not recordings, and they belong
+the browser book. They are real transactions on public Zcash testnet
+(`./demo.sh --chain testnet`) or on an isolated Zebra NU7 regtest, built by the
+existing funded drivers. They are not recordings, and they belong
 to the same auction.
 
 ## Start
