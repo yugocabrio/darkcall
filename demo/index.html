@@ -40,6 +40,54 @@
         </aside>
       </div>
     </section>
+    <section class="how" aria-labelledby="how-title">
+      <p class="section-kicker">How it works</p>
+      <h2 id="how-title">How can a sealed auction be publicly verified?</h2>
+      <p class="section-lead">From private bids to a provably correct Zcash payment, in four stages.</p>
+      <ol class="stages">
+        <li><span>01 · Seal</span><b>Commit and split each bid</b><small>Commitment · REP3 secret shares · client ZK proof</small></li>
+        <li><span>02 · Fund</span><b>Lock deposits on Zcash</b><small>Shielded deposits · 2-of-3 FROST escrow · signed accepted book</small></li>
+        <li><span>03 · Prove</span><b>Clear without opening</b><small>REP3 MPC · coNoir clearing proof</small></li>
+        <li><span>04 · Settle</span><b>Pay exactly as proven</b><small>Six Halo2 output bindings · FROST · one shielded transaction</small></li>
+      </ol>
+      <div class="disclosure">
+        <div><b>Public</b><p>The terms, the clearing price, the units sold, the proofs and one shielded transaction.</p></div>
+        <div><b>Never published</b><p>The bid book, every winner's maximum bid, each refund, and which bidder paid which deposit.</p></div>
+      </div>
+
+      <h3 class="steps-title">The protocol in six steps</h3>
+      <ol class="steps">
+        <li><span class="step-n">1</span><div><h4>Bid commitment</h4><p class="q">Why can't a bid be changed later?</p><p>The bidder's client commits to a maximum bid and splits it into REP3 secret shares, one pair per operator. A Noir proof shows that the commitment and the shares hold the same bid, within the budget. Each operator checks it and signs a receipt.</p><p class="pp"><em>Stays private</em> the bid · <em>Proven</em> commitment and shares agree</p></div></li>
+        <li><span class="step-n">2</span><div><h4>Funding and admission</h4><p class="q">Who accepted which bids?</p><p>Each ticket deposits its budget plus fee into a shielded 2-of-3 FROST escrow made by DKG. The operators decrypt the deposits, re-verify the same proofs and shares, and after the close all three sign the root of the accepted book.</p><p class="pp"><em>Stays private</em> who funded which ticket · <em>Signed</em> the accepted book</p></div></li>
+        <li><span class="step-n">3</span><div><h4>Confidential clearing</h4><p class="q">How is the price computed without seeing the bids?</p><p>The operators run the auction as REP3 multi-party computation on the shares: one uniform price, the winners and every refund. coNoir turns that run into one zero-knowledge proof that the price follows the rules over exactly the committed bids. No bid list is reconstructed.</p><p class="pp"><em>Stays private</em> every bid · <em>Proven</em> price and units sold</p></div></li>
+        <li><span class="step-n">4</span><div><h4>Private outcome delivery</h4><p class="q">Why aren't refunds and winners published?</p><p>Refunds and winner flags leave the MPC as blinded commitments, and each bidder's result is encrypted into a memo for that bidder alone. Only the price and the number sold become public.</p><p class="pp"><em>Stays private</em> who won and each refund · <em>Public</em> price and units sold</p></div></li>
+        <li><span class="step-n">5</span><div><h4>Proof-bound Zcash settlement</h4><p class="q">Why can't the operators pay out different amounts?</p><p>A settlement proof turns the same committed bids into six payment rows: four refunds, the seller and the operator fee. Six Halo2 proofs bind each row's amount and recipient to a native note commitment in the transaction. Two of three FROST signers sign only after every proof checks out.</p><p class="pp"><em>Stays private</em> amounts and recipients · <em>Proven</em> every output matches the result</p></div></li>
+        <li><span class="step-n">6</span><div><h4>Public verification</h4><p class="q">What can anyone check without seeing a bid?</p><p>The clearing proof, the six output bindings, the signed accepted book and the native Zcash proofs and signatures, from a public bundle with no secrets. Each bidder verifies a receipt proof, then opens only their own memo with their own viewing key.</p><p class="pp"><em>Needs no secrets</em> about 100 seconds on a laptop</p></div></li>
+      </ol>
+
+      <div class="binding" aria-label="How the payment is bound to the proof">
+        <div class="bind-box"><span>Proven auction result</span><b>Price 21 · 3 of 3 sold</b><small>Private settlement plan: six rows</small></div>
+        <div class="bind-arrow" aria-hidden="true"></div>
+        <div class="bind-box bind-key"><span>Six Halo2 output-binding proofs</span><b>Row ↔ native note commitment</b><small>Amount and recipient of each payment</small></div>
+        <div class="bind-arrow" aria-hidden="true"></div>
+        <div class="bind-box"><span>One native shielded transaction</span><b>4 refunds · seller · operator fee</b><small>Signed 2-of-3 with FROST</small></div>
+      </div>
+      <p class="bind-note">Proving the price is not enough: DarkCall also proves that the money actually sent matches it. A design that opens the bids can audit the payout afterwards; here a payout that differs from the proven result cannot pass public verification.</p>
+    </section>
+
+    <section class="proven" aria-labelledby="proven-title">
+      <p class="section-kicker">Proven on public Zcash testnet</p>
+      <h2 id="proven-title">It ran end to end on testnet.</h2>
+      <p class="section-lead">On October 19 one auction was funded, cleared and settled on standard public Zcash testnet (NU7), with the same proofs, admission and signing.</p>
+      <dl class="proven-facts">
+        <div><dt>Deposits</dt><dd><code>d573a651…3c7b1737</code><small>Block 4,518,128 · 2 confirmations</small></dd></div>
+        <div><dt>Clearing proof</dt><dd><strong>8.3 s</strong><small>Price 21 · 3 of 3 sold</small></dd></div>
+        <div><dt>Settlement</dt><dd><code>8e6da99b…034f0db7</code><small>Block 4,518,182 · 2 confirmations</small></dd></div>
+        <div><dt>Public check</dt><dd><strong>98 s</strong><small>No secrets · tampered proof refused</small></dd></div>
+      </dl>
+      <p class="fine-print">Chain data came from one lightwalletd provider (testnet.zec.rocks). Record: evidence/2026-10-19-public-testnet-settlement.json in the repository.</p>
+    </section>
+
     <section class="landing-more" aria-labelledby="compare-title">
       <h2 id="compare-title">Other auctions open the bids to prove the price.</h2>
       <p class="section-lead">Commit–reveal and published viewing keys show every bid amount after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
@@ -61,6 +109,14 @@
         <div><strong>1 tx</strong><span>pays the seller and refunds all four bidders</span></div>
         <div><strong>~100 s</strong><span>for anyone to verify a settlement, no secrets needed</span></div>
       </div>
+      <details class="landing-trust"><summary>Trust model: what DarkCall does not prove</summary><ul>
+        <li>Bid secrecy holds against at most one semi-honest operator (REP3). Two colluding operators can reconstruct the bids. This is not malicious-secure MPC.</li>
+        <li>Custody is 2-of-3 FROST from a DKG. Two colluding signers can move escrowed funds, and bidders have no unilateral refund.</li>
+        <li>Operators hold the escrow viewing capability and learn winners and refunds.</li>
+        <li>The public price is the highest losing bid, or the reserve.</li>
+        <li>Funding is attested by operator signatures, not proven in zero knowledge, and the public bundle alone does not prove chain inclusion.</li>
+        <li>In this demo every party runs on one host, the local helper sees typed bids, and one test wallet funds all four tickets.</li>
+      </ul></details>
       <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop. DarkCall assumes semi-honest operators: two colluding operators could reconstruct bids or move escrowed funds. Prototype with every party on one host; testnet coins only.</p>
     </section>
     <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">

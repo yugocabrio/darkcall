@@ -83,13 +83,66 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .try-card .experience-scope {color:#b9b7ae}
 .has-experience .intro {padding:20px 0 28px}
 .has-experience .hero {display:block}
-.has-experience .hero-copy > :not(.experience-picker),.has-experience .hero-receipt,.has-experience .landing-more {display:none}
+.has-experience .hero-copy > :not(.experience-picker),.has-experience .hero-receipt,.has-experience .landing-more,.has-experience .how,.has-experience .proven {display:none}
 .has-experience .experience-picker {margin:0;display:inline-flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
 .has-experience .experience-card {padding:8px 18px;border:0;border-radius:999px;background:transparent;color:var(--ink-2)}
 .has-experience .experience-card.active {background:var(--ink);color:#fff}
 .has-experience .experience-heading {font-size:15px;font-weight:500}
 .has-experience .experience-heading::after {content:""}
 .has-experience .experience-scope {display:none}
+
+/* How it works: stages, six steps, the payment binding */
+.section-kicker {margin:0 0 12px;color:var(--gold-ink);font-weight:500;font-size:14px}
+.how {margin-top:112px}
+.how h2,.proven h2 {font-size:clamp(30px,3.6vw,44px);letter-spacing:-.03em}
+.stages {list-style:none;padding:0;margin:36px 0 0;display:grid;grid-template-columns:repeat(4,1fr);gap:0;counter-reset:none}
+.stages li {position:relative;padding:20px 22px 22px;background:var(--surface);border:1px solid var(--line);margin-left:-1px}
+.stages li:first-child {border-radius:16px 0 0 16px;margin-left:0}
+.stages li:last-child {border-radius:0 16px 16px 0}
+.stages li:not(:last-child)::after {content:"";position:absolute;right:-7px;top:50%;width:12px;height:12px;background:var(--surface);border-top:1px solid var(--line-strong);border-right:1px solid var(--line-strong);transform:translateY(-50%) rotate(45deg);z-index:1}
+.stages span {display:block;font:500 12px var(--mono);color:var(--gold-ink);margin-bottom:10px}
+.stages b {display:block;font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.stages small {display:block;margin-top:10px;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.disclosure {display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.disclosure div {border-radius:14px;padding:16px 20px}
+.disclosure div:first-child {background:var(--surface-2);border:1px solid var(--line)}
+.disclosure div:last-child {background:var(--ink);color:#fff}
+.disclosure b {font-size:14px;font-weight:600}
+.disclosure p {margin:4px 0 0;font-size:14px;color:var(--ink-2)}
+.disclosure div:last-child p {color:#d8d6cf}
+.steps-title {font-size:22px;margin:64px 0 0}
+.steps {list-style:none;padding:0;margin:20px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.steps li {display:grid;grid-template-columns:36px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+.step-n {width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:500 14px var(--mono);background:var(--gold-soft);color:var(--gold-ink)}
+.steps h4 {margin:3px 0 2px;font-size:17px;font-weight:600;letter-spacing:-.01em}
+.steps p {margin:8px 0 0;font-size:14px;line-height:1.55;color:var(--ink-2)}
+.steps .q {margin-top:2px;color:var(--ink-3);font-style:italic}
+.steps .pp {padding-top:10px;border-top:1px dashed var(--line-strong);font-size:13px;color:var(--ink)}
+.steps .pp em {font-style:normal;font-weight:600;color:var(--gold-ink)}
+.binding {display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;align-items:stretch;margin-top:48px}
+.bind-box {background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.bind-box span {display:block;font-size:13px;color:var(--ink-3)}
+.bind-box b {display:block;margin:6px 0 4px;font-size:17px;font-weight:600}
+.bind-box small {font-size:13px;color:var(--ink-2)}
+.bind-key {background:var(--ink);border-color:var(--ink);color:#fff}
+.bind-key span {color:var(--gold)}
+.bind-key small {color:#d8d6cf}
+.bind-arrow {position:relative}
+.bind-arrow::before {content:"";position:absolute;left:8px;right:12px;top:50%;border-top:1.5px solid var(--ink-3)}
+.bind-arrow::after {content:"";position:absolute;right:9px;top:50%;width:8px;height:8px;border-top:1.5px solid var(--ink-3);border-right:1.5px solid var(--ink-3);transform:translateY(-50%) rotate(45deg)}
+.bind-note {margin:16px 0 0;max-width:760px;font-size:15px;color:var(--ink-2)}
+.proven {margin-top:112px}
+.proven-facts {display:grid;grid-template-columns:1.4fr .8fr 1.4fr .8fr;gap:0;margin:32px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.proven-facts div {padding:20px 22px;border-left:1px solid var(--line)}
+.proven-facts div:first-child {border-left:0}
+.proven-facts dt {font-size:13px;color:var(--ink-3)}
+.proven-facts dd {margin:8px 0 0}
+.proven-facts code {font:500 15px var(--mono)}
+.proven-facts strong {font-size:32px;font-weight:500;letter-spacing:-.03em}
+.proven-facts small {display:block;margin-top:6px;font-size:13px;color:var(--ink-2)}
+.landing-trust {margin-top:36px;border-top:1px solid var(--line);padding-top:16px;max-width:860px}
+.landing-trust ul {padding-left:20px;margin:14px 0 0}
+.landing-trust li {margin:6px 0;font-size:14px;color:var(--ink-2)}
 
 /* Why it is different, and what was measured */
 .landing-more {margin-top:112px}
@@ -286,6 +339,20 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .intro {padding-top:28px}
   .lead {font-size:17px}
   .hero {grid-template-columns:1fr;gap:40px}
+  .how,.proven {margin-top:72px}
+  .stages {grid-template-columns:1fr}
+  .stages li {margin-left:0;margin-top:-1px;border-radius:0}
+  .stages li:first-child {border-radius:14px 14px 0 0;margin-top:0}
+  .stages li:last-child {border-radius:0 0 14px 14px}
+  .stages li:not(:last-child)::after {right:auto;left:50%;top:auto;bottom:-7px;transform:translateX(-50%) rotate(135deg)}
+  .disclosure,.steps {grid-template-columns:1fr}
+  .binding {grid-template-columns:1fr;gap:0}
+  .bind-arrow {height:28px}
+  .bind-arrow::before {left:50%;right:auto;top:4px;bottom:8px;border-top:0;border-left:1.5px solid var(--ink-3)}
+  .bind-arrow::after {left:50%;right:auto;top:auto;bottom:8px;transform:translateX(-50%) rotate(135deg)}
+  .proven-facts {grid-template-columns:1fr 1fr}
+  .proven-facts div:nth-child(3) {border-left:0}
+  .proven-facts div:nth-child(n+3) {border-top:1px solid var(--line)}
   .hero .lead {font-size:17px}
   .workspace,.fresh-result-layout {grid-template-columns:1fr}
   .experience-card {flex:1 1 100%}
