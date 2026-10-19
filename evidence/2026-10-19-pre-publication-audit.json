@@ -1,0 +1,32 @@
+{
+  "scope": "pre-publication audit of the full git history of this repository (all refs), before it is made public",
+  "date": "2026-10-19 (CEST)",
+  "head": "72711d7",
+  "commits_scanned": 111,
+  "blobs_scanned": 1364,
+  "method": "every reachable blob under 3 MB decoded as text and searched; file names of every committed path; commit messages; author and committer identities",
+  "patterns": [
+    "PEM private keys",
+    "GitHub tokens",
+    "AWS access keys",
+    "Zcash spending keys (secret-extended-key, usk)",
+    "Zcash viewing keys (uview, zxview)",
+    "mnemonic or seed phrase wording",
+    "key-like JSON fields with 32+ hex chars",
+    "API key or access token assignments",
+    "personal email addresses",
+    "local home-directory paths"
+  ],
+  "findings": {
+    "keys_tokens_seeds_or_viewing_keys": "none found in any version of any file or commit message",
+    "personal_email_in_file_contents": "none",
+    "risky_file_names": "none: matches were circuit sources, public evidence JSON and vendored halo2 test data",
+    "local_paths": "a local home-directory path appears in AGENTS.md at HEAD and in older versions of four evidence files and tools/nu7-compat/README.md (redacted at HEAD)",
+    "commit_identity": "all 111 commits carry the same author and committer, with a personal Gmail address that becomes public with the repository"
+  },
+  "not_in_git": ".local/ (wallets, bank and escrow keys, PCZTs, witnesses, journals, private logs) was never committed; checked by file name and content patterns above",
+  "author_decisions": [
+    "whether to keep the commit email as is, or rewrite history to a GitHub noreply address (force push, irreversible for clones)",
+    "whether to keep the local path in AGENTS.md line 3 or the file itself in the public repository"
+  ]
+}
