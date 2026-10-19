@@ -5,9 +5,9 @@ submission itself.
 
 ## One line
 
-DarkCall: verifiable sealed-bid auctions on Zcash. No bid is ever opened: not
-at the close, not for any single operator, and not even to generate the
-zero-knowledge proof of the price.
+DarkCall: private, verifiable sealed-bid auctions on Zcash. No bid is ever
+opened: not at the close, not for any single operator, and not even to
+generate the zero-knowledge proof of the price.
 
 Longer: sealed-bid auctions on Zcash where no bid is ever opened, not at the
 close and not for any single operator. Even the zero-knowledge proof of the

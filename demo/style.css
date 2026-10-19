@@ -473,6 +473,7 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .public-details dd {margin:0;overflow-wrap:anywhere}
 
 @media (max-width:1000px) {
+  .top-label {display:none}
   .hero {grid-template-columns:1fr;gap:40px}
   .hero-receipt {max-width:520px}
 }

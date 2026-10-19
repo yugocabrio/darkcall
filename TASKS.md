@@ -71,6 +71,8 @@ Done:
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.
 - [x] Name kept: "DarkCall", descriptor "Verifiable sealed-bid auctions on Zcash".
+- [x] Descriptor (Oct 19): "Private, verifiable sealed-bid auctions on Zcash". "Sealed-bid" alone
+      usually means bids opened at the close, so "private" now states the never-opened half.
 - [x] Clean-room container covers all seven bundles (Oct 19, strict tamper refusal): first
       with the 66988f5 image and bundles mounted read-only, then with a fresh image built
       from `a7f67bd` by `scripts/docker_verify.sh`.
