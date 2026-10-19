@@ -6,6 +6,8 @@ reconstructs, and one shielded settlement that anyone can verify.**
 ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
 one real auction, from creation to shielded receipts, with every time cut labeled.
 
+![DarkCall: a typical audited auction opens every bid; DarkCall proves the price without opening them](demo/media/v2/01-landing.jpg)
+
 > **Demo scope, up front.** This prototype runs every role on one machine. The
 > local bidder helper that builds each bid's proof and shares sees the typed
 > demo bid, and the three operators share a host. The protocol keeps bids from
@@ -97,15 +99,18 @@ recorded settlement `47019e02…a211938` with fixture bids. Exact records:
 [recorded settlement](evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
 <table>
-<tr><td><img src="docs/img/01-landing.jpg" alt="Landing: a typical audited auction opens every bid; DarkCall proves the price without opening them"></td>
-<td><img src="docs/img/02-bids-sealed.jpg" alt="Six steps, four sealed tickets, and real deposits locked before clearing"></td></tr>
-<tr><td>The difference in one glance: prove the price without opening the bids.</td>
-<td>Four sealed tickets; real shielded deposits admitted over the same root before any clearing.</td></tr>
-<tr><td><img src="docs/img/05-settled.jpg" alt="Settlement stages done, who learned what, and the settlement transaction"></td>
-<td><img src="docs/img/06-shielded-receipt-tamper.jpg" alt="A losing ticket's shielded refund decrypted, and a corrupted receipt proof rejected"></td></tr>
+<tr><td><img src="demo/media/v2/04-sealed.jpg" alt="Four sealed tickets with the six-step bar"></td>
+<td><img src="demo/media/v2/07-funded.jpg" alt="Deposits locked on Zcash regtest and admitted over the same root, before clearing"></td></tr>
+<tr><td>Four sealed tickets: each a client ZK proof plus three operator signatures; no value shown.</td>
+<td>Fund on Zcash: real shielded deposits, admitted over the same root, before any clearing.</td></tr>
+<tr><td><img src="demo/media/v2/16-settled.jpg" alt="Settlement stages done, who learned what, and the settlement transaction"></td>
+<td><img src="demo/media/v2/20-receipt-tamper.jpg" alt="A losing ticket's shielded refund decrypted, and a corrupted receipt proof rejected"></td></tr>
 <tr><td>Settle: MPC delivery, six output bindings, FROST signing, confirmations, public check.</td>
 <td>Each ticket opens only its own shielded receipt; a corrupted proof is rejected before the key is read.</td></tr>
 </table>
+
+Frames from the video run (auction `b9c23d7d…`, settlement `e3056995…51caf779`); see
+[demo/media/v2/manifest.json](demo/media/v2/manifest.json).
 
 ## Try it
 

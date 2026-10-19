@@ -24,6 +24,9 @@ Updated: 2026-10-19 (git HEAD is authoritative).
   a concurrent proof gets 409.
 - **Verification without secrets:** `./verify.sh --funded …` on the host, or
   `scripts/docker_verify.sh` in a clean Linux container built from `git archive`.
+  On Oct 19 the script verified all four committed bundles (about 100 s each,
+  strict tamper refusal). Recorded-mode HTTP check: 4 receipts plus 15 refusals.
+  Public-only mode: own receipt refused without a key, tamper refused.
 - **Committed bundles:** `browser-auction-nu7-v2` (headline),
   `browser-auction-nu7-v1`, `fresh-book-nu7-v1` (Oct 18 browser books), and
   `canonical-nu7-funded-v1` (Oct 5, fixture bids).
