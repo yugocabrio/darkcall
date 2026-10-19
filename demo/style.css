@@ -110,6 +110,61 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .disclosure b {font-size:14px;font-weight:600}
 .disclosure p {margin:4px 0 0;font-size:14px;color:var(--ink-2)}
 .disclosure div:last-child p {color:#d8d6cf}
+/* Follow one auction: the demo bids through all five stages */
+.walk {margin-top:48px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:26px 28px 22px;box-shadow:var(--shadow)}
+.walk-top {display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px}
+.walk-kicker {margin:0;font-size:13px;font-weight:500;color:var(--gold-ink)}
+.walk-title {margin:4px 0 0;font-size:20px;font-weight:600;letter-spacing:-.01em}
+.walk-toggle {display:flex;align-items:flex-start;gap:10px;max-width:300px;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;white-space:nowrap}
+.walk-toggle span {display:block}
+.walk-toggle input {width:16px;height:16px;margin:2px 0 0;flex:none;accent-color:var(--ink)}
+.walk-toggle small {display:block;margin-top:2px;font-size:12px;font-weight:400;color:var(--ink-3);white-space:normal}
+.walk-stage {display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.walk-stage > div {border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--surface-2);transition:opacity .45s ease,transform .45s ease,border-color .3s,box-shadow .3s}
+.walk-stage span {display:block;font-size:12px;color:var(--ink-3)}
+.walk-stage b {font-weight:600}
+.walk-stage small {display:block;font-size:12px;color:var(--ink-2);margin-top:6px}
+.w-bidders {grid-column:1/13;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:transparent!important;border:0!important;padding:0!important}
+.w-bidder {border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.w-seal {display:grid;place-items:center;height:28px;margin-top:8px;border-radius:6px;background:var(--ink)}
+.w-seal i {font:500 14px var(--mono);font-style:normal;color:#fff;opacity:0;transition:opacity .3s}
+.walk-stage.reveal .w-seal i {opacity:1}
+.walk-stage.reveal .w-seal {background:repeating-linear-gradient(135deg,#141413 0 8px,#2a2926 8px 16px)}
+.w-ops {grid-column:1/9;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;background:transparent!important;border:0!important;padding:0!important}
+.w-op {border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);transition:opacity .45s ease,transform .45s ease,border-color .3s}
+.w-chips {display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:10px}
+.w-chips i {height:14px;border-radius:3px;background:var(--gold-soft);border:1px solid var(--gold);transform:scale(.4);opacity:0;transition:transform .35s ease,opacity .35s ease}
+.w-op.on .w-chips i {transform:none;opacity:1}
+.w-op.on .w-chips i:nth-child(2n) {transition-delay:.12s}
+.w-op.on .w-chips i:nth-child(n+5) {transition-delay:.24s}
+.w-escrow {grid-column:9/13}
+.w-result {grid-column:1/5}
+.w-result b {display:block;margin-top:6px;font-size:22px;letter-spacing:-.02em}
+.w-proof {color:var(--green)!important;font-weight:500}
+.w-settle {grid-column:5/13}
+.w-settle ol {list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.w-settle li {display:grid;grid-template-columns:minmax(0,1fr) 58px auto;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+.w-settle li span {font-size:12px;color:var(--ink-2)}
+.w-settle .w-seal {height:20px;margin:0}
+.w-settle .w-seal i {font-size:12px}
+.w-settle em {font-style:normal;font-size:11px;font-weight:500;color:var(--green);white-space:nowrap}
+.w-public {grid-column:1/13;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent!important;border:0!important;padding:0!important}
+.w-public > div {border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)}
+.w-public b {display:block;margin-top:4px;font-size:16px}
+.w-own {background:var(--ink)!important;border-color:var(--ink)!important;color:#fff}
+.w-own span,.w-own small {color:#c9c7bf!important}
+.walk-stage .w-from {opacity:.18;transform:translateY(6px)}
+.walk-stage .w-from.on {opacity:1;transform:none}
+.walk-stage[data-step="1"] .w-op.on,.walk-stage[data-step="2"] .w-escrow,.walk-stage[data-step="3"] .w-result,.walk-stage[data-step="4"] .w-settle {border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.walk-stage[data-step="5"] .w-public > div:first-child {border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.walk-controls {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap}
+.walk-steps {list-style:none;display:flex;gap:4px;margin:0;padding:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;flex-wrap:wrap}
+.walk-steps button {border:0;background:transparent;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;color:var(--ink-2)}
+.walk-steps button[aria-current] {background:var(--ink);color:#fff}
+.walk-play {border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:7px 18px;font-size:13px;font-weight:500}
+.walk-play:hover {border-color:var(--ink)}
+.walk-caption {margin:14px 0 0;min-height:48px;font-size:15px;line-height:1.6;color:var(--ink-2);max-width:900px}
+.walk-caption b {color:var(--ink);font-weight:600}
 .steps-title {font-size:22px;margin:64px 0 0}
 .steps {list-style:none;padding:0;margin:20px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .steps li {display:grid;grid-template-columns:36px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
@@ -117,6 +172,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .steps h4 {margin:3px 0 2px;font-size:17px;font-weight:600;letter-spacing:-.01em}
 .steps p {margin:8px 0 0;font-size:14px;line-height:1.55;color:var(--ink-2)}
 .steps .q {margin-top:2px;color:var(--ink-3);font-style:italic}
+.steps p b,.bind-note b,.lead b {color:var(--ink);font-weight:600}
 .steps .pp {padding-top:10px;border-top:1px dashed var(--line-strong);font-size:13px;color:var(--ink)}
 .steps .pp em {font-style:normal;font-weight:600;color:var(--gold-ink)}
 .binding {display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;align-items:stretch;margin-top:48px}
@@ -346,6 +402,14 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .stages li:last-child {border-radius:0 0 14px 14px}
   .stages li:not(:last-child)::after {right:auto;left:50%;top:auto;bottom:-7px;transform:translateX(-50%) rotate(135deg)}
   .disclosure,.steps {grid-template-columns:1fr}
+  .walk {padding:20px 16px}
+  .walk-top {flex-direction:column}
+  .walk-stage {grid-template-columns:1fr}
+  .w-bidders,.w-ops,.w-escrow,.w-result,.w-settle,.w-public {grid-column:1/-1}
+  .w-bidders {grid-template-columns:1fr 1fr}
+  .w-ops {grid-template-columns:1fr}
+  .w-settle ol,.w-public {grid-template-columns:1fr}
+  .walk-steps {border-radius:16px}
   .binding {grid-template-columns:1fr;gap:0}
   .bind-arrow {height:28px}
   .bind-arrow::before {left:50%;right:auto;top:4px;bottom:8px;border-top:0;border-left:1.5px solid var(--ink-3)}

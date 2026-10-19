@@ -532,3 +532,35 @@ window.addEventListener('beforeunload',event=>{
 function setDefaultClose() { const close=new Date(Date.now()+120000); $('create-close').value=new Date(close-close.getTimezoneOffset()*60000).toISOString().slice(0,19); }
 setDefaultClose();
 setInterval(refreshRoom,1000);
+
+// "Follow one auction": a static walkthrough of the demo bids 77, 61, 43, 21.
+// Values are shown only when the reader asks; the protocol never publishes them.
+(function walkthrough() {
+  const stage=$('walk-stage'); if (!stage) return;
+  const captions=[
+    [['Seal. ',1],['Four bidders commit to their maximum bids. Each bid is split into three secret shares and each operator holds two of them, so ',0],['no single operator can read a bid',1],['. A zero-knowledge proof ties every commitment to its shares.',0]],
+    [['Fund. ',1],['Each ticket locks its budget plus fee in a ',0],['shielded 2-of-3 escrow',1],['. The operators check the deposits against the same proofs and shares, then all three ',0],['sign the accepted book',1],['.',0]],
+    [['Prove. ',1],['The operators compute on shares only. Three units for four bids gives a ',0],['price of 21',1],[', the highest losing bid. A coNoir proof shows it follows the rules over exactly the committed bids; ',0],['no bid list is ever rebuilt',1],['.',0]],
+    [['Settle. ',1],['The same computation yields six payment rows: refunds of 79, 79, 79 and 100, 63 to the seller, and the operator fee. ',0],['Six Halo2 proofs bind each row to a real note',1],[' in one shielded transaction.',0]],
+    [['Verify. ',1],['Anyone checks the proofs ',0],['with no secrets',1],[': price 21, three sold, every output bound to the result. Only Ticket 01 can decrypt its memo: ',0],['won, refund 79',1],['.',0]],
+  ];
+  let step=1, timer=null;
+  function show(n) {
+    step=n; stage.dataset.step=String(n);
+    for (const node of stage.querySelectorAll('.w-from')) node.classList.toggle('on',Number(node.dataset.from)<=n);
+    for (const button of document.querySelectorAll('.walk-steps button')) {
+      if (Number(button.dataset.step)===n) button.setAttribute('aria-current','step'); else button.removeAttribute('aria-current');
+    }
+    $('walk-caption').replaceChildren(...captions[n-1].map(([text,bold])=>bold?element('b',text):document.createTextNode(text)));
+  }
+  function stop() { if (timer) { clearInterval(timer); timer=null; $('walk-play').textContent='Play'; } }
+  for (const button of document.querySelectorAll('.walk-steps button')) button.addEventListener('click',()=>{ stop(); show(Number(button.dataset.step)); });
+  $('walk-play').addEventListener('click',()=>{
+    if (timer) { stop(); return; }
+    if (step===5) show(1);
+    $('walk-play').textContent='Pause';
+    timer=setInterval(()=>{ if (step>=5) stop(); else show(step+1); },3600);
+  });
+  $('walk-values').addEventListener('change',event=>stage.classList.toggle('reveal',event.target.checked));
+  show(1);
+})();

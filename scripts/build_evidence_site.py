@@ -45,6 +45,10 @@ def build():
     # The protocol explanation is the demo page's own section, so the two never drift.
     page = (ROOT / 'demo/index.html').read_text()
     how_html = re.search(r'<section class="how".*?</section>', page, re.S).group(0)
+    # No scripts here: show the walkthrough with every stage on and no controls.
+    how_html = re.sub(r'<label class="walk-toggle">.*?</label>', '', how_html, flags=re.S)
+    how_html = re.sub(r'<div class="walk-controls">.*?</div>\s*<p id="walk-caption"[^>]*></p>', '', how_html, flags=re.S)
+    how_html = how_html.replace('class="walk-stage" id="walk-stage" data-step="1"', 'class="walk-stage static"')
     style = (ROOT / 'demo/style.css').read_text()
     how_css = style[style.index('/* How it works'):style.index('/* Why it is different')]
     facts, at = manifest['facts'], {s['name']: s['elapsed_seconds'] for s in manifest['shots']}
@@ -195,6 +199,8 @@ footer {{margin:104px 0 48px;padding-top:24px;border-top:1px solid var(--line);f
 footer a {{color:var(--ink-2)}}
 {how_css}
 .how {{margin-top:104px}}
+.walk-stage.static .w-from {{opacity:1;transform:none}}
+.walk-stage.static .w-chips i {{opacity:1;transform:none}}
 .how h2 {{margin:0}}
 .section-lead {{font-size:17px;color:var(--ink-2);margin:12px 0 0;max-width:680px}}
 @media (max-width:760px) {{
