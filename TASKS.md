@@ -16,7 +16,7 @@ Done:
 - [x] Hosting plan for judges (`docs/hosting-plan.md`); nothing deployed.
 
 Open:
-- [ ] Container re-run covering all four committed bundles (in progress Oct 19).
+- [x] Container re-run via `scripts/docker_verify.sh`: all four committed bundles verified, strict tamper refusal.
 - [ ] Final consistency and adversarial review; final report to the author.
 - [ ] Optional, needs approval: tier-A static viewer or tier-B public verifier (see hosting plan).
 

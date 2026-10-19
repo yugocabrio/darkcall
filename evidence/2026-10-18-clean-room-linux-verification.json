@@ -131,5 +131,68 @@
     "second physical host",
     "amd64 run",
     "chain inclusion or public funding proof"
-  ]
+  ],
+  "run_all_four_bundles": {
+    "date": "2026-10-19 (CEST)",
+    "command": "scripts/docker_verify.sh (git archive HEAD | docker build; docker run)",
+    "image_revision": "9f80039",
+    "environment": "clean Linux container built from git archive; Linux 6.10.14-linuxkit aarch64",
+    "all_passed": true,
+    "results": [
+      {
+        "bundle": "browser-auction-nu7-v2",
+        "scope": "six-step browser auction: funded before clearing, then settled, Oct 19",
+        "txid": "e3ffa436a2fd747653dec92e052f622135f51912c6707ec95b7373ab84769754",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 99.787
+      },
+      {
+        "bundle": "browser-auction-nu7-v1",
+        "scope": "auction created and settled by clicking through the browser UI, Oct 18",
+        "txid": "3fee2c7ce3b64689c28700904a5b31e13272b41030ae5eedd58a6a87b5c0b5d7",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 99.628
+      },
+      {
+        "bundle": "fresh-book-nu7-v1",
+        "scope": "browser-created book settled from the CLI driver (resumed), Oct 18",
+        "txid": "54941ffd845509ee5dc7b23e08b0756526bf97b3123017d581c9c40345c76ee6",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 99.468
+      },
+      {
+        "bundle": "canonical-nu7-funded-v1",
+        "scope": "recorded Oct 5 settlement with fixture bids",
+        "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 99.549
+      }
+    ],
+    "tamper_check": "strict: fixed verifier log must contain Proof verification failed",
+    "image_removed_afterwards": true
+  }
 }

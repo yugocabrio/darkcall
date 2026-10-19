@@ -23,7 +23,8 @@ receipt memo.
    [local-rehearsal.md](local-rehearsal.md).
 2. **Verification without secrets.** The easiest route is
    `scripts/docker_verify.sh`. It builds every pinned tool from committed source
-   in a clean Linux container and verifies all three bundles plus a tamper case.
+   in a clean Linux container and verifies all four committed bundles plus a tamper
+   case for each (passed on Oct 19).
    On a host with the [pinned tools](reproduce.md), run:
 
    ```sh

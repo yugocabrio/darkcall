@@ -118,8 +118,8 @@ scripts/docker_verify.sh
 ```
 
 It builds every pinned tool from source using only committed files, verifies
-all three public bundles, and checks that a corrupted proof is rejected. It
-passed on Oct 18 on linux/arm64
+all four committed bundles, and checks that a corrupted proof is rejected. It
+passed on Oct 19 on linux/arm64
 ([record](evidence/2026-10-18-clean-room-linux-verification.json)). Remove the
 image afterwards with `docker image rm`.
 
