@@ -5,7 +5,10 @@ submission itself.
 
 ## One line
 
-Sealed-bid auctions on Zcash where no bid is ever opened, not at the close and
+DarkCall: verifiable sealed-bid auctions on Zcash. No bid is ever opened, not
+at the close and not for any single operator, and the price is still proven.
+
+Longer: sealed-bid auctions on Zcash where no bid is ever opened, not at the close and
 not for any single operator, and the price is still proven. One shielded
 transaction that anyone can verify pays everyone.
 

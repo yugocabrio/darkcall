@@ -1,5 +1,7 @@
 # DarkCall
 
+*Verifiable sealed-bid auctions on Zcash.*
+
 **Sealed-bid auctions on Zcash where no bid is ever opened, not at the close and
 not for any single operator, and the price is still proven. One shielded
 transaction that anyone can verify pays everyone.**

@@ -3,7 +3,7 @@
   "scope": "edited stills from one real local auction captured by tools/demo-capture/capture.mjs; time cuts state real elapsed time from the capture manifest",
   "scenes": [
     {"shot": "landing", "seconds": 9, "title": "No bid is ever opened. The price is still proven.",
-     "caption": "Other designs prove the price by opening the bid amounts at the close.\nDarkCall never opens them. On the right: a real auction settled in this UI."},
+     "caption": "Other designs prove the price by opening the bid amounts at the close.\nDarkCall never opens them. On the right: an auction already settled on public Zcash testnet."},
     {"shot": "create", "seconds": 5, "title": "1 · Create an auction",
      "caption": "3 identical units · reserve 20 · deposit budget 100 zatoshi · bidding closes in 2 minutes."},
     {"shot": "first-bid", "seconds": 8, "title": "2 · Seal a bid",
@@ -14,8 +14,8 @@
     {"shot": "closed", "seconds": 5, "title": "3 · Close and fund",
      "caption": "The three operators sign the closed book. Clearing waits until every ticket is funded."},
     {"shot": "funding", "seconds": 5, "title": "Fund on Zcash",
-     "caption": "Each ticket gets a real shielded deposit on an isolated NU7 regtest, into a 2-of-3 FROST escrow."},
-    {"cut": ["funding", "funded"], "seconds": 3, "caption": "Deposits confirm; operators decrypt them and re-verify the same proofs and shares."},
+     "caption": "Each ticket gets a real shielded deposit on public Zcash testnet, into a 2-of-3 FROST escrow."},
+    {"cut": ["funding", "funded"], "seconds": 3, "caption": "Deposits confirm on testnet; operators decrypt them and re-verify the same proofs and shares."},
     {"shot": "funded", "seconds": 6, "title": "Deposits locked, same book",
      "caption": "4 deposits · 4 bid proofs + 12 share pairs re-verified · 12 receipts · book signed again over the same root."},
     {"shot": "clearing", "seconds": 4, "title": "4 · Clear by MPC",
@@ -26,7 +26,7 @@
      "caption": "Ticket 01 opens only its own verified outcome: won, refund 79."},
     {"shot": "settle-start", "seconds": 5, "title": "6 · Settle on Zcash",
      "caption": "One shielded transaction will pay the seller and refund all four bidders."},
-    {"cut": ["settle-start", "settled"], "seconds": 3, "caption": "Six Halo2 output-binding proofs, the settlement proof, 2-of-3 FROST signing,\nZebra acceptance, 2 confirmations, six wallet scans and the public check."},
+    {"cut": ["settle-start", "settled"], "seconds": 3, "caption": "Six Halo2 output-binding proofs, the settlement proof, 2-of-3 FROST signing,\nbroadcast to testnet, 2 confirmations, six wallet scans and the public check."},
     {"shot": "settled", "seconds": 7, "after_settlement": true, "title": "Settled and publicly verified",
      "caption": "Every output is bound to the proven result. A public verifier replays it with no secrets."},
     {"shot": "who-learned", "seconds": 7, "after_settlement": true, "title": "Who learned what",
@@ -38,7 +38,7 @@
     {"shot": "receipt-tamper", "seconds": 6, "after_settlement": true, "title": "Try to cheat",
      "caption": "Flip one byte of the receipt proof: the fixed verifier rejects it before the key is read."},
     {"card": true, "seconds": 8, "after_settlement": true, "title": "What this prototype assumes",
-     "body": "Bid secrecy: at most one semi-honest corrupt operator (REP3).\nCustody: 2-of-3 FROST; two colluding signers can move funds.\nOperators learn winners and refunds. The price is the highest losing bid.\nDemo: all parties on one machine; the local helper sees typed bids.\nIsolated NU7 regtest, not testnet or mainnet."},
+     "body": "Bid secrecy: at most one semi-honest corrupt operator (REP3).\nCustody: 2-of-3 FROST; two colluding signers can move funds.\nOperators learn winners and refunds. The price is the highest losing bid.\nDemo: all parties on one machine; the local helper sees typed bids.\nPublic Zcash testnet through one trusted lightwalletd provider; testnet coins only."},
     {"card": true, "seconds": 6, "after_settlement": true, "title": "Verify it yourself",
      "body": "scripts/docker_verify.sh\nBuilds every pinned tool from committed source in a clean Linux container,\nverifies every committed settlement and rejects a tampered proof."}
   ]

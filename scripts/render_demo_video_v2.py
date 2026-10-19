@@ -51,7 +51,8 @@ def render(output, font, bold):
         return (f"drawtext=fontfile='{escaped(face or font)}':textfile='{escaped(path)}':expansion=none:"
                 f"fontsize={size}:fontcolor={color}:x={x}:y={y}:line_spacing=10")
 
-    badge = text('badge.txt', 'DarkCall · edited from one real auction · isolated Zcash regtest')
+    chain = 'public Zcash testnet' if manifest.get('chain') == 'testnet' else 'isolated Zcash regtest'
+    badge = text('badge.txt', 'DarkCall · edited from one real auction · ' + chain)
     clips, used, subtitles, elapsed = [], {}, [], 0
     for index, scene in enumerate(story['scenes']):
         seconds = scene['seconds']
