@@ -28,7 +28,7 @@
           <p class="hero-note">One number is public: the clearing price, which by the auction rule equals the highest losing bid or the reserve. In this local demo, the helper that builds each bid's proof sees the typed bid.</p>
         </div>
         <aside class="hero-receipt" aria-label="A settled DarkCall auction">
-          <div class="receipt-head"><span id="hero-label">Settled auction</span><span>Zcash NU7 · regtest</span></div>
+          <div class="receipt-head"><span id="hero-label">Settled auction</span><span id="hero-chain">Zcash NU7 · regtest</span></div>
           <div class="receipt-bids"><span id="hero-tickets">4 sealed bids</span><div aria-hidden="true"><b></b><b></b><b></b><b></b></div><small>Never opened or reconstructed</small></div>
           <div class="receipt-price"><span>Clearing price</span><strong><span id="hero-price">21</span><i>zatoshi</i></strong><small id="hero-sold">3 of 3 units sold · every winner pays the same</small></div>
           <ul class="receipt-checks">
@@ -61,7 +61,7 @@
         <div><strong>1 tx</strong><span>pays the seller and refunds all four bidders</span></div>
         <div><strong>~100 s</strong><span>for anyone to verify a settlement, no secrets needed</span></div>
       </div>
-      <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop. DarkCall assumes semi-honest operators: two colluding operators could reconstruct bids or move escrowed funds. Prototype on an isolated Zcash regtest.</p>
+      <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop. DarkCall assumes semi-honest operators: two colluding operators could reconstruct bids or move escrowed funds. Prototype with every party on one host; testnet coins only.</p>
     </section>
     <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">
       <div class="panel-top"><span class="eyebrow">Your auction</span><span id="rehearsal-label" class="recorded-label">Demo bids</span></div>
@@ -184,7 +184,7 @@
     <section class="how-it-works"><span class="eyebrow">How it works</span><ol><li><span>1</span>Sealed bids</li><li><span>2</span>Confidential clearing</li><li><span>3</span>Shielded settlement</li><li><span>4</span>Your private receipt</li></ol></section>
     <section class="technical-section" aria-label="Further details">
       <details class="public-details"><summary>Technical details</summary><p>REP3 computation · FROST signing · Halo2 output bindings · NU7</p><dl><dt>Transaction ID</dt><dd id="txid">—</dd><dt>Accepted root</dt><dd id="root">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Verification stages</dt><dd id="stage-status">Recorded clearing; own receipt unopened. Settlement not reverified in this session.</dd><dt>Public check</dt><dd id="settlement-detailed-result">Not run in this page session.</dd></dl></details>
-      <details class="public-details"><summary>Trust model and limits</summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds, and users cannot force a unilateral refund.</li><li>Operators have escrow viewing capability and learn refunds and who won. Public outcomes can allow inference.</li><li>The recorded auction ran on an isolated regtest with every party on one host. No malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The admission authority is configured and trusted separately.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded settlement; separate offline rehearsal with synthetic funding.</p></details>
+      <details class="public-details"><summary>Trust model and limits</summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds, and users cannot force a unilateral refund.</li><li>Operators have escrow viewing capability and learn refunds and who won. Public outcomes can allow inference.</li><li>Every party of the recorded auction ran on one host; see the chain note below. No malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The admission authority is configured and trusted separately.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded settlement; separate offline rehearsal with synthetic funding.</p></details>
     </section>
     </div>
   </main>

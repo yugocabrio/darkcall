@@ -13,12 +13,23 @@ if [ "${1-}" = "--fixture-recorded" ]; then
     --bundle "$TASK_ROOT/demo/artifacts/canonical-nu7-funded-v1" \
     --authority "$TASK_ROOT/demo/authority/canonical-nu7-funded-v1.json" "$@"
 fi
+if [ "${1-}" = "--regtest-recorded" ]; then
+  # The six-step regtest auction created, funded, cleared and settled in this UI
+  # on Oct 19 (tx e3ffa436...84769754).
+  shift
+  exec python3 "$TASK_ROOT/scripts/serve_demo.py" --canonical --funded \
+    --run settle-35b2a2569d-settlement \
+    --bundle "$TASK_ROOT/demo/artifacts/browser-auction-nu7-v2" \
+    --authority "$TASK_ROOT/demo/authority/browser-auction-nu7-v2.json" \
+    --recorded-note "Created, funded, cleared and settled in this UI on Oct 19 · isolated Zcash regtest" "$@"
+fi
 # Trusted local demo configuration, separately pinned from the proof bundle.
-# "Proof it settles" shows the auction that was created, funded, cleared and
-# settled through this UI on Oct 19 (tx e3ffa436...84769754). Without its
-# ignored local run, the same committed bundle is served public-only.
+# "See a settled auction" shows the auction funded, cleared and settled on public
+# Zcash testnet on Oct 19 (tx 8e6da99b...034f0db7). Without its ignored local
+# run, the same committed bundle is served public-only. Add --chain testnet to
+# run Fund and Settle for new auctions on testnet as well.
 exec python3 "$TASK_ROOT/scripts/serve_demo.py" --canonical --funded \
-  --run settle-35b2a2569d-settlement \
-  --bundle "$TASK_ROOT/demo/artifacts/browser-auction-nu7-v2" \
-  --authority "$TASK_ROOT/demo/authority/browser-auction-nu7-v2.json" \
-  --recorded-note "Created, funded, cleared and settled in this UI on Oct 19 · isolated Zcash regtest" "$@"
+  --run settle-b69f8e97f2-settlement \
+  --bundle "$TASK_ROOT/demo/artifacts/testnet-auction-nu7-v1" \
+  --authority "$TASK_ROOT/demo/authority/testnet-auction-nu7-v1.json" \
+  --recorded-note "Funded, cleared and settled on public Zcash testnet on Oct 19 · auction created through the demo API" "$@"

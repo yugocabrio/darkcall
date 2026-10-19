@@ -87,7 +87,9 @@ $('settlement').addEventListener('click', async () => {
 lock(true);
 fetch('/api/state').then(async response => {
   const data=await response.json(); if (!response.ok) throw new Error(data.error || 'Demo unavailable'); state=data;
-  $('proof-card-scope').textContent=state.funded_canonical?'Recorded auction · isolated regtest':'Separate example · synthetic transactions';
+  const recordedTestnet=state.recorded_chain==='testnet';
+  $('proof-card-scope').textContent=state.funded_canonical?(recordedTestnet?'Recorded on public Zcash testnet':'Recorded auction · isolated regtest'):'Separate example · synthetic transactions';
+  if (recordedTestnet) $('hero-chain').textContent='Zcash NU7 · public testnet';
   if (state.six_output_memo_e2e) {
     $('case-tabs').hidden = true;
     $('scope-description').textContent = 'Recorded proof-backed demo · synthetic funding, no broadcast.';
@@ -96,8 +98,8 @@ fetch('/api/state').then(async response => {
     $('remaining-scope').textContent = 'Local trusted-dealer threshold setup; all parties on one host. Public testnet funding, DKG admission and confirmations remain to be integrated into this same NU7 execution.';
     if (state.funded_canonical) {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
-      $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts, public testnet and larger bid counts remain unverified.';
-      $('chain-scope').textContent = state.recorded_local_confirmations ? 'Two controlled regtest confirmations recorded; public bundle does not prove chain inclusion' : 'Recorded regtest run; no chain inclusion proof in the public bundle';
+      $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts and larger bid counts remain unverified.';
+      $('chain-scope').textContent = recordedTestnet ? 'Two public-testnet confirmations recorded through one trusted lightwalletd provider; the public bundle does not itself prove chain inclusion.' : state.recorded_local_confirmations ? 'Two controlled regtest confirmations recorded; public bundle does not prove chain inclusion' : 'Recorded regtest run; no chain inclusion proof in the public bundle';
     }
     if (!state.recipient_identities_available) {
       $('result').replaceChildren(element('h3','Public verification view.'),element('p','This checkout contains no recipient keys. You can verify settlement and reject tampering; own receipt opening requires your private identity.'));
@@ -116,9 +118,9 @@ fetch('/api/state').then(async response => {
   }
   lock(false);
   if (onTestnet()) {
-    $('local-pill').textContent='Local demo · new auctions settle on Zcash testnet (experimental)';
+    $('local-pill').textContent='Local demo · new auctions settle on public Zcash testnet';
     for (const id of ['fund-chain','settle-chain']) $(id).textContent='Public testnet';
-    for (const node of document.querySelectorAll('.chain-text')) node.textContent='public Zcash testnet (experimental)';
+    for (const node of document.querySelectorAll('.chain-text')) node.textContent='public Zcash testnet';
   }
   const recordedTx=state.cases[0].txid, hero=state.cases[0];
   $('hero-price').textContent=hero.price; $('hero-tickets').textContent=hero.tickets+' sealed bids';

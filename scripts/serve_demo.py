@@ -35,6 +35,13 @@ class Demo:
         self.funded = funded
         self.note = note
         self.authority = authority
+        # The recorded auction's chain comes from its separately trusted
+        # authority: the admission context names the genesis it was funded on.
+        self.recorded_chain = 'regtest'
+        if authority is not None:
+            genesis = bytes(json.loads(pathlib.Path(authority).read_text())['context']['network_genesis']).hex()
+            if genesis == '05a60a92d99d85997cce3b87616c089f6124d7342af37106edc76126334a2c38':
+                self.recorded_chain = 'testnet'
         if funded and (not canonical or authority is None):
             raise RuntimeError("Funded demo requires canonical run and separate trusted authority")
         self.canonical = canonical
@@ -96,7 +103,7 @@ class Demo:
             'recipient_identities_available':not self.public_only,
             'live_admission':False, 'local_rehearsal_available':self.rehearsal.enabled,
             'regtest_settlement_available':self.rehearsal.settlement_available,
-            'live_chain':self.rehearsal.chain,
+            'live_chain':self.rehearsal.chain, 'recorded_chain':self.recorded_chain,
             'recorded_note':self.note,
             'independent_hosts':False, 'operators_know_results':True,
             'six_output_memo_e2e':bool(self.canonical), 'accepted_book_certified':False,
