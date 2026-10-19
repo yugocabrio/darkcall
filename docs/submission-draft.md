@@ -42,15 +42,18 @@ does who paid whom.
 ## Why it is different
 
 Auditable sealed-bid designs usually **disclose the bids to prove the result**.
-DarkCall **proves the result without disclosing them**. Neither the public nor
-any single operator learns who bid what, and no winner's maximum bid is ever
-published. In this one-machine demo, the local bidder helper does see the typed
-bid. Only the clearing price
-and the units sold are public. By the auction rule, the price equals the
-highest losing bid or the reserve. This needs all three parts. MPC keeps the bids hidden from any one
-operator. Zero-knowledge proofs make the hidden computation checkable. Native
-shielded settlement keeps the payments private while proofs tie them to the
-result.
+DarkCall **proves the result without disclosing them**. Only the clearing price
+and the units sold are public; by the auction rule the price equals the highest
+losing bid or the reserve. Neither the public nor any single operator learns
+who bid what, and no winner's maximum bid is ever published.
+
+All three parts are needed:
+- MPC keeps the bids away from any one operator.
+- Zero-knowledge proofs make that hidden computation checkable.
+- Native shielded settlement keeps the payments private, while proofs tie every
+  output to the result.
+
+In this one-machine demo, the local bidder helper does see the typed bid.
 
 ## What works (single-host prototype, isolated Zebra NU7 regtest)
 
@@ -74,8 +77,11 @@ result.
   rejected.
 - **Private receipts.** Each bidder decrypts only their own memo. A corrupted
   receipt proof is rejected before the bidder's key is read.
-- **An earlier recorded settlement** (`47019e02…a211938`) can be checked
-  instantly in the same UI.
+- **A recorded view of the same settlement.** `./demo.sh` serves the six-step
+  auction under "Proof it settles". Open each bidder's receipt in about 3 s, or
+  re-verify the whole settlement in about 2 minutes, without running a new
+  auction. `./demo.sh --fixture-recorded` shows the Oct 5 fixture-bid run
+  `47019e02…a211938`.
 
 ## Trust model, stated plainly
 
