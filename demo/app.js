@@ -95,7 +95,7 @@ fetch('/api/state').then(async response => {
     $('scope-description').textContent = 'Recorded proof-backed demo · synthetic funding, no broadcast.';
     $('native-shape').textContent = 'Ironwood · NU7 · 6 outputs / 4 encrypted receipts';
     $('settlement-scope').textContent = 'Verify that the shielded Zcash transaction matches the auction outcome — without seeing the bids.';
-    $('remaining-scope').textContent = 'Local trusted-dealer threshold setup; all parties on one host. Public testnet funding, DKG admission and confirmations remain to be integrated into this same NU7 execution.';
+    $('remaining-scope').textContent = 'Synthetic funding and no broadcast in this view; all parties on one host. Funded runs on public testnet and regtest are served by ./demo.sh.';
     if (state.funded_canonical) {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
       $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts and larger bid counts remain unverified.';

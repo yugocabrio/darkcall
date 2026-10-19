@@ -38,8 +38,8 @@ Updated: 2026-10-19 (git HEAD is authoritative).
   verified in the clean container with no network (101–114 s each, strict
   tamper refusal). Recorded-mode HTTP check: 4 receipts plus 15 refusals.
   Public-only mode: own receipt refused without a key, tamper refused.
-- **Committed bundles (6):** `testnet-auction-nu7-v1` (public testnet), `browser-auction-nu7-v2` (headline),
-  `browser-auction-nu7-v3` (video run), `browser-auction-nu7-v1`,
+- **Committed bundles (7):** `testnet-auction-nu7-v2` (testnet, the video run), `testnet-auction-nu7-v1` (testnet, API run), `browser-auction-nu7-v2` (regtest six-step),
+  `browser-auction-nu7-v3` (earlier regtest video run), `browser-auction-nu7-v1`,
   `fresh-book-nu7-v1` (Oct 18 browser books), and `canonical-nu7-funded-v1`
   (Oct 5, fixture bids).
 - **Unchanged limits:** one host runs every party; each bidder's client is a

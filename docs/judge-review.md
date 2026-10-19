@@ -15,10 +15,11 @@ receipt memo.
    (`4dde6fcb…`, settlement `be1157c8…a1c8ad67`), created and settled in the
    browser and captured by `tools/demo-capture/capture.mjs`. Every time cut
    states the real elapsed time.
-1. **The product, live.** `./demo.sh`, then **Run an auction**. Create an
+1. **The product, live.** `./demo.sh --chain testnet` (or `./demo.sh` on the
+   local regtest), then **Run an auction**. Create an
    auction, seal four demo bids, certify the book, then **Fund on Zcash**: real
    deposits and chain admission over the same root. Clear it by MPC and open
-   your result. Then **Settle on Zcash**: one shielded regtest transaction,
+   your result. Then **Settle on Zcash**: one shielded transaction,
    bound output by output to the result and publicly verified. Finally open
    your own shielded receipt and try the tamper check. See
    [local-rehearsal.md](local-rehearsal.md).
@@ -72,8 +73,8 @@ pinned native, Halo2 and C++ verifiers establish validity.
 | What does the public price reveal? | The clearing price is the highest losing bid, or the reserve, so that one bid value is public by the rules. Who placed it, and every other bid, is not. |
 | Who controls funds? | Two of three DKG FROST signers. No master key exists, but two colluders can move funds, and bidders have no unilateral refund. |
 | Is funding proven publicly? | No. Operator signatures attest funding. The bundle proves transaction validity and output binding, not chain inclusion. |
-| Who saw the demo bids? | The localhost helper that builds the client proof sees typed demo bids. All operators, the bank and the bidder wallets run on one machine. |
-| Public testnet or mainnet? | No. This is an isolated Zebra 7.0.0-rc.0 NU7 regtest with controlled confirmations. |
+| Who saw the demo bids? | Only each bidder's own client, which builds the proof and shares; here it is a localhost service. Operators receive shares and proofs. All operators, the test bank and the bidder wallets run on one machine. |
+| Public testnet or mainnet? | Public testnet, never mainnet. Two auctions settled on standard Zcash testnet (NU7) on Oct 19, one of them entirely from the browser (`be1157c8…a1c8ad67`, block 4,518,315); testnet chain data came from one trusted lightwalletd provider. Earlier runs used an isolated Zebra 7.0.0-rc.0 NU7 regtest with controlled confirmations. |
 | How large can an auction be? | The circuits have four bid slots and six outputs. The native settlement path supports the default terms: 3 units, budget 100, reserve 0 or 20. |
 
 An earlier delivery commitment let a public observer guess refunds from two
@@ -86,13 +87,14 @@ independently blinded v2 commitments:
 | Scope | Time |
 | --- | --- |
 | Browser REP3 clearing incl. proof + verification | ~9 s |
-| Funding + chain admission + certificate (120 s admission window) | ~2 min |
-| Fund on Zcash (deposits, chain admission, certificate) | about 2 min (121 s) |
-| Native settlement of a fresh browser book, uninterrupted | about 15 min (885–951 s) |
-| Settle → publicly verified | about 17 min (998–1024 s) |
+| Fund on Zcash, regtest (deposits, chain admission, certificate; 120 s window) | about 2 min (121 s) |
+| Fund on Zcash, public testnet (10-minute window plus real confirmations) | about 10 min (612 s) |
+| Native settlement of a fresh browser book, uninterrupted | about 15 min (885–951 s regtest, 984–1122 s testnet) |
+| Settle → publicly verified | about 17–20 min (998–1024 s regtest, 1091–1224 s testnet) |
 | Public-only verification | ~2 min |
 | Own receipt opening | ~3 s |
 
-No independent operator hosts, second-machine reproduction or public-chain
-settlement is claimed. Repository publication, deployment and contest submission
+Settlement on public Zcash testnet is demonstrated (two auctions, Oct 19). No
+independent operator hosts, second-machine reproduction or mainnet settlement
+is claimed. Repository publication, deployment and contest submission
 are the author's decisions.
