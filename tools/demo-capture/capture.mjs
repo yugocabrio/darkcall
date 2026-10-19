@@ -23,7 +23,8 @@ const manifest = { format: 1, scope: 'one real local auction driven through the 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const log = message => console.log(`[${((Date.now() - started) / 1000).toFixed(1)}s] ${message}`);
 
-const browser = await puppeteer.launch({ executablePath: process.env.DARKCALL_BROWSER || BRAVE, headless: true,
+// Each wait is one long-lived CDP call; testnet funding outlasts puppeteer's 180 s default.
+const browser = await puppeteer.launch({ executablePath: process.env.DARKCALL_BROWSER || BRAVE, headless: true, protocolTimeout: 3600000,
   args: ['--no-first-run', '--disable-extensions', '--hide-scrollbars'],
   defaultViewport: { width: 1920, height: 1080, deviceScaleFactor: 1 } });
 const page = await browser.newPage();
