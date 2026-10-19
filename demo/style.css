@@ -48,12 +48,14 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 /* What → why (key line) → how (three tagged lines) → proof (the card). */
 .hero .lead-key {font-size:18px;line-height:1.55;color:var(--ink-2);max-width:none}
 .hero .lead-key b {color:var(--ink);font-weight:600}
-.hero-how {list-style:none;margin:22px 0 0;padding:16px 0 2px;border-top:1px solid var(--line);display:grid;gap:12px}
-.hero-how li {display:grid;gap:4px}
-.hero-cat {display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.hero-tag {font:500 12px var(--mono);letter-spacing:0;text-transform:none;color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:1px 7px}
-.hero-how p {margin:0;font-size:15px;line-height:1.55;color:var(--ink-2)}
-.hero-how b {color:var(--ink);font-weight:600}
+.hero-flow {list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.hero-flow li {position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px 14px}
+.hero-flow li:not(:last-child)::after {content:"";position:absolute;right:-15px;top:50%;width:7px;height:7px;border-top:1.5px solid var(--ink-3);border-right:1.5px solid var(--ink-3);transform:translateY(-50%) rotate(45deg)}
+.hero-step {display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hero-step b {font-size:17px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+.hero-cat {display:block;margin:6px 0 4px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.hero-tag {font:500 12px var(--mono);color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:1px 7px}
+.hero-flow p {margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
 .receipt-checks em {font:500 11px var(--mono);font-style:normal;color:var(--gold-ink);margin-right:6px}
 .hero-receipt {background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 1px 2px rgba(20,20,19,.05),0 24px 60px rgba(20,20,19,.09);padding:24px 26px 22px;font-size:14px}
 .receipt-head {display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--line);font:12px var(--mono);color:var(--ink-3)}
@@ -209,7 +211,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .steps h4 {margin:3px 0 2px;font-size:17px;font-weight:600;letter-spacing:-.01em}
 .steps p {margin:8px 0 0;font-size:14px;line-height:1.55;color:var(--ink-2)}
 .steps .q {margin-top:2px;color:var(--ink-3);font-style:italic}
-.steps p b,.bind-note b,.lead b {color:var(--ink);font-weight:600}
+.steps p b,.bind-lead b,.lead b {color:var(--ink);font-weight:600}
 .steps .pp {padding-top:10px;border-top:1px dashed var(--line-strong);font-size:13px;color:var(--ink)}
 .steps .pp em {font-style:normal;font-weight:600;color:var(--gold-ink)}
 .binding {display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;align-items:stretch;margin-top:18px}
@@ -223,12 +225,14 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .bind-arrow {position:relative}
 .bind-arrow::before {content:"";position:absolute;left:8px;right:12px;top:50%;border-top:1.5px solid var(--ink-3)}
 .bind-arrow::after {content:"";position:absolute;right:9px;top:50%;width:8px;height:8px;border-top:1.5px solid var(--ink-3);border-right:1.5px solid var(--ink-3);transform:translateY(-50%) rotate(45deg)}
-.bind-title {font-size:22px;margin:56px 0 6px}
-.bind-lead {margin:0;font-size:15px;color:var(--ink-2)}
-.bind-note {margin:16px 0 0;max-width:820px;font-size:15px;color:var(--ink-2)}
-.bind-checks {margin:12px 0 0;max-width:820px;padding:12px 16px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);font-size:14px;color:var(--ink-2)}
-.bind-checks b {color:var(--ink);font-weight:600}
-.bind-design {margin:10px 0 0;max-width:820px;font-size:12px;color:var(--ink-3)}
+.bind-kicker {margin:56px 0 6px;font-size:13px;font-weight:500;color:var(--gold-ink)}
+.bind-title {font-size:26px;line-height:1.25;letter-spacing:-.02em;margin:0 0 10px}
+.bind-lead {margin:0;max-width:820px;font-size:15px;color:var(--ink-2)}
+.bind-facts {display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 0}
+.bind-facts p {margin:0;padding:14px 16px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.bind-facts b {color:var(--ink);font-weight:600}
+.bind-design {margin:12px 0 0;font-size:12px;color:var(--ink-3)}
+.bind-design b {font-weight:600;color:var(--ink-2)}
 .proven {margin-top:112px}
 .proven-facts {display:grid;grid-template-columns:1.4fr .8fr 1.4fr .8fr;gap:0;margin:32px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .proven-facts div {padding:20px 22px;border-left:1px solid var(--line)}
@@ -260,6 +264,9 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
   .w-settle ol,.w-public {grid-template-columns:1fr}
   .walk-steps {border-radius:16px}
   .binding {grid-template-columns:1fr;gap:0}
+  .bind-facts {grid-template-columns:1fr}
+  .bind-title {font-size:22px}
+  .bind-title br {display:none}
   .bind-arrow {height:28px}
   .bind-arrow::before {left:50%;right:auto;top:4px;bottom:8px;border-top:0;border-left:1.5px solid var(--ink-3)}
   .bind-arrow::after {left:50%;right:auto;top:auto;bottom:8px;transform:translateX(-50%) rotate(135deg)}
@@ -466,6 +473,12 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .how,.proven {margin-top:72px}
   .hero .lead {font-size:17px}
   .hero .lead-key {font-size:17px}
+  .hero-flow {grid-template-columns:1fr;gap:18px}
+  .hero-flow li {display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;align-items:center;padding:10px 14px 12px}
+  .hero-step {justify-content:flex-start}
+  .hero-cat {margin:0}
+  .hero-flow p {grid-column:1/-1;margin-top:4px}
+  .hero-flow li:not(:last-child)::after {right:auto;left:50%;top:auto;bottom:-13px;transform:translateX(-50%) rotate(135deg)}
   .workspace,.fresh-result-layout {grid-template-columns:1fr}
   .experience-card {flex:1 1 100%}
   .landing-more {margin-top:72px}

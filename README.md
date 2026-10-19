@@ -12,15 +12,16 @@ can verify pays the seller and refunds every bidder exactly as proven.**
 - **Multi-party ZK proving** (coNoir). The operators compute the clearing price
   and jointly generate one zero-knowledge proof from those shares; no single
   prover ever sees the bid book.
-- **Proof-bound shielded settlement** (Halo2). Six proofs bind the proven payouts
-  to the outputs of one shielded Zcash transaction.
+- **Proof-bound shielded settlement** (Halo2). Four refunds, the seller and the
+  operator fee: each of the six payouts has its own proof that its amount and
+  recipient match the proven result, all in one shielded Zcash transaction.
 
 ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
 one real auction, from creation to shielded receipts, with every time cut labeled.
 **Settled on public Zcash testnet** from the browser on Oct 19: settlement tx
 `be1157c8…a1c8ad67` at block 4,518,315 ([record](#settled-on-public-zcash-testnet)).
 
-![DarkCall landing page: no bid is ever opened, the price is still proven, settled on Zcash; multi-party computation, multi-party ZK proving and proof-bound shielded settlement; beside it, a real auction settled in this UI on public Zcash testnet](demo/media/landing-hero.jpg)
+![DarkCall landing page: no bid is ever opened, the price is still proven, settled on Zcash; split, prove and pay as multi-party computation, multi-party ZK proving and proof-bound settlement; beside it, a real auction settled in this UI on public Zcash testnet](demo/media/landing-hero.jpg)
 
 > **Demo scope, up front.** This prototype runs every role on one machine. Each
 > bidder's own client builds the bid's proof and shares and is the only party

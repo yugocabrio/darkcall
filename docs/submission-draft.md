@@ -20,8 +20,9 @@ exactly as proven.
 - **Multi-party ZK proving** (coNoir). The operators compute the clearing price
   and jointly generate one zero-knowledge proof from those shares; no single
   prover ever sees the bid book.
-- **Proof-bound shielded settlement** (Halo2). Six proofs bind the proven payouts
-  to the outputs of one shielded Zcash transaction.
+- **Proof-bound shielded settlement** (Halo2). Four refunds, the seller and the
+  operator fee: each of the six payouts has its own proof that its amount and
+  recipient match the proven result, all in one shielded Zcash transaction.
 
 ## Against the four judging criteria
 
@@ -44,9 +45,9 @@ exactly as proven.
 - **Originality.** Multi-party ZK proving: the operators generate the price's
   zero-knowledge proof jointly from secret shares (coNoir over REP3), so no
   single prover ever sees the bid book. Proof-bound shielded settlement: six
-  Halo2 proofs bind every output of the native shielded transaction to the
-  proven result. All code was written for this hackathon,
-  starting Oct 4, 2026.
+  Halo2 proofs, one per payout (four refunds, the seller and the operator fee),
+  bind each output of the native shielded transaction to the proven result.
+  All code was written for this hackathon, starting Oct 4, 2026.
 
 ## The problem
 

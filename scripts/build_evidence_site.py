@@ -200,12 +200,14 @@ footer a {{color:var(--ink-2)}}
 {how_css}
 .lead-key {{font-size:18px;line-height:1.55;max-width:660px}}
 .lead-key b {{color:var(--ink);font-weight:600}}
-.hero-how {{list-style:none;margin:22px 0 0;padding:16px 0 2px;border-top:1px solid var(--line);display:grid;gap:14px;max-width:660px}}
-.hero-how li {{display:grid;gap:4px}}
-.hero-cat {{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}}
-.hero-tag {{font:500 12px var(--mono);letter-spacing:0;text-transform:none;color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:1px 7px}}
-.hero-how p {{margin:0;font-size:15px;line-height:1.55;color:var(--ink-2)}}
-.hero-how b {{color:var(--ink);font-weight:600}}
+.hero-flow {{list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;max-width:760px}}
+.hero-flow li {{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px 14px}}
+.hero-flow li:not(:last-child)::after {{content:"";position:absolute;right:-15px;top:50%;width:7px;height:7px;border-top:1.5px solid var(--ink-3);border-right:1.5px solid var(--ink-3);transform:translateY(-50%) rotate(45deg)}}
+.hero-step {{display:flex;align-items:center;justify-content:space-between;gap:8px}}
+.hero-step b {{font-size:17px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}}
+.hero-cat {{display:block;margin:6px 0 4px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}}
+.hero-tag {{font:500 12px var(--mono);color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:1px 7px}}
+.hero-flow p {{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}}
 .how {{margin-top:104px}}
 .walk-stage.static .w-from {{opacity:1;transform:none}}
 .walk-stage.static .w-chips i {{opacity:1;transform:none}}
@@ -213,6 +215,12 @@ footer a {{color:var(--ink-2)}}
 .section-lead {{font-size:17px;color:var(--ink-2);margin:12px 0 0;max-width:680px}}
 @media (max-width:760px) {{
   .lead-key {{font-size:17px}}
+  .hero-flow {{grid-template-columns:1fr;gap:18px}}
+  .hero-flow li {{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;align-items:center;padding:10px 14px 12px}}
+  .hero-step {{justify-content:flex-start}}
+  .hero-cat {{margin:0}}
+  .hero-flow p {{grid-column:1/-1;margin-top:4px}}
+  .hero-flow li:not(:last-child)::after {{right:auto;left:50%;top:auto;bottom:-13px;transform:translateX(-50%) rotate(135deg)}}
   .wrap {{padding:0 16px}}
   .kicker {{margin-top:36px}}
   .lead {{font-size:17px}}
@@ -236,12 +244,8 @@ footer a {{color:var(--ink-2)}}
 
 <p class="kicker">Verifiable sealed-bid auctions on Zcash</p>
 <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
-<p class="lead lead-key">DarkCall is a sealed-bid auction that never opens a bid: not at the close, and not for any single operator. <b>Even the zero-knowledge proof of the clearing price is generated without opening the bids</b>, and one shielded Zcash transaction pays the seller and refunds every bidder exactly as proven.</p>
-<ol class="hero-how">
-<li><span class="hero-cat"><span class="hero-tag">REP3</span>Multi-party computation</span><p><b>Split.</b> Each bid becomes secret shares; no single operator can read one.</p></li>
-<li><span class="hero-cat"><span class="hero-tag">coNoir</span>Multi-party ZK proving</span><p><b>Prove.</b> The operators compute the clearing price and jointly generate one zero-knowledge proof from those shares; no single prover ever sees the bid book.</p></li>
-<li><span class="hero-cat"><span class="hero-tag">Halo2</span>Proof-bound shielded settlement</span><p><b>Pay.</b> Six proofs bind the proven payouts to the outputs of one shielded Zcash transaction.</p></li>
-</ol>
+<p class="lead lead-key">To make an auction verifiable, most designs reveal what every bidder was willing to pay. <b>DarkCall never opens a bid: not at the close, not for any single operator, not even to generate the zero-knowledge proof.</b> One shielded Zcash transaction pays the seller and refunds every bidder exactly as proven.</p>
+<ol class="hero-flow" aria-label="How it works: split, prove, pay"><li><span class="hero-step"><b>Split</b><span class="hero-tag">REP3</span></span><span class="hero-cat">Multi-party computation</span><p>Each bid becomes secret shares. No operator can read one.</p></li><li><span class="hero-step"><b>Prove</b><span class="hero-tag">coNoir</span></span><span class="hero-cat">Multi-party ZK proving</span><p>The operators jointly prove the price. No one holds the bid book.</p></li><li><span class="hero-step"><b>Pay</b><span class="hero-tag">Halo2</span></span><span class="hero-cat">Proof-bound settlement</span><p>Four refunds, the seller and the fee: each amount and recipient proven, in one shielded transaction.</p></li></ol>
 <p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and each bidder's own client, the only party that sees the typed bid, runs as a local service on that machine; operators receive shares and a proof. The video and the walkthrough below are one auction on public Zcash testnet, run from the browser; earlier runs used an isolated regtest. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">

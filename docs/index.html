@@ -180,7 +180,7 @@ footer a {color:var(--ink-2)}
 .steps h4 {margin:3px 0 2px;font-size:17px;font-weight:600;letter-spacing:-.01em}
 .steps p {margin:8px 0 0;font-size:14px;line-height:1.55;color:var(--ink-2)}
 .steps .q {margin-top:2px;color:var(--ink-3);font-style:italic}
-.steps p b,.bind-note b,.lead b {color:var(--ink);font-weight:600}
+.steps p b,.bind-lead b,.lead b {color:var(--ink);font-weight:600}
 .steps .pp {padding-top:10px;border-top:1px dashed var(--line-strong);font-size:13px;color:var(--ink)}
 .steps .pp em {font-style:normal;font-weight:600;color:var(--gold-ink)}
 .binding {display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;align-items:stretch;margin-top:18px}
@@ -194,12 +194,14 @@ footer a {color:var(--ink-2)}
 .bind-arrow {position:relative}
 .bind-arrow::before {content:"";position:absolute;left:8px;right:12px;top:50%;border-top:1.5px solid var(--ink-3)}
 .bind-arrow::after {content:"";position:absolute;right:9px;top:50%;width:8px;height:8px;border-top:1.5px solid var(--ink-3);border-right:1.5px solid var(--ink-3);transform:translateY(-50%) rotate(45deg)}
-.bind-title {font-size:22px;margin:56px 0 6px}
-.bind-lead {margin:0;font-size:15px;color:var(--ink-2)}
-.bind-note {margin:16px 0 0;max-width:820px;font-size:15px;color:var(--ink-2)}
-.bind-checks {margin:12px 0 0;max-width:820px;padding:12px 16px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);font-size:14px;color:var(--ink-2)}
-.bind-checks b {color:var(--ink);font-weight:600}
-.bind-design {margin:10px 0 0;max-width:820px;font-size:12px;color:var(--ink-3)}
+.bind-kicker {margin:56px 0 6px;font-size:13px;font-weight:500;color:var(--gold-ink)}
+.bind-title {font-size:26px;line-height:1.25;letter-spacing:-.02em;margin:0 0 10px}
+.bind-lead {margin:0;max-width:820px;font-size:15px;color:var(--ink-2)}
+.bind-facts {display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 0}
+.bind-facts p {margin:0;padding:14px 16px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.bind-facts b {color:var(--ink);font-weight:600}
+.bind-design {margin:12px 0 0;font-size:12px;color:var(--ink-3)}
+.bind-design b {font-weight:600;color:var(--ink-2)}
 .proven {margin-top:112px}
 .proven-facts {display:grid;grid-template-columns:1.4fr .8fr 1.4fr .8fr;gap:0;margin:32px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .proven-facts div {padding:20px 22px;border-left:1px solid var(--line)}
@@ -231,6 +233,9 @@ footer a {color:var(--ink-2)}
   .w-settle ol,.w-public {grid-template-columns:1fr}
   .walk-steps {border-radius:16px}
   .binding {grid-template-columns:1fr;gap:0}
+  .bind-facts {grid-template-columns:1fr}
+  .bind-title {font-size:22px}
+  .bind-title br {display:none}
   .bind-arrow {height:28px}
   .bind-arrow::before {left:50%;right:auto;top:4px;bottom:8px;border-top:0;border-left:1.5px solid var(--ink-3)}
   .bind-arrow::after {left:50%;right:auto;top:auto;bottom:8px;transform:translateX(-50%) rotate(135deg)}
@@ -242,12 +247,14 @@ footer a {color:var(--ink-2)}
 
 .lead-key {font-size:18px;line-height:1.55;max-width:660px}
 .lead-key b {color:var(--ink);font-weight:600}
-.hero-how {list-style:none;margin:22px 0 0;padding:16px 0 2px;border-top:1px solid var(--line);display:grid;gap:14px;max-width:660px}
-.hero-how li {display:grid;gap:4px}
-.hero-cat {display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.hero-tag {font:500 12px var(--mono);letter-spacing:0;text-transform:none;color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:1px 7px}
-.hero-how p {margin:0;font-size:15px;line-height:1.55;color:var(--ink-2)}
-.hero-how b {color:var(--ink);font-weight:600}
+.hero-flow {list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;max-width:760px}
+.hero-flow li {position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px 14px}
+.hero-flow li:not(:last-child)::after {content:"";position:absolute;right:-15px;top:50%;width:7px;height:7px;border-top:1.5px solid var(--ink-3);border-right:1.5px solid var(--ink-3);transform:translateY(-50%) rotate(45deg)}
+.hero-step {display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hero-step b {font-size:17px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+.hero-cat {display:block;margin:6px 0 4px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.hero-tag {font:500 12px var(--mono);color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:1px 7px}
+.hero-flow p {margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
 .how {margin-top:104px}
 .walk-stage.static .w-from {opacity:1;transform:none}
 .walk-stage.static .w-chips i {opacity:1;transform:none}
@@ -255,6 +262,12 @@ footer a {color:var(--ink-2)}
 .section-lead {font-size:17px;color:var(--ink-2);margin:12px 0 0;max-width:680px}
 @media (max-width:760px) {
   .lead-key {font-size:17px}
+  .hero-flow {grid-template-columns:1fr;gap:18px}
+  .hero-flow li {display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;align-items:center;padding:10px 14px 12px}
+  .hero-step {justify-content:flex-start}
+  .hero-cat {margin:0}
+  .hero-flow p {grid-column:1/-1;margin-top:4px}
+  .hero-flow li:not(:last-child)::after {right:auto;left:50%;top:auto;bottom:-13px;transform:translateX(-50%) rotate(135deg)}
   .wrap {padding:0 16px}
   .kicker {margin-top:36px}
   .lead {font-size:17px}
@@ -278,12 +291,8 @@ footer a {color:var(--ink-2)}
 
 <p class="kicker">Verifiable sealed-bid auctions on Zcash</p>
 <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
-<p class="lead lead-key">DarkCall is a sealed-bid auction that never opens a bid: not at the close, and not for any single operator. <b>Even the zero-knowledge proof of the clearing price is generated without opening the bids</b>, and one shielded Zcash transaction pays the seller and refunds every bidder exactly as proven.</p>
-<ol class="hero-how">
-<li><span class="hero-cat"><span class="hero-tag">REP3</span>Multi-party computation</span><p><b>Split.</b> Each bid becomes secret shares; no single operator can read one.</p></li>
-<li><span class="hero-cat"><span class="hero-tag">coNoir</span>Multi-party ZK proving</span><p><b>Prove.</b> The operators compute the clearing price and jointly generate one zero-knowledge proof from those shares; no single prover ever sees the bid book.</p></li>
-<li><span class="hero-cat"><span class="hero-tag">Halo2</span>Proof-bound shielded settlement</span><p><b>Pay.</b> Six proofs bind the proven payouts to the outputs of one shielded Zcash transaction.</p></li>
-</ol>
+<p class="lead lead-key">To make an auction verifiable, most designs reveal what every bidder was willing to pay. <b>DarkCall never opens a bid: not at the close, not for any single operator, not even to generate the zero-knowledge proof.</b> One shielded Zcash transaction pays the seller and refunds every bidder exactly as proven.</p>
+<ol class="hero-flow" aria-label="How it works: split, prove, pay"><li><span class="hero-step"><b>Split</b><span class="hero-tag">REP3</span></span><span class="hero-cat">Multi-party computation</span><p>Each bid becomes secret shares. No operator can read one.</p></li><li><span class="hero-step"><b>Prove</b><span class="hero-tag">coNoir</span></span><span class="hero-cat">Multi-party ZK proving</span><p>The operators jointly prove the price. No one holds the bid book.</p></li><li><span class="hero-step"><b>Pay</b><span class="hero-tag">Halo2</span></span><span class="hero-cat">Proof-bound settlement</span><p>Four refunds, the seller and the fee: each amount and recipient proven, in one shielded transaction.</p></li></ol>
 <p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and each bidder's own client, the only party that sees the typed bid, runs as a local service on that machine; operators receive shares and a proof. The video and the walkthrough below are one auction on public Zcash testnet, run from the browser; earlier runs used an isolated regtest. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">
@@ -295,12 +304,12 @@ footer a {color:var(--ink-2)}
 <section class="how" aria-labelledby="how-title">
       <p class="section-kicker">How it works</p>
       <h2 id="how-title">How can a sealed auction be publicly verified?</h2>
-      <p class="section-lead">From private bids to a provably correct Zcash payment, in four stages.</p>
+      <p class="section-lead"><b>A bid is a willingness to pay.</b> If an ad buyer's ceiling leaks after the close, the seller and rivals know it for every future sale. In four stages, DarkCall turns private bids into a provably correct Zcash payment.</p>
       <ol class="stages">
         <li><span>01 · Seal</span><b>Commit and split each bid</b><small>Commitment · REP3 secret shares · client ZK proof</small></li>
         <li><span>02 · Fund</span><b>Lock deposits on Zcash</b><small>Shielded deposits · 2-of-3 FROST escrow · signed accepted book</small></li>
         <li><span>03 · Prove</span><b>Clear without opening</b><small>Multi-party ZK proving · REP3 MPC + coNoir</small></li>
-        <li><span>04 · Settle</span><b>Pay exactly as proven</b><small>Six Halo2 output bindings · FROST · one shielded transaction</small></li>
+        <li><span>04 · Settle</span><b>Pay exactly as proven</b><small>Halo2 binding for 4 refunds, seller and fee · FROST · one shielded transaction</small></li>
       </ol>
       <div class="disclosure">
         <div><b>Public</b><p>The auction terms, the clearing price, the units sold, the proofs and one shielded transaction.</p></div>
@@ -350,18 +359,21 @@ footer a {color:var(--ink-2)}
         <li><span class="step-n">6</span><div><h4>Public verification</h4><p class="q">What can anyone check without seeing a bid?</p><p>The clearing proof, the six output bindings, the signed accepted book and the native Zcash proofs and signatures, from a public bundle <b>with no secrets</b>. Each bidder verifies a receipt proof, then decrypts <b>only their own memo</b> with their own viewing key.</p><p class="pp"><em>Needs no secrets</em> about 100 seconds on a laptop</p></div></li>
       </ol>
 
-      <h3 class="bind-title">Two proof systems, one verified settlement</h3>
-      <p class="bind-lead">Proving the price is not enough: DarkCall also proves that the money actually sent matches it.</p>
+      <p class="bind-kicker">Multi-party ZK proving × Halo2 output binding</p>
+      <h3 class="bind-title">Proving the price is half the problem. <br>Proving the payment is the other half.</h3>
+      <p class="bind-lead">A correct auction means nothing if the money goes somewhere else. DarkCall proves both the clearing result and that <b>every shielded payout matches it</b>; any other payout fails public verification.</p>
       <div class="binding" aria-label="How the payment is bound to the proof">
-        <div class="bind-box"><span>BN254 · coNoir</span><b>Auction and six-row plan</b><small>Price, refunds, seller and fee, committed with Poseidon2</small></div>
+        <div class="bind-box"><span>Multi-party ZK · coNoir · BN254</span><b>Prove the private result</b><small>Clearing price and six private payout rows, committed with Poseidon2</small></div>
         <div class="bind-arrow" aria-hidden="true"></div>
-        <div class="bind-box bind-key"><span>Six Halo2 proofs on Pallas</span><b>Row ↔ native note commitment</b><small>Each recomputes one row's BN254 Poseidon2 inside a Pallas circuit</small></div>
+        <div class="bind-box bind-key"><span>Halo2 · Pallas</span><b>Prove each payout matches</b><small>4 refunds, seller and fee: each amount and recipient equals one native note commitment</small></div>
         <div class="bind-arrow" aria-hidden="true"></div>
-        <div class="bind-box"><span>Zcash notes · Pallas</span><b>4 refunds · seller · operator fee</b><small>One native shielded transaction, signed 2-of-3 with FROST</small></div>
+        <div class="bind-box"><span>Native Zcash · NU7</span><b>One shielded transaction</b><small>All six payouts settle privately, signed 2-of-3 with FROST</small></div>
       </div>
-      <p class="bind-note">The auction proof lives on the BN254 curve, while Zcash's shielded notes are commitments on the Pallas curve, so the auction proof cannot speak about them directly. Six Halo2 proofs bridge the two, one per output: each shows that one row's Poseidon2 commitment and one native note commitment hold the same amount and recipient. Honest signers sign only after every proof checks out; <b>a payout that differs from the proven result fails public verification</b>, so it cannot pass as this auction's settlement.</p>
-      <p class="bind-checks"><b>What checks what.</b> The Zcash network validates the native transaction. DarkCall's public verifier checks the auction proof, the six output bindings and the operator-signed accepted book from the published bundle, with no secrets.</p>
-      <p class="bind-design">Design note from an earlier experiment: coNoir's joint proof of the six-row plan took 1,655 s with SHA-256 row commitments and 8.2 s with field-native Poseidon2. Both figures cover that proving step only, not the six Halo2 proofs.</p>
+      <div class="bind-facts">
+        <p><b>Across two curves.</b> The auction proof lives on BN254, while Zcash's shielded notes are commitments on Pallas, so the auction proof cannot speak about them directly. Each Halo2 proof recomputes one row's BN254 Poseidon2 commitment inside a Pallas circuit and shows that it holds the same amount and recipient as one native note commitment.</p>
+        <p><b>What checks what.</b> The Zcash network validates the native transaction. DarkCall's public verifier checks the auction proof, the six output bindings and the operator-signed accepted book from the published bundle, with no secrets. Honest signers sign only after every proof checks out.</p>
+      </div>
+      <p class="bind-design"><b>Performance note.</b> In an earlier experiment, coNoir's joint proof of the six-row plan took 1,655 s with SHA-256 row commitments and 8.2 s with field-native Poseidon2. Both figures cover that proving step only, not the six Halo2 proofs.</p>
     </section>
 
 <h2>Settled on public Zcash testnet.</h2>

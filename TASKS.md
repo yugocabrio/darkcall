@@ -31,6 +31,11 @@ Done:
       prover; shares shown as A①③ / B②① / C③②; BN254↔Pallas binding with what checks what;
       SHA vs Poseidon2 numbers scoped to the coNoir step. Evidence page phone layout fixed (the
       walkthrough overflowed by 302 px at 390 px; its rules now travel with the copied section).
+- [x] Motive-first story (Oct 19): hero lead opens with what other designs reveal (willingness to pay);
+      Split → Prove → Pay as one visual flow; the six payouts named (4 refunds, seller, fee) wherever
+      "six" first appears; binding section led by "Proving the payment is the other half", labelled
+      multi-party ZK proving × Halo2 output binding, with the curve bridge, the check split and the
+      performance note kept apart. README image recaptured from the landing.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.
