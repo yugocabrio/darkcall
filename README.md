@@ -1,7 +1,8 @@
 # DarkCall
 
-**Sealed-bid auctions on Zcash. Bids stay sealed. The price is proven.
-Settlement is one shielded transaction that anyone can verify.**
+**Sealed-bid auctions on Zcash where no bid is ever opened, not at the close and
+not for any single operator, and the price is still proven. One shielded
+transaction that anyone can verify pays everyone.**
 
 ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
 one real auction, from creation to shielded receipts, with every time cut labeled.
@@ -53,16 +54,16 @@ shielded ZEC, and the result is still verifiable.
 
 ## What is different
 
-Other auctions make you choose: hide the bids, or let everyone check the price.
-DarkCall does both, then pays out in shielded ZEC.
+To let everyone check the price, other designs open the bid amounts at the close.
+DarkCall proves the price without opening them, then pays out in shielded ZEC.
 
-| | **DarkCall** | Open on-chain auction | Commit–reveal | Trusted auctioneer |
+| | **DarkCall** | Open on-chain auction | Commit–reveal or published viewing key | Trusted auctioneer or key committee |
 | --- | --- | --- | --- | --- |
-| Bids hidden from the public | **Yes, never opened** | No | Until the reveal | Yes |
-| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No |
-| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid | No, you trust it |
-| Payments and refunds stay private | **Yes, one shielded transaction** | No | No | Off-chain, trusted |
-| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | Yes, by contract | No |
+| Bids hidden from the public | **Yes, never opened** | No | Only until the close | Yes |
+| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No, it decrypts them |
+| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | No, you trust it |
+| Payments and refunds stay private | **Yes, one shielded transaction** | No | No | Possible, if it pays shielded |
+| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | Yes, by contract | No, the signers decide |
 
 Common designs compared, not specific projects. "Any single operator" is the
 REP3 bound: two colluding operators could reconstruct bids (see
@@ -159,7 +160,7 @@ python3 scripts/regtest_nu7_node.py start
 ./demo.sh            # http://127.0.0.1:8877
 ```
 
-Then: **Try DarkCall → Create auction** (default terms) → seal four demo bids →
+Then: **Run an auction → Create auction** (default terms) → seal four demo bids →
 wait for the close → **Certify closed book → Fund on Zcash** (real deposits and
 chain admission, about 2 minutes) **→ Clear this auction → Open my result →
 Settle on Zcash** (about 17 minutes on a 16 GiB M1, with live progress). After it finishes, **Open my shielded receipt** decrypts your

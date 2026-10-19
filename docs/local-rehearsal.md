@@ -1,6 +1,6 @@
 # Seller and bidder flow, with same-book settlement
 
-The browser's **Try DarkCall** mode runs one auction from creation to a shielded
+The browser's **Run an auction** mode runs one auction from creation to a shielded
 payout:
 
 **Create → seal four bids → certify the closed book → Fund on Zcash → REP3
@@ -23,7 +23,7 @@ python3 scripts/regtest_nu7_node.py start
 ./demo.sh
 ```
 
-Open `http://127.0.0.1:8877` and choose **Try DarkCall**. The default terms
+Open `http://127.0.0.1:8877` and choose **Run an auction**. The default terms
 (3 units, reserve 20, budget 100 zatoshi) are the terms the native settlement
 prototype supports, and the close time defaults to two minutes ahead. Seal four
 demo bids. You can share the local link with another browser on this PC. After

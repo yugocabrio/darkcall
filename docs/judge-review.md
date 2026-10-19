@@ -14,7 +14,7 @@ receipt memo.
    It is edited stills from one real auction (`b9c23d7d…`, settlement
    `e3056995…`), captured by `tools/demo-capture/capture.mjs`. Every time cut
    states the real elapsed time.
-1. **The product, live.** `./demo.sh`, then **Try DarkCall**. Create an
+1. **The product, live.** `./demo.sh`, then **Run an auction**. Create an
    auction, seal four demo bids, certify the book, then **Fund on Zcash**: real
    deposits and chain admission over the same root. Clear it by MPC and open
    your result. Then **Settle on Zcash**: one shielded regtest transaction,

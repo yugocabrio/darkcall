@@ -7,7 +7,7 @@ visibility change needs the author's approval.
 
 | Time | What | Where |
 | --- | --- | --- |
-| 20 s | See the difference: a typical audited auction opens bids; DarkCall proves the price without opening them | README top, `docs/img/01-landing.jpg` |
+| 20 s | See the difference: bids stay sealed, the price is proven, settled on Zcash, and a comparison with open, commit–reveal and trusted designs | README top (landing frame and comparison table) |
 | 2 min | Watch one real auction from creation to shielded payout, with labeled time cuts | Edited demo video (rendered from `demo/media/v2/`, see [demo.md](demo.md)) |
 | 2 min | Read the exact run: deposit and settlement txids, root, timings, refusals | [evidence](../evidence/2026-10-18-fresh-book-native-settlement.json) |
 

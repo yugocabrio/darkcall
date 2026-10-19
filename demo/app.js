@@ -96,7 +96,7 @@ fetch('/api/state').then(async response => {
     $('remaining-scope').textContent = 'Local trusted-dealer threshold setup; all parties on one host. Public testnet funding, DKG admission and confirmations remain to be integrated into this same NU7 execution.';
     if (state.funded_canonical) {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
-      $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Try DarkCall can be settled the same way with Settle on Zcash. Independent hosts, public testnet and larger bid counts remain unverified.';
+      $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts, public testnet and larger bid counts remain unverified.';
       $('chain-scope').textContent = state.recorded_local_confirmations ? 'Two controlled regtest confirmations recorded; public bundle does not prove chain inclusion' : 'Recorded regtest run; no chain inclusion proof in the public bundle';
     }
     if (!state.recipient_identities_available) {

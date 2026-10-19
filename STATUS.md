@@ -13,7 +13,7 @@ Updated: 2026-10-19 (git HEAD is authoritative).
   `e3ffa436…84769754`: driver 912 s, public check 105 s. Ticket 01 WON / 79 and
   Ticket 04 LOST / 100 from their own memos; tamper rejected before key use.
   The bundle is `demo/artifacts/browser-auction-nu7-v2`, served by `./demo.sh`
-  as "Proof it settles".
+  as "See a settled auction".
 - **Video:** `demo/media/v2/darkcall-demo-v2.mp4` (119 s), edited stills from
   one real auction captured by `tools/demo-capture/capture.mjs` (auction
   `b9c23d7d…`, settlement `e3056995…51caf779`). Frames are SHA-256-checked

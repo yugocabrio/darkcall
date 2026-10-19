@@ -201,8 +201,8 @@ footer a {{color:var(--ink-2)}}
 <header><a class="brand" href="{repo}README.md">DarkCall</a><span class="pill">ZECATHON 2026 · Private Markets</span></header>
 
 <p class="kicker">Sealed-bid auctions on Zcash</p>
-<h1>Bids stay sealed.<br>The price is proven.<br>Settled on Zcash.</h1>
-<p class="lead">No single operator ever holds a bid, a zero-knowledge proof shows the clearing price follows the rules, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
+<h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
+<p class="lead">Not at the close, and not for any single operator. The clearing price is computed on secret shares and proven in zero knowledge, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
 <p class="scope"><b>Demo scope, up front.</b> Every party runs on one machine, and the local helper that builds a bid's proof sees the typed demo bid. The chain is an isolated Zebra NU7 regtest, not testnet or mainnet. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">
@@ -211,16 +211,16 @@ footer a {{color:var(--ink-2)}}
 </video>
 <p class="caption">{video_seconds} s, edited from one real auction ({auction_short}). Every time cut states the real elapsed time, and every frame is SHA-256-checked against the <a href="{repo}demo/media/v2/manifest.json">capture manifest</a>.</p>
 
-<h2>Other auctions make you choose.</h2>
-<p class="sub">Hide the bids, or let everyone check the price. DarkCall does both, then pays out in shielded ZEC.</p>
+<h2>Other auctions open the bids to prove the price.</h2>
+<p class="sub">Commit–reveal and published viewing keys show every bid amount after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
 <div class="compare-wrap"><table class="compare">
-<thead><tr><th scope="col"></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal</th><th scope="col">Trusted auctioneer</th></tr></thead>
+<thead><tr><th scope="col"></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or key committee</th></tr></thead>
 <tbody>
-<tr><th scope="row">Bids hidden from the public</th><td class="us">Yes, never opened</td><td class="no">No</td><td>Until the reveal</td><td>Yes</td></tr>
-<tr><th scope="row">Bids hidden from whoever runs it</th><td class="us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
-<tr><th scope="row">Anyone can check the price</th><td class="us">Yes, by zero-knowledge proof</td><td>Yes</td><td>Yes, by opening every bid</td><td class="no">No, you trust it</td></tr>
-<tr><th scope="row">Payments and refunds stay private</th><td class="us">Yes, one shielded transaction</td><td class="no">No</td><td class="no">No</td><td>Off-chain, trusted</td></tr>
-<tr><th scope="row">Payout provably follows the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>Yes, by contract</td><td class="no">No</td></tr>
+<tr><th scope="row">Bids hidden from the public</th><td class="us">Yes, never opened</td><td class="no">No</td><td>Only until the close</td><td>Yes</td></tr>
+<tr><th scope="row">Bids hidden from whoever runs it</th><td class="us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No, it decrypts them</td></tr>
+<tr><th scope="row">Anyone can check the price</th><td class="us">Yes, by zero-knowledge proof</td><td>Yes</td><td>Yes, by opening every bid amount</td><td class="no">No, you trust it</td></tr>
+<tr><th scope="row">Payments and refunds stay private</th><td class="us">Yes, one shielded transaction</td><td class="no">No</td><td class="no">No</td><td>Possible, if it pays shielded</td></tr>
+<tr><th scope="row">Payout provably follows the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>Yes, by contract</td><td class="no">No, the signers decide</td></tr>
 </tbody></table></div>
 <div class="measured">
 <div><strong>0.6 s</strong><span>to seal a bid with its zero-knowledge proof</span></div>

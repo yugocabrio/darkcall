@@ -7,13 +7,13 @@ python3 scripts/regtest_nu7_node.py start   # needed for Fund and Settle on Zcas
 
 The page offers two experiences:
 
-- **Try DarkCall** walks one auction through Create → Bid → **Fund** → Clear →
+- **Run an auction** walks one auction through Create → Bid → **Fund** → Clear →
   Result → **Settle**. Fund makes real shielded deposits for the sealed tickets
   on the isolated NU7 regtest, and the operators admit them over the same root
   before any clearing. Settle pays everyone out in one shielded transaction.
   Then you open your own shielded receipt. Details and exact scope:
   [local-rehearsal.md](local-rehearsal.md).
-- **Proof it settles** shows an auction that was created, funded, cleared and
+- **See a settled auction** shows an auction that was created, funded, cleared and
   settled through this UI on Oct 19, tx `e3ffa436…84769754`. You can open each bidder's
   shielded receipt in about 3 s or verify the whole settlement in about two
   minutes when there is no time to settle a new auction.
@@ -80,7 +80,7 @@ funding + admission about 2 min (it includes a 120 s admission window), and
 settlement about 15 min. Public check about 2 min,
 own receipt about 3 s.
 
-## Recorded settlement view ("Proof it settles")
+## Recorded settlement view ("See a settled auction")
 
 1. The recorded auction's price and units are public; its four bids stay secret-shared.
 2. Choose a bidder and **Open my result**. The fixed C++ proofs, the exact

@@ -5,8 +5,9 @@ submission itself.
 
 ## One line
 
-Sealed-bid auctions on Zcash where bids stay sealed, the price is proven, and
-one shielded transaction that anyone can verify pays everyone.
+Sealed-bid auctions on Zcash where no bid is ever opened, not at the close and
+not for any single operator, and the price is still proven. One shielded
+transaction that anyone can verify pays everyone.
 
 ## The problem
 
@@ -41,16 +42,16 @@ does who paid whom.
 
 ## Why it is different
 
-Other auctions make you choose: hide the bids, or let everyone check the price.
-DarkCall does both, then pays out in shielded ZEC.
+To let everyone check the price, other designs open the bid amounts at the close.
+DarkCall proves the price without opening them, then pays out in shielded ZEC.
 
-| | **DarkCall** | Open on-chain auction | Commit–reveal | Trusted auctioneer |
+| | **DarkCall** | Open on-chain auction | Commit–reveal or published viewing key | Trusted auctioneer or key committee |
 | --- | --- | --- | --- | --- |
-| Bids hidden from the public | **Yes, never opened** | No | Until the reveal | Yes |
-| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No |
-| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid | No, you trust it |
-| Payments and refunds stay private | **Yes, one shielded transaction** | No | No | Off-chain, trusted |
-| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | Yes, by contract | No |
+| Bids hidden from the public | **Yes, never opened** | No | Only until the close | Yes |
+| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No, it decrypts them |
+| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | No, you trust it |
+| Payments and refunds stay private | **Yes, one shielded transaction** | No | No | Possible, if it pays shielded |
+| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | Yes, by contract | No, the signers decide |
 
 Auditable sealed-bid designs usually **disclose the bids to prove the result**.
 DarkCall **proves the result without disclosing them**. Only the clearing price
@@ -89,7 +90,7 @@ In this one-machine demo, the local bidder helper does see the typed bid.
 - **Private receipts.** Each bidder decrypts only their own memo. A corrupted
   receipt proof is rejected before the bidder's key is read.
 - **A recorded view of the same settlement.** `./demo.sh` serves the six-step
-  auction under "Proof it settles". Open each bidder's receipt in about 3 s, or
+  auction under "See a settled auction". Open each bidder's receipt in about 3 s, or
   re-verify the whole settlement in about 2 minutes, without running a new
   auction. `./demo.sh --fixture-recorded` shows the Oct 5 fixture-bid run
   `47019e02…a211938`.

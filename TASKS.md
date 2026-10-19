@@ -14,6 +14,13 @@ Done:
 - [x] Reproducible 2-minute video from one real auction (`demo/media/v2`, capture tool, renderer).
 - [x] Clean-room Linux container verifier; two portability defects fixed (hidden `witness_point.rs`, diff abbrev).
 - [x] Hosting plan for judges (`docs/hosting-plan.md`); nothing deployed.
+- [x] Static evidence page `docs/index.html` (tier A), built from records; not deployed.
+- [x] Strength-led redesign (Oct 19): claims + real settled card on the landing, comparison with
+      open / commit–reveal / trusted designs, measured numbers; paper/ink/gold with self-hosted
+      IBM Plex; evidence page, video overlays, README and submission draft aligned.
+- [ ] Re-capture the video run through the redesigned UI, export its public bundle, re-render.
+- [ ] Name: keep "DarkCall" with the descriptor "Sealed-bid auctions on Zcash" unless the
+      author picks another (presentation-only rename; circuit domain separators stay).
 
 Open:
 - [x] Container re-run via `scripts/docker_verify.sh`: all four committed bundles verified, strict tamper refusal.

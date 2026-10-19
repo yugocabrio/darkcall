@@ -305,7 +305,8 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .proof-strip {grid-template-columns:1fr}
   .how-it-works ol {grid-template-columns:1fr 1fr}
   .has-experience .experience-picker {display:flex;width:100%}
-  .has-experience .experience-card {flex:1 1 0;align-items:center}
+  .has-experience .experience-card {flex:1 1 0;align-items:center;padding:8px 10px}
+  .has-experience .experience-heading {font-size:14px;white-space:nowrap}
   footer {flex-direction:column}
 }
 @media (prefers-reduced-motion:reduce) {* {animation:none!important;transition:none!important}}
