@@ -117,7 +117,7 @@ TEMPLATE = '''<!doctype html>
 @font-face {{font-family:"Plex";src:url("site/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2");font-weight:600;font-display:swap}}
 @font-face {{font-family:"Plex Mono";src:url("site/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}}
 @font-face {{font-family:"Plex Mono";src:url("site/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}}
-:root {{--paper:#f6f4ee;--surface:#fff;--surface-2:#faf9f5;--ink:#141413;--ink-2:#4a4944;--ink-3:#86847b;--line:#e6e2d7;--line-strong:#cfc9ba;
+:root {{--paper:#f6f4ee;--surface:#fff;--surface-2:#faf9f5;--ink:#141413;--ink-2:#4a4944;--ink-3:#706e66;--line:#e6e2d7;--line-strong:#cfc9ba;
   --gold:#f4b728;--gold-ink:#8a6408;--gold-soft:#fdf3d7;--green:#1e7a4c;
   --sans:"Plex",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;--mono:"Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}}
 * {{box-sizing:border-box}}

@@ -88,7 +88,7 @@ def render(output, font, bold):
             inputs = ['-f', 'lavfi', '-i', 'color=c=0xf6f4ee:s=1920x1080:r=24']
             filters = ['drawbox=x=160:y=290:w=64:h=6:color=0xf4b728:t=fill', draw(badge, 60, 20, '0x8a6408', x='160'),
                        draw(title, 330, 64, '0x141413', x='160', face=bold), draw(body, 450, 34, '0x4a4944', x='160'),
-                       draw(identity, 1000, 18, '0x86847b', x='160')]
+                       draw(identity, 1000, 18, '0x706e66', x='160')]
             subtitle = title_value + ' — ' + body_value.replace('\n', ' ')
         subprocess.run([ffmpeg, '-nostdin', '-hide_banner', '-loglevel', 'error', '-n', *inputs,
                         '-vf', ','.join(filters), '-t', str(seconds), '-an', '-c:v', 'libx264', '-preset', 'fast',

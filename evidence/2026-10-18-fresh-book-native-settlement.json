@@ -462,11 +462,11 @@
     "facts": {
       "auction_id": "b9c23d7dae678f3eb97fd76c9ac80e6e",
       "deposit_txid": "7a219347c961cdaee423c7dc91fff457851debcdcdde503cd6b9885e8de301a3",
-      "clearing": "\u2713 Auction verified \u00b7 7.6s",
+      "clearing": "✓ Auction verified · 7.6s",
       "txid": "e305699514938d382be010260533f01725e5970c895e11f0a843843351caf779",
-      "same_book": "\u2713 0a66754982\u2026d301780c \u00b7 same tickets and accepted root as your browser book",
-      "outcome": "21 zatoshi \u00d7 3 sold \u00b7 matches the browser clearing \u00b7 2 regtest confirmations",
-      "settle_status": "\u2713 Settled and publicly verified \u00b7 14:59 of proving and checks"
+      "same_book": "✓ 0a66754982…d301780c · same tickets and accepted root as your browser book",
+      "outcome": "21 zatoshi × 3 sold · matches the browser clearing · 2 regtest confirmations",
+      "settle_status": "✓ Settled and publicly verified · 14:59 of proving and checks"
     },
     "total_seconds": 1184.5,
     "shots": 20,
@@ -530,5 +530,54 @@
       "frame": "20-receipt-tamper.jpg",
       "text": "Corrupted receipt proof rejected before your viewing key was read."
     }
+  },
+  "redesigned_ui_capture_run": {
+    "date": "2026-10-19 (CEST)",
+    "scope": "the full six-step flow driven by tools/demo-capture/capture.mjs through the redesigned UI (paper/ink/gold, IBM Plex); end-to-end check of the redesign, not used for the video",
+    "facts": {
+      "auction_id": "c069504af50882c3529d410df9cc281e",
+      "deposit_txid": "29125c8f5e791e71d270d26fd5552e24b6f85926ec405f90c185d50b0ba7df4e",
+      "clearing": "✓ Auction verified · 8.0s",
+      "txid": "e23c4d50e7b3d2756366d81ca3dce9b3103c3df65b285271df0836b0f637a20d",
+      "same_book": "✓ 28a0a82b85…178455d0 · same tickets and accepted root as your browser book",
+      "outcome": "21 zatoshi × 3 sold · matches the browser clearing · 2 regtest confirmations",
+      "settle_status": "✓ Settled and publicly verified · 17:38 of proving and checks"
+    },
+    "total_seconds": 1339.6,
+    "shot_elapsed_seconds": {
+      "landing": 2.4,
+      "create": 3.2,
+      "first-bid": 5.9,
+      "sealed": 9.7,
+      "closed": 124.6,
+      "funding": 140.4,
+      "funded": 249.2,
+      "clearing": 251.4,
+      "cleared": 258.2,
+      "own-result": 260,
+      "settle-start": 272.8,
+      "settle-bindings": 273.6,
+      "settle-bindings-row4": 710.8,
+      "settle-sign": 987.5,
+      "settle-verify": 1218.6,
+      "settled": 1329.6,
+      "who-learned": 1330.4,
+      "receipt-won": 1334.1,
+      "receipt-lost": 1337.9,
+      "receipt-tamper": 1339.6
+    },
+    "receipts_seen_in_frames": [
+      {
+        "ticket": "01",
+        "won": true,
+        "refund": 79
+      },
+      {
+        "ticket": "04",
+        "won": false,
+        "refund": 100
+      }
+    ],
+    "frames": "kept locally under .local; not committed (the video is recaptured after the final headline and name)"
   }
 }

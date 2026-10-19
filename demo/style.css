@@ -8,7 +8,7 @@
 
 :root {
   --paper:#f6f4ee; --surface:#ffffff; --surface-2:#faf9f5;
-  --ink:#141413; --ink-2:#4a4944; --ink-3:#86847b;
+  --ink:#141413; --ink-2:#4a4944; --ink-3:#706e66;
   --line:#e6e2d7; --line-strong:#cfc9ba;
   --gold:#f4b728; --gold-ink:#8a6408; --gold-soft:#fdf3d7;
   --green:#1e7a4c; --green-soft:#e7f2eb; --red:#b3261e; --red-soft:#fbeae8;
@@ -193,10 +193,12 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 @keyframes pulse {50% {opacity:.35}}
 .check-result {font-size:14px;color:var(--ink-2);margin:10px 0 0}
 .check-result:empty {display:none}
-#clearing-status,#settle-status,#fund-status {font-family:var(--mono);font-size:13px}
+#clearing-status,#settle-status,#fund-status {font-size:14px;font-weight:500;color:var(--ink)}
 .settle-facts {display:grid;grid-template-columns:200px minmax(0,1fr);gap:10px 20px;margin:22px 0;font-size:14px}
 .settle-facts dt {color:var(--ink-3)}
-.settle-facts dd {margin:0;font:13px var(--mono);color:var(--ink);overflow-wrap:anywhere}
+.settle-facts dd {margin:0;color:var(--ink);overflow-wrap:anywhere}
+/* Monospace only where the value is an identifier. */
+#fund-deposit,#settle-txid,#settle-deposit,#txid,#root {font:13px var(--mono)}
 
 .fresh-result-layout {display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start;margin-top:8px}
 .market-stats {display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:6px 0 4px}
@@ -273,7 +275,7 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .public-details ul {padding-left:20px}
 .public-details dl {display:grid;grid-template-columns:180px minmax(0,1fr);gap:8px 18px;font-size:14px}
 .public-details dt {color:var(--ink-3)}
-.public-details dd {margin:0;font:13px var(--mono);overflow-wrap:anywhere}
+.public-details dd {margin:0;overflow-wrap:anywhere}
 
 @media (max-width:760px) {
   .topbar,main,footer {padding-left:16px;padding-right:16px}
