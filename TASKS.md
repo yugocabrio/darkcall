@@ -46,8 +46,10 @@ Done:
       six outputs + fee = 4 × 15,100; the Settle caption explains winner refunds (100 − 21 = 79), the
       loser's full 100 and the seller's 63; completed walkthrough stages stay at 82% opacity instead
       of 50%; hero lead scoped to commit–reveal; payout wording and operator knowledge made exact;
-      duplicate trust caveat removed. Hero CTA order left unchanged pending the author's call
-      (at 1366×657 the CTA starts at 691 px).
+      duplicate trust caveat removed. Hero CTA order left unchanged
+      (author chose technique first; at 1366×657 the CTA starts at 691 px).
+- [x] Section order (Oct 19): the payment-binding section now follows "Why multi-party ZK proving",
+      so the two differentiators read back to back before the walkthrough and the six steps.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.

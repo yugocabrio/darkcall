@@ -77,6 +77,22 @@
         <p class="why-note">Assumes at most one semi-honest operator (REP3); two colluding operators could reconstruct the bids.</p>
       </div>
 
+      <p class="bind-kicker">Multi-party ZK proving × Halo2 output binding</p>
+      <h3 class="bind-title">Proving the price is half the problem. <br>Proving the payment is the other half.</h3>
+      <p class="bind-lead">A correct auction means nothing if the money goes somewhere else. DarkCall proves both the clearing result and that <b>every shielded payout matches it</b>; any other payout fails public verification.</p>
+      <div class="binding" aria-label="How the payment is bound to the proof">
+        <div class="bind-box"><span>Multi-party ZK · coNoir · BN254</span><b>Prove the private result</b><small>Clearing price and six private payout rows, committed with Poseidon2</small></div>
+        <div class="bind-arrow" aria-hidden="true"></div>
+        <div class="bind-box bind-key"><span>Halo2 · Pallas</span><b>Prove each payout matches</b><small>4 refunds, seller and fee: each amount and recipient equals one native note commitment</small></div>
+        <div class="bind-arrow" aria-hidden="true"></div>
+        <div class="bind-box"><span>Native Zcash · NU7</span><b>One shielded transaction</b><small>All six payouts settle privately, signed 2-of-3 with FROST</small></div>
+      </div>
+      <div class="bind-facts">
+        <p><b>Across two curves.</b> The auction proof lives on BN254, while Zcash's shielded notes are commitments on Pallas, so the auction proof cannot speak about them directly. Each Halo2 proof recomputes one row's BN254 Poseidon2 commitment inside a Pallas circuit and shows that it holds the same amount and recipient as one native note commitment.</p>
+        <p><b>What checks what.</b> The Zcash network validates the native transaction. DarkCall's public verifier checks the auction proof, the six output bindings and the operator-signed accepted book from the published bundle, with no secrets. All three operators sign the accepted book; any two of the three FROST signers authorize the settlement, and honest signers do so only after every proof checks out.</p>
+      </div>
+      <p class="bind-design"><b>Performance note.</b> In an earlier experiment, coNoir's joint proof of the six-row plan took 1,655 s with SHA-256 row commitments and 8.2 s with field-native Poseidon2. Both figures cover that proving step only, not the six Halo2 proofs.</p>
+
       <div class="walk" id="walk">
         <div class="walk-top">
           <div><p class="walk-kicker">Follow one auction</p><p class="walk-title">Four bids. Three winners. One shielded settlement.</p></div>
@@ -112,22 +128,6 @@
         <li><span class="step-n">5</span><div><h4>Proof-bound Zcash settlement</h4><p class="q">How can anyone check the payout matches the result?</p><p>A settlement proof turns the same committed bids into six payment rows: four refunds, the seller and the operator fee. <b>Six Halo2 proofs bind each row's amount and recipient to a native note commitment</b>, and each refund note carries that bidder's encrypted receipt memo. Honest signers sign 2-of-3 only after every proof checks out; colluding signers could still move funds, but not as a verifiable settlement.</p><p class="pp"><em>Stays private</em> amounts and recipients · <em>Proven</em> every output matches the result</p></div></li>
         <li><span class="step-n">6</span><div><h4>Public verification</h4><p class="q">What can anyone check without seeing a bid?</p><p>The clearing proof, the six output bindings, the signed accepted book and the native Zcash proofs and signatures, from a public bundle <b>with no secrets</b>. Each bidder verifies a receipt proof, then decrypts <b>only their own memo</b> with their own viewing key.</p><p class="pp"><em>Needs no secrets</em> about 100 seconds on a laptop</p></div></li>
       </ol>
-
-      <p class="bind-kicker">Multi-party ZK proving × Halo2 output binding</p>
-      <h3 class="bind-title">Proving the price is half the problem. <br>Proving the payment is the other half.</h3>
-      <p class="bind-lead">A correct auction means nothing if the money goes somewhere else. DarkCall proves both the clearing result and that <b>every shielded payout matches it</b>; any other payout fails public verification.</p>
-      <div class="binding" aria-label="How the payment is bound to the proof">
-        <div class="bind-box"><span>Multi-party ZK · coNoir · BN254</span><b>Prove the private result</b><small>Clearing price and six private payout rows, committed with Poseidon2</small></div>
-        <div class="bind-arrow" aria-hidden="true"></div>
-        <div class="bind-box bind-key"><span>Halo2 · Pallas</span><b>Prove each payout matches</b><small>4 refunds, seller and fee: each amount and recipient equals one native note commitment</small></div>
-        <div class="bind-arrow" aria-hidden="true"></div>
-        <div class="bind-box"><span>Native Zcash · NU7</span><b>One shielded transaction</b><small>All six payouts settle privately, signed 2-of-3 with FROST</small></div>
-      </div>
-      <div class="bind-facts">
-        <p><b>Across two curves.</b> The auction proof lives on BN254, while Zcash's shielded notes are commitments on Pallas, so the auction proof cannot speak about them directly. Each Halo2 proof recomputes one row's BN254 Poseidon2 commitment inside a Pallas circuit and shows that it holds the same amount and recipient as one native note commitment.</p>
-        <p><b>What checks what.</b> The Zcash network validates the native transaction. DarkCall's public verifier checks the auction proof, the six output bindings and the operator-signed accepted book from the published bundle, with no secrets. All three operators sign the accepted book; any two of the three FROST signers authorize the settlement, and honest signers do so only after every proof checks out.</p>
-      </div>
-      <p class="bind-design"><b>Performance note.</b> In an earlier experiment, coNoir's joint proof of the six-row plan took 1,655 s with SHA-256 row commitments and 8.2 s with field-native Poseidon2. Both figures cover that proving step only, not the six Halo2 proofs.</p>
     </section>
 
     <section class="proven" aria-labelledby="proven-title">
