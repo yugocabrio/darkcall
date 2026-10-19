@@ -124,10 +124,17 @@ def main():
             'seconds':time.monotonic()-start},indent=2))
         return
     verified = []
-    cases=[('positive',0,True,50),('positive',1,True,50),('positive',2,True,50),('positive',3,False,100)] if args.canonical else [('positive',0,True,50),('positive',3,False,100),('zero',0,True,100),('zero',3,False,100)]
+    # Canonical recorded auctions: derive each ticket's valid outcome from the
+    # served public price/sold (budget 100): winners get 100-price back, losers 100.
+    served=state['cases'][0]
+    cases=[('positive',i,None,None) for i in range(4)] if args.canonical else [('positive',0,True,50),('positive',3,False,100),('zero',0,True,100),('zero',3,False,100)]
+    winners=0
     for name,index,won,refund in cases:
         status,data = call('POST','/api/verify',json.dumps({'case':name,'ticket':index,'action':'verify'}),headers)
         value = json.loads(data)
+        if args.canonical and status == 200:
+            won,refund = value['won'],(100-served['price'] if value['won'] else 100)
+            winners += int(value['won'])
         if (status != 200 or value['won'] != won or value['refund'] != refund
                 or not value['fixed_cpp_ticket_proof_verified'] or not value['native_proof_and_signatures_verified']
                 or not value['own_ticket_opening_verified'] or value['six_output_auction_settlement_verified']
@@ -138,6 +145,8 @@ def main():
             raise RuntimeError('Receipt is from a different auction')
         clean(value)
         verified.append({'case':name,'ticket':index,'won':won,'refund':refund})
+    if args.canonical and winners != served['sold']:
+        raise RuntimeError('Opened winners differ from the public units sold')
     for name in ('positive',) if args.canonical else ('positive','zero'):
         status,data = call('POST','/api/verify',json.dumps({'case':name,'ticket':0,'action':'tamper'}),headers)
         value = json.loads(data)

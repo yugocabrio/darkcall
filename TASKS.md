@@ -1,44 +1,24 @@
 # DarkCall task queue
 
-## Oct 18 handoff to Claude Code (overrides older queues)
+## Oct 18–19 handoff to Claude Code (overrides older queues)
 
-Deadline: Oct 28 23:59 UTC. Keep the proof/security model. Close the two-auction
-gap if it can be done safely, make the judge experience coherent, finish the
-submission package. Do not start 8/16/32 scaling or new cryptography.
+Deadline: Oct 28 23:59 UTC. Keep the proof/security model. No new cryptography,
+scaling or proving-speed research before submission.
 
-- [x] Restore the environment: restart the NU7 node from preserved state, rescan
-  the bank, and rebuild root binaries (the output-binding bins were missing).
-- [x] CLI feasibility: a browser book (default terms) → actual deposits/admission
-  over the same root → funded settlement `54941ffd…` → public verify → four own
-  receipts equal to the browser results.
-- [x] Server Settle job + UI step 05 Settle + own native receipt and tamper.
-- [x] HTTP end-to-end harness (`check_fresh_settlement.py`): uninterrupted
-  Settle job, tx `0e77bc23…f3325`, 1263.8 s total, all refusals pass. Fresh-book
-  public bundle/authority and evidence JSON committed.
-- [x] Browser run through the UI: tx `3fee2c7c…`, five live stages, facts,
-  who-learned-what panel; bundle committed and served as "Proof it settles".
-- [ ] Repeat with the pane kept open to exercise own shielded receipt/tamper
-  buttons in the UI; check 390px layout of the new sections.
-- [x] Docker clean-room verifier (`docker/verify/Dockerfile`,
-  `scripts/docker_verify.sh`). All three committed bundles verified in a
-  container built from `git archive`, and corrupted receipt proofs were
-  cryptographically refused. Found and fixed a hidden vendored source file
-  (`witness_point.rs`) and a host-dependent `git diff` abbreviation in the
-  exact patch check.
-- [ ] Only rebuild the container with ≥12 GiB free disk; a rebuild during heavy
-  swap exhausted the disk on Oct 18 (recovered by removing my image/cache).
-- [ ] Docs: README (rewritten), judge-review, submission-draft, demo, local
-  rehearsal, reproduce (full local product). Capture-ready demo plan.
-- [x] README screenshots (sealed bids, cleared price + per-ticket result, own
-  receipt, landing). Disk-headroom guard verified in the UI: Settle was refused
-  before funding with 9.9 GiB free.
-- [x] One open page: Settle → own shielded receipts (Ticket 01 WON/79, 04
-  LOST/100) → receipt tamper rejected, tx `ac06fc31…`; README screenshots.
-- [x] Fund before Clear (deposit → chain admission → REP3 clearing →
-  settlement): fund/settle phases, `/api/rehearsal/fund`, six-step UI; harness
-  tx `94a093e9…`, clear/settle-before-fund refused.
-- [ ] Browser run of the six-step flow for screenshots (Fund section).
-- [ ] Final consistency pass, then the human decides on visibility and submission.
+Done:
+- [x] Restore the environment (NU7 node, bank rescan, root binaries incl. output-binding bins).
+- [x] Same-book settlement of browser auctions (CLI `54941ffd…`, HTTP `0e77bc23…`, browser `3fee2c7c…`, `ac06fc31…`).
+- [x] Fund before Clear: fund/settle phases, `/api/rehearsal/fund`, six-step UI; harness `94a093e9…`.
+- [x] Six-step browser E2E in one page (`e3ffa436…`): receipts WON/LOST, tamper, 390 px; headline bundle v2.
+- [x] Judge journey polish: landing contrast, sticky steps, sealed slots, next-action focus, honest labels.
+- [x] Reproducible 2-minute video from one real auction (`demo/media/v2`, capture tool, renderer).
+- [x] Clean-room Linux container verifier; two portability defects fixed (hidden `witness_point.rs`, diff abbrev).
+- [x] Hosting plan for judges (`docs/hosting-plan.md`); nothing deployed.
+
+Open:
+- [ ] Container re-run covering all four committed bundles (in progress Oct 19).
+- [ ] Final consistency and adversarial review; final report to the author.
+- [ ] Optional, needs approval: tier-A static viewer or tier-B public verifier (see hosting plan).
 
 ### Human actions before Oct 28 23:59 UTC
 - Record the demo using `docs/demo.md` → "Capture-ready demo plan".

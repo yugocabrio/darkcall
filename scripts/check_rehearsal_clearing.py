@@ -42,6 +42,12 @@ def run(port,zero=False):
     assert call('/api/rehearsal/clear',scope)[0]==400
     while int(time.time())<auction['closes_at_utc']:time.sleep(.2)
     code,closed=call('/api/rehearsal/close',scope);assert code==200,closed
+    if auction.get('funding_required'):
+        # Default terms with regtest settlement available: deposits precede clearing.
+        assert call('/api/rehearsal/clear',scope)[0]==400
+        code,view=call('/api/rehearsal/fund',scope);assert code==200,view
+        while call('/api/rehearsal/auction/'+identifier)[1]['funding']['state']=='running': time.sleep(5)
+        assert call('/api/rehearsal/auction/'+identifier)[1]['funding']['state']=='done'
     code,cleared=call('/api/rehearsal/clear',scope);assert code==200,cleared
     assert cleared['rep3_clearing_verified'] and cleared['fixed_cpp_proof_verified'] and cleared['certified_book_matches']
     assert cleared['accepted_root']==closed['accepted_root'] and cleared['certificate_signatures_verified']==3

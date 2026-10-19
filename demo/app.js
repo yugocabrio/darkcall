@@ -507,6 +507,10 @@ async function joinRehearsal() {
   } catch (error) { $('rehearsal').hidden=false; rehearsalError(error.message); }
 }
 window.addEventListener('hashchange',joinRehearsal);
+// Ticket capabilities live only in this page by design; warn before a reload throws them away.
+window.addEventListener('beforeunload',event=>{
+  if (myTickets.length && room && !nativeResultVerified) { event.preventDefault(); event.returnValue=''; }
+});
 function setDefaultClose() { const close=new Date(Date.now()+120000); $('create-close').value=new Date(close-close.getTimezoneOffset()*60000).toISOString().slice(0,19); }
 setDefaultClose();
 setInterval(refreshRoom,1000);

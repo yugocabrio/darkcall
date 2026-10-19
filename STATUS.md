@@ -1,6 +1,39 @@
 # DarkCall status
 
-Updated: 2026-10-18 (same-book settlement of browser auctions; git HEAD is authoritative).
+Updated: 2026-10-19 (git HEAD is authoritative).
+
+## Current state, in one screen
+
+- **Product flow (browser and API):** Create → Bid → Fund on Zcash → Clear →
+  Result → Settle on Zcash → own shielded receipt → tamper refusal. The same
+  sealed tickets, commitments, REP3 shares and accepted root carry through every
+  step, and funding precedes clearing.
+- **Headline run (six steps, one browser page, Oct 19):** deposits
+  `5e9432e5…d72f14be`, root `2d619728…558d12f9`, price 21 / 3 sold. Settlement
+  `e3ffa436…84769754`: driver 912 s, public check 105 s. Ticket 01 WON / 79 and
+  Ticket 04 LOST / 100 from their own memos; tamper rejected before key use.
+  The bundle is `demo/artifacts/browser-auction-nu7-v2`, served by `./demo.sh`
+  as "Proof it settles".
+- **Video:** `demo/media/v2/darkcall-demo-v2.mp4` (119 s), edited stills from
+  one real auction captured by `tools/demo-capture/capture.mjs` (auction
+  `b9c23d7d…`, settlement `e3056995…51caf779`). Frames are SHA-256-checked
+  against the manifest, and time cuts are computed from capture timestamps.
+- **Scripted E2E:** `scripts/check_fresh_settlement.py`, last run tx
+  `94a093e9…`. Clear and settle before funding are refused (400), a tampered
+  receipt is refused before the key is read, a foreign capability gets 403, and
+  a concurrent proof gets 409.
+- **Verification without secrets:** `./verify.sh --funded …` on the host, or
+  `scripts/docker_verify.sh` in a clean Linux container built from `git archive`.
+- **Committed bundles:** `browser-auction-nu7-v2` (headline),
+  `browser-auction-nu7-v1`, `fresh-book-nu7-v1` (Oct 18 browser books), and
+  `canonical-nu7-funded-v1` (Oct 5, fixture bids).
+- **Unchanged limits:** one host runs every party; the localhost helper sees
+  typed demo bids; REP3 assumes at most one semi-honest corrupt operator; two
+  colluding FROST signers can move funds; operators learn outcomes; the public
+  price is the highest losing bid or the reserve; deposits come from one local
+  test wallet after the close; isolated regtest, no public chain inclusion proof.
+
+Details of every run follow, newest first.
 
 ## Current outcome (Oct 18)
 

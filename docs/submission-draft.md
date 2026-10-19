@@ -63,8 +63,11 @@ result.
 - **Settle on Zcash, same book.** A fresh MPC delivery inside settlement, six
   Halo2 output bindings, 2-of-3 DKG FROST signing, Zebra acceptance, two
   confirmations and six wallet scans. On Oct 18 browser-created auctions settled
-  this way, e.g. tx `3fee2c7c…b5c0b5d7`: price 21, 3 sold, refunds
-  79/79/100/79, seller 63.
+  this way. The headline six-step run (Oct 19) has deposits `5e9432e5…`, price
+  21 with 3 sold, and settlement `e3ffa436…84769754`. Its refunds were
+  79/79/100/79 and the seller received 63.
+- **A 2-minute video from one real auction.** `demo/media/v2/darkcall-demo-v2.mp4`
+  is captured by a reproducible headless script with labeled time cuts.
 - **Public verification without secrets.** About 2 minutes. It covers native
   authorization, six output bindings, the auction proof and the operator
   certificate. Corrupted proofs, transactions, books and authorities are
@@ -112,6 +115,7 @@ about 2 min. Settle to verified, end to end: about 19–20 min. Own receipt: abo
 
 ## Links
 
+- Video: `demo/media/v2/darkcall-demo-v2.mp4` (119 s, captions in `.srt`)
 - Repository: `README.md`, then `docs/judge-review.md`
 - Demo guide: `docs/demo.md` · Reproduction: `docs/reproduce.md`
 - Evidence: `evidence/2026-10-18-fresh-book-native-settlement.json`
