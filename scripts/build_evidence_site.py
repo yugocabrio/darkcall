@@ -198,19 +198,21 @@ table {{width:100%;border-collapse:collapse;font-size:14px}}
 footer {{margin:104px 0 48px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:8px 22px}}
 footer a {{color:var(--ink-2)}}
 {how_css}
+.lead-key {{font-size:18px;line-height:1.55;max-width:660px}}
+.lead-key b {{color:var(--ink);font-weight:600}}
+.hero-how {{list-style:none;margin:22px 0 0;padding:16px 0 2px;border-top:1px solid var(--line);display:grid;gap:14px;max-width:660px}}
+.hero-how li {{display:grid;gap:4px}}
+.hero-cat {{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}}
+.hero-tag {{font:500 12px var(--mono);letter-spacing:0;text-transform:none;color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:1px 7px}}
+.hero-how p {{margin:0;font-size:15px;line-height:1.55;color:var(--ink-2)}}
+.hero-how b {{color:var(--ink);font-weight:600}}
 .how {{margin-top:104px}}
 .walk-stage.static .w-from {{opacity:1;transform:none}}
 .walk-stage.static .w-chips i {{opacity:1;transform:none}}
 .how h2 {{margin:0}}
 .section-lead {{font-size:17px;color:var(--ink-2);margin:12px 0 0;max-width:680px}}
 @media (max-width:760px) {{
-  .stages,.disclosure,.steps,.binding {{grid-template-columns:1fr}}
-  .stages li {{margin-left:0;margin-top:-1px;border-radius:0}}
-  .stages li:first-child {{border-radius:14px 14px 0 0;margin-top:0}}
-  .stages li:last-child {{border-radius:0 0 14px 14px}}
-  .stages li:not(:last-child)::after {{display:none}}
-  .bind-arrow {{height:24px}}
-  .bind-arrow::before,.bind-arrow::after {{display:none}}
+  .lead-key {{font-size:17px}}
   .wrap {{padding:0 16px}}
   .kicker {{margin-top:36px}}
   .lead {{font-size:17px}}
@@ -234,7 +236,12 @@ footer a {{color:var(--ink-2)}}
 
 <p class="kicker">Verifiable sealed-bid auctions on Zcash</p>
 <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
-<p class="lead">Not at the close, and not for any single operator. The clearing price is computed on secret shares and proven in zero knowledge, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
+<p class="lead lead-key">DarkCall is a sealed-bid auction that never opens a bid: not at the close, and not for any single operator. <b>Even the zero-knowledge proof of the clearing price is generated without opening the bids</b>, and one shielded Zcash transaction pays the seller and refunds every bidder exactly as proven.</p>
+<ol class="hero-how">
+<li><span class="hero-cat"><span class="hero-tag">REP3</span>Multi-party computation</span><p><b>Split.</b> Each bid becomes secret shares; no single operator can read one.</p></li>
+<li><span class="hero-cat"><span class="hero-tag">coNoir</span>Multi-party ZK proving</span><p><b>Prove.</b> The operators compute the clearing price and jointly generate one zero-knowledge proof from those shares; no single prover ever sees the bid book.</p></li>
+<li><span class="hero-cat"><span class="hero-tag">Halo2</span>Proof-bound shielded settlement</span><p><b>Pay.</b> Six proofs bind the proven payouts to the outputs of one shielded Zcash transaction.</p></li>
+</ol>
 <p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and each bidder's own client, the only party that sees the typed bid, runs as a local service on that machine; operators receive shares and a proof. The video and the walkthrough below are one auction on public Zcash testnet, run from the browser; earlier runs used an isolated regtest. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">

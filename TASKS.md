@@ -26,6 +26,11 @@ Done:
 - [x] Landing, "See a settled auction", evidence page and README all show that one run.
 - [x] How it works: four stages, "Follow one auction" figure (share ownership 1/2/3 per
       operator), six steps with what stays private / what is proven, Halo2 binding diagram.
+- [x] Technique-first copy (Oct 19): hero names multi-party computation (REP3), multi-party ZK
+      proving (coNoir) and proof-bound settlement (Halo2); "Why multi-party ZK proving" vs a single
+      prover; shares shown as A①③ / B②① / C③②; BN254↔Pallas binding with what checks what;
+      SHA vs Poseidon2 numbers scoped to the coNoir step. Evidence page phone layout fixed (the
+      walkthrough overflowed by 302 px at 390 px; its rules now travel with the copied section).
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.
