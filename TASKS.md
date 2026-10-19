@@ -42,6 +42,12 @@ Done:
       book vs any two FROST signers for the payout, clearing 9 s vs settlement 19 min, comparison
       heading narrowed to commit–reveal. Testnet txids link to ZecBlock (third-party explorer;
       both resolve, v6, blocks match the record) on the landing, evidence page and README.
+- [x] Money and contrast (Oct 19): the walkthrough's settle card adds the public 30,000 network fee so
+      six outputs + fee = 4 × 15,100; the Settle caption explains winner refunds (100 − 21 = 79), the
+      loser's full 100 and the seller's 63; completed walkthrough stages stay at 82% opacity instead
+      of 50%; hero lead scoped to commit–reveal; payout wording and operator knowledge made exact;
+      duplicate trust caveat removed. Hero CTA order left unchanged pending the author's call
+      (at 1366×657 the CTA starts at 691 px).
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.

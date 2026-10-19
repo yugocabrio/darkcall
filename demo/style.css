@@ -122,6 +122,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .disclosure div:last-child {background:var(--ink);color:#fff}
 .disclosure b {font-size:14px;font-weight:600}
 .disclosure p {margin:4px 0 0;font-size:14px;color:var(--ink-2)}
+.disclosure small {display:block;margin-top:6px;font-size:13px;color:#c9c7bf}
 .disclosure div:last-child p {color:#d8d6cf}
 /* Why coNoir: one prover sees the book; three operators prove it on shares. */
 .why {margin-top:48px}
@@ -176,13 +177,14 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .w-settle .w-seal {height:20px;margin:0}
 .w-settle .w-seal i {font-size:12px}
 .w-settle em {font-style:normal;font-size:11px;font-weight:500;color:var(--green);white-space:nowrap}
+.w-settle .w-fee {margin-top:10px;padding-top:8px;border-top:1px dashed var(--line-strong)}
 .w-public {grid-column:1/13;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:transparent!important;border:0!important;padding:0!important}
 .w-public > div {border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)}
 .w-public b {display:block;margin-top:4px;font-size:16px}
 .w-own {background:var(--ink)!important;border-color:var(--ink)!important;color:#fff}
 .w-own span,.w-own small {color:#c9c7bf!important}
-.walk-stage .w-from {opacity:.12;transform:translateY(6px)}
-.walk-stage .w-from.on {opacity:.5;transform:none}
+.walk-stage .w-from {opacity:.16;transform:translateY(6px)}
+.walk-stage .w-from.on {opacity:.82;transform:none}
 .walk-stage .w-from.on.now {opacity:1}
 .walk-stage .w-op.now,.walk-stage .w-escrow.now,.walk-stage .w-result.now,.walk-stage .w-settle.now,.walk-stage .w-public.now > div:first-child {border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
 .walk-stage.static .w-from {opacity:1;transform:none}

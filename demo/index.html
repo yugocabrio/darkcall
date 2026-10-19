@@ -19,7 +19,7 @@
         <div class="hero-copy">
           <p class="kicker">ZECATHON 2026 · Private Markets</p>
           <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
-          <p class="lead lead-key">To make an auction verifiable, most designs reveal what every bidder was willing to pay. <b>DarkCall never opens a bid: not at the close, not for any single operator, not even to generate the zero-knowledge proof.</b> One shielded Zcash transaction pays the seller and refunds every bidder exactly as proven.</p>
+          <p class="lead lead-key">To be verifiable, commit–reveal auctions publish what every bidder was willing to pay. <b>DarkCall never opens a bid: not at the close, not for any single operator, not even to generate the zero-knowledge proof.</b> One shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
           <ol class="hero-flow" aria-label="How it works: split, prove, pay">
             <li><span class="hero-step"><b>Split</b><span class="hero-tag">REP3</span></span><span class="hero-cat">Multi-party computation</span><p>Each bid becomes secret shares. No operator can read one.</p></li>
             <li><span class="hero-step"><b>Prove</b><span class="hero-tag">coNoir</span></span><span class="hero-cat">Multi-party ZK proving</span><p>The operators jointly prove the price. No one holds the bid book.</p></li>
@@ -30,7 +30,7 @@
             <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-heading">See a settled auction</span><span class="experience-caption">Open a bidder's receipt or verify the settlement.</span><span id="proof-card-scope" class="experience-scope">Recorded on isolated regtest</span></button>
           </nav>
           <a class="watch-link" href="/media/darkcall-demo-v2.mp4">Watch this auction settle on testnet, in 2 minutes →</a>
-          <p class="hero-note">Beyond the auction terms, the public learns the clearing price and the units sold, never the bid book or any payout. By the auction rule the price equals the highest losing bid or the reserve, so that one amount is implied. In this demo each bidder's own client runs as a local service; operators receive only shares and proofs, never a bid.</p>
+          <p class="hero-note">Beyond the auction terms, the public learns the clearing price and the units sold, but not the bid book or individual payout amounts and recipients. By the auction rule the price equals the highest losing bid or the reserve, so that one amount is implied. In this demo each bidder's own client runs as a local service; operators receive only shares and proofs, never a bid.</p>
         </div>
         <aside class="hero-receipt" aria-label="A settled DarkCall auction">
           <div class="receipt-head"><span id="hero-label">Settled auction</span><span id="hero-chain">Zcash NU7 · regtest</span></div>
@@ -57,7 +57,7 @@
       </ol>
       <div class="disclosure">
         <div><b>Public</b><p>The auction terms, the clearing price, the units sold, the proofs and one shielded transaction.</p></div>
-        <div><b>Never published</b><p>The bid book, every winner's maximum bid, each refund, and which bidder paid which deposit.</p></div>
+        <div><b>Never published</b><p>The bid book, every winner's maximum bid, each refund, and which bidder paid which deposit.</p><small>The operators learn who won and each refund, but never a bid.</small></div>
       </div>
 
       <div class="why" aria-labelledby="why-title">
@@ -79,7 +79,7 @@
 
       <div class="walk" id="walk">
         <div class="walk-top">
-          <div><p class="walk-kicker">Follow one auction</p><p class="walk-title">Four bids, three units, one shielded payout.</p></div>
+          <div><p class="walk-kicker">Follow one auction</p><p class="walk-title">Four bids. Three winners. One shielded settlement.</p></div>
           <label class="walk-toggle"><input id="walk-values" type="checkbox"><span>Show illustrative amounts<small>The demo bids and payouts. The protocol never publishes them.</small></span></label>
         </div>
         <div class="walk-controls">
@@ -98,7 +98,7 @@
           <div class="w-ops"><div class="w-op w-from" data-from="1" data-now="1 3"><span>Operator A holds ①③</span><div class="w-held"><div><em>T01</em><i class="s1">1</i><i class="s3">3</i></div><div><em>T02</em><i class="s1">1</i><i class="s3">3</i></div><div><em>T03</em><i class="s1">1</i><i class="s3">3</i></div><div><em>T04</em><i class="s1">1</i><i class="s3">3</i></div></div><small>Never all three shares of any bid</small></div><div class="w-op w-from" data-from="1" data-now="1 3"><span>Operator B holds ②①</span><div class="w-held"><div><em>T01</em><i class="s2">2</i><i class="s1">1</i></div><div><em>T02</em><i class="s2">2</i><i class="s1">1</i></div><div><em>T03</em><i class="s2">2</i><i class="s1">1</i></div><div><em>T04</em><i class="s2">2</i><i class="s1">1</i></div></div><small>Never all three shares of any bid</small></div><div class="w-op w-from" data-from="1" data-now="1 3"><span>Operator C holds ③②</span><div class="w-held"><div><em>T01</em><i class="s3">3</i><i class="s2">2</i></div><div><em>T02</em><i class="s3">3</i><i class="s2">2</i></div><div><em>T03</em><i class="s3">3</i><i class="s2">2</i></div><div><em>T04</em><i class="s3">3</i><i class="s2">2</i></div></div><small>Never all three shares of any bid</small></div></div>
           <div class="w-escrow w-from" data-from="2"><span>Shielded 2-of-3 escrow</span><b>4 × 15,100 zatoshi</b><small>Each: 100 budget + 15,000 processing fee (demo values). All three operators sign the accepted book.</small></div>
           <div class="w-result w-from" data-from="3"><span>Computed on shares</span><b>Price 21 · 3 of 3 sold</b><small class="w-proof">coNoir proof ✓ · no bid list rebuilt</small></div>
-          <div class="w-settle w-from" data-from="4"><span>One shielded transaction · six outputs</span><ol><li><span>Refund · Ticket 01</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 02</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 03</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 04</span><b class="w-seal"><i>100</i></b><em>Halo2 ✓ note</em></li><li><span>Seller · payment</span><b class="w-seal"><i>63</i></b><em>Halo2 ✓ note</em></li><li><span>Operator · fee</span><b class="w-seal"><i>30,000</i></b><em>Halo2 ✓ note</em></li></ol></div>
+          <div class="w-settle w-from" data-from="4"><span>One shielded transaction · six outputs</span><ol><li><span>Refund · Ticket 01</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 02</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 03</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 04</span><b class="w-seal"><i>100</i></b><em>Halo2 ✓ note</em></li><li><span>Seller · payment</span><b class="w-seal"><i>63</i></b><em>Halo2 ✓ note</em></li><li><span>Operator · fee</span><b class="w-seal"><i>30,000</i></b><em>Halo2 ✓ note</em></li></ol><small class="w-fee">Plus a 30,000 zatoshi network fee, public on chain. Six outputs + fee = 4 × 15,100.</small></div>
           <div class="w-public w-from" data-from="5"><div><span>Anyone sees</span><b>Price 21 · 3 sold · proofs ✓</b><small>No secrets needed to verify</small></div><div class="w-own"><span>Ticket 01's private receipt</span><b>Won · refund 79</b><small>Decrypted from its own memo with its own key</small></div></div>
         </div>
       </div>
@@ -172,7 +172,7 @@
         <li>Funding is attested by operator signatures, not proven in zero knowledge, and the public bundle alone does not prove chain inclusion.</li>
         <li>In this demo every party runs on one host: each bidder's client (which sees its own typed bid) and all three operators, and one test wallet funds all four tickets.</li>
       </ul></details>
-      <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop. DarkCall assumes semi-honest operators: two colluding operators could reconstruct bids or move escrowed funds. Prototype with every party on one host; testnet coins only.</p>
+      <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop; testnet coins only.</p>
     </section>
 
     <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">
