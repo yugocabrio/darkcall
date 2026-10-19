@@ -21,7 +21,9 @@ receipt memo.
    deposits and chain admission over the same root. Clear it by MPC and open
    your result. Then **Settle on Zcash**: one shielded transaction,
    bound output by output to the result and publicly verified. Finally open
-   your own shielded receipt and try the tamper check. See
+   your own shielded receipt and try the tamper check. Plan on about 30 minutes
+   on public testnet (funding about 10, settlement 16 to 19) or about 20 on the
+   local regtest; **See a settled auction** shows a finished run at once. See
    [local-rehearsal.md](local-rehearsal.md).
 2. **Verification without secrets.** The easiest route is
    `scripts/docker_verify.sh`. It builds every pinned tool from committed source

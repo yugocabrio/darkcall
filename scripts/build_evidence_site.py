@@ -271,13 +271,13 @@ footer a {{color:var(--ink-2)}}
 <h2>Commit–reveal opens the bids to prove the price.</h2>
 <p class="sub">So does publishing a viewing key: every bid amount is visible after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
 <div class="compare-wrap"><table class="compare">
-<thead><tr><th scope="col"></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or key committee</th></tr></thead>
+<thead><tr><th scope="col"></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or decryption committee</th></tr></thead>
 <tbody>
 <tr><th scope="row">Bids hidden from the public</th><td class="us">Yes, never opened</td><td class="no">No</td><td>Only until the close</td><td>Yes</td></tr>
 <tr><th scope="row">Bids hidden from whoever runs it</th><td class="us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No, it decrypts them</td></tr>
 <tr><th scope="row">Anyone can check the price</th><td class="us">Yes, by zero-knowledge proof</td><td>Yes</td><td>Yes, by opening every bid amount</td><td class="no">No, you trust it</td></tr>
 <tr><th scope="row">Payments and refunds stay private</th><td class="us">Yes, one shielded transaction</td><td class="no">No</td><td>Possible, if paid shielded</td><td>Possible, if it pays shielded</td></tr>
-<tr><th scope="row">Payout provably follows the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>By contract, or audited afterwards</td><td class="no">No, the signers decide</td></tr>
+<tr><th scope="row">Anyone can verify payouts match the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>By contract, or audited afterwards</td><td class="no">No, the signers decide</td></tr>
 </tbody></table></div>
 <div class="measured">
 <div><strong>0.6 s</strong><span>to seal a bid with its zero-knowledge proof</span></div>
@@ -285,7 +285,7 @@ footer a {{color:var(--ink-2)}}
 <div><strong>{tn_settle_min} min</strong><span>to settle on testnet: every output proven, signed and confirmed</span></div>
 <div><strong>~100 s</strong><span>for anyone to verify a settlement, no secrets needed</span></div>
 </div>
-<p class="caption">Common designs compared, not specific projects. Timings from one 16 GiB laptop.</p>
+<p class="caption">Common designs compared, not specific projects. Other ZK and MPC auction designs also keep bids private; DarkCall's focus is combining multi-party ZK proving with proof-bound, native shielded settlement on Zcash. Timings from one 16 GiB laptop.</p>
 
 <h2>One real auction, start to finish.</h2>
 <p class="sub">Captured in a headless browser driving the real UI, with no shortcuts. Total {total} from the first click to the tamper refusal.</p>

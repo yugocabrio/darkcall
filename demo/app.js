@@ -121,11 +121,17 @@ fetch('/api/state').then(async response => {
     $('local-pill').textContent='Local demo · new auctions settle on public Zcash testnet';
     for (const id of ['fund-chain','settle-chain']) $(id).textContent='Public testnet';
     for (const node of document.querySelectorAll('.chain-text')) node.textContent='public Zcash testnet';
+    // Measured on public testnet, Oct 19: funding 612 s (a 600 s admission
+    // window), settlement 984-1122 s, about 30 min from creation to receipts.
+    $('try-card-scope').textContent='Real shielded settlement · about 30 min on testnet';
+    $('fund-time').textContent='About 10 minutes on public testnet, most of it the admission window.';
+    $('settle-time').textContent='About 16 to 19 minutes on public testnet, including two confirmations.';
   }
   const recordedTx=state.cases[0].txid, hero=state.cases[0];
   $('hero-price').textContent=hero.price; $('hero-tickets').textContent=hero.tickets+' sealed bids';
   $('hero-sold').textContent=hero.sold+' of '+hero.units+' units sold · every winner pays the same';
   $('hero-txid').textContent=recordedTx.slice(0,8)+'…'+recordedTx.slice(-8); $('hero-txid').title=recordedTx;
+  if (state.recorded_chain==='testnet') $('hero-txlink').href='https://testnet.zecblock.com/tx/'+recordedTx;
   $('hero-note').textContent=state.funded_canonical ? (state.recorded_note || 'Recorded on isolated Zcash regtest.') : 'Recorded example with synthetic funding, not broadcast.';
   if (!state.funded_canonical) $('hero-label').textContent='Recorded example';
   $('recording-banner').textContent='Separate recorded auction · settlement tx '+recordedTx.slice(0,10)+'…'+recordedTx.slice(-8)+' · it does not settle your demo bids.';

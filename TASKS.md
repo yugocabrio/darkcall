@@ -56,6 +56,11 @@ Done:
       operator admission keys obtained independently of the bundle (site and trust model); evidence
       page scope note lists price and units sold; six-step heading renamed "A closer look at the
       protocol". Checked at 390, 820, 1024 and 1440 px.
+- [x] Judge time (Oct 19): "See a settled auction" is now the first, dark button; "Run an auction"
+      states about 30 min on testnet (20 on regtest). Fund and Settle show measured testnet times
+      (about 10 and 16-19 min) instead of regtest ones; the hero settlement txid links to ZecBlock
+      when the recorded run is on testnet; comparison row reads "Anyone can verify payouts match the
+      result", the column "decryption committee", and the caption notes other ZK/MPC auctions.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.

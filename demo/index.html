@@ -26,8 +26,8 @@
             <li><span class="hero-step"><b>Pay</b><span class="hero-tag">Halo2</span></span><span class="hero-cat">Proof-bound settlement</span><p>Four refunds, the seller and the fee: each amount and recipient proven, in one shielded transaction.</p></li>
           </ol>
           <nav class="experience-picker" aria-label="Choose an experience">
-            <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-heading">Run an auction</span><span class="experience-caption">Create, bid, fund, clear and settle on Zcash.</span><span class="experience-scope">Demo bids · real shielded settlement</span></button>
             <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-heading">See a settled auction</span><span class="experience-caption">Open a bidder's receipt or verify the settlement.</span><span id="proof-card-scope" class="experience-scope">Recorded on isolated regtest</span></button>
+            <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-heading">Run an auction</span><span class="experience-caption">Create, bid, fund, clear and settle on Zcash.</span><span id="try-card-scope" class="experience-scope">Real shielded settlement · about 20 min on regtest</span></button>
           </nav>
           <a class="watch-link" href="/media/darkcall-demo-v2.mp4">Watch this auction settle on testnet, in 2 minutes →</a>
           <p class="hero-note">Beyond the auction terms, the public learns the clearing price and the units sold, but not the bid book or individual payout amounts and recipients. By the auction rule the price equals the highest losing bid or the reserve, so that one amount is implied. In this demo each bidder's own client runs as a local service; operators receive only shares and proofs, never a bid.</p>
@@ -41,14 +41,14 @@
             <li><span><em>Halo2</em> 4 refunds, seller and fee, each proven</span></li>
             <li><span><em>FROST</em> 2-of-3 signed shielded transaction, four encrypted receipts</span></li>
           </ul>
-          <div class="receipt-tx"><span>Settlement transaction</span><code id="hero-txid">e3ffa436…84769754</code><small id="hero-note">Created, funded, cleared and settled in this UI.</small></div>
+          <div class="receipt-tx"><span>Settlement transaction</span><a id="hero-txlink" class="receipt-txlink" rel="noopener"><code id="hero-txid">e3ffa436…84769754</code></a><small id="hero-note">Created, funded, cleared and settled in this UI.</small></div>
         </aside>
       </div>
     </section>
     <section class="how" aria-labelledby="how-title">
       <p class="section-kicker">How it works</p>
       <h2 id="how-title">How can a sealed auction be publicly verified?</h2>
-      <p class="section-lead"><b>A bid is a willingness to pay.</b> If an ad buyer's ceiling leaks after the close, the seller and rivals know it for every future sale. In four stages, DarkCall turns private bids into a provably correct Zcash payment.</p>
+      <p class="section-lead"><b>A bid is a willingness to pay.</b> If an ad buyer's ceiling leaks after the close, the seller and rivals can use it against them in the next sale. In four stages, DarkCall turns private bids into a provably correct Zcash payment.</p>
       <ol class="stages">
         <li><span>01 · Seal</span><b>Commit and split each bid</b><small>Commitment · REP3 secret shares · client ZK proof</small></li>
         <li><span>02 · Fund</span><b>Lock deposits on Zcash</b><small>Shielded deposits · 2-of-3 FROST escrow · signed accepted book</small></li>
@@ -148,13 +148,13 @@
       <p class="section-lead">So does publishing a viewing key: every bid amount is visible after the close. That matters wherever amounts are strategic: allocation rounds, ad slots, procurement. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
       <div class="compare-wrap">
         <table class="compare">
-          <thead><tr><th scope="col"><span class="visually-hidden">Property</span></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or key committee</th></tr></thead>
+          <thead><tr><th scope="col"><span class="visually-hidden">Property</span></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or decryption committee</th></tr></thead>
           <tbody>
             <tr><th scope="row">Bids hidden from the public</th><td class="yes us">Yes, never opened</td><td class="no">No</td><td class="part">Only until the close</td><td class="yes">Yes</td></tr>
             <tr><th scope="row">Bids hidden from whoever runs it</th><td class="yes us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No, it decrypts them</td></tr>
             <tr><th scope="row">Anyone can check the price</th><td class="yes us">Yes, by zero-knowledge proof</td><td class="yes">Yes</td><td class="yes">Yes, by opening every bid amount</td><td class="no">No, you trust it</td></tr>
             <tr><th scope="row">Payments and refunds stay private</th><td class="yes us">Yes, one shielded transaction</td><td class="no">No</td><td class="part">Possible, if paid shielded</td><td class="part">Possible, if it pays shielded</td></tr>
-            <tr><th scope="row">Payout provably follows the result</th><td class="yes us">Yes, six output proofs</td><td class="yes">Yes, by contract</td><td class="part">By contract, or audited afterwards</td><td class="no">No, the signers decide</td></tr>
+            <tr><th scope="row">Anyone can verify payouts match the result</th><td class="yes us">Yes, six output proofs</td><td class="yes">Yes, by contract</td><td class="part">By contract, or audited afterwards</td><td class="no">No, the signers decide</td></tr>
           </tbody>
         </table>
       </div>
@@ -172,7 +172,7 @@
         <li>Public verification trusts the auction's operator admission keys, which a verifier must obtain independently of the bundle. Funding is certified by those operators' signatures, not proven in zero knowledge, and the bundle alone does not prove chain inclusion.</li>
         <li>In this demo every party runs on one host: each bidder's client (which sees its own typed bid) and all three operators, and one test wallet funds all four tickets.</li>
       </ul></details>
-      <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop; testnet coins only.</p>
+      <p class="fine-print">Common designs compared, not specific projects. Other ZK and MPC auction designs also keep bids private; DarkCall's focus is combining multi-party ZK proving with proof-bound, native shielded settlement on Zcash. Timings from one 16 GiB laptop; testnet coins only.</p>
     </section>
 
     <section id="rehearsal" class="rehearsal-panel" hidden aria-label="Create and bid in a local demo auction">
@@ -205,7 +205,7 @@
         <section id="fund-section" class="fresh-settlement fund-section" hidden aria-label="Fund this auction on Zcash regtest">
           <div class="panel-top"><span class="eyebrow">Step 3 · Fund</span><span id="fund-chain" class="recorded-label">Isolated regtest</span></div>
           <h3 id="fund-title">Lock the deposits.</h3>
-          <p class="settle-lead">Every sealed ticket gets a real shielded deposit of budget plus fee, paid from one local test wallet. The operators decrypt the deposits, re-check the same bid proofs and shares, and sign the closed book again over the same root. About 2 minutes.</p>
+          <p class="settle-lead">Every sealed ticket gets a real shielded deposit of budget plus fee, paid from one local test wallet. The operators decrypt the deposits, re-check the same bid proofs and shares, and sign the closed book again over the same root. <span id="fund-time">About 2 minutes.</span></p>
           <button id="fund-auction" class="primary-button" type="button">Fund on Zcash <span>→</span></button>
           <p id="fund-note" class="form-note" hidden></p>
           <ol id="fund-steps" class="settle-steps" hidden>
@@ -236,7 +236,7 @@
         <section id="settle-section" class="fresh-settlement" hidden aria-label="Settle this auction on Zcash regtest">
           <div class="panel-top"><span class="eyebrow">Step 6 · Settle</span><span id="settle-chain" class="recorded-label">Isolated regtest</span></div>
           <h3 id="settle-title">Pay it out, privately.</h3>
-          <p class="settle-lead">One shielded transaction pays the seller and every refund from the funded escrow, and every output is bound to the proven result. About 17 minutes on this Mac.</p>
+          <p class="settle-lead">One shielded transaction pays the seller and every refund from the funded escrow, and every output is bound to the proven result. <span id="settle-time">About 17 minutes on this Mac.</span></p>
           <button id="settle-auction" class="primary-button" type="button">Settle on Zcash <span>→</span></button>
           <p id="settle-note" class="form-note" hidden></p>
           <ol id="settle-steps" class="settle-steps" hidden>
