@@ -132,11 +132,6 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .walk-stage.reveal .w-seal {background:repeating-linear-gradient(135deg,#141413 0 8px,#2a2926 8px 16px)}
 .w-ops {grid-column:1/9;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;background:transparent!important;border:0!important;padding:0!important}
 .w-op {border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);transition:opacity .45s ease,transform .45s ease,border-color .3s}
-.w-chips {display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:10px}
-.w-chips i {height:14px;border-radius:3px;background:var(--gold-soft);border:1px solid var(--gold);transform:scale(.4);opacity:0;transition:transform .35s ease,opacity .35s ease}
-.w-op.on .w-chips i {transform:none;opacity:1}
-.w-op.on .w-chips i:nth-child(2n) {transition-delay:.12s}
-.w-op.on .w-chips i:nth-child(n+5) {transition-delay:.24s}
 .w-escrow {grid-column:9/13}
 .w-result {grid-column:1/5}
 .w-result b {display:block;margin-top:6px;font-size:22px;letter-spacing:-.02em}
@@ -153,17 +148,29 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .w-public b {display:block;margin-top:4px;font-size:16px}
 .w-own {background:var(--ink)!important;border-color:var(--ink)!important;color:#fff}
 .w-own span,.w-own small {color:#c9c7bf!important}
-.walk-stage .w-from {opacity:.18;transform:translateY(6px)}
-.walk-stage .w-from.on {opacity:1;transform:none}
-.walk-stage[data-step="1"] .w-op.on,.walk-stage[data-step="2"] .w-escrow,.walk-stage[data-step="3"] .w-result,.walk-stage[data-step="4"] .w-settle {border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
-.walk-stage[data-step="5"] .w-public > div:first-child {border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
-.walk-controls {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap}
+.walk-stage .w-from {opacity:.12;transform:translateY(6px)}
+.walk-stage .w-from.on {opacity:.5;transform:none}
+.walk-stage .w-from.on.now {opacity:1}
+.walk-stage .w-op.now,.walk-stage .w-escrow.now,.walk-stage .w-result.now,.walk-stage .w-settle.now,.walk-stage .w-public.now > div:first-child {border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.walk-stage.static .w-from {opacity:1;transform:none}
+/* Shares: each bid becomes ①②③; each operator holds two different ones. */
+.w-shares {display:flex;align-items:center;gap:5px;margin-top:10px}
+.w-shares small {margin:0 0 0 6px!important}
+.walk-stage i.s1,.walk-stage i.s2,.walk-stage i.s3 {display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;font:500 13px var(--sans);font-style:normal}
+.walk-stage i.s1 {background:var(--gold);color:var(--ink)}
+.walk-stage i.s2 {background:var(--ink);color:#fff}
+.walk-stage i.s3 {background:var(--surface);color:var(--ink);border:1.5px solid var(--ink-3)}
+.w-held {display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:10px}
+.w-held div {display:flex;align-items:center;gap:4px}
+.w-held em {font:12px var(--mono);font-style:normal;color:var(--ink-3);width:28px}
+.walk-controls {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
 .walk-steps {list-style:none;display:flex;gap:4px;margin:0;padding:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;flex-wrap:wrap}
 .walk-steps button {border:0;background:transparent;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;color:var(--ink-2)}
 .walk-steps button[aria-current] {background:var(--ink);color:#fff}
 .walk-play {border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:7px 18px;font-size:13px;font-weight:500}
 .walk-play:hover {border-color:var(--ink)}
-.walk-caption {margin:14px 0 0;min-height:48px;font-size:15px;line-height:1.6;color:var(--ink-2);max-width:900px}
+.walk-caption {margin:14px 0 18px;min-height:48px;font-size:15px;line-height:1.6;color:var(--ink-2);max-width:960px}
+.walk-play {background:var(--ink)!important;color:#fff;border-color:var(--ink)!important}
 .walk-caption b {color:var(--ink);font-weight:600}
 .steps-title {font-size:22px;margin:64px 0 0}
 .steps {list-style:none;padding:0;margin:20px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
