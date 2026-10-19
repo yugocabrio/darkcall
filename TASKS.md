@@ -30,8 +30,8 @@ Done:
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.
 - [x] Name kept: "DarkCall", descriptor "Verifiable sealed-bid auctions on Zcash".
-- [ ] Optional: re-run `scripts/docker_verify.sh` so the container record covers all seven
-      bundles (needs about 15 GB free disk; three are host-verified so far).
+- [x] Clean-room container covers all seven bundles (Oct 19, no network, strict tamper
+      refusal), reusing the image built from 66988f5 with the bundles mounted read-only.
 - [ ] Optional (about a day): four bidder wallets each funding their own deposit instead of one
       local test bank, to remove the "one wallet funds all four" limit.
 

@@ -194,5 +194,107 @@
     ],
     "tamper_check": "strict: fixed verifier log must contain Proof verification failed",
     "image_removed_afterwards": true
+  },
+  "run_all_seven_bundles": {
+    "date": "2026-10-19 (CEST)",
+    "image": "darkcall-verify:66988f5, built earlier by scripts/docker_verify.sh from git archive of commit 66988f5",
+    "command": "docker run --rm --network none -v $PWD/demo/artifacts:/src/demo/artifacts:ro -v $PWD/demo/authority:/src/demo/authority:ro -v $PWD/scripts/docker_verify_all.py:/src/scripts/docker_verify_all.py:ro darkcall-verify:66988f5",
+    "bundles_from_commit": "425c92f",
+    "method_note": "the verifier binaries were built from commit 66988f5; the seven public bundles, their authorities and the bundle list were mounted read-only from a later commit, with no network. Bundles made after the image (both public-testnet runs and the regtest video run) therefore verify under the earlier verifier build",
+    "environment": "clean Linux container built from git archive; Linux 6.10.14-linuxkit aarch64",
+    "results": [
+      {
+        "bundle": "testnet-auction-nu7-v2",
+        "scope": "the auction in the demo video: created, funded, cleared and settled in the browser on public Zcash testnet, Oct 19",
+        "txid": "be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 109.339
+      },
+      {
+        "bundle": "testnet-auction-nu7-v1",
+        "scope": "browser auction funded, cleared and settled on public Zcash testnet, Oct 19",
+        "txid": "8e6da99bc6ab58b941e3b3ec53dde1dbea99fd5886618c2f7aae7009034f0db7",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 113.638
+      },
+      {
+        "bundle": "browser-auction-nu7-v3",
+        "scope": "the auction in the demo video: funded, cleared and settled through the UI, Oct 19",
+        "txid": "e305699514938d382be010260533f01725e5970c895e11f0a843843351caf779",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 104.336
+      },
+      {
+        "bundle": "browser-auction-nu7-v2",
+        "scope": "six-step browser auction: funded before clearing, then settled, Oct 19",
+        "txid": "e3ffa436a2fd747653dec92e052f622135f51912c6707ec95b7373ab84769754",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 106.157
+      },
+      {
+        "bundle": "browser-auction-nu7-v1",
+        "scope": "auction created and settled by clicking through the browser UI, Oct 18",
+        "txid": "3fee2c7ce3b64689c28700904a5b31e13272b41030ae5eedd58a6a87b5c0b5d7",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 100.997
+      },
+      {
+        "bundle": "fresh-book-nu7-v1",
+        "scope": "browser-created book settled from the CLI driver (resumed), Oct 18",
+        "txid": "54941ffd845509ee5dc7b23e08b0756526bf97b3123017d581c9c40345c76ee6",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 103.487
+      },
+      {
+        "bundle": "canonical-nu7-funded-v1",
+        "scope": "recorded Oct 5 settlement with fixture bids",
+        "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+        "native_proof_and_signatures_verified": true,
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "receipt_fixed_proof_verified": true,
+        "corrupted_receipt_proof_refused": true,
+        "private_material_read": false,
+        "seconds": 106.439
+      }
+    ],
+    "all_passed": true
   }
 }

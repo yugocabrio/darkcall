@@ -189,12 +189,10 @@ scripts/docker_verify.sh
 
 It builds every pinned tool from source using only committed files, verifies
 every committed bundle, and checks that a corrupted proof is rejected. On Oct 19
-it passed on linux/arm64 for the four bundles that existed then
-([record](evidence/2026-10-18-clean-room-linux-verification.json)). Three were
-added later and verified on the host with the strict tamper refusal: the
-earlier regtest video run `browser-auction-nu7-v3` (103 s) and the two
-public-testnet runs `testnet-auction-nu7-v1` (99 s) and `testnet-auction-nu7-v2`
-(106 s, the auction in the video). Remove the
+all seven committed bundles, including both public-testnet runs, verified in
+the clean Linux container with no network and the strict tamper refusal (101–114 s each;
+[record](evidence/2026-10-18-clean-room-linux-verification.json)). The image was built from an earlier commit and the later bundles were
+mounted read-only, so they verify under that earlier verifier build. Remove the
 image afterwards with `docker image rm`.
 
 **Or verify on the host.** Build the pinned tools

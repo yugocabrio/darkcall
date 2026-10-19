@@ -39,7 +39,7 @@ def vtt(srt):
 def build():
     manifest = json.loads((MEDIA / 'manifest.json').read_text())
     evidence = json.loads((ROOT / 'evidence/2026-10-18-fresh-book-native-settlement.json').read_text())
-    clean = json.loads((ROOT / 'evidence/2026-10-18-clean-room-linux-verification.json').read_text())['run_all_four_bundles']
+    clean = json.loads((ROOT / 'evidence/2026-10-18-clean-room-linux-verification.json').read_text())['run_all_seven_bundles']
     run = evidence['video_capture_run']
     testnet = json.loads((ROOT / 'evidence/2026-10-19-public-testnet-settlement.json').read_text())
     # The protocol explanation is the demo page's own section, so the two never drift.
@@ -104,11 +104,7 @@ def build():
     video_bundle = run['public_bundle']
     tn_bundle = testnet['public_verification']
     browser_run = testnet['browser_video_run']
-    bundles = [(pathlib.Path(tn_bundle['bundle']).name, testnet['settlement']['txid'], 'Settled on public Zcash testnet',
-                f'host-verified {tn_bundle["host_rerun_seconds"]:.0f} s, tamper refused; added after the container run')]
-    bundles += [(pathlib.Path(video_bundle['path']).name, facts['txid'], 'The auction in the video',
-                f'host-verified {video_bundle["host_verification_seconds"]:.0f} s; added after the container run')]
-    bundles += [(r['bundle'], r['txid'], r['scope'], f'clean Linux container, {r["seconds"]:.0f} s, tamper refused') for r in clean['results']]
+    bundles = [(r['bundle'], r['txid'], r['scope'], f'clean Linux container, {r["seconds"]:.0f} s, tamper refused') for r in clean['results']]
     bundle_rows = '\n'.join(f'<tr><td><code>{e(b)}</code></td><td><code>{e(short(t))}</code></td><td>{e(s)}</td><td>{e(v)}</td></tr>'
                             for b, t, s, v in bundles)
     page = TEMPLATE.format(
