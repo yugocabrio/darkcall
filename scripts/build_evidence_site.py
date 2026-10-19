@@ -41,6 +41,7 @@ def build():
     evidence = json.loads((ROOT / 'evidence/2026-10-18-fresh-book-native-settlement.json').read_text())
     clean = json.loads((ROOT / 'evidence/2026-10-18-clean-room-linux-verification.json').read_text())['run_all_four_bundles']
     run = evidence['video_capture_run']
+    testnet = json.loads((ROOT / 'evidence/2026-10-19-public-testnet-settlement.json').read_text())
     facts, at = manifest['facts'], {s['name']: s['elapsed_seconds'] for s in manifest['shots']}
     receipts = {r['ticket']: r for r in run['receipts_seen_in_frames']}
     price, sold = re.match(r'(\d+) zatoshi × (\d+) sold', facts['outcome']).groups()
@@ -89,7 +90,10 @@ def build():
         for no, title, img, t, text in steps)
 
     video_bundle = run['public_bundle']
-    bundles = [(pathlib.Path(video_bundle['path']).name, facts['txid'], 'The auction in the video',
+    tn_bundle = testnet['public_verification']
+    bundles = [(pathlib.Path(tn_bundle['bundle']).name, testnet['settlement']['txid'], 'Settled on public Zcash testnet',
+                f'host-verified {tn_bundle["host_rerun_seconds"]:.0f} s, tamper refused; added after the container run')]
+    bundles += [(pathlib.Path(video_bundle['path']).name, facts['txid'], 'The auction in the video',
                 f'host-verified {video_bundle["host_verification_seconds"]:.0f} s; added after the container run')]
     bundles += [(r['bundle'], r['txid'], r['scope'], f'clean Linux container, {r["seconds"]:.0f} s, tamper refused') for r in clean['results']]
     bundle_rows = '\n'.join(f'<tr><td><code>{e(b)}</code></td><td><code>{e(short(t))}</code></td><td>{e(s)}</td><td>{e(v)}</td></tr>'
@@ -99,7 +103,12 @@ def build():
         deposit=e(facts['deposit_txid']), txid=e(facts['txid']), root=e(root_short), price=price, sold=sold,
         total=mmss(manifest['total_seconds']), steps=step_html, winner_refund=100 - int(price), seller=int(price) * int(sold), bundle_rows=bundle_rows, repo=REPO,
         clean_env=e(clean['environment']), clearing_s=clearing_s,
-        bundle_path=e(video_bundle['path']), authority_path=e(video_bundle['authority']))
+        bundle_path=e(tn_bundle['bundle']), authority_path=e(tn_bundle['authority']),
+        tn_deposit=e(testnet['funding']['deposit_txid']), tn_deposit_height=f"{testnet['funding']['deposit_block']['height']:,}",
+        tn_txid=e(testnet['settlement']['txid']), tn_height=f"{testnet['settlement']['block']['height']:,}",
+        tn_settle_s=round(testnet['settlement']['driver_seconds']), tn_check_s=round(tn_bundle['in_run_seconds']),
+        tn_price=testnet['clearing']['price'], tn_sold=testnet['clearing']['sold'],
+        tn_receipts=' / '.join(str(r['refund']) for r in testnet['own_receipts']))
     (DOCS / 'index.html').write_text(page)
     return {'page': str(DOCS / 'index.html'), 'frames': len(FRAMES), 'site_bytes': sum(p.stat().st_size for p in SITE.rglob('*') if p.is_file())}
 
@@ -203,13 +212,24 @@ footer a {{color:var(--ink-2)}}
 <p class="kicker">Sealed-bid auctions on Zcash</p>
 <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
 <p class="lead">Not at the close, and not for any single operator. The clearing price is computed on secret shares and proven in zero knowledge, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
-<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and the local helper that builds a bid's proof sees the typed demo bid. The chain is an isolated Zebra NU7 regtest, not testnet or mainnet. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
+<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and the local helper that builds a bid's proof sees the typed demo bid. The video and the walkthrough below ran on an isolated Zebra NU7 regtest; one auction also settled on public Zcash testnet. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">
 <source src="site/darkcall-demo-v2.mp4" type="video/mp4">
 <track kind="captions" src="site/darkcall-demo-v2.vtt" srclang="en" label="English" default>
 </video>
 <p class="caption">{video_seconds} s, edited from one real auction ({auction_short}). Every time cut states the real elapsed time, and every frame is SHA-256-checked against the <a href="{repo}demo/media/v2/manifest.json">capture manifest</a>.</p>
+
+<h2>Settled on public Zcash testnet.</h2>
+<p class="sub">On October 19 a fresh auction was funded, cleared and settled on standard public testnet (NU7) with testnet coins, through the same admission, proofs and signing as everything below.</p>
+<dl class="facts">
+<dt>Deposits</dt><dd><code>{tn_deposit}</code><br>block {tn_deposit_height}, two confirmations; four client proofs and twelve share pairs re-verified</dd>
+<dt>Clearing</dt><dd>REP3 price {tn_price} zatoshi, {tn_sold} of 3 sold, after funding</dd>
+<dt>Settlement</dt><dd><code>{tn_txid}</code><br>block {tn_height}, two confirmations; six output bindings and 2-of-3 FROST, {tn_settle_s} s</dd>
+<dt>Public check</dt><dd>{tn_check_s} s with no secrets; a corrupted receipt proof is refused</dd>
+<dt>Own receipts</dt><dd>Refunds {tn_receipts} zatoshi, each decrypted from its own memo</dd>
+</dl>
+<p class="caption">Chain data came from one lightwalletd provider (testnet.zec.rocks) over validated TLS. <a href="{repo}evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
 
 <h2>Other auctions open the bids to prove the price.</h2>
 <p class="sub">Commit–reveal and published viewing keys show every bid amount after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
@@ -220,7 +240,7 @@ footer a {{color:var(--ink-2)}}
 <tr><th scope="row">Bids hidden from whoever runs it</th><td class="us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No, it decrypts them</td></tr>
 <tr><th scope="row">Anyone can check the price</th><td class="us">Yes, by zero-knowledge proof</td><td>Yes</td><td>Yes, by opening every bid amount</td><td class="no">No, you trust it</td></tr>
 <tr><th scope="row">Payments and refunds stay private</th><td class="us">Yes, one shielded transaction</td><td class="no">No</td><td>Possible, if paid shielded</td><td>Possible, if it pays shielded</td></tr>
-<tr><th scope="row">Payout provably follows the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>Yes, by contract</td><td class="no">No, the signers decide</td></tr>
+<tr><th scope="row">Payout provably follows the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>By contract, or audited afterwards</td><td class="no">No, the signers decide</td></tr>
 </tbody></table></div>
 <div class="measured">
 <div><strong>0.6 s</strong><span>to seal a bid with its zero-knowledge proof</span></div>

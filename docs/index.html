@@ -97,13 +97,24 @@ footer a {color:var(--ink-2)}
 <p class="kicker">Sealed-bid auctions on Zcash</p>
 <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
 <p class="lead">Not at the close, and not for any single operator. The clearing price is computed on secret shares and proven in zero knowledge, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
-<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and the local helper that builds a bid's proof sees the typed demo bid. The chain is an isolated Zebra NU7 regtest, not testnet or mainnet. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
+<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and the local helper that builds a bid's proof sees the typed demo bid. The video and the walkthrough below ran on an isolated Zebra NU7 regtest; one auction also settled on public Zcash testnet. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">
 <source src="site/darkcall-demo-v2.mp4" type="video/mp4">
 <track kind="captions" src="site/darkcall-demo-v2.vtt" srclang="en" label="English" default>
 </video>
 <p class="caption">119 s, edited from one real auction (b9c23d7dae…9ac80e6e). Every time cut states the real elapsed time, and every frame is SHA-256-checked against the <a href="https://github.com/yugocabrio/ZECATHON/blob/main/demo/media/v2/manifest.json">capture manifest</a>.</p>
+
+<h2>Settled on public Zcash testnet.</h2>
+<p class="sub">On October 19 a fresh auction was funded, cleared and settled on standard public testnet (NU7) with testnet coins, through the same admission, proofs and signing as everything below.</p>
+<dl class="facts">
+<dt>Deposits</dt><dd><code>d573a6510ff9e19225693f6288ef581056f9271296fad7c271649a6a3c7b1737</code><br>block 4,518,128, two confirmations; four client proofs and twelve share pairs re-verified</dd>
+<dt>Clearing</dt><dd>REP3 price 21 zatoshi, 3 of 3 sold, after funding</dd>
+<dt>Settlement</dt><dd><code>8e6da99bc6ab58b941e3b3ec53dde1dbea99fd5886618c2f7aae7009034f0db7</code><br>block 4,518,182, two confirmations; six output bindings and 2-of-3 FROST, 984 s</dd>
+<dt>Public check</dt><dd>98 s with no secrets; a corrupted receipt proof is refused</dd>
+<dt>Own receipts</dt><dd>Refunds 79 / 79 / 79 / 100 zatoshi, each decrypted from its own memo</dd>
+</dl>
+<p class="caption">Chain data came from one lightwalletd provider (testnet.zec.rocks) over validated TLS. <a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
 
 <h2>Other auctions open the bids to prove the price.</h2>
 <p class="sub">Commit–reveal and published viewing keys show every bid amount after the close. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
@@ -114,7 +125,7 @@ footer a {color:var(--ink-2)}
 <tr><th scope="row">Bids hidden from whoever runs it</th><td class="us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No, it decrypts them</td></tr>
 <tr><th scope="row">Anyone can check the price</th><td class="us">Yes, by zero-knowledge proof</td><td>Yes</td><td>Yes, by opening every bid amount</td><td class="no">No, you trust it</td></tr>
 <tr><th scope="row">Payments and refunds stay private</th><td class="us">Yes, one shielded transaction</td><td class="no">No</td><td>Possible, if paid shielded</td><td>Possible, if it pays shielded</td></tr>
-<tr><th scope="row">Payout provably follows the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>Yes, by contract</td><td class="no">No, the signers decide</td></tr>
+<tr><th scope="row">Payout provably follows the result</th><td class="us">Yes, six output proofs</td><td>Yes, by contract</td><td>By contract, or audited afterwards</td><td class="no">No, the signers decide</td></tr>
 </tbody></table></div>
 <div class="measured">
 <div><strong>0.6 s</strong><span>to seal a bid with its zero-knowledge proof</span></div>
@@ -163,11 +174,12 @@ footer a {color:var(--ink-2)}
 <h2>Verify it yourself.</h2>
 <p class="sub">No wallet key, bid, mask or witness is needed. The authority file is configured separately from each bundle.</p>
 <pre><code>scripts/docker_verify.sh        # clean Linux container from committed source; about 20 min to build</code></pre>
-<pre><code>./verify.sh --funded demo/artifacts/browser-auction-nu7-v3 \
-  --authority demo/authority/browser-auction-nu7-v3.json</code></pre>
+<pre><code>./verify.sh --funded demo/artifacts/testnet-auction-nu7-v1 \
+  --authority demo/authority/testnet-auction-nu7-v1.json</code></pre>
 <div class="table-scroll"><table class="bundles">
 <thead><tr><th>Bundle</th><th>Settlement tx</th><th>What it is</th><th>Verified</th></tr></thead>
 <tbody>
+<tr><td><code>testnet-auction-nu7-v1</code></td><td><code>8e6da99bc6…034f0db7</code></td><td>Settled on public Zcash testnet</td><td>host-verified 99 s, tamper refused; added after the container run</td></tr>
 <tr><td><code>browser-auction-nu7-v3</code></td><td><code>e305699514…51caf779</code></td><td>The auction in the video</td><td>host-verified 103 s; added after the container run</td></tr>
 <tr><td><code>browser-auction-nu7-v2</code></td><td><code>e3ffa436a2…84769754</code></td><td>six-step browser auction: funded before clearing, then settled, Oct 19</td><td>clean Linux container, 100 s, tamper refused</td></tr>
 <tr><td><code>browser-auction-nu7-v1</code></td><td><code>3fee2c7ce3…b5c0b5d7</code></td><td>auction created and settled by clicking through the browser UI, Oct 18</td><td>clean Linux container, 100 s, tamper refused</td></tr>

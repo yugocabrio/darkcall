@@ -51,7 +51,7 @@ DarkCall proves the price without opening them, then pays out in shielded ZEC.
 | Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No, it decrypts them |
 | Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | No, you trust it |
 | Payments and refunds stay private | **Yes, one shielded transaction** | No | Possible, if paid shielded | Possible, if it pays shielded |
-| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | Yes, by contract | No, the signers decide |
+| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | By contract, or audited afterwards | No, the signers decide |
 
 Auditable sealed-bid designs usually **disclose the bids to prove the result**.
 DarkCall **proves the result without disclosing them**. Only the clearing price
