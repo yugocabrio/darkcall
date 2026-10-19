@@ -235,7 +235,7 @@ footer a {{color:var(--ink-2)}}
 <p class="kicker">Verifiable sealed-bid auctions on Zcash</p>
 <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
 <p class="lead">Not at the close, and not for any single operator. The clearing price is computed on secret shares and proven in zero knowledge, and one shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
-<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and the local helper that builds a bid's proof sees the typed demo bid. The video and the walkthrough below ran on an isolated Zebra NU7 regtest; one auction also settled on public Zcash testnet. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
+<p class="scope"><b>Demo scope, up front.</b> The one public number is the clearing price, which by the auction rule equals the highest losing bid or the reserve. Every party runs on one machine, and each bidder's own client, the only party that sees the typed bid, runs as a local service on that machine; operators receive shares and a proof. The video and the walkthrough below ran on an isolated Zebra NU7 regtest; one auction also settled on public Zcash testnet. No mainnet funds. The protocol keeps bids from the operators and the public; this demo shows that machinery working, not isolation between separate parties.</p>
 
 <video controls preload="metadata" poster="site/01-landing.jpg">
 <source src="site/darkcall-demo-v2.mp4" type="video/mp4">

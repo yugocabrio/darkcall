@@ -74,7 +74,7 @@ All three parts are needed:
 - Native shielded settlement keeps the payments private, while proofs tie every
   output to the result.
 
-In this one-machine demo, the local bidder helper does see the typed bid.
+Only the bidder's own client sees the typed bid; operators receive shares and a proof. In this one-machine demo that client is a local service on the same host.
 
 ## What works (single-host prototype)
 
@@ -122,8 +122,8 @@ In this one-machine demo, the local bidder helper does see the typed bid.
   further inference.
 - Funding is attested by operator signatures, not proven in zero knowledge. The
   public bundle does not prove chain inclusion.
-- Demo scope: one host runs every party. The localhost helper sees typed demo
-  bids. Deposits come from one local test wallet right after the close, before
+- Demo scope: one host runs every party. Each bidder's client, the only party
+  that sees the typed bid, is a localhost service. Deposits come from one local test wallet right after the close, before
   clearing (in a deployment each bidder's own wallet deposits). This is
   isolated regtest, not testnet or mainnet. There are four bid slots and default
   terms only.

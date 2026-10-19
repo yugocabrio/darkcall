@@ -13,9 +13,10 @@ at block 4,518,182 ([record](#settled-on-public-zcash-testnet)).
 
 ![DarkCall: bids stay sealed, the price is proven, settled on Zcash; beside it, a real auction settled in this UI](demo/media/v2/01-landing.jpg)
 
-> **Demo scope, up front.** This prototype runs every role on one machine. The
-> local bidder helper that builds each bid's proof and shares sees the typed
-> demo bid, and the three operators share a host. The protocol keeps bids from
+> **Demo scope, up front.** This prototype runs every role on one machine. Each
+> bidder's own client builds the bid's proof and shares and is the only party
+> that sees the typed bid; here it runs as a local service, and the three
+> operators share the same host. The protocol keeps bids from
 > the operators and the public; this demo shows that machinery working, not
 > isolation between separate parties. Details are under
 > [Trust model and limits](#trust-model-and-limits).
@@ -237,8 +238,9 @@ assumptions:
   the highest losing bid, or the reserve. That single value is public by design;
   who placed it is not. Small books and repeated auctions allow further
   inference.
-- **The demo helper sees typed bids.** In this local demo, the localhost helper that builds the client
-  proof sees the typed demo bid. Deposits come from one local test wallet right
+- **The bidder's client runs as a local service.** Only the bidder's own client sees the
+  typed bid; operators receive shares and a proof. In this demo that client is a
+  localhost service on the same machine as the operators. Deposits come from one local test wallet right
   after the close; in a deployment each bidder's own wallet deposits. All
   three operators run on one machine.
 - **Funding is attested, not proven.** Admission signatures attest funding; they are not a public ZK funding

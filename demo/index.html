@@ -25,7 +25,7 @@
             <button id="show-recording" class="experience-card proof-card" aria-pressed="false"><span class="experience-heading">See a settled auction</span><span class="experience-caption">Open a bidder's receipt or verify the settlement.</span><span id="proof-card-scope" class="experience-scope">Recorded on isolated regtest</span></button>
           </nav>
           <a class="watch-link" href="/media/darkcall-demo-v2.mp4">Watch the 2-minute verified run →</a>
-          <p class="hero-note">Beyond the auction terms, one number is public: the clearing price, which by the auction rule equals the highest losing bid or the reserve. In this local demo, the helper that builds each bid's proof sees the typed bid.</p>
+          <p class="hero-note">Beyond the auction terms, one number is public: the clearing price, which by the auction rule equals the highest losing bid or the reserve. Your bid goes only to your own client, which in this demo runs as a local service on the same computer and builds the proof and shares; operators receive shares and a proof, never the bid.</p>
         </div>
         <aside class="hero-receipt" aria-label="A settled DarkCall auction">
           <div class="receipt-head"><span id="hero-label">Settled auction</span><span id="hero-chain">Zcash NU7 · regtest</span></div>
@@ -141,7 +141,7 @@
         <li>Operators hold the escrow viewing capability and learn winners and refunds.</li>
         <li>The public price is the highest losing bid, or the reserve, so one bid value can follow from it.</li>
         <li>Funding is attested by operator signatures, not proven in zero knowledge, and the public bundle alone does not prove chain inclusion.</li>
-        <li>In this demo every party runs on one host, the local helper sees typed bids, and one test wallet funds all four tickets.</li>
+        <li>In this demo every party runs on one host: each bidder's client (which sees its own typed bid) and all three operators, and one test wallet funds all four tickets.</li>
       </ul></details>
       <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop. DarkCall assumes semi-honest operators: two colluding operators could reconstruct bids or move escrowed funds. Prototype with every party on one host; testnet coins only.</p>
     </section>
@@ -167,7 +167,7 @@
         <form id="bid-form" class="bid-form">
           <label>Your maximum bid (zatoshi)<input id="maximum-bid" type="number" min="0" max="100" step="1" value="75" required></label>
           <button id="seal-bid" class="primary-button" type="submit">Seal bid</button>
-          <p class="form-note input-disclosure">Demo only: the local helper sees what you type. <span class="bid-suggest">Try <button type="button" data-bid="77">77</button><button type="button" data-bid="61">61</button><button type="button" data-bid="43">43</button><button type="button" data-bid="21">21</button></span></p>
+          <p class="form-note input-disclosure">Your bid stays with your own client on this computer; operators get only shares and a proof. <span class="bid-suggest">Try <button type="button" data-bid="77">77</button><button type="button" data-bid="61">61</button><button type="button" data-bid="43">43</button><button type="button" data-bid="21">21</button></span></p>
         </form>
         <div id="bid-accepted" class="bid-accepted" hidden aria-live="polite"></div>
         <details id="acceptance-details" class="advanced-details" hidden><summary>Signed pre-check</summary><button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed pre-check</button><pre id="acceptance-public"></pre></details>
@@ -201,7 +201,7 @@
             </div></div>
             <div class="fresh-challenge"><div><span class="eyebrow">Try to cheat</span><p>Change one byte of the proof and watch it fail.</p></div><button id="tamper-fresh" class="secondary-button" type="button">Tamper with proof</button></div>
             <p id="fresh-tamper-result" class="check-result" aria-live="polite"></p>
-            <details class="advanced-details"><summary>Clearing details</summary><p id="fresh-proof-details"></p><p id="fresh-root"></p><p>The local helper sees demo inputs. Three semi-honest REP3 parties run on this computer; privacy assumes at most one is corrupt. The ticket capability lives only in this page's memory, so reloading loses it. It is not a production login.</p></details>
+            <details class="advanced-details"><summary>Clearing details</summary><p id="fresh-proof-details"></p><p id="fresh-root"></p><p>The bidder's client on this computer sees demo inputs; operators get only shares. Three semi-honest REP3 parties run on this computer; privacy assumes at most one is corrupt. The ticket capability lives only in this page's memory, so reloading loses it. It is not a production login.</p></details>
           </div>
         </section>
         <section id="settle-section" class="fresh-settlement" hidden aria-label="Settle this auction on Zcash regtest">
@@ -237,7 +237,7 @@
       </div>
       <p id="rehearsal-status" class="check-result" aria-live="polite"></p><p id="rehearsal-error" class="error" role="alert" hidden></p>
       <button id="new-auction" class="text-button" type="button">Start another auction</button>
-      <details class="public-details demo-details"><summary>About this demo</summary><p>Sealing a bid gives an instant signed pre-check of its proof and shares. <b>Fund on Zcash</b> then makes a real deposit for every sealed ticket on <span class="chain-text">an isolated NU7 regtest</span>: budget plus 15,000 zatoshi each, from one local test wallet. The operators admit the deposits under a chain-funded certificate over the same accepted root. Only then does REP3 clear the book, and <b>Settle on Zcash</b> pays out in one shielded transaction. The local helper sees typed demo bids and creates their proofs and shares on this computer.</p><p>Four tickets are required. After the cutoff, three operators sign the accepted book and run the same secret shares through REP3. The fixed proof and signed root are verified before any ticket's result is opened. Everything runs on one host; the MPC is semi-honest, and privacy assumes at most one corrupt party.</p><p>Amounts are demo-sized on purpose. Bids stay within a 100-zatoshi budget, and the fixed 15,000-zatoshi processing fee per ticket pays the settlement's 30,000-zatoshi network fee and a 30,000-zatoshi operator fee output. This is a cryptographic end-to-end demo, not a pricing proposal.</p><p>The opening capability stays in page memory, so reloading loses access. Before Settle, your result is checked against the clearing proof on this computer; after Settle, it is decrypted from your ticket's own native shielded memo. This is not production authentication or in-browser proving.</p></details>
+      <details class="public-details demo-details"><summary>About this demo</summary><p>Sealing a bid gives an instant signed pre-check of its proof and shares. <b>Fund on Zcash</b> then makes a real deposit for every sealed ticket on <span class="chain-text">an isolated NU7 regtest</span>: budget plus 15,000 zatoshi each, from one local test wallet. The operators admit the deposits under a chain-funded certificate over the same accepted root. Only then does REP3 clear the book, and <b>Settle on Zcash</b> pays out in one shielded transaction. Each bidder's client runs on this computer: it sees its own typed bid and creates the proof and shares; operators receive only shares and proofs.</p><p>Four tickets are required. After the cutoff, three operators sign the accepted book and run the same secret shares through REP3. The fixed proof and signed root are verified before any ticket's result is opened. Everything runs on one host; the MPC is semi-honest, and privacy assumes at most one corrupt party.</p><p>Amounts are demo-sized on purpose. Bids stay within a 100-zatoshi budget, and the fixed 15,000-zatoshi processing fee per ticket pays the settlement's 30,000-zatoshi network fee and a 30,000-zatoshi operator fee output. This is a cryptographic end-to-end demo, not a pricing proposal.</p><p>The opening capability stays in page memory, so reloading loses access. Before Settle, your result is checked against the clearing proof on this computer; after Settle, it is decrypted from your ticket's own native shielded memo. This is not production authentication or in-browser proving.</p></details>
       <div class="recording-transition"><div><span class="eyebrow">No time to wait?</span><h3>See a settled auction.</h3><p>An auction that was created and settled in this UI earlier. Open its bidders' receipts, or verify it in about two minutes. It does not settle these demo bids.</p></div><button id="continue-recording" class="secondary-button" type="button">Open settled auction</button></div>
     </section>
     <div id="recorded-demo" hidden>
