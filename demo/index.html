@@ -65,7 +65,7 @@
         <div class="why-grid">
           <div class="why-card">
             <span class="why-label">Ordinary single-prover ZK</span>
-            <div class="why-flow"><span class="why-box">One prover<i>77 · 61 · 43 · 21</i></span><span class="why-arrow" aria-hidden="true"></span><span class="why-box">Proof</span></div>
+            <div class="why-flow"><span class="why-box">One prover<i>sees 77 · 61 · 43 · 21</i></span><span class="why-arrow" aria-hidden="true"></span><span class="why-box">Proof</span></div>
             <p>The verifier sees only the public result, not the bids. <b>But the single prover must know every bid to generate the proof.</b></p>
           </div>
           <div class="why-card us">
@@ -74,12 +74,12 @@
             <p>Three operators compute the witness and the proof together from secret shares. <b>No single operator ever holds the complete bid book.</b></p>
           </div>
         </div>
-        <p class="why-note">Assumes at most one semi-honest operator (REP3); two colluding operators could reconstruct the bids.</p>
+        <p class="why-note">The bids shown are the demo's examples. Assumes at most one semi-honest operator (REP3); two colluding operators could reconstruct the bids.</p>
       </div>
 
       <p class="bind-kicker">Multi-party ZK proving × Halo2 output binding</p>
       <h3 class="bind-title">Proving the price is half the problem. <br>Proving the payment is the other half.</h3>
-      <p class="bind-lead">A correct auction means nothing if the money goes somewhere else. DarkCall proves both the clearing result and that <b>every shielded payout matches it</b>; any other payout fails public verification.</p>
+      <p class="bind-lead">A correct auction means nothing if the money goes somewhere else. DarkCall proves both the clearing result and that <b>every payout in a verified settlement matches it</b>. Two colluding signers could still move the escrow, but such a payout fails public verification.</p>
       <div class="binding" aria-label="How the payment is bound to the proof">
         <div class="bind-box"><span>Multi-party ZK · coNoir · BN254</span><b>Prove the private result</b><small>Clearing price and six private payout rows, committed with Poseidon2</small></div>
         <div class="bind-arrow" aria-hidden="true"></div>
@@ -89,7 +89,7 @@
       </div>
       <div class="bind-facts">
         <p><b>Across two curves.</b> The auction proof lives on BN254, while Zcash's shielded notes are commitments on Pallas, so the auction proof cannot speak about them directly. Each Halo2 proof recomputes one row's BN254 Poseidon2 commitment inside a Pallas circuit and shows that it holds the same amount and recipient as one native note commitment.</p>
-        <p><b>What checks what.</b> The Zcash network validates the native transaction. DarkCall's public verifier checks the auction proof, the six output bindings and the operator-signed accepted book from the published bundle, with no secrets. All three operators sign the accepted book; any two of the three FROST signers authorize the settlement, and honest signers do so only after every proof checks out.</p>
+        <p><b>What checks what.</b> The Zcash network validates the native transaction. DarkCall's public verifier checks the auction proof, the six output bindings and the accepted book's signatures against operator keys obtained independently of the bundle, with no secrets. All three operators sign the accepted book; any two of the three FROST signers authorize the settlement, and honest signers do so only after every proof checks out.</p>
       </div>
       <p class="bind-design"><b>Performance note.</b> In an earlier experiment, coNoir's joint proof of the six-row plan took 1,655 s with SHA-256 row commitments and 8.2 s with field-native Poseidon2. Both figures cover that proving step only, not the six Halo2 proofs.</p>
 
@@ -119,7 +119,7 @@
         </div>
       </div>
 
-      <h3 class="steps-title">The protocol in six steps</h3>
+      <h3 class="steps-title">A closer look at the protocol</h3>
       <ol class="steps">
         <li><span class="step-n">1</span><div><h4>Bid commitment</h4><p class="q">Why can't a bid be changed later?</p><p>The bidder's client commits to a maximum bid and splits it into REP3 secret shares, one pair per operator. A Noir proof shows that <b>the commitment and the shares hold the same bid</b>, within the budget. Each operator checks it and signs a receipt.</p><p class="pp"><em>Stays private</em> the bid · <em>Proven</em> commitment and shares agree</p></div></li>
         <li><span class="step-n">2</span><div><h4>Funding and admission</h4><p class="q">Who accepted which bids?</p><p>Each ticket deposits its budget plus fee into a shielded 2-of-3 FROST escrow made by DKG. The operators decrypt the deposits, re-verify the same proofs and shares, and after the close <b>all three sign the root of the accepted book</b>.</p><p class="pp"><em>Stays private</em> who funded which ticket · <em>Signed</em> the accepted book</p></div></li>
@@ -169,7 +169,7 @@
         <li>Custody is 2-of-3 FROST from a DKG. Two colluding signers can move escrowed funds, and bidders have no unilateral refund. Such a payout fails public verification but is not prevented.</li>
         <li>Operators hold the escrow viewing capability and learn winners and refunds.</li>
         <li>The public price is the highest losing bid, or the reserve, so one bid value can follow from it.</li>
-        <li>Funding is attested by operator signatures, not proven in zero knowledge, and the public bundle alone does not prove chain inclusion.</li>
+        <li>Public verification trusts the auction's operator admission keys, which a verifier must obtain independently of the bundle. Funding is certified by those operators' signatures, not proven in zero knowledge, and the bundle alone does not prove chain inclusion.</li>
         <li>In this demo every party runs on one host: each bidder's client (which sees its own typed bid) and all three operators, and one test wallet funds all four tickets.</li>
       </ul></details>
       <p class="fine-print">Common designs compared, not specific projects. Timings from one 16 GiB laptop; testnet coins only.</p>

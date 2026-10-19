@@ -467,6 +467,10 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .public-details dt {color:var(--ink-3)}
 .public-details dd {margin:0;overflow-wrap:anywhere}
 
+@media (max-width:1000px) {
+  .hero {grid-template-columns:1fr;gap:40px}
+  .hero-receipt {max-width:520px}
+}
 @media (max-width:760px) {
   .topbar,main,footer {padding-left:16px;padding-right:16px}
   .top-label {display:none}

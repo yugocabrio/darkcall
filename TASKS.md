@@ -50,6 +50,12 @@ Done:
       (author chose technique first; at 1366×657 the CTA starts at 691 px).
 - [x] Section order (Oct 19): the payment-binding section now follows "Why multi-party ZK proving",
       so the two differentiators read back to back before the walkthrough and the six steps.
+- [x] Mid-width and guarantee scope (Oct 19): the landing hero stacks below 1000 px (at 820 px the
+      flow cards had shrunk to about 80 px); example bids labelled; the binding lead says colluding
+      signers could still move the escrow but such a payout fails verification; verification uses
+      operator admission keys obtained independently of the bundle (site and trust model); evidence
+      page scope note lists price and units sold; six-step heading renamed "A closer look at the
+      protocol". Checked at 390, 820, 1024 and 1440 px.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.
