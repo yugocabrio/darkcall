@@ -42,6 +42,11 @@ def build():
     clean = json.loads((ROOT / 'evidence/2026-10-18-clean-room-linux-verification.json').read_text())['run_all_four_bundles']
     run = evidence['video_capture_run']
     testnet = json.loads((ROOT / 'evidence/2026-10-19-public-testnet-settlement.json').read_text())
+    # The protocol explanation is the demo page's own section, so the two never drift.
+    page = (ROOT / 'demo/index.html').read_text()
+    how_html = re.search(r'<section class="how".*?</section>', page, re.S).group(0)
+    style = (ROOT / 'demo/style.css').read_text()
+    how_css = style[style.index('/* How it works'):style.index('/* Why it is different')]
     facts, at = manifest['facts'], {s['name']: s['elapsed_seconds'] for s in manifest['shots']}
     receipts = {r['ticket']: r for r in run['receipts_seen_in_frames']}
     price, sold = re.match(r'(\d+) zatoshi × (\d+) sold', facts['outcome']).groups()
@@ -108,7 +113,8 @@ def build():
         tn_txid=e(testnet['settlement']['txid']), tn_height=f"{testnet['settlement']['block']['height']:,}",
         tn_settle_s=round(testnet['settlement']['driver_seconds']), tn_check_s=round(tn_bundle['in_run_seconds']),
         tn_price=testnet['clearing']['price'], tn_sold=testnet['clearing']['sold'],
-        tn_receipts=' / '.join(str(r['refund']) for r in testnet['own_receipts']))
+        tn_receipts=' / '.join(str(r['refund']) for r in testnet['own_receipts']),
+        how_html=how_html, how_css=how_css)
     (DOCS / 'index.html').write_text(page)
     return {'page': str(DOCS / 'index.html'), 'frames': len(FRAMES), 'site_bytes': sum(p.stat().st_size for p in SITE.rglob('*') if p.is_file())}
 
@@ -187,7 +193,18 @@ table {{width:100%;border-collapse:collapse;font-size:14px}}
 .limits li {{margin:8px 0;color:var(--ink-2)}}
 footer {{margin:104px 0 48px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:8px 22px}}
 footer a {{color:var(--ink-2)}}
+{how_css}
+.how {{margin-top:104px}}
+.how h2 {{margin:0}}
+.section-lead {{font-size:17px;color:var(--ink-2);margin:12px 0 0;max-width:680px}}
 @media (max-width:760px) {{
+  .stages,.disclosure,.steps,.binding {{grid-template-columns:1fr}}
+  .stages li {{margin-left:0;margin-top:-1px;border-radius:0}}
+  .stages li:first-child {{border-radius:14px 14px 0 0;margin-top:0}}
+  .stages li:last-child {{border-radius:0 0 14px 14px}}
+  .stages li:not(:last-child)::after {{display:none}}
+  .bind-arrow {{height:24px}}
+  .bind-arrow::before,.bind-arrow::after {{display:none}}
   .wrap {{padding:0 16px}}
   .kicker {{margin-top:36px}}
   .lead {{font-size:17px}}
@@ -219,6 +236,8 @@ footer a {{color:var(--ink-2)}}
 <track kind="captions" src="site/darkcall-demo-v2.vtt" srclang="en" label="English" default>
 </video>
 <p class="caption">{video_seconds} s, edited from one real auction ({auction_short}). Every time cut states the real elapsed time, and every frame is SHA-256-checked against the <a href="{repo}demo/media/v2/manifest.json">capture manifest</a>.</p>
+
+{how_html}
 
 <h2>Settled on public Zcash testnet.</h2>
 <p class="sub">On October 19 a fresh auction was funded, cleared and settled on standard public testnet (NU7) with testnet coins, through the same admission, proofs and signing as everything below.</p>
