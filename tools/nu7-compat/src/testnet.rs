@@ -199,7 +199,7 @@ pub async fn capture(wallet: &Path, endpoint: &str) -> Result<serde_json::Value>
     let initial = json_file(&directory.join("nu7-birthday.json"), 100_000)?;
     let start = initial["height"].as_u64().and_then(|h| u32::try_from(h).ok()).ok_or("birthday height")?;
     let (mut client, tip) = connect(endpoint).await?;
-    if tip < start || tip - start > 5000 {
+    if tip < start || tip - start > 20_000 {
         return Err("wallet birthday outside the bounded testnet capture window".into());
     }
     let final_tree = snapshot(&mut client, tip).await?;

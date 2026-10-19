@@ -126,7 +126,8 @@ pub fn scan(wallet: &Path, capture_path: &Path) -> Result<serde_json::Value> {
     // Regtest captures are full node blocks. Testnet captures come from compact
     // blocks, which list only shielded transactions, so a block may carry none;
     // the per-block Ironwood tree size below still pins every commitment.
-    let block_bound = if chain == Chain::Regtest { 500 } else { 5000 };
+    // About five and a half days of 25-second testnet blocks from a wallet birthday.
+    let block_bound = if chain == Chain::Regtest { 500 } else { 20_000 };
     if capture.initial.height < chain.nu7_height() || capture.blocks.len() > block_bound {
         return Err("capture differs from the pinned NU7 network profile".into());
     }
