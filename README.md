@@ -16,7 +16,7 @@ one real auction, from creation to shielded receipts, with every time cut labele
 A seller offers identical units. Bidders commit secret maximum bids that are
 split into secret shares for three operators. The operators compute one uniform
 clearing price with multi-party computation (MPC) and jointly prove it with a
-zero-knowledge proof. Nobody reconstructs the bid list. One shielded NU7
+zero-knowledge proof. The computation never reconstructs the bid list. One shielded NU7
 transaction pays the seller, refunds every bidder and carries each bidder's
 encrypted receipt. Six Halo2 proofs bind every output of that transaction to the
 proven auction result. A public verifier checks all of it without a single
@@ -57,7 +57,7 @@ publishing a viewing key). DarkCall checks the result **without opening the
 bids**. Neither the public nor any single operator learns who bid what, and the
 winners' maximum bids are never revealed:
 
-| Public | Private |
+| Public | Hidden from the public (operators learn winners and refunds) |
 | --- | --- |
 | Auction terms, accepted-book root, clearing price, units sold | Who bid what; every winner's maximum bid |
 | A shielded transaction and the proofs that bind its six outputs to the result | Who won and who lost; each refund; recipient addresses |
