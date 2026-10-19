@@ -204,11 +204,10 @@ scripts/docker_verify.sh
 
 It builds every pinned tool from source using only committed files, verifies
 every committed bundle, and checks that a corrupted proof is rejected. On Oct 19
-all seven committed bundles, including both public-testnet runs, verified in
-the clean Linux container with no network and the strict tamper refusal (101–114 s each;
-[record](evidence/2026-10-18-clean-room-linux-verification.json)). The image was built from an earlier commit and the later bundles were
-mounted read-only, so they verify under that earlier verifier build. Remove the
-image afterwards with `docker image rm`.
+a fresh image built from commit `a7f67bd` verified all seven committed bundles,
+including both public-testnet runs, with the strict tamper refusal (about 100 s
+each; [record](evidence/2026-10-18-clean-room-linux-verification.json)). Remove
+the image afterwards with `docker image rm`.
 
 **Or verify on the host.** Build the pinned tools
 ([reproduce.md](docs/reproduce.md)), then run:

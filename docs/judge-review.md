@@ -26,8 +26,8 @@ receipt memo.
 2. **Verification without secrets.** The easiest route is
    `scripts/docker_verify.sh`. It builds every pinned tool from committed source
    in a clean Linux container and verifies every committed bundle plus a tamper
-   case for each. On Oct 19 all seven committed bundles, including both
-   public-testnet runs, passed in the container with no network.
+   case for each. On Oct 19 a fresh image built from commit `a7f67bd` verified
+   all seven committed bundles, including both public-testnet runs.
    On a host with the [pinned tools](reproduce.md), run:
 
    ```sh

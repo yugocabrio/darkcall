@@ -23,10 +23,10 @@ committed funded bundle against its separately committed authority, then flips
 one byte of each bundle's receipt proof and requires the fixed verifier to
 reject it cryptographically.
 
-On Oct 19 all seven committed bundles, including both public-testnet runs,
-verified in the clean container with no network and the strict tamper check
-(101–114 s each). The image was built from commit 66988f5; the later bundles
-were mounted read-only, so they verify under that earlier verifier build. On Oct 18 on the 16 GiB M1
+On Oct 19 a fresh image built from commit `a7f67bd` verified all seven
+committed bundles, including both public-testnet runs, with the strict tamper
+check (about 100 s each). An earlier image built from 66988f5 also verified the
+same seven with no network, so the later bundles verify under both builds. On Oct 18 on the 16 GiB M1
 (Docker Desktop, linux/arm64): `bb` 567 s, both
 Rust helpers 450 s, then all three bundles verified in 5 min 23 s
 (`browser-auction-nu7-v1` 112 s, `fresh-book-nu7-v1` 101 s,

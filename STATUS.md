@@ -34,9 +34,9 @@ Updated: 2026-10-19 (git HEAD is authoritative).
   a concurrent proof gets 409.
 - **Verification without secrets:** `./verify.sh --funded …` on the host, or
   `scripts/docker_verify.sh` in a clean Linux container built from `git archive`.
-  On Oct 19 all seven committed bundles, including both public-testnet runs,
-  verified in the clean container with no network (101–114 s each, strict
-  tamper refusal). Recorded-mode HTTP check: 4 receipts plus 15 refusals.
+  On Oct 19 a fresh image built from `a7f67bd` verified all seven committed
+  bundles, including both public-testnet runs (about 100 s each, strict tamper
+  refusal). Recorded-mode HTTP check: 4 receipts plus 15 refusals.
   Public-only mode: own receipt refused without a key, tamper refused.
 - **Committed bundles (7):** `testnet-auction-nu7-v2` (testnet, the video run), `testnet-auction-nu7-v1` (testnet, API run), `browser-auction-nu7-v2` (regtest six-step),
   `browser-auction-nu7-v3` (earlier regtest video run), `browser-auction-nu7-v1`,

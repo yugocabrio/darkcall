@@ -39,7 +39,7 @@ def vtt(srt):
 def build():
     manifest = json.loads((MEDIA / 'manifest.json').read_text())
     evidence = json.loads((ROOT / 'evidence/2026-10-18-fresh-book-native-settlement.json').read_text())
-    clean = json.loads((ROOT / 'evidence/2026-10-18-clean-room-linux-verification.json').read_text())['run_all_seven_bundles']
+    clean = json.loads((ROOT / 'evidence/2026-10-18-clean-room-linux-verification.json').read_text())['run_head_rebuild']
     run = evidence['video_capture_run']
     testnet = json.loads((ROOT / 'evidence/2026-10-19-public-testnet-settlement.json').read_text())
     # The protocol explanation is the demo page's own section, so the two never drift.
