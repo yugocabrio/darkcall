@@ -51,6 +51,8 @@ async function waitEnabled(selector, timeout) {
 
 try {
   await page.goto(BASE, { waitUntil: 'networkidle0' });
+  manifest.chain = await page.evaluate(() => fetch('/api/state').then(r => r.json()).then(s => s.live_chain || 'regtest'));
+  if (manifest.chain === 'testnet') manifest.scope = manifest.scope.replace('isolated NU7 regtest', 'public Zcash testnet (NU7)');
   await shot('landing', null, 'Landing: sealed bids, proven price, shielded settlement; a real settled auction beside the claim');
 
   await page.click('#start-auction');
@@ -76,7 +78,8 @@ try {
   await page.click('#fund-auction');
   await sleep(15000);
   await shot('funding', '#fund-section', 'Funding: real shielded deposits on regtest, then chain admission');
-  await waitText('#fund-status', 'Funded and admitted', 600000);
+  // Regtest funds in about 2 minutes; public testnet adds a 10-minute window and real confirmations.
+  await waitText('#fund-status', 'Funded and admitted', 2400000);
   manifest.facts.deposit_txid = await text('#fund-deposit');
   await shot('funded', '#fund-section', 'Deposits locked; same proofs and shares re-verified; same root');
 
