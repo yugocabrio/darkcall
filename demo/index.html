@@ -11,7 +11,7 @@
   <header class="topbar">
     <a class="brand" href="/" aria-label="DarkCall home"><span class="brand-mark" aria-hidden="true"></span>DarkCall</a>
     <span class="top-label">Sealed-bid auctions on Zcash</span>
-    <span class="local-pill">Local demo · isolated regtest</span>
+    <span id="local-pill" class="local-pill">Local demo · isolated regtest</span>
   </header>
   <main>
     <section class="intro">
@@ -90,7 +90,7 @@
         <div class="close-row"><p id="close-status"></p><button id="close-auction" class="secondary-button" type="button">Certify closed book</button></div>
         </details>
         <section id="fund-section" class="fresh-settlement fund-section" hidden aria-label="Fund this auction on Zcash regtest">
-          <div class="panel-top"><span class="eyebrow">Step 3 · Fund</span><span class="recorded-label">Isolated regtest</span></div>
+          <div class="panel-top"><span class="eyebrow">Step 3 · Fund</span><span id="fund-chain" class="recorded-label">Isolated regtest</span></div>
           <h3 id="fund-title">Lock the deposits.</h3>
           <p class="settle-lead">Every sealed ticket gets a real shielded deposit of budget plus fee, paid from one local test wallet. The operators decrypt the deposits, re-check the same bid proofs and shares, and sign the closed book again over the same root. About 2 minutes.</p>
           <button id="fund-auction" class="primary-button" type="button">Fund on Zcash <span>→</span></button>
@@ -121,7 +121,7 @@
           </div>
         </section>
         <section id="settle-section" class="fresh-settlement" hidden aria-label="Settle this auction on Zcash regtest">
-          <div class="panel-top"><span class="eyebrow">Step 6 · Settle</span><span class="recorded-label">Isolated regtest</span></div>
+          <div class="panel-top"><span class="eyebrow">Step 6 · Settle</span><span id="settle-chain" class="recorded-label">Isolated regtest</span></div>
           <h3 id="settle-title">Pay it out, privately.</h3>
           <p class="settle-lead">One shielded transaction pays the seller and every refund from the funded escrow, and every output is bound to the proven result. About 17 minutes on this Mac.</p>
           <button id="settle-auction" class="primary-button" type="button">Settle on Zcash <span>→</span></button>

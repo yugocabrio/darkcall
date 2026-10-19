@@ -115,6 +115,10 @@ fetch('/api/state').then(async response => {
     $('settlement-detailed-result').textContent = 'Previous public verification passed for transaction: '+state.last_settlement.txid+'. Not reverified in this page session.';
   }
   lock(false);
+  if (onTestnet()) {
+    $('local-pill').textContent='Local demo · Fund and Settle on Zcash testnet';
+    for (const id of ['fund-chain','settle-chain']) $(id).textContent='Public testnet';
+  }
   const recordedTx=state.cases[0].txid, hero=state.cases[0];
   $('hero-price').textContent=hero.price; $('hero-tickets').textContent=hero.tickets+' sealed bids';
   $('hero-sold').textContent=hero.sold+' of '+hero.units+' units sold · every winner pays the same';
@@ -283,18 +287,22 @@ const SETTLE_STEPS=[['mpc','settle_preflight:started','binding_key:started'],
 let settlePoll=null, nativeResultVerified=false, fundedFocused=false, settledFocused=false;
 const shortId=value=>value?value.slice(0,10)+'…'+value.slice(-8):'—';
 function minutes(seconds) { seconds=Math.max(0,Math.round(seconds)); return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0'); }
+// Where Fund and Settle run: the owned regtest, or public testnet when the
+// server was started with --chain testnet.
+const onTestnet=()=>Boolean(state && state.live_chain==='testnet');
+const chainName=()=>onTestnet()?'Zcash testnet':'regtest';
 function renderSettlement() {
   const section=$('settle-section'), job=room && room.settlement, settledState=Boolean(job && job.state==='done');
-  $('rehearsal-label').textContent=settledState?'Settled on regtest':job?'Settling on regtest':'Demo bids';
+  $('rehearsal-label').textContent=settledState?'Settled on '+chainName():job?'Settling on '+chainName():'Demo bids';
   const fundedState=Boolean(room && room.funding && room.funding.state==='done');
-  $('payment-status').textContent=settledState?'Paid in one shielded regtest transaction ↓':job?'Settlement on regtest in progress ↓':fundedState?'Real deposits locked · paid out at Settle ↓':'No deposit yet · funding comes after the close';
+  $('payment-status').textContent=settledState?'Paid in one shielded '+(onTestnet()?'testnet':'regtest')+' transaction ↓':job?'Settlement on '+chainName()+' in progress ↓':fundedState?'Real deposits locked · paid out at Settle ↓':'No deposit yet · funding comes after the close';
   section.hidden=!(room && room.clearing);
   if (section.hidden) return;
   const available=Boolean(room.settlement_available);
   $('settle-auction').hidden=Boolean(job);
   $('settle-auction').disabled=busy || !available || Boolean(job);
   $('settle-note').hidden=available || Boolean(job);
-  $('settle-note').textContent=room.units===3 && room.budget===100 && [0,20].includes(room.reserve) ? 'Regtest settlement tools are not available on this checkout.' : 'The native settlement prototype supports the default terms: 3 units, budget 100, reserve 0 or 20.';
+  $('settle-note').textContent=room.units===3 && room.budget===100 && [0,20].includes(room.reserve) ? (onTestnet()?'Testnet':'Regtest')+' settlement tools are not available on this checkout.' : 'The native settlement prototype supports the default terms: 3 units, budget 100, reserve 0 or 20.';
   $('settle-steps').hidden=!job;
   if (!job) { $('settle-status').textContent=''; $('settle-outcome').hidden=true; return; }
   const events=job.events||[], at={};
@@ -322,7 +330,7 @@ function renderSettlement() {
     $('settle-txid').textContent=result.txid; $('settle-deposit').textContent=result.deposit_txid;
     $('know-public').textContent='Price '+result.price+' zatoshi, '+result.sold+' of '+room.units+' sold, one shielded transaction and its proofs.';
     $('settle-root').textContent='✓ '+shortId(result.accepted_root)+' · same tickets and accepted root as your browser book';
-    $('settle-price').textContent=result.price+' zatoshi × '+result.sold+' sold · matches the browser clearing · '+result.confirmations+' regtest confirmations';
+    $('settle-price').textContent=result.price+' zatoshi × '+result.sold+' sold · matches the browser clearing · '+result.confirmations+(onTestnet()?' public testnet':' regtest')+' confirmations';
     $('open-native-result').disabled=busy || !currentTicket();
     $('tamper-native').disabled=busy || !currentTicket();
     if (!currentTicket() && !nativeResultVerified) $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','This page no longer holds a ticket capability. Reloading loses it by design.'));
@@ -345,7 +353,7 @@ function renderFunding() {
   const begin=at['preflight:started']||job.started_at_unix;
   li.querySelector('em').textContent=done?minutes((at['funding:done']||now)-begin):failed?'stopped':minutes(now-begin);
   $('fund-title').textContent=done?'Deposits locked.':'Lock the deposits.';
-  $('fund-status').textContent=failed?(job.error||'Funding stopped.'):done?'✓ Funded and admitted on regtest. Now clear the book.':'Running · '+minutes(now-job.started_at_unix)+' elapsed · includes a 120 s admission window';
+  $('fund-status').textContent=failed?(job.error||'Funding stopped.'):done?'✓ Funded and admitted on '+chainName()+'. Now clear the book.':'Running · '+minutes(now-job.started_at_unix)+' elapsed · includes a '+(onTestnet()?'10-minute':'120 s')+' admission window';
   if (done && job.result) {
     if (job.result.accepted_root!==room.accepted_root) { $('fund-status').textContent='Funding does not match this book.'; return; }
     if (!fundedFocused) { fundedFocused=true; focusNext('clear-auction'); }

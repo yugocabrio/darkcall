@@ -31,7 +31,7 @@ AUTHORITY = ROOT / '.local/regtest-shared-v2-deposit4-20261005-admission/manifes
 
 
 class Demo:
-    def __init__(self, cases, canonical=None, bundle=None, public_only=False, funded=False, authority=None, note=None):
+    def __init__(self, cases, canonical=None, bundle=None, public_only=False, funded=False, authority=None, note=None, chain='regtest'):
         self.funded = funded
         self.note = note
         self.authority = authority
@@ -46,7 +46,7 @@ class Demo:
             raise RuntimeError('Demo fixtures must be ignored controlled checkpoints')
         self.token = secrets.token_urlsafe(32)
         self.lock = threading.Lock()
-        self.rehearsal = Rehearsal(self.lock, enabled=not public_only and bool(canonical))
+        self.rehearsal = Rehearsal(self.lock, enabled=not public_only and bool(canonical), chain=chain)
         self.last_settlement = None
 
     def state(self):
@@ -96,6 +96,7 @@ class Demo:
             'recipient_identities_available':not self.public_only,
             'live_admission':False, 'local_rehearsal_available':self.rehearsal.enabled,
             'regtest_settlement_available':self.rehearsal.settlement_available,
+            'live_chain':self.rehearsal.chain,
             'recorded_note':self.note,
             'independent_hosts':False, 'operators_know_results':True,
             'six_output_memo_e2e':bool(self.canonical), 'accepted_book_certified':False,
@@ -327,6 +328,8 @@ def main():
     parser.add_argument('--funded',action='store_true',help='Recorded certified actual-note isolated NU7 run')
     parser.add_argument('--authority',type=pathlib.Path,help='Separate caller-trusted admission manifest')
     parser.add_argument('--recorded-note',help='Short public description of the recorded auction')
+    parser.add_argument('--chain',choices=('regtest','testnet'),default='regtest',
+                        help='Where Fund and Settle run; testnet uses public testnet coins through the pinned provider')
     args = parser.parse_args()
     if args.funded and (not args.canonical or args.authority is None):
         parser.error('--funded requires --canonical and explicit separate --authority')
@@ -345,7 +348,7 @@ def main():
                 funded=args.funded,authority=args.authority,note=args.recorded_note)
         else:
             demo = Demo({'positive':args.run},canonical=args.run,bundle=bundle,funded=args.funded,authority=args.authority,
-                note=args.recorded_note)
+                note=args.recorded_note,chain=args.chain)
     else:
         demo = Demo({'positive':args.positive,'zero':args.zero})
     demo.state()  # Fail before binding if fixtures are missing or wrong scope.

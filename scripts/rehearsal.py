@@ -46,12 +46,13 @@ def number(value,minimum,maximum):
 
 
 class Rehearsal:
-    def __init__(self,lock,enabled=True):
+    def __init__(self,lock,enabled=True,chain='regtest'):
         self.lock=lock
         self.enabled=enabled and all(p.is_file() for p in (HELPER,INPUT_TOOL,PLAIN,CLIENT_CIRCUIT,BB))
         self.clearing_available=self.enabled and BIN.is_file()
-        from settle_fresh_book import REQUIRED, BANK
-        self.settlement_available=(self.clearing_available and (BANK/'nu7-birthday.json').is_file()
+        from settle_fresh_book import REQUIRED, Chain
+        self.chain=Chain(chain).name
+        self.settlement_available=(self.clearing_available and (Chain(chain).bank/'nu7-birthday.json').is_file()
             and all(p.is_file() for p in REQUIRED))
         self.session=None; self.auctions={}
 
@@ -299,9 +300,14 @@ class Rehearsal:
         from settle_fresh_book import MIN_START_DISK
         if shutil.disk_usage(ROOT).free < MIN_START_DISK:
             raise ValueError('Free at least 10 GiB of disk before funding or settling; the proof guard would refuse later')
-        from regtest_nu7_node import status
-        try: status()
-        except Exception: raise ValueError('Start the local NU7 regtest node first: python3 scripts/regtest_nu7_node.py start')
+        if self.chain=='testnet':
+            from testnet_chain import status
+            try: status()
+            except Exception: raise ValueError('The public testnet provider is unreachable; try again shortly')
+        else:
+            from regtest_nu7_node import status
+            try: status()
+            except Exception: raise ValueError('Start the local NU7 regtest node first: python3 scripts/regtest_nu7_node.py start')
         if kind=='funding':
             self.prepare_book(a)
             name='settle-'+secrets.token_hex(5)
@@ -315,7 +321,7 @@ class Rehearsal:
             try:
                 with (a['path']/(name+'-'+kind+'.log')).open('xb') as log:
                     r=subprocess.run([sys.executable,'-B',str(SETTLE),str(a['path']),'--name',name,
-                        '--progress',str(job['progress']),*args],
+                        '--progress',str(job['progress']),'--chain',self.chain,*args],
                         cwd=ROOT,stdout=subprocess.DEVNULL,stderr=log,timeout=7200)
                 if r.returncode: raise RuntimeError('Driver stopped')
                 if kind=='funding':
