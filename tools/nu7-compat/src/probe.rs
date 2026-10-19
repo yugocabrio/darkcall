@@ -39,7 +39,7 @@ fn expected_branch(height: u64, isolated: bool) -> Result<u32> {
     }
 }
 
-fn frontier(encoded: &str) -> Result<CommitmentTree<MerkleHashOrchard, 32>> {
+pub(crate) fn frontier(encoded: &str) -> Result<CommitmentTree<MerkleHashOrchard, 32>> {
     if encoded.is_empty() {
         return Ok(CommitmentTree::empty());
     }

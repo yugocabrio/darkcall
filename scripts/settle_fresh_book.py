@@ -47,6 +47,40 @@ SETTLEMENT_MARKERS = [
 ]
 
 
+class Chain:
+    """Where deposits and the settlement go. Regtest is the owned local node;
+    testnet is standard public testnet through the pinned SDK's provider access.
+    Both run the same builders, admission, native gate and public verifier."""
+
+    def __init__(self, name):
+        if name not in ('regtest', 'testnet'):
+            raise RuntimeError('Expected regtest or testnet')
+        self.name = name
+        if name == 'testnet':
+            import testnet_chain
+            self.backend = testnet_chain
+            self.bank = testnet_chain.BANK
+        else:
+            self.backend = None
+            self.bank = BANK
+        self.deposits = ROOT / 'scripts' / f'{name}_nu7_deposits.py'
+        self.settlement = ROOT / 'scripts' / f'{name}_nu7_settlement.py'
+
+    def status(self):
+        return self.backend.status() if self.backend else status()
+
+    def capture(self, wallet, snapshot):
+        """Scan WALLET from its birthday; regtest pins the given snapshot, testnet
+        scans to the current tip and checks the provider's frontier there."""
+        if self.backend:
+            scan, notes, _ = self.backend.capture(wallet)
+            return scan, notes
+        return capture(wallet, json.loads(private_read(wallet / 'nu7-birthday.json')), snapshot)
+
+
+REGTEST = Chain('regtest')
+
+
 class Progress:
     def __init__(self, path):
         self.path = pathlib.Path(path) if path else None
@@ -131,32 +165,32 @@ def book_run_for(auction):
     return auction, book_run, root, tickets
 
 
-def preflight(progress, root, phase):
+def preflight(progress, root, phase, chain=REGTEST):
     progress.event(phase, 'started')
     missing = [p.name for p in REQUIRED if not p.is_file()]
     if missing:
         raise RuntimeError('Build the pinned tools first; missing ' + ', '.join(missing))
     if shutil.disk_usage(ROOT).free < MIN_START_DISK:
         raise RuntimeError('At least 10 GiB of free disk is required before funding a settlement')
-    snapshot = status()
-    progress.event(phase, 'done', height=snapshot['blocks'], accepted_root=root)
+    snapshot = chain.status()
+    progress.event(phase, 'done', height=snapshot['blocks'], accepted_root=root, chain=chain.name)
     return snapshot
 
 
-def fund(auction, name, progress, bank=BANK):
+def fund(auction, name, progress, bank=None, chain=REGTEST):
     """Actual deposits, then chain admission and a final-book certificate over the
     SAME root and tickets as the browser book. Clearing happens afterwards."""
     auction, book_run, root, tickets = book_run_for(auction)
     funding = name + '-funding'
     if any((ROOT / '.local' / n).exists() for n in (funding, name + '-funded.json')):
         raise RuntimeError('Preserve prior runs and choose a fresh name')
-    snapshot = preflight(progress, root, 'preflight')
-    birthday = json.loads(private_read(bank / 'nu7-birthday.json'))
-    bank_scan, bank_notes = capture(bank, birthday, snapshot)
+    bank = bank or chain.bank
+    snapshot = preflight(progress, root, 'preflight', chain)
+    bank_scan, bank_notes = chain.capture(bank, snapshot)
     if bank_scan['balance_zatoshi'] < 4 * 15100 + 25000:
-        raise RuntimeError('Local test bank lacks regtest funds')
+        raise RuntimeError(f'Local test bank lacks {chain.name} funds')
     progress.event('funding', 'started')
-    output = run_logged([sys.executable, '-B', ROOT / 'scripts/regtest_nu7_deposits.py',
+    output = run_logged([sys.executable, '-B', chain.deposits,
         bank, bank_notes, book_run, '--name', funding], ROOT / '.local' / (name + '-funding.log'))
     summary = summaries(output, 'admission', 'escrow_scan')[-1]
     certified = summaries(output, 'final_book_signatures', 'receipt_quorums_reverified')[-1]
@@ -176,18 +210,18 @@ def fund(auction, name, progress, bank=BANK):
               'final_book_signatures': 3, 'same_accepted_root': True, 'accepted_root': root}
     progress.event('funding', 'done', **{k: v for k, v in public.items() if k != 'accepted_root'})
     private_write(ROOT / '.local' / (name + '-funded.json'), {'public': public, 'funding': funding,
-        'auction': str(auction), 'tickets': tickets})
+        'auction': str(auction), 'tickets': tickets, 'chain': chain.name})
     return public
 
 
-def settle_funded(auction, name, progress, threads=2, expected=None):
+def settle_funded(auction, name, progress, threads=2, expected=None, chain=REGTEST):
     """Settle a book that fund() already funded, admitted and certified."""
     auction, book_run, root, tickets = book_run_for(auction)
     funded = json.loads(private_read(ROOT / '.local' / (name + '-funded.json')))
     funding = funded['funding']
     settlement = name + '-settlement'
     if (funded['auction'] != str(auction) or funded['public']['accepted_root'] != root
-            or funded['tickets'] != tickets):
+            or funded['tickets'] != tickets or funded.get('chain', 'regtest') != chain.name):
         raise RuntimeError('Funding record belongs to another book')
     if any((ROOT / '.local' / n).exists() for n in (settlement, settlement + '-public')):
         raise RuntimeError('Preserve prior runs and choose a fresh name')
@@ -195,11 +229,11 @@ def settle_funded(auction, name, progress, threads=2, expected=None):
     funded_root, funded_tickets = certified_root(admission / 'final-book-certificate.json')
     if funded_root != root or funded_tickets != tickets:
         raise RuntimeError('Funded certificate is not the same browser book')
-    snapshot = preflight(progress, root, 'settle_preflight')
+    snapshot = preflight(progress, root, 'settle_preflight', chain)
     # Rescan the escrow at the current tip: other auctions may have mined blocks
     # since funding. The settlement driver requires a current snapshot.
     escrow = ROOT / '.local' / (funding + '-escrow')
-    escrow_scan, escrow_notes = capture(escrow, json.loads(private_read(escrow / 'nu7-birthday.json')), snapshot)
+    escrow_scan, escrow_notes = chain.capture(escrow, snapshot)
     if escrow_scan['decrypted_unspent_native_notes'] != 4:
         raise RuntimeError('Escrow no longer holds exactly the four admitted deposits')
 
@@ -207,7 +241,7 @@ def settle_funded(auction, name, progress, threads=2, expected=None):
     wallets = []
     for i in range(6):
         wallets += ['--recipient-wallet', ROOT / '.local' / f'{funding}-receiver-{i}']
-    result = summaries(run_logged([sys.executable, '-B', ROOT / 'scripts/regtest_nu7_settlement.py',
+    result = summaries(run_logged([sys.executable, '-B', chain.settlement,
         escrow, escrow_notes, book_run, ROOT / '.local' / (funding + '-inputs/private-receivers.json'),
         admission, *wallets, '--name', settlement, '--native-threads', str(threads)],
         ROOT / '.local' / (name + '-settlement.log'), progress, SETTLEMENT_MARKERS),
@@ -241,7 +275,8 @@ def settle_funded(auction, name, progress, threads=2, expected=None):
     progress.event('public_verification', 'done', seconds=round(verified['seconds'], 3),
                    native_row_proofs_verified=verified['application']['native_row_proofs_verified'],
                    accepted_book_certified=True)
-    public = {'scope': 'fresh browser book settled on isolated NU7 regtest; all actors on one host',
+    public = {'scope': ('fresh browser book settled on public Zcash testnet' if chain.name == 'testnet'
+                        else 'fresh browser book settled on isolated NU7 regtest') + '; all actors on one host',
         'accepted_root': root, 'tickets': tickets, 'same_accepted_root_and_tickets': True,
         'deposit_txid': funded['public']['deposit_txid'], 'txid': txid,
         'price': price, 'sold': sold, 'browser_clearing_matches': expected is not None,
@@ -252,7 +287,7 @@ def settle_funded(auction, name, progress, threads=2, expected=None):
         'accepted_book_and_recipients_authenticated': verified['application']['accepted_book_and_recipients_authenticated'],
         'native_proof_and_signatures_verified': verified['native_proof_and_signatures_verified'],
         'transaction_bytes': verified['transaction_bytes'], 'maximum_bids_read': False,
-        'deposits_from_local_test_bank': True, 'public_testnet': False,
+        'deposits_from_local_test_bank': True, 'public_testnet': chain.name == 'testnet',
         'chain_inclusion_in_public_bundle': False}
     paths = {'run': str(run), 'bundle': str(bundle), 'authority': str(authority),
              'funding': funding, 'book': str(book_run / 'book.json')}
@@ -261,10 +296,10 @@ def settle_funded(auction, name, progress, threads=2, expected=None):
     return public, paths
 
 
-def settle(auction, name, progress, bank=BANK, threads=2, expected=None):
+def settle(auction, name, progress, bank=None, threads=2, expected=None, chain=REGTEST):
     """Both phases back to back (CLI default)."""
-    fund(auction, name, progress, bank)
-    return settle_funded(auction, name, progress, threads, expected)
+    fund(auction, name, progress, bank, chain)
+    return settle_funded(auction, name, progress, threads, expected, chain)
 
 
 def main():
@@ -273,7 +308,9 @@ def main():
     parser.add_argument('auction', type=pathlib.Path)
     parser.add_argument('--name', required=True)
     parser.add_argument('--progress', type=pathlib.Path)
-    parser.add_argument('--bank', type=pathlib.Path, default=BANK)
+    parser.add_argument('--bank', type=pathlib.Path)
+    parser.add_argument('--chain', choices=('regtest', 'testnet'), default='regtest',
+                        help='testnet: standard public testnet through the pinned provider (testnet coins only)')
     parser.add_argument('--native-threads', type=int, choices=(1, 2), default=2)
     parser.add_argument('--expect', help='Browser clearing PRICE,SOLD that the settlement must reproduce')
     parser.add_argument('--phase', choices=('all', 'fund', 'settle'), default='all',
@@ -281,13 +318,14 @@ def main():
     args = parser.parse_args()
     expected = tuple(int(v) for v in args.expect.split(',')) if args.expect else None
     progress = Progress(args.progress)
+    chain = Chain(args.chain)
     try:
         if args.phase == 'fund':
-            public = fund(args.auction, simple(args.name), progress, args.bank)
+            public = fund(args.auction, simple(args.name), progress, args.bank, chain)
         elif args.phase == 'settle':
-            public, _ = settle_funded(args.auction, simple(args.name), progress, args.native_threads, expected)
+            public, _ = settle_funded(args.auction, simple(args.name), progress, args.native_threads, expected, chain)
         else:
-            public, _ = settle(args.auction, simple(args.name), progress, args.bank, args.native_threads, expected)
+            public, _ = settle(args.auction, simple(args.name), progress, args.bank, args.native_threads, expected, chain)
     except BaseException as error:
         progress.event('failed', 'stopped', reason=str(error)[:200])
         raise

@@ -39,7 +39,6 @@ use zcash_protocol::{
     value::Zatoshis,
 };
 
-const GENESIS: &str = "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327";
 #[derive(Clone, Copy)]
 pub(super) struct Regtest;
 impl Parameters for Regtest {
@@ -144,6 +143,7 @@ pub(super) fn signing_keys(
 }
 
 pub(super) struct Source {
+    pub chain: crate::network::Chain,
     pub index: usize,
     pub opening: Opening,
     pub tip_height: u32,
@@ -164,15 +164,13 @@ pub(super) fn load_selected(
     auction::directory(notes_path.parent().ok_or("NU7 notes parent")?)?;
     let state: Notes = serde_json::from_slice(&auction::read(notes_path, 1_000_000)?)
         .map_err(|_| "NU7 actual notes schema")?;
-    if state.scope != "isolated NU7 regtest wallet openings"
-        || state.genesis != GENESIS
-        || state.branch != "77190ad9"
-        || state.nu7_height != 2
-        || state.tip_height < 2
+    let chain = crate::network::Chain::checked(&state.genesis, &state.branch, state.nu7_height)?;
+    if state.scope != chain.openings_scope()
+        || state.tip_height < chain.nu7_height()
         || state.notes.is_empty()
         || state.notes.len() > 500
     {
-        return Err("NU7 transfer requires actual isolated regtest notes".into());
+        return Err("NU7 transfer requires actual scanned notes from a pinned network".into());
     }
     let fvk = regtest_wallet::viewing_key(&wallet)?;
     let (index, source) = state
@@ -234,6 +232,7 @@ pub(super) fn load_selected(
         return Err("NU7 source witness differs from node anchor".into());
     }
     Ok(Source {
+        chain,
         index,
         opening: source.clone(),
         tip_height: state.tip_height,
@@ -254,6 +253,7 @@ pub fn build(
     let wallet = auction::directory(wallet)?;
     let loaded = load_source(&wallet, notes_path)?;
     let Source {
+        chain,
         index,
         opening,
         tip_height,
@@ -426,7 +426,7 @@ pub fn build(
         "source_cmx":source.cmx,"source_height":source.mined_height,"source_block":source.mined_block,
         "funding_tip_height":tip_height,"funding_tip_hash":tip_hash})).map_err(|_| "NU7 provenance encoding")?)?;
     let result = serde_json::json!({"scope":"actual-note isolated NU7 threshold transfer; not auction settlement",
-        "genesis":GENESIS,"branch":"77190ad9","inputs":1,"outputs":2,"threshold":"2-of-3",
+        "genesis":chain.genesis(),"branch":"77190ad9","inputs":1,"outputs":2,"threshold":"2-of-3",
         "setup":if dkg {"existing local DKG packages; all shares on one host"} else {"ordinary bank key, local trusted dealer"},
         "dkg_source":dkg,"source_master_key_read":!dkg,"native_proof_and_signatures_verified":true,
         "one_share_rejected":true,"changed_digest_rejected":true,"recipients_decrypted":2,

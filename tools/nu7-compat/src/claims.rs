@@ -23,6 +23,9 @@ pub fn check_deposit(
         indices: [usize; 4],
         receiver_commitments: [[u8; 32]; 6],
         source_index: usize,
+        // Absent in runs from before testnet support, which were regtest-only.
+        #[serde(default)]
+        network_genesis: Option<String>,
     }
     let directory = crate::auction::directory(deposit)?;
     let book: crate::regtest_deposits::Book = serde_json::from_slice(&crate::auction::read(
@@ -53,10 +56,10 @@ pub fn check_deposit(
         .budget
         .checked_add(book.processing_fee)
         .ok_or("NU7 replay amount overflow")?;
-    let genesis = hex::decode("029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327")
-        .unwrap()
-        .try_into()
-        .unwrap();
+    let genesis = crate::network::Chain::from_genesis(
+        mapping.network_genesis.as_deref().unwrap_or(crate::network::REGTEST_GENESIS),
+    )?
+    .genesis_bytes();
     for (i, wire) in claims.iter().enumerate() {
         let verified = verify_output(
             &tx,

@@ -161,11 +161,8 @@ pub fn build(
             &receiver.nonce,
         )?);
     }
-    let genesis: [u8; 32] =
-        hex::decode("029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327")
-            .unwrap()
-            .try_into()
-            .unwrap();
+    // Claims bind the deposit to the chain the source notes were scanned from.
+    let genesis: [u8; 32] = source.chain.genesis_bytes();
     let clients: [SigningKey; 4] = std::array::from_fn(|_| SigningKey::from_bytes(&fresh()));
     let memos: [DepositMemo; 4] = std::array::from_fn(|i| DepositMemo {
         network_genesis: genesis,
@@ -349,7 +346,7 @@ pub fn build(
         &out.join("private-claims.json"),
         &serde_json::to_vec(&claims).map_err(|e| error("claim encode", e))?,
     )?;
-    write_private(&out.join("private-deposit-map.json"),&serde_json::to_vec(&serde_json::json!({"indices":indices,"receiver_commitments":receiver_commitments,"source_index":source.index})).map_err(|e|error("map encode",e))?)?;
+    write_private(&out.join("private-deposit-map.json"),&serde_json::to_vec(&serde_json::json!({"indices":indices,"receiver_commitments":receiver_commitments,"source_index":source.index,"network_genesis":source.chain.genesis()})).map_err(|e|error("map encode",e))?)?;
     fs::File::open(&out)
         .and_then(|f| f.sync_all())
         .map_err(|e| error("deposit directory sync", e))?;

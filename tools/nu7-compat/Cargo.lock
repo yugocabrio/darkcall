@@ -1256,6 +1256,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tonic",
+ "zcash_address",
  "zcash_client_backend",
  "zcash_primitives",
  "zcash_protocol",

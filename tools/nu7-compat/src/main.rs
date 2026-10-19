@@ -6,6 +6,7 @@ mod funded_prepare;
 mod funded_settlement;
 mod interop_export;
 mod native;
+mod network;
 mod note_interop;
 mod probe;
 mod receipt_transport;
@@ -13,6 +14,7 @@ mod regtest_admission;
 mod regtest_deposits;
 mod regtest_transfer;
 mod regtest_wallet;
+mod testnet;
 
 type Result<T> = std::result::Result<T, String>;
 
@@ -46,6 +48,14 @@ async fn main() -> Result<()> {
         [command, directory] if command == "verify-export" => interop_export::verify(std::path::Path::new(directory),None),
         [command, directory, row] if command == "verify-export" => interop_export::verify(std::path::Path::new(directory),Some(std::path::Path::new(row))),
         [command, endpoint] if command == "probe-testnet" => probe::probe(endpoint).await,
+        [command, wallet, endpoint] if command == "testnet-init" => testnet::init(std::path::Path::new(wallet), endpoint).await,
+        [command, endpoint] if command == "testnet-status" => testnet::status(endpoint).await,
+        [command, endpoint, height] if command == "testnet-tree" => testnet::tree(endpoint, height).await,
+        [command, wallet, endpoint] if command == "testnet-capture" => testnet::capture(std::path::Path::new(wallet), endpoint).await,
+        [command, endpoint, path] if command == "testnet-send" => testnet::send(endpoint, std::path::Path::new(path)).await,
+        [command, endpoint, txid] if command == "testnet-tx" => testnet::transaction(endpoint, txid).await,
+        [command, endpoint, notes] if command == "testnet-source-check" => testnet::source_check(endpoint, std::path::Path::new(notes)).await,
+        [command, wallet] if command == "testnet-address" => testnet::address(std::path::Path::new(wallet)).map(|a| serde_json::json!({"address":a})),
         [command, path] if command == "verify-old-native" => native::verify_old(path),
         _ => Err("usage: darkcall-nu7-compat regtest-scan WALLET NODE_CAPTURE | regtest-transfer SOURCE_WALLET PRIVATE_NOTES RECIPIENT_WALLET FRESH_RUN_NAME | synthetic-native | note-interop | synthetic-native-export LOCAL_NAME | prepare-auction DIRECTORY | finalize-auction DIRECTORY | verify-auction PUBLIC_DIRECTORY | receipt-transport DIRECTORY | receipt-transport-open RECIPIENT_DIRECTORY INDEX OUT_MEMO | verify-export PUBLIC_DIRECTORY [PUBLIC_ROW] | probe-testnet HTTPS_ENDPOINT | verify-old-native PUBLIC_TRANSACTION".into()),
     }?;

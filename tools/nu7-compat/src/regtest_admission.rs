@@ -20,7 +20,6 @@ use std::{
 use zcash_primitives::transaction::Transaction;
 use zcash_protocol::consensus::BranchId;
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
-const GENESIS: &str = "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327";
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Book {
@@ -280,12 +279,18 @@ pub fn execute(args: &[String]) -> Result<()> {
     }
     let fvk = crate::regtest_wallet::viewing_key(escrow)?;
     let openings: serde_json::Value = serde_json::from_slice(&read(notes, 1_000_000)?)?;
-    if openings["scope"] != "isolated NU7 regtest wallet openings"
-        || openings["genesis"] != GENESIS
-        || openings["nu7_height"] != 2
-        || openings["branch"] != "77190ad9"
-    {
+    // The escrow snapshot names its chain; the admission context is bound to it.
+    let chain = crate::network::Chain::checked(
+        openings["genesis"].as_str().unwrap_or_default(),
+        openings["branch"].as_str().unwrap_or_default(),
+        openings["nu7_height"].as_u64().and_then(|h| u32::try_from(h).ok()).unwrap_or(0),
+    )?;
+    if openings["scope"] != chain.openings_scope() {
         return Err("snapshot scope mismatch".into());
+    }
+    let mapped_genesis = mapping_genesis(deposit)?;
+    if mapped_genesis != chain {
+        return Err("deposits were built on another network than the escrow snapshot".into());
     }
     let bytes = read(&deposit.join("nu7-regtest-transaction.bin"), 1_000_000)?;
     let mut cursor = std::io::Cursor::new(&bytes);
@@ -356,7 +361,7 @@ pub fn execute(args: &[String]) -> Result<()> {
     let manifest = Manifest {
         context: Context {
             format: 1,
-            network_genesis: hex::decode(GENESIS)?.try_into().unwrap(),
+            network_genesis: chain.genesis_bytes(),
             conditions_hash: book.condition_digest,
             hash_rule: HASH_RULE.into(),
             units: book.units,
@@ -486,4 +491,14 @@ pub fn execute(args: &[String]) -> Result<()> {
     )?;
     println!("{}", serde_json::to_string_pretty(&summary)?);
     Ok(())
+}
+
+/// Network recorded by the deposit builder; runs from before the field existed
+/// were regtest-only.
+fn mapping_genesis(deposit: &Path) -> std::result::Result<crate::network::Chain, Box<dyn std::error::Error>> {
+    let mapping: serde_json::Value =
+        serde_json::from_slice(&read(&deposit.join("private-deposit-map.json"), 16384)?)?;
+    Ok(crate::network::Chain::from_genesis(
+        mapping["network_genesis"].as_str().unwrap_or(crate::network::REGTEST_GENESIS),
+    )?)
 }

@@ -1,7 +1,7 @@
 //! Actual isolated NU7 node captures -> private native notes and Merkle paths.
 //! The local node/genesis/birthday are trusted, not SPV-verified. No broadcast
 //! or signing, and no synthetic note/witness substitution is supported here.
-use crate::{Result, auction, interop_export::write};
+use crate::{Result, auction, interop_export::write, network::Chain};
 use incrementalmerkletree::{frontier::CommitmentTree, witness::IncrementalWitness};
 use orchard::{
     Note,
@@ -14,7 +14,6 @@ use std::{collections::BTreeMap, io::Cursor, path::Path};
 use zcash_primitives::{merkle_tree::read_commitment_tree, transaction::Transaction};
 use zcash_protocol::consensus::BranchId;
 
-const GENESIS: &str = "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327";
 type Tree = CommitmentTree<MerkleHashOrchard, 32>;
 type Witness = IncrementalWitness<MerkleHashOrchard, 32>;
 
@@ -123,13 +122,13 @@ pub fn scan(wallet: &Path, capture_path: &Path) -> Result<serde_json::Value> {
     auction::directory(capture_path.parent().ok_or("NU7 capture parent")?)?;
     let capture: Capture = serde_json::from_slice(&auction::read(capture_path, 100_000_000)?)
         .map_err(|_| "NU7 capture schema")?;
-    if capture.genesis != GENESIS
-        || capture.branch != "77190ad9"
-        || capture.nu7_height != 2
-        || capture.initial.height < 2
-        || capture.blocks.len() > 500
-    {
-        return Err("capture differs from pinned isolated NU7 regtest".into());
+    let chain = Chain::checked(&capture.genesis, &capture.branch, capture.nu7_height)?;
+    // Regtest captures are full node blocks. Testnet captures come from compact
+    // blocks, which list only shielded transactions, so a block may carry none;
+    // the per-block Ironwood tree size below still pins every commitment.
+    let block_bound = if chain == Chain::Regtest { 500 } else { 5000 };
+    if capture.initial.height < chain.nu7_height() || capture.blocks.len() > block_bound {
+        return Err("capture differs from the pinned NU7 network profile".into());
     }
     // Pinned network scope is checked before key access. DKG wallets use their
     // FVK only; no custody packages are read by this scanner.
@@ -143,7 +142,7 @@ pub fn scan(wallet: &Path, capture_path: &Path) -> Result<serde_json::Value> {
     for block in capture.blocks {
         if block.height != height.checked_add(1).ok_or("NU7 height overflow")?
             || hash(&block.prev_hash)? != previous
-            || block.transactions.is_empty()
+            || (chain == Chain::Regtest && block.transactions.is_empty())
             || block.transactions.len() > 20000
         {
             return Err("NU7 captured block continuity/order/shape mismatch".into());
@@ -204,7 +203,7 @@ pub fn scan(wallet: &Path, capture_path: &Path) -> Result<serde_json::Value> {
                                 action: action_index,
                                 height: block.height,
                                 block: block_hash,
-                                coinbase: index == 0,
+                                coinbase: chain == Chain::Regtest && index == 0,
                                 witness: Witness::from_tree(tree.clone())
                                     .ok_or("NU7 empty witness")?,
                                 spent: false,
@@ -250,8 +249,8 @@ pub fn scan(wallet: &Path, capture_path: &Path) -> Result<serde_json::Value> {
             "rho":note.note.rho().to_bytes(),"rseed":note.note.rseed().as_bytes(),
             "position":position,"auth_path":auth.map(|h| h.to_bytes())}));
     }
-    let result = serde_json::json!({"scope":"isolated NU7 regtest wallet openings","genesis":GENESIS,
-        "branch":"77190ad9","nu7_height":2,"tip_height":height,"tip_hash":capture.final_tree.hash,
+    let result = serde_json::json!({"scope":chain.openings_scope(),"genesis":chain.genesis(),
+        "branch":"77190ad9","nu7_height":chain.nu7_height(),"tip_height":height,"tip_hash":capture.final_tree.hash,
         "anchor":tree.root().to_bytes(),"notes":openings});
     let output = directory.join(format!("private-nu7-notes-{height}.json"));
     if output.exists() {
@@ -268,10 +267,10 @@ pub fn scan(wallet: &Path, capture_path: &Path) -> Result<serde_json::Value> {
         )?;
     }
     Ok(
-        serde_json::json!({"scope":"actual isolated NU7 notes from trusted local Zebra; not public testnet",
+        serde_json::json!({"scope":if chain == Chain::Regtest {"actual isolated NU7 notes from trusted local Zebra; not public testnet"} else {"actual public-testnet NU7 notes from a trusted lightwalletd provider"},
         "height":height,"decrypted_unspent_native_notes":openings.len(),"balance_zatoshi":balance,
         "spent_native_notes":owned.values().filter(|n| n.spent).count(),"all_native_paths_match_node_tree":true,
         "funding_observations_fabricated":false,"keys_openings_or_memos_logged":false,
-        "native_consensus_source":"pinned local full node, not scanner/SPV proof"}),
+        "native_consensus_source":if chain == Chain::Regtest {"pinned local full node, not scanner/SPV proof"} else {"lightwalletd provider data, not scanner/SPV proof"}}),
     )
 }

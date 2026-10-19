@@ -92,9 +92,8 @@ pub(super) fn load(path: &Path, reserved: Option<[u8; 32]>) -> Result<Validated>
     certificate.verify(&manifest)?;
     let c = &manifest.context;
     let book = &certificate.endorsements[0].book;
-    if hex::encode(c.network_genesis)
-        != "029f11d80ef9765602235e1bc9727e3eb6ba20839319f761fee920d63401e327"
-        || c.units != 3
+    let chain = crate::network::Chain::from_genesis_bytes(&c.network_genesis)?;
+    if c.units != 3
         || c.budget != 100
         || c.processing_fee != 15000
         || std::time::SystemTime::now()
@@ -216,6 +215,9 @@ pub(super) fn load(path: &Path, reserved: Option<[u8; 32]>) -> Result<Validated>
             return Err("duplicate accepted funding note".into());
         }
         let source = load_selected(&req.escrow, &req.notes, Some(reg.note))?;
+        if source.chain != chain {
+            return Err("escrow notes come from another network than the certified book".into());
+        }
         if source.opening.coinbase
             || source.opening.amount != required
             || source.tip_height
