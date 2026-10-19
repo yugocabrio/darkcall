@@ -61,6 +61,10 @@ Done:
       (about 10 and 16-19 min) instead of regtest ones; the hero settlement txid links to ZecBlock
       when the recorded run is on testnet; comparison row reads "Anyone can verify payouts match the
       result", the column "decryption committee", and the caption notes other ZK/MPC auctions.
+- [x] Cleanup (Oct 19): removed the superseded Oct 5 video draft (docs/demo-video.md, its renderer,
+      storyboard and stills 01-19); the current video is demo/media/v2. Ignored scratch under
+      .local (old runs, logs, drafts) moved out; demo.sh's recorded runs, both banks and the regtest
+      node data kept. Recorded-mode HTTP checks pass on testnet and regtest after the cleanup.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.
