@@ -78,13 +78,16 @@ Only the bidder's own client sees the typed bid; operators receive shares and a 
 
 ## What works (single-host prototype)
 
-- **Settled on public Zcash testnet.** On Oct 19 a fresh auction was funded,
-  cleared and settled on standard testnet (NU7): deposits `d573a651…3c7b1737`
-  at block 4,518,128, settlement `8e6da99b…034f0db7` at block 4,518,182, two
-  confirmations each, public check in 98 s, and a corrupted receipt proof
-  refused. Chain data came from one trusted lightwalletd provider.
+- **Settled on public Zcash testnet, from the browser.** On Oct 19 an auction
+  was created, funded, cleared and settled by clicking through the UI on
+  standard testnet (NU7): deposits `af6cf7cf…eff6354` at block 4,518,254,
+  settlement `be1157c8…a1c8ad67` at block 4,518,315, two confirmations each,
+  public check in 102 s, own receipts won 79 and lost 100, and a corrupted
+  receipt proof refused. This is the run in the video. An earlier API-driven
+  testnet auction (`8e6da99b…034f0db7`) also passed every refusal check. Chain
+  data came from one trusted lightwalletd provider.
 
-- **The full flow in the browser, in protocol order (isolated regtest).** Create an auction and
+- **The full flow in the browser, in protocol order.** Create an auction and
   seal four bids (client ZK proof + REP3 shares + signed pre-check). Certify the
   book, then **Fund on Zcash**: four real shielded deposits and a chain
   admission that re-verifies the same proofs and shares under a certificate
@@ -96,8 +99,9 @@ Only the bidder's own client sees the typed bid; operators receive shares and a 
   this way. The headline six-step run (Oct 19) has deposits `5e9432e5…`, price
   21 with 3 sold, and settlement `e3ffa436…84769754`. Its refunds were
   79/79/100/79 and the seller received 63.
-- **A 2-minute video from one real auction.** `demo/media/v2/darkcall-demo-v2.mp4`
-  is captured by a reproducible headless script with labeled time cuts.
+- **A 2-minute video from one real testnet auction.** `demo/media/v2/darkcall-demo-v2.mp4`
+  (auction `4dde6fcb…`, settlement `be1157c8…`) is captured by a reproducible
+  headless script with labeled time cuts.
 - **Public verification without secrets.** About 2 minutes. It covers native
   authorization, six output bindings, the auction proof and the operator
   certificate. Corrupted proofs, transactions, books and authorities are
@@ -124,9 +128,9 @@ Only the bidder's own client sees the typed bid; operators receive shares and a 
   public bundle does not prove chain inclusion.
 - Demo scope: one host runs every party. Each bidder's client, the only party
   that sees the typed bid, is a localhost service. Deposits come from one local test wallet right after the close, before
-  clearing (in a deployment each bidder's own wallet deposits). This is
-  isolated regtest, not testnet or mainnet. There are four bid slots and default
-  terms only.
+  clearing (in a deployment each bidder's own wallet deposits). It runs on
+  public Zcash testnet (two auctions settled on Oct 19) and on an isolated
+  regtest, never mainnet. There are four bid slots and default terms only.
 - We found and fixed a refund-guessing leak in an earlier delivery commitment.
   The attack and the fix are documented in the repository.
 

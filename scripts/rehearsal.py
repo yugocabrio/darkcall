@@ -20,7 +20,7 @@ import sys
 import threading
 import time
 from regtest_deposits import ROOT, private_read
-from regtest_resources import check, sample, guarded_json_call
+from regtest_resources import check, sample, guarded_json_call, run_bounded, TreeSurvived
 from run_mpc_gate import INPUT_TOOL, PLAIN, CLIENT_CIRCUIT, UPSTREAM, PIN, BIN
 from verify_external import BB, SOURCE, CRS, PIN as BB_PIN
 
@@ -60,7 +60,7 @@ class Rehearsal:
         check(sample(ROOT))
         logfile=folder/(label+'.log')
         with logfile.open('xb') as log:
-            result=subprocess.run(list(map(str,command)),input=secret_input,cwd=ROOT,
+            result=run_bounded(list(map(str,command)),input=secret_input,cwd=ROOT,
                 env={**os.environ,'RAYON_NUM_THREADS':'2'},stdout=subprocess.PIPE if parse else log,
                 stderr=log,timeout=180)
         if result.returncode: raise RuntimeError('Local rehearsal gate stopped; private checkpoint retained')
@@ -318,9 +318,12 @@ class Rehearsal:
         job={'state':'running','name':name,'progress':a['path']/(name+'-'+kind+'-progress.jsonl'),
             'started_at_unix':int(time.time()),'public':None,'paths':None}
         def work():
+            # The lock is released only once the driver and every prover it
+            # started have stopped, so a timeout never overlaps the next proof.
+            release=True
             try:
                 with (a['path']/(name+'-'+kind+'.log')).open('xb') as log:
-                    r=subprocess.run([sys.executable,'-B',str(SETTLE),str(a['path']),'--name',name,
+                    r=run_bounded([sys.executable,'-B',str(SETTLE),str(a['path']),'--name',name,
                         '--progress',str(job['progress']),'--chain',self.chain,*args],
                         cwd=ROOT,stdout=subprocess.DEVNULL,stderr=log,timeout=7200)
                 if r.returncode: raise RuntimeError('Driver stopped')
@@ -336,9 +339,12 @@ class Rehearsal:
                         raise RuntimeError('Settled a different book or outcome')
                     job['paths']=settled['paths']; job['public']=settled['public']
                 job['state']='done'
+            except TreeSurvived:
+                job['state']='failed'; release=False
             except Exception:
                 job['state']='failed'
-            finally: self.lock.release()
+            finally:
+                if release: self.lock.release()
         a[kind]=job
         try: threading.Thread(target=work,name='darkcall-'+kind,daemon=True).start()
         except BaseException:
@@ -355,8 +361,12 @@ class Rehearsal:
                 return 200,view
             finally:
                 if not started: self.lock.release()
+        release=True
         try:
             try: result={'create':self.create,'bid':self.bid,'close':self.close,'clear':self.clear,'result':self.result}[action](value)
             except PermissionError: return 403,{'error':'Own ticket opening capability required'}
+            except TreeSurvived:
+                release=False; raise
             return 200,result
-        finally: self.lock.release()
+        finally:
+            if release: self.lock.release()

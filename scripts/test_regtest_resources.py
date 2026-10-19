@@ -26,6 +26,25 @@ class ResourceTests(unittest.TestCase):
                     child.kill()
                     child.wait(timeout=3)
 
+    def test_bounded_run_timeout_stops_provers_in_other_sessions(self):
+        # A driver whose prover runs in its own session, as guarded_json_call
+        # does. A timeout must stop both before returning, not only the driver.
+        with tempfile.TemporaryDirectory() as folder:
+            marker = pathlib.Path(folder) / 'prover.pid'
+            driver = ("import subprocess,sys,time;"
+                      "p=subprocess.Popen([sys.executable,'-c','import time;time.sleep(60)'],start_new_session=True);"
+                      f"open({str(marker)!r},'w').write(str(p.pid));time.sleep(60)")
+            with self.assertRaises(subprocess.TimeoutExpired):
+                resources.run_bounded([sys.executable, '-c', driver], timeout=2,
+                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            prover = int(marker.read_text())
+            self.assertEqual(resources.running({prover}), set())
+
+    def test_bounded_run_returns_output_and_code_like_subprocess_run(self):
+        result = resources.run_bounded([sys.executable, '-c', 'import sys;print(sys.stdin.read().upper());sys.exit(3)'],
+                                       timeout=20, input=b'ok', stdout=subprocess.PIPE)
+        self.assertEqual((result.returncode, result.stdout.strip()), (3, b'OK'))
+
     def test_guard_abort_also_stops_nested_mpc_children(self):
         with tempfile.TemporaryDirectory() as directory:
             path = pathlib.Path(directory)

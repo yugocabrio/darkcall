@@ -167,6 +167,9 @@ function refreshRoom() {
   const available=Boolean(state && state.local_rehearsal_available);
   $('create-auction').disabled=busy || !available;
   $('new-auction').hidden=!room;
+  // Funding and settlement run on the server for minutes; leaving would drop the
+  // ticket capabilities this page holds, so the button waits for the job.
+  $('new-auction').disabled=busy || jobRunning();
   const settled=Boolean(room && room.settlement && room.settlement.state==='done');
   const funded=Boolean(room && room.funding && room.funding.state==='done');
   const complete=[Boolean(room),Boolean(room && room.accepted===4),funded || Boolean(room && !room.funding_required && freshClearingVerified),freshClearingVerified,freshResultVerified || settled,settled];
@@ -441,8 +444,15 @@ function selectExperience(mode) {
 }
 $('show-recording').addEventListener('click',showRecording);
 $('continue-recording').addEventListener('click',showRecording);
+function jobRunning() {
+  return Boolean(room && ((room.funding && room.funding.state==='running') || (room.settlement && room.settlement.state==='running')));
+}
 $('new-auction').addEventListener('click',()=>{
-  if (busy) return;
+  if (busy || jobRunning()) return;
+  // Ticket capabilities live only in this page. Dropping them before the
+  // receipts are opened makes those receipts unopenable, so ask first.
+  if (myTickets.length && !nativeResultVerified
+      && !window.confirm('Start another auction? This page holds the only opening capability for your tickets in this auction; without it you cannot open their receipts.')) return;
   room=null; lastAcceptance=null; myTickets=[]; selectedTicket=0; history.replaceState(null,'',location.pathname);
   resetFresh();
   $('auction-room').hidden=true; $('create-form').hidden=false; $('rehearsal-title').textContent='Create your auction.';

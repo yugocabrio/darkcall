@@ -82,6 +82,79 @@ def stop(process):
     process.wait()
 
 
+class TreeSurvived(RuntimeError):
+    """Processes from a stopped driver still run; the caller must keep its lock."""
+
+
+def descendants(root):
+    """ROOT and every process it started, from one ps snapshot, across groups
+    and sessions (provers run in their own sessions under guarded_json_call)."""
+    out = subprocess.run(['ps', '-A', '-o', 'pid=,ppid='], capture_output=True, text=True, check=True).stdout.split()
+    children = {}
+    for pid, ppid in zip(map(int, out[0::2]), map(int, out[1::2])):
+        children.setdefault(ppid, []).append(pid)
+    found, queue = set(), [root]
+    while queue:
+        pid = queue.pop()
+        if pid not in found:
+            found.add(pid)
+            queue.extend(children.get(pid, []))
+    return found
+
+
+def running(pids):
+    """Members of PIDS that still run; zombies awaiting reaping do not count."""
+    if not pids:
+        return set()
+    out = subprocess.run(['ps', '-o', 'pid=,stat=', '-p', ','.join(map(str, sorted(pids)))],
+                         capture_output=True, text=True).stdout
+    alive = set()
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) == 2 and not parts[1].startswith('Z'):
+            alive.add(int(parts[0]))
+    return alive
+
+
+def stop_tree(process, grace=30):
+    """Stop PROCESS and everything it started, and return only once none of it
+    runs. The tree is frozen first, so nothing spawns or is re-parented while it
+    is collected; then every member is killed. Raises TreeSurvived otherwise."""
+    members = set()
+    for _ in range(5):
+        found = descendants(process.pid) - members
+        if not found:
+            break
+        members |= found
+        for pid in found:
+            try:
+                os.kill(pid, signal.SIGSTOP)
+            except ProcessLookupError:
+                pass
+    for pid in members:
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    process.wait()
+    deadline = time.monotonic() + grace
+    while running(members):
+        if time.monotonic() > deadline:
+            raise TreeSurvived('Driver processes survived SIGKILL; the proof lock stays held')
+        time.sleep(0.2)
+
+
+def run_bounded(command, *, timeout, input=None, **popen):
+    """Like subprocess.run, but a timeout or interruption stops the whole tree."""
+    process = subprocess.Popen(command, stdin=subprocess.PIPE if input is not None else None, **popen)
+    try:
+        out, _ = process.communicate(input=input, timeout=timeout)
+    except BaseException:
+        stop_tree(process)
+        raise
+    return subprocess.CompletedProcess(command, process.returncode, out, None)
+
+
 def guarded_json_call(command, *, cwd, env, timeout, observations, interval=10,
                       minimum_start_disk_bytes=MIN_FREE_BYTES,
                       expected_failure=None, failure_log=None):
