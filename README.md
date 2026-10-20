@@ -278,12 +278,16 @@ assumptions:
   three operators run on one machine.
 - **Funding is attested, not proven.** Admission signatures attest funding; they are not a public ZK funding
   proof. The public bundle proves transaction validity and output binding, not
-  chain inclusion. Confirmations are observed on a controlled regtest node.
-- **Testnet, never mainnet.** The browser runs and the video used an isolated regtest.
-  One auction also settled on public testnet with testnet coins, observed
-  through one trusted lightwalletd provider. No mainnet funds are touched.
-- **Fixed size.** The circuits have four bid slots and six outputs. The native settlement path
-  supports the default terms (3 units, budget 100, reserve 0 or 20).
+  chain inclusion. Confirmations are observed through one lightwalletd provider
+  on testnet, or on a controlled regtest node.
+- **Testnet, never mainnet.** The video run and an API-driven run settled on
+  public Zcash testnet with testnet coins, observed through one trusted
+  lightwalletd provider; earlier browser runs used an isolated regtest. No
+  mainnet funds are touched. The v6 settlement needs NU7, which is active on
+  testnet and planned for mainnet on Nov 5, 2026.
+- **Fixed size.** The committed circuits have four bid slots and six outputs. The native
+  settlement path supports the default terms (3 units, budget 100, reserve 0 or 20).
+  Four is the circuit size, not a speed limit: see [beyond four bids](#beyond-four-bids).
 - **Demo-sized amounts.** Bids stay within a 100-zatoshi budget, and the fixed
   15,000-zatoshi processing fee per ticket pays the settlement's 30,000-zatoshi
   network fee and a 30,000-zatoshi operator fee output. The numbers exercise
@@ -307,6 +311,26 @@ the attack, withdrew the claim and replaced it with blinded v2 commitments:
 | Recorded Oct 5 settlement (1 thread, memory pressure) | 1848 s |
 
 These are single-host measurements, not a controlled benchmark.
+
+### Beyond four bids
+
+`scripts/measure_bid_scaling.py` derives N-bid versions of the three coNoir
+circuits (only the bid count changes; the four-bid versions match the committed
+circuits gate for gate) and runs the clearing proof with three REP3 parties on
+synthetic bids. Record: [evidence/2026-10-21-bid-scaling.json](evidence/2026-10-21-bid-scaling.json).
+
+| Bids | Clearing gates | Winner-flag gates | Settlement-plan gates | Joint clearing proof (3 parties) |
+| --- | --- | --- | --- | --- |
+| 4 | 10,247 | 11,894 | 24,016 | 3.1 s, ~0.3 GiB per party (measured) |
+| 8 | 26,953 | 30,020 | 48,901 | 6.5 s, ~0.6 GiB per party (measured) |
+| 16 | 90,847 | 96,562 | 128,984 | ~30 s, ~2.5 GiB per party (estimated, not run) |
+
+All-pairs ranking makes the joint proof grow quadratically, but it stays in
+seconds. The larger cost is linear: one Halo2 output binding per payout (N + 2
+rows), about 90 s each on this laptop after a one-time key. The rows are
+independent, so they can run in parallel; the prototype proves them one after
+another. Beyond a few dozen bids, all-pairs ranking should give way to a
+sorting network.
 
 ## Repository
 

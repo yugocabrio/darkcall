@@ -1,0 +1,187 @@
+{
+  "date": "2026-10-21 (CEST)",
+  "question": "The committed circuits are fixed at four bids. How do the REP3 (coNoir) circuits and the settlement grow with N bids?",
+  "method": "scripts/measure_bid_scaling.py derives N-bid variants of the three committed coNoir circuits under ignored .local/ (only the bid count changes; the settlement plan has N + 2 rows), compiles them with the pinned Noir 1.0.0-rc.2, and counts UltraHonk gates with the pinned bb. The four-bid variants match the committed circuits gate for gate and opcode for opcode. With --mpc it runs the clearing circuit three-party REP3 on synthetic bids (95, 90, ... above reserve 20, units N - 1), then verifies the proof.",
+  "commands": [
+    "python3 -B scripts/measure_bid_scaling.py --sizes 4 8 16",
+    "python3 -B scripts/measure_bid_scaling.py --sizes 4 --mpc 4",
+    "python3 -B scripts/measure_bid_scaling.py --sizes 4 8 --mpc 8"
+  ],
+  "repository_head_before_commit": "7545f39",
+  "machine": "shared 16 GiB Apple M1, three parties on one host, RAYON_NUM_THREADS=2, heavy swap from other applications",
+  "source_pin": "467a2abbad940d40ed78f38d424cc21920988976",
+  "noir": "1.0.0-rc.2",
+  "four_bid_variants_match_committed": true,
+  "gates": {
+    "4": {
+      "clearing": {
+        "acir_opcodes": 5600,
+        "gates": 10247,
+        "dyadic_size": 16384
+      },
+      "flags": {
+        "acir_opcodes": 5483,
+        "gates": 11894,
+        "dyadic_size": 16384
+      },
+      "plan": {
+        "acir_opcodes": 11686,
+        "gates": 24016,
+        "dyadic_size": 32768
+      }
+    },
+    "8": {
+      "clearing": {
+        "acir_opcodes": 22926,
+        "gates": 26953,
+        "dyadic_size": 32768
+      },
+      "flags": {
+        "acir_opcodes": 22605,
+        "gates": 30020,
+        "dyadic_size": 32768
+      },
+      "plan": {
+        "acir_opcodes": 32643,
+        "gates": 48901,
+        "dyadic_size": 65536
+      }
+    },
+    "16": {
+      "clearing": {
+        "acir_opcodes": 93196,
+        "gates": 90847,
+        "dyadic_size": 131072
+      },
+      "flags": {
+        "acir_opcodes": 92275,
+        "gates": 96562,
+        "dyadic_size": 131072
+      },
+      "plan": {
+        "acir_opcodes": 110078,
+        "gates": 128984,
+        "dyadic_size": 131072
+      }
+    }
+  },
+  "measured_clearing_rep3": {
+    "4": {
+      "stages": [
+        {
+          "name": "split",
+          "seconds": 0.209,
+          "peak_rss_mib": [
+            10
+          ]
+        },
+        {
+          "name": "witness",
+          "seconds": 0.407,
+          "peak_rss_mib": [
+            13,
+            13,
+            13
+          ]
+        },
+        {
+          "name": "vk",
+          "seconds": 0.41,
+          "peak_rss_mib": [
+            47
+          ]
+        },
+        {
+          "name": "proof",
+          "seconds": 3.076,
+          "peak_rss_mib": [
+            343,
+            327,
+            319
+          ]
+        },
+        {
+          "name": "verify",
+          "seconds": 0.203,
+          "peak_rss_mib": [
+            7
+          ]
+        }
+      ],
+      "price_and_units": [
+        80,
+        3
+      ],
+      "verified": true
+    },
+    "8": {
+      "stages": [
+        {
+          "name": "split",
+          "seconds": 0.408,
+          "peak_rss_mib": [
+            19
+          ]
+        },
+        {
+          "name": "witness",
+          "seconds": 1.437,
+          "peak_rss_mib": [
+            24,
+            24,
+            23
+          ]
+        },
+        {
+          "name": "vk",
+          "seconds": 0.814,
+          "peak_rss_mib": [
+            105
+          ]
+        },
+        {
+          "name": "proof",
+          "seconds": 6.533,
+          "peak_rss_mib": [
+            659,
+            537,
+            619
+          ]
+        },
+        {
+          "name": "verify",
+          "seconds": 0.21,
+          "peak_rss_mib": [
+            7
+          ]
+        }
+      ],
+      "price_and_units": [
+        60,
+        7
+      ],
+      "verified": true
+    }
+  },
+  "estimates": {
+    "clearing_rep3_16_bids": {
+      "proof_seconds": 29.5,
+      "witness_seconds": 5.6,
+      "peak_rss_mib_per_party": 2555,
+      "basis": "not run: about 2.5 GiB per party times three would not fit beside the other workloads on this shared machine. Proof time scales with the padded circuit size (16,384 -> 32,768 rows took x2.12; 131,072 rows is two more doublings); witness time scales with ACIR opcodes; memory scales linearly with padded size between the two measured points."
+    },
+    "settlement_bindings": {
+      "rows": "N + 2 (N refunds, the seller, the operator fee)",
+      "seconds_per_row_on_this_laptop": 91,
+      "one_time_key_seconds": 111,
+      "basis": "browser run of Oct 18 (evidence/2026-10-18-fresh-book-native-settlement.json): binding key 130.5 -> 241.7 s, six rows 241.7 -> 786.3 s",
+      "rows_are_independent": "yes in the protocol (one row, one note); the prototype proves them one after another",
+      "sequential_minutes": {
+        "4": 11,
+        "8": 17,
+        "16": 29
+      }
+    }
+  },
+  "reading": "The quadratic part, all-pairs ranking inside the joint proof, stays in seconds: 3.1 s at four bids, 6.5 s at eight, about 30 s estimated at sixteen. The dominant settlement cost is one Halo2 binding per output, linear in N and independent per row, so it can run in parallel across cores or operators; the prototype runs the rows one after another. Four bids is the committed circuit size, not a performance limit. Beyond a few dozen bids, all-pairs ranking (about 320 gates per bid pair, fitted to the three sizes) should give way to a sorting network."
+}

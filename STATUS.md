@@ -11,6 +11,12 @@ Updated: 2026-10-19 (git HEAD is authoritative).
   sold; public check 98 s; receipts 79/79/79/100; all refusals held. Record:
   `evidence/2026-10-19-public-testnet-settlement.json`. Run with
   `./demo.sh --chain testnet`.
+- **Beyond four bids (Oct 21):** N-bid versions of the three coNoir circuits
+  (`scripts/measure_bid_scaling.py`) match the committed four-bid circuits gate for
+  gate at N = 4. Clearing gates 10,247 / 26,953 / 90,847 at 4 / 8 / 16 bids; joint
+  clearing proof 3.1 s at 4 and 6.5 s at 8 bids (measured, verified), about 30 s
+  at 16 (estimated; not run on the shared machine). Per-payout Halo2 bindings,
+  about 90 s each, dominate. Record: `evidence/2026-10-21-bid-scaling.json`.
 - **Product flow (browser and API):** Create → Bid → Fund on Zcash → Clear →
   Result → Settle on Zcash → own shielded receipt → tamper refusal. The same
   sealed tickets, commitments, REP3 shares and accepted root carry through every

@@ -67,6 +67,9 @@ Done:
       node data kept. Recorded-mode HTTP checks pass on testnet and regtest after the cleanup.
 - [x] Way back (Oct 19): "← Back to overview" beside the mode switch returns from either mode to the
       hero and How it works without a reload; a running auction stays and "Run an auction" reopens it.
+- [x] Bid-count scaling (Oct 21): measured N-bid variants (4/8/16 gate counts; 4 and 8 joint clearing
+      proofs run and verified; 16 estimated). README, judge guide and draft say four is the circuit
+      size, not a speed limit. Next if needed: a sorting network beyond a few dozen bids.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.

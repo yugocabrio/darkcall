@@ -35,8 +35,10 @@ exactly as proven.
 - **Usefulness.** Batch sales that close once, such as allocation rounds, ad
   slots or blocks of seats, where published bid amounts hand the seller and
   rivals the demand curve. Clearing takes about 9 s; settlement follows in
-  15–20 min with every output proven. It needs three independent operators;
-  this prototype handles four bids per auction.
+  15–20 min with every output proven. It needs three independent operators.
+  The committed circuits take four bids; measured 8-bid versions prove the
+  clearing jointly in 6.5 s (3.1 s at 4 bids), and the per-payout Halo2
+  bindings, linear and independent, dominate settlement time.
 - **Execution.** An auction was created, funded, cleared and settled by clicking
   through the browser on public Zcash testnet (settlement `be1157c8…a1c8ad67`,
   block 4,518,315), and that is the run in the video. Seven public bundles,
