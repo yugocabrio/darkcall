@@ -73,6 +73,9 @@ Done:
 - [x] CI (Oct 21): GitHub Actions runs 34 Noir, 66 Rust (release) and 28 Python tests on every push;
       all pass locally. Own-wallet deposits: format allows ZIP-321 payment, but no consumer wallet
       sends NU7 testnet transactions yet (Oct 15 Arborist call); recorded in the judge guide.
+- [x] One site (Oct 21): the static evidence page (docs/index.html, docs/site, build_evidence_site.py)
+      is retired; the landing at / and the live demo at /demo/settled and /demo/run are the site,
+      with shareable paths and working browser history.
 - [ ] Hosted live demo: public mode for serve_demo.py, demo image, HTTPS proxy; waiting on a server.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid

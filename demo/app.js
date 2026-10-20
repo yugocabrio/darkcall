@@ -135,7 +135,7 @@ fetch('/api/state').then(async response => {
   $('hero-note').textContent=state.funded_canonical ? (state.recorded_note || 'Recorded on isolated Zcash regtest.') : 'Recorded example with synthetic funding, not broadcast.';
   if (!state.funded_canonical) $('hero-label').textContent='Recorded example';
   $('recording-banner').textContent='Separate recorded auction · settlement tx '+recordedTx.slice(0,10)+'…'+recordedTx.slice(-8)+' · it does not settle your demo bids.';
-  refreshRoom(); joinRehearsal();
+  refreshRoom(); route();
 }).catch(error => setError(error.message));
 
 // Interactive entry is an OFFLINE rehearsal. It never alters the recorded book.
@@ -429,20 +429,25 @@ $('open-fresh-result').addEventListener('click',()=>openFresh('open'));
 $('my-ticket').addEventListener('change',event=>pickTicket(event.target.value));
 $('my-native-ticket').addEventListener('change',event=>pickTicket(event.target.value));
 $('tamper-fresh').addEventListener('click',()=>openFresh('tamper'));
-$('start-auction').addEventListener('click',()=>{
+function startAuction() {
   selectExperience('try');
   $('rehearsal').hidden=false; $('recorded-demo').hidden=true;
   if (!room) setDefaultClose();
   $('rehearsal-status').textContent=state && state.local_rehearsal_available ? '' : 'Local input prover and admission helper are required; recorded verification is available below.';
   refreshRoom(); $('rehearsal').scrollIntoView({behavior:'smooth',block:'start'});
-});
+}
+$('start-auction').addEventListener('click',startAuction);
 function showRecording() {
   selectExperience('settlement');
   $('rehearsal').hidden=true; $('recorded-demo').hidden=false;
   // Never use the new maximum bid or receipt to choose an old fixture identity.
   $('recorded-demo').scrollIntoView({behavior:'smooth',block:'start'});
 }
+// Each live-demo mode has a shareable path; the landing is '/'.
+const MODES={'/demo/settled':'settlement','/demo/run':'try'};
 function selectExperience(mode) {
+  const path=mode==='try'?'/demo/run':'/demo/settled';
+  if (location.pathname!==path) history.pushState(null,'',path+(mode==='try'&&room?'#auction='+room.auction_id:''));
   document.body.classList.add('has-experience');
   for (const [id,name] of [['start-auction','try'],['show-recording','settlement']]) {
     $(id).classList.toggle('active',mode===name); $(id).setAttribute('aria-pressed',String(mode===name));
@@ -450,13 +455,21 @@ function selectExperience(mode) {
 }
 // Leave either mode without reloading: a running auction stays on the server
 // and "Run an auction" reopens it.
-function showOverview() {
+function showOverview(push=true) {
+  if (push && location.pathname!=='/') history.pushState(null,'','/');
   document.body.classList.remove('has-experience');
   $('rehearsal').hidden=true; $('recorded-demo').hidden=true;
   for (const id of ['start-auction','show-recording']) { $(id).classList.remove('active'); $(id).setAttribute('aria-pressed','false'); }
   window.scrollTo({top:0,behavior:'smooth'});
 }
-$('back-overview').addEventListener('click',showOverview);
+$('back-overview').addEventListener('click',()=>showOverview());
+function route() {
+  if (/^#auction=/.test(location.hash)) return joinRehearsal();
+  const mode=MODES[location.pathname];
+  if (mode==='settlement') showRecording(); else if (mode==='try') startAuction();
+  else if (document.body.classList.contains('has-experience')) showOverview(false);
+}
+window.addEventListener('popstate',()=>{ if (state) route(); });
 $('show-recording').addEventListener('click',showRecording);
 $('continue-recording').addEventListener('click',showRecording);
 function jobRunning() {

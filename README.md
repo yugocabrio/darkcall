@@ -356,9 +356,6 @@ sorting network.
 and resource handling. Settlements and the clean-room verifier stay local,
 because they need chains, pinned prover builds and minutes of proving.
 
-Static evidence page for GitHub Pages: [docs/index.html](docs/index.html), built by
-`scripts/build_evidence_site.py` and not yet published.
-
 More: [judge review](docs/judge-review.md) · [submission](docs/submission-draft.md) ·
 [demo guide](docs/demo.md) · [reproduction](docs/reproduce.md) ·
 [protocol (Japanese design spec)](docs/protocol.md) · [status](STATUS.md) · [tasks](TASKS.md).

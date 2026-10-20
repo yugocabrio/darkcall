@@ -254,7 +254,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .landing-trust ul {padding-left:20px;margin:14px 0 0}
 .landing-trust li {margin:6px 0;font-size:14px;color:var(--ink-2)}
 
-/* Phone layout for the section above; build_evidence_site.py copies it with the section. */
+/* Phone layout for the section above. */
 @media (max-width:760px) {
   .stages {grid-template-columns:1fr}
   .stages li {margin-left:0;margin-top:-1px;border-radius:0}

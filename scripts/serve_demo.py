@@ -267,6 +267,8 @@ def handler(demo, port):
             if self.headers.get('Origin') not in (None,origin):
                 return self.reply(403,{'error':'Same origin required'})
             files = {'/':('index.html','text/html; charset=utf-8'),
+                '/demo/settled':('index.html','text/html; charset=utf-8'),
+                '/demo/run':('index.html','text/html; charset=utf-8'),
                 '/app.js':('app.js','text/javascript; charset=utf-8'),
                 '/style.css':('style.css','text/css; charset=utf-8'),
                 '/media/darkcall-demo-v2.mp4':('media/v2/darkcall-demo-v2.mp4','video/mp4')}
