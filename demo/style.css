@@ -464,6 +464,18 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .proof-strip p {margin:0;color:var(--ink-2);font-size:15px}
 .proof-strip small {display:block;margin-top:8px;color:var(--ink-3);font-size:13px}
 .proof-strip .check-result {grid-column:1/-1}
+.claims {grid-column:1/-1;display:grid;gap:10px;margin-top:6px}
+.claim {display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;font-size:15px;line-height:1.55;color:var(--ink-2)}
+.claim b {color:var(--ink);font-weight:600}
+.claim-mark {font-weight:600}
+.claim-ok .claim-mark {color:var(--green)}
+.claim-no .claim-mark {color:#b3261e}
+.claim-rows {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 14px;margin-top:6px;font-size:13px;color:var(--ink-2)}
+.claim-note {grid-column:1/-1;font-size:13px!important;color:var(--ink-3)!important}
+.contrast {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.contrast-box {border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface-2)}
+.contrast-box b {display:block;font-size:13px;font-weight:600;color:var(--ink)}
+.contrast-box p {margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--ink-2)}
 .how-it-works {margin-top:44px}
 .how-it-works ol {list-style:none;padding:0;margin:14px 0 0;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .how-it-works li {border-top:2px solid var(--ink);padding-top:12px;font-weight:500}
@@ -518,6 +530,8 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .fresh-challenge,.recording-transition,.close-row,.bid-accepted {flex-direction:column;align-items:flex-start}
   .proof-strip {grid-template-columns:1fr}
   .try-steps {grid-template-columns:1fr}
+  .claim-rows {grid-template-columns:1fr 1fr}
+  .contrast {grid-template-columns:1fr}
   .how-it-works ol {grid-template-columns:1fr 1fr}
   .has-experience .experience-picker {display:flex;width:100%}
   .has-experience .back-overview {margin:0 0 10px;padding:4px 0}

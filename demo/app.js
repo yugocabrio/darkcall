@@ -58,6 +58,11 @@ async function run(action) {
         const column = element('div',''); column.append(element('span',label),element('strong',String(amount))); amounts.append(column);
       }
       box.append(amounts);
+      const who='Bidder '+String(ticket+1).padStart(2,'0');
+      const mine=element('div','','contrast-box'); mine.append(element('b','What '+who+' sees'),element('p',(result.won?'Won a unit at '+result.price:'No unit')+' · refund '+result.refund+' zatoshi, decrypted with '+who+"'s own key."));
+      const pub=element('div','','contrast-box'); pub.append(element('b','What everyone else sees'),element('p','One shielded transaction with six outputs: no amounts, no addresses, no memo text.'));
+      if (state.recorded_chain==='testnet') pub.lastChild.append(document.createTextNode(' '),Object.assign(document.createElement('a'),{href:'https://testnet.zecblock.com/tx/'+result.txid,textContent:'Open it on the explorer',rel:'noopener'}));
+      const contrast=element('div','','contrast'); contrast.append(mine,pub); box.append(contrast);
       ['proof','native','open'].forEach(step => $('step-'+step).classList.add('done'));
       $('verify').textContent='Verify again';
     }
@@ -68,10 +73,31 @@ document.querySelectorAll('[data-case]').forEach(button => button.addEventListen
 $('ticket').addEventListener('change',resetResult);
 $('verify').addEventListener('click',() => run('verify'));
 $('tamper').addEventListener('click',() => run('tamper'));
+// The settlement check, said as the four things it proves.
+function claim(ok,title,text,extra) {
+  const row=element('div','','claim '+(ok?'claim-ok':'claim-no'));
+  const body=element('div',''); body.append(element('b',title),document.createTextNode(' '+text)); if (extra) body.append(extra);
+  row.append(element('span',ok?'✓':'✗','claim-mark'),body); return row;
+}
+function showClaims(result) {
+  const price=state.cases[0].price, payouts=result.native_row_proofs_verified && result.actual_transaction_outputs_match;
+  const rows=element('div','','claim-rows');
+  for (const label of ['Refund · Bidder 01','Refund · Bidder 02','Refund · Bidder 03','Refund · Bidder 04','Seller','Operator fee']) rows.append(element('span',label+(payouts?' ✓':' ✗')));
+  const tx=state.cases[0].txid, explorer=state.recorded_chain==='testnet'?Object.assign(document.createElement('a'),{href:'https://testnet.zecblock.com/tx/'+tx,textContent:'See it on the explorer',rel:'noopener'}):null;
+  const note=element('p','Not part of this check: whether the transaction is in the chain. ','claim-note'); if (explorer) note.append(explorer,document.createTextNode('.'));
+  $('settlement-claims').replaceChildren(
+    claim(result.normal_cpp_auction_proof_verified,'The price is right.',price+' zatoshi follows the auction rule over exactly the four sealed bids. This check needs no bid, and the proof reveals none.'),
+    claim(payouts,'Every payout matches the result.','Each shielded output pays the amount and recipient the result says:',rows),
+    claim(result.native_proof_and_signatures_verified,'The payment is real Zcash.','One valid shielded Zcash transaction, signed with the escrow key that 2 of the 3 operators share.'),
+    claim(Boolean(result.acceptance_or_recipient_receipts_authenticated),'These are the accepted bids.','All three operators signed this exact book of four sealed bids.'),
+    note);
+  $('settlement-claims').hidden=false;
+}
 $('settlement').addEventListener('click', async () => {
   if (busy || !state) return;
   lock(true); setError('');
-  $('settlement-result').textContent = 'Checking the shielded transaction against the auction. Public verification usually takes about two minutes on this Mac…';
+  $('settlement-result').textContent = 'Running the real public verifier on the recorded auction. About 100 seconds…';
+  $('settlement-claims').hidden=true;
   try {
     const response = await fetch('/api/settlement', {method:'POST', headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:'{}'});
     const result = await response.json();
@@ -79,7 +105,8 @@ $('settlement').addEventListener('click', async () => {
     if (!result.native_row_proofs_verified || !result.native_proof_and_signatures_verified || !result.normal_cpp_auction_proof_verified || !result.actual_transaction_outputs_match || result.private_openings_read || result.chain_funding_or_finality_verified) throw new Error('Incomplete settlement verification');
     if (state.six_output_memo_e2e && (result.txid !== state.cases[0].txid || !result.receipt_fixed_proof_verified || !result.receipt_settlement_context_link_verified)) throw new Error('Settlement belongs to a different receipt auction');
     settlementVerified = true; stages();
-    $('settlement-result').textContent = '✓ Settlement verified. All six outputs match the auction. No private openings read.';
+    $('settlement-result').textContent = 'Verified in '+Math.round(result.seconds)+' s on this server, with no secret. What that proves:';
+    showClaims(result);
     $('settlement-detailed-result').textContent = 'Native authorization, six bindings, fixed auction/receipt proofs and context verified. ' + (result.acceptance_or_recipient_receipts_authenticated ? 'Accepted-book signatures verified. ' : 'No funded admission certificate for this synthetic run. ') + 'Transaction: '+result.txid;
   } catch (error) { $('settlement-result').textContent=''; setError(error.message); }
   finally { lock(false); }
