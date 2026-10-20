@@ -350,6 +350,12 @@ sorting network.
 | `docker/verify/` | Clean-room Linux build of the public verifier (`scripts/docker_verify.sh`) |
 | `evidence/` | Measured, public-only run records |
 
+[![tests](https://github.com/yugocabrio/ZECATHON/actions/workflows/tests.yml/badge.svg)](.github/workflows/tests.yml)
+128 automated tests run on every push: 34 Noir circuit tests, 66 Rust tests
+(including Halo2 proof round trips) and 28 Python tests of the drivers' crash
+and resource handling. Settlements and the clean-room verifier stay local,
+because they need chains, pinned prover builds and minutes of proving.
+
 Static evidence page for GitHub Pages: [docs/index.html](docs/index.html), built by
 `scripts/build_evidence_site.py` and not yet published.
 

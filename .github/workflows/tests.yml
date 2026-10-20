@@ -1,0 +1,62 @@
+# Fast, secret-free test suites: Noir circuit tests, Rust unit and proof tests,
+# and the Python orchestration tests. Settlement runs and the clean-room
+# verifier (scripts/docker_verify.sh) stay local because they need chains,
+# pinned prover builds and minutes of proving.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  circuits:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Noir 1.0.0-rc.2, checked against GitHub's published digest
+        run: |
+          curl --fail --location -o /tmp/noir.tgz https://github.com/noir-lang/noir/releases/download/v1.0.0-rc.2/noir-x86_64-unknown-linux-gnu.tar.gz
+          echo "e07f914eeb8941476d41e14c6fb66bc25c96fc6c793603b1a30598fcd69f20c4  /tmp/noir.tgz" | sha256sum -c -
+          mkdir -p .deps/noir-1.0.0-rc.2 && tar -xzf /tmp/noir.tgz -C .deps/noir-1.0.0-rc.2
+          .deps/noir-1.0.0-rc.2/nargo --version
+      - name: nargo test in every circuit
+        run: |
+          for d in circuits/*/; do
+            echo "::group::$d"
+            .deps/noir-1.0.0-rc.2/nargo test --program-dir "$d"
+            echo "::endgroup::"
+          done
+
+  python:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: unittest
+        working-directory: scripts
+        run: python3 -B -m unittest test_native_layout test_regtest_prepared_gate test_regtest_recovery test_regtest_resources test_review_kit
+
+  rust:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust 1.93.0
+        run: rustup toolchain install 1.93.0 --profile minimal && rustup default 1.93.0
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: rust-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+      - name: cargo test (release, locked)
+        run: cargo test --release --locked --workspace

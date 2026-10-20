@@ -70,6 +70,10 @@ Done:
 - [x] Bid-count scaling (Oct 21): measured N-bid variants (4/8/16 gate counts; 4 and 8 joint clearing
       proofs run and verified; 16 estimated). README, judge guide and draft say four is the circuit
       size, not a speed limit. Next if needed: a sorting network beyond a few dozen bids.
+- [x] CI (Oct 21): GitHub Actions runs 34 Noir, 66 Rust (release) and 28 Python tests on every push;
+      all pass locally. Own-wallet deposits: format allows ZIP-321 payment, but no consumer wallet
+      sends NU7 testnet transactions yet (Oct 15 Arborist call); recorded in the judge guide.
+- [ ] Hosted live demo: public mode for serve_demo.py, demo image, HTTPS proxy; waiting on a server.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.
