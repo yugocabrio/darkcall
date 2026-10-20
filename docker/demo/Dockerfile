@@ -71,6 +71,8 @@ RUN for d in circuits/*/; do \
     && useradd --uid 10001 --home-dir /src --no-create-home darkcall \
     && mkdir -p /src/.local && chown darkcall /src/.local && chown -R darkcall /src/circuits
 USER darkcall
+# External tools may cache under $HOME; /src stays read-only to this user.
+ENV HOME=/tmp/darkcall
 
 ENV DARKCALL_RUN=settle-aa36c45a6a-settlement
 CMD python3 -B scripts/serve_demo.py --canonical --funded --run "$DARKCALL_RUN" \
