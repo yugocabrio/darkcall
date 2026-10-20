@@ -1,60 +1,62 @@
-# Judge access and hosting plan
+# Hosted live demo
 
-Nothing here is deployed. Any public hosting, server purchase or repository
-visibility change needs the author's approval.
+The public site is one server: the landing at `/` and the live demo derived
+from it at `/demo/settled` (the recorded testnet settlement, verified live) and
+`/demo/run` (a new auction on public testnet). Nothing is deployed until the
+author provides the server and approves the deployment.
 
-## What a judge can do today without installing anything
+## What runs where
 
-| Time | What | Where |
+| Piece | On the server | Never on the server |
 | --- | --- | --- |
-| 20 s | See the difference: bids stay sealed, the price is proven, settled on Zcash, and a comparison with open, commit–reveal and trusted designs | README top (landing frame and comparison table) |
-| 2 min | Watch one real auction from creation to shielded payout, with labeled time cuts | Edited demo video (rendered from `demo/media/v2/`, see [demo.md](demo.md)) |
-| 2 min | Read the exact run: deposit and settlement txids, root, timings, refusals | [evidence](../evidence/2026-10-18-fresh-book-native-settlement.json) |
+| Code and tools | `darkcall-demo` image, built from a committed revision with `git archive`, every tool at the same pins as `docker/verify` | `.git`, local build outputs |
+| Recorded auction | 11 files of the Oct 19 testnet run: transaction, identity, confirmation summary, receipt book and proof, four testnet recipient keys | logs, journals, escrow packages, PCZTs |
+| New auctions | the testnet bank (testnet coins only); each run's files are created on the server | mainnet funds, the author's own keys or data |
 
-Running anything needs the pinned toolchain. The lightest real check is
-`scripts/docker_verify.sh`. It needs Docker and about 15 GB of disk, and takes
-about 20 minutes to build. It verifies every committed settlement bundle and
-rejects a tampered proof.
+`scripts/hosted_local_set.py --tar FILE` packs exactly those files (about 270
+MiB, mostly the bank's note history) and refuses if any file names this
+machine's home directory. With only that pack as `.local`, the recorded-mode
+HTTP check passes: four receipts open, a corrupted proof is refused before any
+key is read, and the settlement verifies.
 
-## Three tiers, by cost and risk
+## How it is served
 
-| Tier | What runs | Resources | Fits an 8 GB VPS? | Main risks |
-| --- | --- | --- | --- | --- |
-| A. Static evidence viewer | HTML only: screenshots, video, facts, commands | none | yes (any static host, e.g. GitHub Pages once public) | none beyond publishing the repo |
-| B. Public verifier | `serve_demo.py --public-only`: open the recorded auction, run the public settlement check and the tamper check; no keys, no bids | ~2 min CPU and a few GB RAM per check | yes, with one job at a time | CPU exhaustion by repeated clicks; must not expose private runs |
-| C. Interactive MPC | create, seal bids, clear by REP3, open own result; no Fund/Settle | <1 s per bid, about 9 s per clearing, ~2 GB | probably, one auction at a time | the server's helper sees every typed demo bid; must be labeled as such |
-| D. Full settlement | Fund + Settle on public testnet (via a lightwalletd provider) or regtest, with FROST | peak prover RSS up to ~8 GB, 10 GB disk headroom, about 17 min per auction | **no** | memory guard aborts; keep local, show recorded evidence |
+- `scripts/serve_demo.py --public-origin https://HOST` binds 127.0.0.1:8877
+  only. It accepts requests whose Host is HOST, and writes whose Origin is the
+  public origin and which carry the session token.
+- Caddy (`docker/demo/Caddyfile`) terminates TLS for HOST, forwards to the
+  loopback server and replaces any client-supplied `X-Forwarded-For` with the
+  real peer address. It writes no access log.
+- Per-address limits: settlement verification 4 and receipt checks 12 per 10
+  minutes, auction creation 3 per hour, other auction steps 240 and reads 1200
+  per 10 minutes; then 429. One heavy job runs at a time (the existing proof
+  lock); others get 409. Idle auctions are forgotten after three hours.
+- The page says that on the hosted demo the bidder's client runs on the
+  server, so the server sees the demo bid typed there; operators still get
+  only shares and proofs.
 
-**Tier A is built (Oct 19).** `docs/index.html` and `docs/site/` form a static
-evidence page: the video, the one-auction walkthrough with real frames and
-timestamps, both transaction IDs, who learned what, the verify commands, the
-bundle table and the trust model. `python3 -B scripts/build_evidence_site.py`
-generates it from the capture manifest and the evidence JSON, so nothing is
-typed by hand. It needs no scripts or external resources. It was previewed
-locally at 1280 px and 390 px. To publish after the repository is public:
-Settings → Pages → Deploy from a branch → `main` / `/docs`. That is the
-author's step; nothing is deployed.
+## Server
 
-**Recommendation.** Ship tier A when the repository becomes public. Offer B only
-if the author wants a live verify button for judges. Keep C and D on the local
-machine, used for the video and live demos.
+Ubuntu 24.04, ARM64 preferred (the AES backend matches the measured host),
+16 GiB RAM or more, 4 or more cores, 80 GB disk, ports 80 and 443 open. A
+settlement peaks at about 3 GiB for the native prover and takes about 17 to
+19 minutes on testnet. Examples: Oracle Cloud Always Free Ampere A1 (4 OCPU,
+24 GB) or Hetzner CAX31 (8 vCPU, 16 GB).
 
-## Required changes before tier B or C (not implemented)
+## Deploy
 
-The current server is deliberately loopback-only. It must not be exposed to the
-Internet unchanged.
+1. Install Docker Engine and the compose plugin on the server.
+2. From this checkout, send the committed tree and build the image there:
+   `git archive HEAD | ssh HOST 'mkdir -p darkcall && tar -x -C darkcall'`, then on
+   the server `docker build -f darkcall/docker/demo/Dockerfile -t darkcall-demo:current darkcall`
+   (or `scripts/hosted_demo_build.sh` where the repository is cloned).
+3. Pack and send the private files:
+   `python3 -B scripts/hosted_local_set.py --tar /tmp/darkcall-local.tar.gz`, copy it, then
+   `sudo mkdir -m 700 /srv/darkcall-local && sudo tar -xzf darkcall-local.tar.gz -C /srv/darkcall-local && sudo chown -R 10001 /srv/darkcall-local`,
+   and delete both copies of the tarball.
+4. Start: `DARKCALL_HOST=<server-ip>.sslip.io docker compose -f darkcall/docker/demo/compose.yaml up -d`.
+5. Check `https://HOST/`, `/demo/settled` (open a receipt, run the tamper check,
+   verify the settlement) and `/demo/run` (create an auction, seal a bid).
 
-- **Origin and Host.** Requests are accepted only for Host `127.0.0.1:PORT`.
-  Behind a TLS reverse proxy, add an explicit configured public origin; never
-  disable the check.
-- **No private runs.** Start only with `--public-only` and copy only committed
-  public bundles and authorities to the host. No `.local`, wallets, FVK records
-  or journals.
-- **Admission control.** Keep the single proof lock, add a per-IP rate limit at
-  the proxy, cache the last verification result and bound the queue.
-- **Tier C only.** Disable Fund/Settle (no regtest node or bank on the host) and
-  show "this server sees your demo bid" before input. Restart regularly so
-  rehearsal state does not accumulate.
-- **Operations.** Run under a dedicated unprivileged user with read-only source
-  and keep logs private. Provide no shell or file upload paths; the API already
-  accepts no paths.
+To update, rebuild the image from the new revision and run `docker compose up -d`
+again; `.local` and the certificate volume persist.

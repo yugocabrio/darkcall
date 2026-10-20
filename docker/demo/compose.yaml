@@ -1,0 +1,27 @@
+# Hosted DarkCall demo. Build the image first with scripts/hosted_demo_build.sh,
+# copy the private run data with scripts/hosted_local_set.py, then:
+#   DARKCALL_HOST=203.0.113.7.sslip.io docker compose -f docker/demo/compose.yaml up -d
+# Both services use the host network: the demo binds 127.0.0.1:8877 only, and
+# Caddy serves 80/443 and forwards to it.
+services:
+  demo:
+    image: darkcall-demo:current
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      DARKCALL_ORIGIN: https://${DARKCALL_HOST:?set DARKCALL_HOST}
+    volumes:
+      - ${DARKCALL_LOCAL:-/srv/darkcall-local}:/src/.local
+  proxy:
+    image: caddy:2.8.4
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      DARKCALL_HOST: ${DARKCALL_HOST:?set DARKCALL_HOST}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+volumes:
+  caddy-data: {}
+  caddy-config: {}

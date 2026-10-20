@@ -1,0 +1,11 @@
+# TLS for the hosted demo. Caddy obtains the certificate for DARKCALL_HOST
+# (a name pointing at this server, e.g. 203.0.113.7.sslip.io) and forwards to
+# the demo server on loopback. It replaces any client-supplied X-Forwarded-For
+# with the real peer address, which the demo server uses for its rate limits.
+# No access log is written.
+{$DARKCALL_HOST} {
+	encode gzip
+	reverse_proxy 127.0.0.1:8877 {
+		header_up X-Forwarded-For {remote_host}
+	}
+}

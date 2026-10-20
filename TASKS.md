@@ -76,7 +76,10 @@ Done:
 - [x] One site (Oct 21): the static evidence page (docs/index.html, docs/site, build_evidence_site.py)
       is retired; the landing at / and the live demo at /demo/settled and /demo/run are the site,
       with shareable paths and working browser history.
-- [ ] Hosted live demo: public mode for serve_demo.py, demo image, HTTPS proxy; waiting on a server.
+- [x] Hosted live demo prepared (Oct 21): serve_demo.py hosted mode, docker/demo (image, Caddy TLS,
+      compose), scripts/hosted_local_set.py (11 recorded-run files + testnet bank; the recorded-mode
+      HTTP check passes with only that as .local). See docs/hosting-plan.md.
+- [ ] Deploy the hosted demo: waiting on the author's server and SSH access.
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.
