@@ -55,6 +55,7 @@ class Rehearsal:
         self.settlement_available=(self.clearing_available and (Chain(chain).bank/'nu7-birthday.json').is_file()
             and all(p.is_file() for p in REQUIRED))
         self.session=None; self.auctions={}
+        self.prune_after=None  # Hosted mode: forget idle auctions after this many seconds.
 
     def call(self,command,folder,label,secret_input=None,parse=False):
         check(sample(ROOT))
@@ -132,7 +133,11 @@ class Rehearsal:
         units=number(value['units'],1,3); budget=number(value['budget'],0,1000000)
         reserve=number(value['reserve'],0,budget)
         cutoff=number(value['closes_at_utc'],now+30,now+86400)
-        if len(self.auctions)>=8: raise ValueError('Eight local demo auctions per server session maximum')
+        if self.prune_after:
+            for key,old in list(self.auctions.items()):
+                running=any(old[k] and old[k]['state']=='running' for k in ('funding','settlement'))
+                if not running and now-old['created_at_unix']>self.prune_after: del self.auctions[key]
+        if len(self.auctions)>=8: raise ValueError('Eight demo auctions are open on this server; please try again later')
         self.initialize()
         identifier=secrets.token_hex(16)
         digest=hashlib.sha256(b'DarkCall/browser-rehearsal/conditions/v1\0'+bytes.fromhex(identifier)
@@ -141,7 +146,7 @@ class Rehearsal:
         path=self.session/identifier; path.mkdir(mode=0o700)
         request={'condition_digest':list(digest),'units':units,'reserve':reserve,'budget':budget,'closes_at_utc':cutoff}
         initialized=self.call([HELPER,'init',path],path,'init',json.dumps(request).encode(),parse=True)
-        a={'id':identifier,'units':units,'reserve':reserve,'budget':budget,'closes_at_utc':cutoff,
+        a={'id':identifier,'created_at_unix':now,'units':units,'reserve':reserve,'budget':budget,'closes_at_utc':cutoff,
             'digest':list(digest),'path':path,'authority':initialized['authority'],'receipts':[],
             'clients':[],'opening_tokens':{},'certificate':None,'poisoned':False,
             'clearing':None,'clearing_run':None,'clearing_failed':False,'funding':None,'settlement':None}

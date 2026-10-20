@@ -14,7 +14,9 @@ import pathlib
 import secrets
 import threading
 import time
+from collections import defaultdict, deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlsplit
 from check_ticket_receipts import public_book
 from open_ticket_memo import open_receipt
 from regtest_deposits import ROOT, private_read
@@ -241,9 +243,29 @@ class Demo:
             self.lock.release()
 
 
-def handler(demo, port):
-    host = '127.0.0.1:' + str(port)
-    origin = 'http://' + host
+# Hosted mode: requests per client address within a sliding window (seconds).
+LIMITS = {'state':(1200,600),'verify':(12,600),'settlement':(4,600),'create':(3,3600),'rehearsal':(240,600)}
+
+
+class RateLimit:
+    def __init__(self):
+        self.seen = defaultdict(deque); self.guard = threading.Lock()
+
+    def allow(self, client, bucket):
+        limit, window = LIMITS[bucket]; now = time.monotonic()
+        with self.guard:
+            hits = self.seen[(client, bucket)]
+            while hits and hits[0] <= now - window: hits.popleft()
+            if len(hits) >= limit: return False
+            hits.append(now); return True
+
+
+def handler(demo, port, public_origin=None):
+    # Hosted: a TLS proxy on this machine forwards the configured public origin to
+    # loopback. The server still binds loopback only and checks Host and Origin.
+    host = urlsplit(public_origin).netloc if public_origin else '127.0.0.1:' + str(port)
+    origin = public_origin.rstrip('/') if public_origin else 'http://' + host
+    limits = RateLimit() if public_origin else None
 
     class Handler(BaseHTTPRequestHandler):
         def reply(self, status, data, kind='application/json'):
@@ -261,6 +283,14 @@ def handler(demo, port):
 
         def allowed_host(self):
             return self.client_address[0] == '127.0.0.1' and self.headers.get('Host') == host
+
+        def limited(self, bucket):
+            if limits is None: return False
+            # Only the loopback proxy can connect, so its forwarded address is trusted.
+            client = (self.headers.get('X-Forwarded-For') or 'proxy').split(',')[0].strip()
+            if limits.allow(client, bucket): return False
+            self.reply(429,{'error':'Too many requests from this address. Please try again in a few minutes.'})
+            return True
 
         def do_GET(self):
             if not self.allowed_host(): return self.reply(403,{'error':'Loopback host required'})
@@ -280,8 +310,9 @@ def handler(demo, port):
             if self.path in files:
                 name,kind = files[self.path]
                 return self.reply(200,(WEB / name).read_bytes(),kind)
+            if self.path.startswith('/api/') and self.limited('state'): return
             if self.path == '/api/state':
-                try: return self.reply(200,demo.state())
+                try: return self.reply(200,{**demo.state(),'hosted':public_origin is not None})
                 except Exception: return self.reply(503,{'error':'Demo checkpoints unavailable'})
             if self.path.startswith('/api/rehearsal/auction/'):
                 try: return self.reply(200,demo.rehearsal.get(self.path.removeprefix('/api/rehearsal/auction/')))
@@ -295,6 +326,8 @@ def handler(demo, port):
             rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close',
                 '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result','/api/rehearsal/fund':'fund','/api/rehearsal/settle':'settle'}
             if self.path not in ('/api/verify','/api/settlement',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
+            bucket = {'/api/verify':'verify','/api/settlement':'settlement','/api/rehearsal/create':'create'}.get(self.path,'rehearsal')
+            if self.limited(bucket): return
             try:
                 length = int(self.headers.get('Content-Length','0'))
                 if not 0 < length <= 1024 or self.headers.get('Content-Type') != 'application/json':
@@ -338,12 +371,17 @@ def main():
     parser.add_argument('--funded',action='store_true',help='Recorded certified actual-note isolated NU7 run')
     parser.add_argument('--authority',type=pathlib.Path,help='Separate caller-trusted admission manifest')
     parser.add_argument('--recorded-note',help='Short public description of the recorded auction')
+    parser.add_argument('--public-origin',help='Hosted mode: the HTTPS origin a local TLS proxy forwards to this loopback server')
     parser.add_argument('--chain',choices=('regtest','testnet'),default='regtest',
                         help='Where Fund and Settle run; testnet uses public testnet coins through the pinned provider')
     args = parser.parse_args()
     if args.funded and (not args.canonical or args.authority is None):
         parser.error('--funded requires --canonical and explicit separate --authority')
     if not 1024 <= args.port <= 65535: raise RuntimeError('Expected unprivileged local port')
+    if args.public_origin is not None:
+        parts = urlsplit(args.public_origin)
+        if parts.scheme != 'https' or not parts.netloc or parts.path not in ('','/') or parts.query or parts.fragment:
+            parser.error('--public-origin must be a bare https origin, for example https://demo.example.org')
     if args.canonical:
         # CLI configuration is trusted local setup, never an HTTP supplied path.
         bundle = args.bundle.resolve(strict=True)
@@ -362,9 +400,10 @@ def main():
     else:
         demo = Demo({'positive':args.positive,'zero':args.zero})
     demo.state()  # Fail before binding if fixtures are missing or wrong scope.
-    server = ThreadingHTTPServer(('127.0.0.1',args.port),handler(demo,args.port))
+    if args.public_origin and demo.rehearsal.enabled: demo.rehearsal.prune_after = 3 * 3600
+    server = ThreadingHTTPServer(('127.0.0.1',args.port),handler(demo,args.port,args.public_origin))
     server.timeout = 2
-    print(f'DarkCall local receipt demo: http://127.0.0.1:{args.port}',flush=True)
+    print(f'DarkCall demo: http://127.0.0.1:{args.port}' + (f' (hosted as {args.public_origin})' if args.public_origin else ''),flush=True)
     try: server.serve_forever()
     finally: server.server_close()
 

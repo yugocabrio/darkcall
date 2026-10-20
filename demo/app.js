@@ -90,6 +90,12 @@ fetch('/api/state').then(async response => {
   const recordedTestnet=state.recorded_chain==='testnet';
   $('proof-card-scope').textContent=state.funded_canonical?(recordedTestnet?'Recorded on public Zcash testnet':'Recorded auction · isolated regtest'):'Separate example · synthetic transactions';
   if (recordedTestnet) $('hero-chain').textContent='Zcash NU7 · public testnet';
+  if (state.hosted) {
+    // Hosted: the bidder client runs on this server, so say so wherever a bid is typed.
+    $('client-scope').textContent="On this hosted demo each bidder's client runs on the server, so the server sees the demo bid you type; operators receive only shares and proofs. In a deployment the client runs on the bidder's own device.";
+    $('bid-client-scope').textContent='On this hosted demo your bid client runs on the server, which sees the demo bid you type; operators get only shares and a proof.';
+    $('share-scope').textContent='Open this link in another browser to follow the same auction.';
+  }
   if (state.six_output_memo_e2e) {
     $('case-tabs').hidden = true;
     $('scope-description').textContent = 'Recorded proof-backed demo · synthetic funding, no broadcast.';

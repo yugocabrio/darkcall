@@ -31,7 +31,7 @@
             <button id="start-auction" class="experience-card try-card" aria-pressed="false"><span class="experience-heading">Run an auction</span><span class="experience-caption">Create, bid, fund, clear and settle on Zcash.</span><span id="try-card-scope" class="experience-scope">Real shielded settlement · about 20 min on regtest</span></button>
           </nav>
           <a class="watch-link" href="/media/darkcall-demo-v2.mp4">Watch this auction settle on testnet, in 2 minutes →</a>
-          <p class="hero-note">Beyond the auction terms, the public learns the clearing price and the units sold, but not the bid book or individual payout amounts and recipients. By the auction rule the price equals the highest losing bid or the reserve, so that one amount is implied. In this demo each bidder's own client runs as a local service; operators receive only shares and proofs, never a bid.</p>
+          <p class="hero-note">Beyond the auction terms, the public learns the clearing price and the units sold, but not the bid book or individual payout amounts and recipients. By the auction rule the price equals the highest losing bid or the reserve, so that one amount is implied. <span id="client-scope">In this demo each bidder's own client runs as a local service; operators receive only shares and proofs, never a bid.</span></p>
         </div>
         <aside class="hero-receipt" aria-label="A settled DarkCall auction">
           <div class="receipt-head"><span id="hero-label">Settled auction</span><span id="hero-chain">Zcash NU7 · regtest</span></div>
@@ -193,11 +193,11 @@
         <div id="sealed-slots" class="sealed-slots" aria-label="Sealed tickets"></div>
         <details id="book-details" class="book-details" open><summary>Bids and receipts</summary>
         <div class="share-row"><label for="auction-link">Share link</label><input id="auction-link" readonly><button id="copy-auction-link" class="secondary-button" type="button">Copy</button></div>
-        <p class="form-note">Works in another browser on this computer.</p>
+        <p id="share-scope" class="form-note">Works in another browser on this computer.</p>
         <form id="bid-form" class="bid-form">
           <label>Your maximum bid (zatoshi)<input id="maximum-bid" type="number" min="0" max="100" step="1" value="75" required></label>
           <button id="seal-bid" class="primary-button" type="submit">Seal bid</button>
-          <p class="form-note input-disclosure">Your bid stays with your own client on this computer; operators get only shares and a proof. <span class="bid-suggest">Try <button type="button" data-bid="77">77</button><button type="button" data-bid="61">61</button><button type="button" data-bid="43">43</button><button type="button" data-bid="21">21</button></span></p>
+          <p class="form-note input-disclosure"><span id="bid-client-scope">Your bid stays with your own client on this computer; operators get only shares and a proof.</span> <span class="bid-suggest">Try <button type="button" data-bid="77">77</button><button type="button" data-bid="61">61</button><button type="button" data-bid="43">43</button><button type="button" data-bid="21">21</button></span></p>
         </form>
         <div id="bid-accepted" class="bid-accepted" hidden aria-live="polite"></div>
         <details id="acceptance-details" class="advanced-details" hidden><summary>Signed pre-check</summary><button id="copy-acceptance" class="text-button" type="button" hidden>Copy signed pre-check</button><pre id="acceptance-public"></pre></details>
