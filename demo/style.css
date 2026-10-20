@@ -436,6 +436,10 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .recorded-intro h2 {font-size:clamp(36px,5vw,52px);line-height:1.05;letter-spacing:-.035em;margin:12px 0 16px}
 .recording-banner {margin:0;color:var(--ink-2)}
 .scope-note {margin:4px 0 0;color:var(--ink-3);font-size:14px}
+.try-steps {list-style:none;margin:14px 0 6px;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:980px}
+.try-steps li {padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:14px;line-height:1.5;color:var(--ink-2)}
+.try-steps b {display:block;color:var(--ink);font-weight:600}
+.panel-lead {margin:-4px 0 14px;font-size:14px;color:var(--ink-2)}
 .workspace {display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .auction-panel,.receipt-panel {background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px 32px;box-shadow:var(--shadow)}
 .auction-panel h2,.receipt-panel h2 {font-size:24px;margin:14px 0 16px}
@@ -513,6 +517,7 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .market-stats strong {font-size:60px}
   .fresh-challenge,.recording-transition,.close-row,.bid-accepted {flex-direction:column;align-items:flex-start}
   .proof-strip {grid-template-columns:1fr}
+  .try-steps {grid-template-columns:1fr}
   .how-it-works ol {grid-template-columns:1fr 1fr}
   .has-experience .experience-picker {display:flex;width:100%}
   .has-experience .back-overview {margin:0 0 10px;padding:4px 0}

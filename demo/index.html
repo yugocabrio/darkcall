@@ -180,7 +180,7 @@
       <div class="panel-top"><span class="eyebrow">Your auction</span><span id="rehearsal-label" class="recorded-label">Demo bids</span></div>
       <ol class="auction-progress" aria-label="Auction progress"><li id="progress-create" aria-current="step"><span>1</span>Create</li><li id="progress-bid"><span>2</span>Bid</li><li id="progress-fund"><span>3</span>Fund</li><li id="progress-clear"><span>4</span>Clear</li><li id="progress-result"><span>5</span>Result</li><li id="progress-settle"><span>6</span>Settle</li></ol>
       <h2 id="rehearsal-title">Create your auction.</h2>
-      <p class="rehearsal-scope">Set the terms. Invite four bidders.</p>
+      <p class="rehearsal-scope">You play the seller and all four bidders: create the auction, seal four bids, then fund, clear and settle it on Zcash. Each step says what to do next. <span id="run-time">About 20 minutes on the local regtest.</span></p>
       <form id="create-form" class="create-form">
         <label>Units<input id="create-units" type="number" min="1" max="3" step="1" value="3" required></label>
         <label>Reserve (zatoshi)<input id="create-reserve" type="number" min="0" max="1000000" step="1" value="20" required></label>
@@ -271,7 +271,7 @@
       <div class="recording-transition"><div><span class="eyebrow">No time to wait?</span><h3>See a settled auction.</h3><p>An auction that was created and settled in this UI earlier. Open its bidders' receipts, or verify it in about two minutes. It does not settle these demo bids.</p></div><button id="continue-recording" class="secondary-button" type="button">Open settled auction</button></div>
     </section>
     <div id="recorded-demo" hidden>
-    <div class="recorded-intro"><span class="eyebrow">A settled auction</span><h2>Private payments,<br>publicly verified.</h2><p id="recording-banner" class="recording-banner">Separate recorded auction · it does not settle your demo bids.</p><p id="scope-description" class="scope-note">Loading the recorded demo…</p></div>
+    <div class="recorded-intro"><span class="eyebrow">A settled auction</span><h2>Private payments,<br>publicly verified.</h2><p id="recording-banner" class="recording-banner">A real auction, created and settled in this UI. Try these three in any order:</p><ol class="try-steps"><li><b>1 · Open a private result.</b> Act as any bidder; only that bidder's key opens the receipt.</li><li><b>2 · Verify the settlement.</b> The public check, with no secrets; about 100 seconds.</li><li><b>3 · Try to break it.</b> A changed proof is refused before any key is read.</li></ol><p id="scope-description" class="scope-note">Loading the recorded demo…</p></div>
     <section class="workspace" aria-label="Auction and private result">
       <article class="auction-panel">
         <div class="panel-top"><span class="eyebrow">The auction</span><span class="recorded-label">Recorded</span></div>
@@ -282,8 +282,9 @@
         <p class="book-caption">Every winner paid the same price. The maximum bids stayed secret-shared.</p>
       </article>
       <article class="receipt-panel">
-        <div class="panel-top"><span class="eyebrow">Only your result</span></div>
+        <div class="panel-top"><span class="eyebrow">1 · Only your result</span></div>
         <h2>Your private result.</h2>
+        <p class="panel-lead">Act as any of the four bidders. Each receipt opens only with that bidder's own key.</p>
         <div class="bidder-choice"><label for="ticket">Bidder</label><select id="ticket"><option value="0">Bidder 01</option><option value="1">Bidder 02</option><option value="2">Bidder 03</option><option value="3">Bidder 04</option></select></div>
         <div id="result" class="result-box" aria-live="polite"><h3>Still sealed.</h3><p>Open your encrypted receipt to see your result.</p></div>
         <div id="result-checks" class="result-checks" aria-live="polite" hidden></div>
@@ -292,8 +293,8 @@
       </article>
     </section>
     <p id="error" class="error" role="alert" hidden></p>
-    <section class="proof-strip settlement-strip"><div><span class="eyebrow">Verify the whole settlement</span><h3>One transaction. Every output checked.</h3><p id="settlement-scope">Check that the shielded Zcash transaction matches the auction outcome, without seeing the bids.</p><small>Six output bindings · auction proof · native authorization · signed book</small></div><button id="settlement" class="secondary-button">Verify settlement</button><p id="settlement-result" class="check-result" aria-live="polite"></p></section>
-    <section class="proof-strip tamper-strip"><div><span class="eyebrow">Try to break it</span><h3>Change the proof.</h3><p>DarkCall rejects it before your viewing key is touched.</p></div><button id="tamper" class="secondary-button">Run tamper check</button><p id="tamper-result" class="check-result" aria-live="polite"></p></section>
+    <section class="proof-strip settlement-strip"><div><span class="eyebrow">2 · Verify the whole settlement</span><h3>One transaction. Every output checked.</h3><p id="settlement-scope">Check that the shielded Zcash transaction matches the auction outcome, without seeing the bids.</p><small>Six output bindings · auction proof · native authorization · signed book</small></div><button id="settlement" class="secondary-button">Verify settlement</button><p id="settlement-result" class="check-result" aria-live="polite"></p></section>
+    <section class="proof-strip tamper-strip"><div><span class="eyebrow">3 · Try to break it</span><h3>Change the proof.</h3><p>DarkCall rejects it before your viewing key is touched.</p></div><button id="tamper" class="secondary-button">Run tamper check</button><p id="tamper-result" class="check-result" aria-live="polite"></p></section>
     <section class="how-it-works"><span class="eyebrow">How it works</span><ol><li><span>1</span>Sealed bids</li><li><span>2</span>Confidential clearing</li><li><span>3</span>Shielded settlement</li><li><span>4</span>Your private receipt</li></ol></section>
     <section class="technical-section" aria-label="Further details">
       <details class="public-details"><summary>Technical details</summary><p>REP3 computation · FROST signing · Halo2 output bindings · NU7</p><dl><dt>Transaction ID</dt><dd id="txid">—</dd><dt>Accepted root</dt><dd id="root">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Verification stages</dt><dd id="stage-status">Recorded clearing; own receipt unopened. Settlement not reverified in this session.</dd><dt>Public check</dt><dd id="settlement-detailed-result">Not run in this page session.</dd></dl></details>

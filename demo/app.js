@@ -100,7 +100,7 @@ fetch('/api/state').then(async response => {
     $('case-tabs').hidden = true;
     $('scope-description').textContent = 'Recorded proof-backed demo · synthetic funding, no broadcast.';
     $('native-shape').textContent = 'Ironwood · NU7 · 6 outputs / 4 encrypted receipts';
-    $('settlement-scope').textContent = 'Verify that the shielded Zcash transaction matches the auction outcome — without seeing the bids.';
+    $('settlement-scope').textContent = 'Verify that the shielded Zcash transaction matches the auction outcome, without seeing the bids. About 100 seconds.';
     $('remaining-scope').textContent = 'Synthetic funding and no broadcast in this view; all parties on one host. Funded runs on public testnet and regtest are served by ./demo.sh.';
     if (state.funded_canonical) {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
@@ -130,6 +130,7 @@ fetch('/api/state').then(async response => {
     // Measured on public testnet, Oct 19: funding 612 s (a 600 s admission
     // window), settlement 984-1122 s, about 30 min from creation to receipts.
     $('try-card-scope').textContent='Real shielded settlement · about 30 min on testnet';
+    $('run-time').textContent='About 30 minutes on public testnet, most of it funding and settlement.';
     $('fund-time').textContent='About 10 minutes on public testnet, most of it the admission window.';
     $('settle-time').textContent='About 16 to 19 minutes on public testnet, including two confirmations.';
   }
@@ -140,7 +141,10 @@ fetch('/api/state').then(async response => {
   if (state.recorded_chain==='testnet') $('hero-txlink').href='https://testnet.zecblock.com/tx/'+recordedTx;
   $('hero-note').textContent=state.funded_canonical ? (state.recorded_note || 'Recorded on isolated Zcash regtest.') : 'Recorded example with synthetic funding, not broadcast.';
   if (!state.funded_canonical) $('hero-label').textContent='Recorded example';
-  $('recording-banner').textContent='Separate recorded auction · settlement tx '+recordedTx.slice(0,10)+'…'+recordedTx.slice(-8)+' · it does not settle your demo bids.';
+  // The recorded run's own note, then its settlement transaction (an explorer link on testnet).
+  const txShort=recordedTx.slice(0,8)+'…'+recordedTx.slice(-8);
+  const txNode=state.recorded_chain==='testnet'?Object.assign(document.createElement('a'),{href:'https://testnet.zecblock.com/tx/'+recordedTx,textContent:txShort,rel:'noopener'}):document.createTextNode(txShort);
+  $('scope-description').replaceChildren(($('scope-description').textContent||'')+' · settlement tx ',txNode);
   refreshRoom(); route();
 }).catch(error => setError(error.message));
 

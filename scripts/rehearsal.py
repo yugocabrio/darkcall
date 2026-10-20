@@ -358,7 +358,7 @@ class Rehearsal:
 
     def post(self,action,value):
         if not self.enabled: return 409,{'error':'Local input prover/admission helper required. Recorded verification remains available.'}
-        if not self.lock.acquire(blocking=False): return 409,{'error':'Another local proof, verification or settlement is running'}
+        if not self.lock.acquire(blocking=False): return 409,{'error':'Another auction is being funded or settled on this server, and only one runs at a time. Try again in a few minutes, or open the settled auction meanwhile.'}
         if action in ('fund','settle'):
             started=False
             try:
