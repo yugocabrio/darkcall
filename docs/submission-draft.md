@@ -24,6 +24,22 @@ exactly as proven.
   operator fee: each of the six payouts has its own proof that its amount and
   recipient match the proven result, all in one shielded Zcash transaction.
 
+## What a reviewer can check, and how long it takes
+
+1. **It settled on public Zcash testnet** (1 minute). Open the deposits
+   [`af6cf7cf…eff6354`](https://testnet.zecblock.com/tx/af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354)
+   and the settlement [`be1157c8…a1c8ad67`](https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67)
+   (blocks 4,518,254 and 4,518,315) on a testnet explorer.
+2. **That auction, from creation to receipts** (2 minutes). The video is edited
+   stills of that same run, with every time cut labelled.
+3. **The settlement verifies with no secrets, and tampering is refused**
+   (about 100 s per bundle once the pinned tools are built). `scripts/docker_verify.sh`
+   builds every tool from committed source in a clean Linux container (about
+   17 minutes of compiling on 4 cores) and checks all seven bundles: the auction
+   proof, the six output bindings, the signed accepted book and a corrupted proof.
+   The public bundle holds the terms, the price, the units sold, commitments,
+   proofs and the shielded transaction; no bid, and no bidder's refund.
+
 ## Against the four judging criteria
 
 - **Privacy.** No bid amount is ever opened, not at the close and not to any
@@ -36,9 +52,10 @@ exactly as proven.
   slots or blocks of seats, where published bid amounts hand the seller and
   rivals the demand curve. Clearing takes about 9 s; settlement follows in
   15–20 min with every output proven. It needs three independent operators.
-  The committed circuits take four bids; measured 8-bid versions prove the
-  clearing jointly in 6.5 s (3.1 s at 4 bids), and the per-payout Halo2
-  bindings, linear and independent, dominate settlement time.
+  The committed circuits take four bids; an 8-bid version of the clearing
+  circuit proves jointly in 6.5 s (3.1 s at 4 bids, both measured). Settlement
+  time is dominated by the per-payout Halo2 bindings, which grow linearly;
+  larger settlements are estimated, not run.
 - **Execution.** An auction was created, funded, cleared and settled by clicking
   through the browser on public Zcash testnet (settlement `be1157c8…a1c8ad67`,
   block 4,518,315), and that is the run in the video. Seven public bundles,

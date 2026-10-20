@@ -319,16 +319,20 @@ circuits (only the bid count changes; the four-bid versions match the committed
 circuits gate for gate) and runs the clearing proof with three REP3 parties on
 synthetic bids. Record: [evidence/2026-10-21-bid-scaling.json](evidence/2026-10-21-bid-scaling.json).
 
-| Bids | Clearing gates | Winner-flag gates | Settlement-plan gates | Joint clearing proof (3 parties) |
-| --- | --- | --- | --- | --- |
-| 4 | 10,247 | 11,894 | 24,016 | 3.1 s, ~0.3 GiB per party (measured) |
-| 8 | 26,953 | 30,020 | 48,901 | 6.5 s, ~0.6 GiB per party (measured) |
-| 16 | 90,847 | 96,562 | 128,984 | ~30 s, ~2.5 GiB per party (estimated, not run) |
+| Bids | Clearing gates | Winner-flag gates | Settlement-plan gates | Joint clearing proof (3 parties) | Halo2 payout bindings, one after another |
+| --- | --- | --- | --- | --- | --- |
+| 4 | 10,247 | 11,894 | 24,016 | 3.1 s, ~0.3 GiB per party (measured) | 6 rows, ~11 min (measured in the Oct 18 run) |
+| 8 | 26,953 | 30,020 | 48,901 | 6.5 s, ~0.6 GiB per party (measured) | 10 rows, ~17 min (estimated) |
+| 16 | 90,847 | 96,562 | 128,984 | ~30 s, ~2.5 GiB per party (estimated, not run) | 18 rows, ~29 min (estimated) |
 
-All-pairs ranking makes the joint proof grow quadratically, but it stays in
-seconds. The larger cost is linear: one Halo2 output binding per payout (N + 2
-rows), about 90 s each on this laptop after a one-time key. The rows are
-independent, so they can run in parallel; the prototype proves them one after
+Gate counts are measured for all three circuits at every size. Only the
+clearing circuit's joint proof was run (4 and 8 bids, both verified); the
+winner-flag and settlement-plan joint proofs and a full settlement were not
+run above four bids. All-pairs ranking makes the joint proof grow
+quadratically, but it stays in seconds. The larger cost is linear: one Halo2
+binding per payout (N refunds, the seller, the fee), about 90 s each here after
+a one-time key. The rows are independent, so they could run in parallel; that
+speed-up is not demonstrated, since the prototype proves them one after
 another. Beyond a few dozen bids, all-pairs ranking should give way to a
 sorting network.
 

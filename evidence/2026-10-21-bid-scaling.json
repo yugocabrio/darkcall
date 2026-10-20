@@ -1,7 +1,7 @@
 {
   "date": "2026-10-21 (CEST)",
   "question": "The committed circuits are fixed at four bids. How do the REP3 (coNoir) circuits and the settlement grow with N bids?",
-  "method": "scripts/measure_bid_scaling.py derives N-bid variants of the three committed coNoir circuits under ignored .local/ (only the bid count changes; the settlement plan has N + 2 rows), compiles them with the pinned Noir 1.0.0-rc.2, and counts UltraHonk gates with the pinned bb. The four-bid variants match the committed circuits gate for gate and opcode for opcode. With --mpc it runs the clearing circuit three-party REP3 on synthetic bids (95, 90, ... above reserve 20, units N - 1), then verifies the proof.",
+  "method": "scripts/measure_bid_scaling.py derives N-bid variants of the three committed coNoir circuits under ignored .local/ (only the bid count changes; the settlement plan has N + 2 rows), compiles them with the pinned Noir 1.0.0-rc.2, and counts UltraHonk gates with the pinned bb. The four-bid variants match the committed circuits in ACIR opcodes, gates and padded size; the script stops otherwise. With --mpc it runs the clearing circuit three-party REP3 on synthetic bids (95, 90, ... above reserve 20, units N - 1), then verifies the proof.",
   "commands": [
     "python3 -B scripts/measure_bid_scaling.py --sizes 4 8 16",
     "python3 -B scripts/measure_bid_scaling.py --sizes 4 --mpc 4",
@@ -183,5 +183,15 @@
       }
     }
   },
-  "reading": "The quadratic part, all-pairs ranking inside the joint proof, stays in seconds: 3.1 s at four bids, 6.5 s at eight, about 30 s estimated at sixteen. The dominant settlement cost is one Halo2 binding per output, linear in N and independent per row, so it can run in parallel across cores or operators; the prototype runs the rows one after another. Four bids is the committed circuit size, not a performance limit. Beyond a few dozen bids, all-pairs ranking (about 320 gates per bid pair, fitted to the three sizes) should give way to a sorting network."
+  "reading": "The quadratic part, all-pairs ranking inside the joint proof, stays in seconds: 3.1 s at four bids, 6.5 s at eight, about 30 s estimated at sixteen. The dominant settlement cost is one Halo2 binding per output, linear in N and independent per row, so it can run in parallel across cores or operators; the prototype runs the rows one after another. Four bids is the committed circuit size, not a performance limit. Beyond a few dozen bids, all-pairs ranking (about 320 gates per bid pair, fitted to the three sizes) should give way to a sorting network.",
+  "measured": [
+    "UltraHonk gates, ACIR opcodes and padded size of all three circuits at 4, 8 and 16 bids",
+    "joint REP3 clearing proof at 4 and 8 bids, verified"
+  ],
+  "not_run": [
+    "joint winner-flag and settlement-plan proofs above four bids",
+    "joint clearing proof at 16 bids (estimated)",
+    "any full settlement above four bids (binding minutes are estimates from the per-row time)",
+    "parallel binding proofs"
+  ]
 }

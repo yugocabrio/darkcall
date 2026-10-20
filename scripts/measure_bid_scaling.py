@@ -6,7 +6,7 @@ the three coNoir circuits (clearing, winner-flag delivery and the Poseidon2
 settlement plan with N + 2 rows) under ignored .local/, compiles them with the
 pinned Noir and counts UltraHonk gates with the pinned bb. A variant changes
 only the bid count; the four-bid variants must match the committed circuits
-gate for gate, or the run stops. With --mpc it also times the clearing
+in ACIR opcodes, gates and padded size, or the run stops. With --mpc it also times the clearing
 circuit's three-party REP3 witness and proof on synthetic bids, one size at a
 time, and verifies the proof. Synthetic fixture values only, never real bids.
 """
@@ -380,8 +380,8 @@ def main():
         summary['variants'][str(n)] = {key: gates(path) for key, path in programs[n][1].items()}
         summary_path.write_text(json.dumps(summary, indent=2) + '\n')
     for key in COMMITTED:
-        if summary['variants']['4'][key]['gates'] != summary['committed'][key]['gates']:
-            raise RuntimeError(f'Four-bid {key} variant differs from the committed circuit')
+        if summary['variants']['4'][key] != summary['committed'][key]:
+            raise RuntimeError(f'Four-bid {key} variant differs from the committed circuit in opcodes, gates or padded size')
     summary['four_bid_variants_match_committed'] = True
     summary_path.write_text(json.dumps(summary, indent=2) + '\n')
     for n in args.mpc:
