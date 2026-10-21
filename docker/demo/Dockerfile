@@ -78,8 +78,5 @@ USER darkcall
 ENV HOME=/tmp/darkcall
 
 ENV DARKCALL_RUN=settle-aa36c45a6a-settlement
-CMD python3 -B scripts/serve_demo.py --canonical --funded --run "$DARKCALL_RUN" \
-      --bundle demo/artifacts/testnet-auction-nu7-v2 --authority demo/authority/testnet-auction-nu7-v2.json \
-      --ticket-order demo/ticket-order/testnet-auction-nu7-v2.json \
-      --recorded-note "Created, funded, cleared and settled in this UI on public Zcash testnet on Oct 19" \
-      --chain testnet --public-origin "$DARKCALL_ORIGIN"
+# exec, so a stop signal reaches the server rather than a wrapping shell.
+CMD ["sh", "-c", "exec python3 -B scripts/serve_demo.py --canonical --funded --run \"$DARKCALL_RUN\" --bundle demo/artifacts/testnet-auction-nu7-v2 --authority demo/authority/testnet-auction-nu7-v2.json --ticket-order demo/ticket-order/testnet-auction-nu7-v2.json --recorded-note 'Created, funded, cleared and settled in this UI on public Zcash testnet on Oct 19' --chain testnet --public-origin \"$DARKCALL_ORIGIN\""]

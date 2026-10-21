@@ -68,8 +68,12 @@ class Demo:
         if any(not p.is_relative_to(local) for p in self.cases.values()):
             raise RuntimeError('Demo fixtures must be ignored controlled checkpoints')
         self.token = secrets.token_urlsafe(32)
+        # Two locks: one for the settled auction's checks (receipts, the public
+        # verification, cheats), one for a new auction's jobs. A 20-minute
+        # settlement must not block the settled page for every other visitor;
+        # a check peaks near 0.6 GiB, a settlement near 3 GiB.
         self.lock = threading.Lock()
-        self.rehearsal = Rehearsal(self.lock, enabled=not public_only and bool(canonical), chain=chain)
+        self.rehearsal = Rehearsal(threading.Lock(), enabled=not public_only and bool(canonical), chain=chain)
         self.last_settlement = None
         self.ticket_order = None
         self.trail_cache = None
@@ -296,7 +300,7 @@ class Demo:
 
 
 # Hosted mode: requests per client address within a sliding window (seconds).
-LIMITS = {'state':(1200,600),'verify':(12,600),'settlement':(4,600),'create':(3,3600),'rehearsal':(240,600)}
+LIMITS = {'state':(1200,600),'verify':(12,600),'settlement':(4,600),'cheat':(8,600),'create':(3,3600),'rehearsal':(240,600)}
 
 
 class RateLimit:
@@ -389,7 +393,7 @@ def handler(demo, port, public_origin=None):
             rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close',
                 '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result','/api/rehearsal/fund':'fund','/api/rehearsal/settle':'settle'}
             if self.path not in ('/api/verify','/api/settlement','/api/cheat',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
-            bucket = {'/api/verify':'verify','/api/settlement':'settlement','/api/cheat':'settlement','/api/rehearsal/create':'create'}.get(self.path,'rehearsal')
+            bucket = {'/api/verify':'verify','/api/settlement':'settlement','/api/cheat':'cheat','/api/rehearsal/create':'create'}.get(self.path,'rehearsal')
             if self.limited(bucket): return
             try:
                 length = int(self.headers.get('Content-Length','0'))

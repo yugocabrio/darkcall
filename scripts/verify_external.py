@@ -15,6 +15,26 @@ BB = SOURCE / "barretenberg/cpp/build-darkcall/bin/bb"
 CRS = ROOT / ".deps/co-snarks/co-noir/co-noir-common/src/crs"
 
 
+def stable_copy(circuit, out):
+    """A private copy of the compiled circuit, read only once it is complete.
+
+    A live auction's drivers recompile the circuits (same output) while a public
+    check may be running; a read during that rewrite can be cut short. Reread
+    until the JSON parses, and give bb the copy. The verifying-key comparison
+    below still decides whether it is the right circuit."""
+    for _ in range(50):
+        data = circuit.read_bytes()
+        try:
+            json.loads(data)
+        except ValueError:
+            time.sleep(0.2)
+            continue
+        copy = out / circuit.name
+        copy.write_bytes(data)
+        return copy
+    raise RuntimeError("Compiled circuit stayed incomplete")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=pathlib.Path)
@@ -48,6 +68,7 @@ def main():
         raise RuntimeError("Unexpected source changes in the verifier checkout")
     out = run / args.output_label
     out.mkdir(exist_ok=False)
+    circuit = stable_copy(circuit, out)
     summary = {"barretenberg_source": PIN, "circuit": args.circuit, "compatibility_patches": ["Apple Clang 15 deduction guide", "weak-link unavailable macOS IPC symbols; IPC explicitly throws when unavailable"], "zk": True, "passed": False}
 
     def call(name, command, expected=0):

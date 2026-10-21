@@ -81,6 +81,15 @@ Done:
       compose), scripts/hosted_local_set.py (11 recorded-run files + testnet bank; the recorded-mode
       HTTP check passes with only that as .local). See docs/hosting-plan.md.
 - [ ] Deploy the hosted demo: waiting on the author's server and SSH access.
+- [x] Hosted readiness (Oct 21): a running settlement no longer blocks the settled page (two
+      locks; a check peaks near 0.6 GiB, a settlement near 3 GiB); verify_external gives bb a
+      private, complete copy of the compiled circuit, since live drivers recompile circuits;
+      cheats have their own limit (8 per 10 min); the image's CMD is exec form so a stop
+      signal reaches the server; scripts/check_hosted_http.py passes against a local hosted
+      server (pages, host/origin/token refusals, receipt, proof trail, cheat, per-address
+      limit). After the change: settlement verification 123 s, control accepted, price
+      refused. The settled page says how to verify on your own machine (docker_verify.sh).
+      The full image is still unbuilt here (13 GB free); it builds on the server.
 - [x] Judge review fixes (Oct 21): the four claims show at once as recorded (clean-room record,
       Oct 19) beside Re-run verification; cheats are named for what they change (change one
       accepted bid, claim a higher price, swap two payout proofs, corrupt a receipt proof) with

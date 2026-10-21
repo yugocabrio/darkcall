@@ -514,6 +514,8 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .claim-rows {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 14px;margin-top:6px;font-size:13px;color:var(--ink-2)}
 .claim-note {grid-column:1/-1;font-size:13px!important;color:var(--ink-3)!important}
 .claims.pending {opacity:.45}
+.own-machine {grid-column:1/-1;margin:10px 0 0!important;padding-top:10px;border-top:1px solid var(--line);font-size:14px!important;color:var(--ink-2)}
+.own-machine code {font:13px var(--mono);overflow-wrap:anywhere}
 /* Proof trail: the public data behind each claim, with its cross-checks. */
 .trail {grid-column:1/-1;margin-top:8px;border-top:1px solid var(--line);padding-top:12px}
 .trail summary {cursor:pointer;font-weight:600;font-size:15px}

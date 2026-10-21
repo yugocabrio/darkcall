@@ -27,10 +27,17 @@ key is read, and the settlement verifies.
 - Caddy (`docker/demo/Caddyfile`) terminates TLS for HOST, forwards to the
   loopback server and replaces any client-supplied `X-Forwarded-For` with the
   real peer address. It writes no access log.
-- Per-address limits: settlement verification 4 and receipt checks 12 per 10
-  minutes, auction creation 3 per hour, other auction steps 240 and reads 1200
-  per 10 minutes; then 429. One heavy job runs at a time (the existing proof
-  lock); others get 409. Idle auctions are forgotten after three hours.
+- Per-address limits: settlement verification 4, cheats 8 and receipt checks 12
+  per 10 minutes, auction creation 3 per hour, other auction steps 240 and reads
+  1200 per 10 minutes; then 429. Two locks: one new auction's funding or
+  settlement at a time, and one settled-page check (receipt, verification or
+  cheat) at a time; a second of either kind gets 409, but a running settlement
+  does not block the settled page. A check peaks near 0.6 GiB and a settlement
+  near 3 GiB. Idle auctions are forgotten after three hours.
+- `scripts/check_hosted_http.py` checks a server in hosted mode as the proxy
+  reaches it: the pages and icons, another Host refused, the hosted flag, a
+  bidder receipt, the proof trail, a refused cheat, origin and token required,
+  and the per-address limit. It funds no new auction.
 - The page says that on the hosted demo the bidder's client runs on the
   server, so the server sees the demo bid typed there; operators still get
   only shares and proofs.
