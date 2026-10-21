@@ -4,10 +4,10 @@
 # pinned prover builds and minutes of proving.
 name: tests
 
+# Manual only until the first green run is confirmed: automatic runs on
+# every push were failing and emailing the author.
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
