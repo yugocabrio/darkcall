@@ -46,9 +46,20 @@ key is read, and the settlement verifies.
 
 Ubuntu 24.04, ARM64 preferred (the AES backend matches the measured host),
 16 GiB RAM or more, 4 or more cores, 80 GB disk, ports 80 and 443 open. A
-settlement peaks at about 3 GiB for the native prover and takes about 17 to
-19 minutes on testnet. Examples: Oracle Cloud Always Free Ampere A1 (4 OCPU,
-24 GB) or Hetzner CAX31 (8 vCPU, 16 GB).
+settlement peaks at about 3 GiB for the native prover and took about 17 to
+19 minutes on testnet before the fixed Halo2 parameters were cached (about
+4 minutes less since; not re-measured on testnet). Examples: Oracle Cloud
+Always Free Ampere A1 (4 OCPU, 24 GB) or Hetzner CAX31 (8 vCPU, 16 GB).
+
+To also measure parallel payout proofs, prefer 8 vCPU and 32 GiB: the memory
+guard allows `DARKCALL_ROW_WORKERS=2` only with at least 24 GiB total and
+16 GiB available, and 3 with 32 GiB total and 24 GiB available (6 needs 56 and
+48). It is checked before any deposit, so a smaller server refuses the setting
+instead of stranding a funded auction.
+
+After the first deploy, check the parameter cache: the image build log shows
+`darkcall-native-gate --prepare-params`, and **Re-run verification** on
+`/demo/settled` should finish in about 20 to 30 seconds, not about 2 minutes.
 
 ## Deploy
 

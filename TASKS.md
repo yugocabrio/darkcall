@@ -179,6 +179,13 @@ Done:
 - [x] Clean-room container covers all seven bundles (Oct 19, strict tamper refusal): first
       with the 66988f5 image and bundles mounted read-only, then with a fresh image built
       from `a7f67bd` by `scripts/docker_verify.sh`.
+- [x] Halo2 parameter cache (Oct 21): pinned-digest cache for Params::new(17); −251 s per settlement
+      from the three stages that rebuilt it, public check 106 s → 18 s; 1- and 3-unit regtest, cross
+      verification, eight bundles, cheat lab and a corrupt read-only cache all pass.
+- [ ] On the VPS: build the hosted image, confirm the prepared cache is used (Re-run verification
+      ~20–30 s), then measure DARKCALL_ROW_WORKERS=2/3 on a regtest settlement (needs 24/32 GiB).
+- [ ] Testnet settlement time after the cache is not re-measured (needs the author's approval to spend
+      testnet coins); the UI keeps the Oct 19 testnet figures.
 - [x] Browser bid sealing spike (Oct 21): bb.js + noir_js at the pinned commits build the
       commitment, share pairs and proof in the page; pinned bb and the unmodified admission accept
       them (evidence/2026-10-21-browser-bid-spike.json). The demo's bid endpoint is unchanged.

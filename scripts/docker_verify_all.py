@@ -62,7 +62,10 @@ def main():
             'private_material_read': result['private_openings_keys_pczt_read'],
             'seconds': round(time.monotonic() - started, 3)})
     uname = subprocess.check_output(['uname', '-srm'], text=True).strip()
-    print(json.dumps({'environment': 'clean Linux container built from git archive; ' + uname,
+    # The container entry point; also runs on a host with the pinned tools built.
+    where = ('clean Linux container built from git archive' if pathlib.Path('/.dockerenv').exists()
+             else 'host checkout with the pinned tools built')
+    print(json.dumps({'environment': where + '; ' + uname,
                       'results': results, 'all_passed': True}, indent=2))
 
 

@@ -1,0 +1,299 @@
+{
+  "date": "2026-10-21",
+  "question": "Where do funded settlement and public verification spend their time, and what can be removed without changing any circuit, proof, statement, verifying key or signing rule?",
+  "finding": "Halo2 Params::new(17) (the fixed IPA commitment parameters on Vesta) takes about 87 s here and was rebuilt from scratch every time a process needed it: once for the payout proving key, once when the MPC gate re-verifies the six payout proofs, once in the SDK's independent replay before FROST signing, and once in every public verification. It is deterministic.",
+  "change": {
+    "summary": "crates/output-binding fixed_params(): the serialized parameters' SHA-256 is pinned in the source (PARAMS_SHA256). A cached copy is used only if its bytes hash to that digest, so it is the same value as recomputing; otherwise the parameters are recomputed in memory, checked against the same digest (a mismatch is an error) and the cache is rewritten when its location is writable. All five K=17 uses (proving key, set verification, single-row checks) go through it.",
+    "cache_location": "DARKCALL_HALO2_PARAMS, else .local/cache/halo2-vesta-k17.params. The hosted image computes it at build time into /src/params (outside the .local volume that compose mounts) and leaves it read-only to the app user.",
+    "unchanged": "circuits, K, verifying keys (still derived by keygen_vk from the circuit), proofs and their bytes, public statements, row hashes, signing rules, and every verification step. Nothing is skipped: the payout proofs are still re-verified by the MPC gate, by the SDK before FROST signing, and by the public verifier.",
+    "pinned_digest": "7c65b8e3d12f2c1054f07c2721da8670d97f0f14c846df6bcf4d390dd62cbceb (8,388,676 bytes)"
+  },
+  "params_timing_seconds": {
+    "params_new_k17": [
+      86.6,
+      87.2,
+      87.8
+    ],
+    "read_from_cache_with_digest_check": [
+      1.9,
+      1.9
+    ],
+    "keygen_vk_shared18": [
+      13.0,
+      13.3,
+      15.9
+    ],
+    "threads": "RAYON_NUM_THREADS=2, as every DarkCall prover and verifier runs on this machine",
+    "command": "cargo build --release -p darkcall-output-binding --example params_timing && RAYON_NUM_THREADS=2 target/release/examples/params_timing"
+  },
+  "public_verification_same_bundle": {
+    "bundle": "demo/artifacts/testnet-auction-nu7-v2 (recorded public-testnet settlement, unchanged)",
+    "command": "python3 -B scripts/funded_public_bundle.py demo/artifacts/testnet-auction-nu7-v2 --authority demo/authority/testnet-auction-nu7-v2.json",
+    "params_recomputed_seconds": 126.7,
+    "params_cached_seconds": 32.3,
+    "both_passed": "native row proofs, C++ auction proof, accepted book and recipients, transaction outputs, native proofs and signatures",
+    "method": "run back to back; 'recomputed' points DARKCALL_HALO2_PARAMS at an unwritable path, so every use recomputes as before the change"
+  },
+  "funded_settlement_one_unit_regtest": {
+    "conditions": "Same binaries for both runs, same auction terms (1 unit, reserve 20, budget 100), same sealed demo bids 77, 61, 43, 21, driven over HTTP by scripts/check_fresh_settlement.py on the isolated NU7 regtest node; RAYON_NUM_THREADS=2; one row worker. The 'recomputed' run's server had DARKCALL_HALO2_PARAMS pointing at an unwritable path; the 'cached' run's server pointed it at a read-only copy (file 444, directory 555), as in the hosted image, with the default cache moved aside: it was not recreated, so every stage read the read-only copy.",
+    "not_a_controlled_benchmark": "Shared 16 GiB M1 with heavy swap in use and another project's node running. During the recomputed run, a nice'd cargo test build overlapped for about a minute around 13:47 (payout rows 3-4). Payout row proving does not touch the parameter generation, yet it ran 678 s in the first run and 467 s in the second: that difference is machine load, not the cache, and is not claimed.",
+    "runs": {
+      "params_recomputed": {
+        "auction_id": "cb96420bc2601e34703bc313e21fc4a7",
+        "deposit_txid": "90cbb06417bd2878eb038f4cbc2d674f58e4965a444bad7eb081996fa0470aa1",
+        "settlement_txid": "1423a71b79d0214f96b909811833bc0195cf3a3f5dbeb00b8a6818b6064bbbe8",
+        "native_run": "settle-7285432c09-settlement"
+      },
+      "params_cached_read_only": {
+        "auction_id": "0a9c9b9367f36ab7ac83f152720f736e",
+        "deposit_txid": "7bdc6e04022e70b5ed755f2ced9ac556cd3d980eebdeef736a4fa52ba19702e2",
+        "settlement_txid": "fd83de3a1bf85190a7da7dfea6087343f68c8c56e48d9d90661a00007e7842a2",
+        "native_run": "settle-20c4754cce-settlement"
+      }
+    },
+    "stage_seconds": {
+      "columns": [
+        "params_recomputed",
+        "params_cached",
+        "difference"
+      ],
+      "halo2_payout_key": [
+        119.6,
+        28.0,
+        -91.6
+      ],
+      "mpc_gate_payout_reverification": [
+        97.6,
+        16.6,
+        -81.0
+      ],
+      "sdk_replay_before_frost": [
+        95.5,
+        16.7,
+        -78.8
+      ],
+      "sum_of_the_three_stages_the_cache_affects": [
+        312.7,
+        61.3,
+        -251.4
+      ],
+      "halo2_six_payout_rows_not_affected": [
+        678.1,
+        467.3,
+        -210.8
+      ],
+      "payout_rows_each": [
+        [
+          154.2,
+          108.6,
+          106.3,
+          114.7,
+          95.5,
+          98.8
+        ],
+        [
+          80.4,
+          77.8,
+          76.9,
+          77.5,
+          77.7,
+          77.0
+        ]
+      ],
+      "mpc_settlement_proof": [
+        7.8,
+        7.1
+      ],
+      "orchard_proof": [
+        7.7,
+        7.6
+      ],
+      "settlement_driver_total": [
+        1025.3,
+        561.3
+      ],
+      "public_verification_in_harness": [
+        106.2,
+        18.4
+      ],
+      "e2e_create_to_receipts": [
+        1331.7,
+        776.4
+      ]
+    },
+    "attributed_to_the_cache": "251 s (4.2 min) per settlement, from the three stages that build the parameters; public verification 106 s to 18 s for this bundle. The rest of the 464 s driver difference is machine load.",
+    "same_results": "Both: price 61, 1 sold, two confirmations, own receipts won 39 / lost 100 / 100 / 100, six payout proofs verified before signing and again publicly, tamper refused before key read, foreign capability refused, settle before clear refused, clear and settle before funding refused (400), a concurrent settle refused (409) while the recorded check still answered.",
+    "commands": [
+      "DARKCALL_HALO2_PARAMS=/nonexistent-darkcall/k17.params ./demo.sh --port 8891",
+      "DARKCALL_HALO2_PARAMS=$PWD/.local/params-ro/halo2-vesta-k17.params ./demo.sh --port 8891",
+      "python3 -B scripts/check_fresh_settlement.py --port 8891 --units 1 --bids 77,61,43,21 --reserve 20 --output .local/bench-<mode>-1unit.json",
+      "python3 -B scripts/settlement_timings.py .local/<native run> .local/bench-<mode>-1unit.json"
+    ]
+  },
+  "cross_verification": {
+    "proofs_made_with_cached_params_checked_by_a_verifier_that_recomputes": {
+      "bundle": "settle-20c4754cce-settlement-public",
+      "seconds": 99,
+      "passed": true
+    },
+    "proofs_made_with_recomputed_params_checked_with_the_cache": {
+      "bundle": "settle-7285432c09-settlement-public",
+      "seconds": 19,
+      "passed": true
+    },
+    "checks": "native row proofs, C++ auction proof, accepted book and recipients, transaction outputs, native proofs and signatures"
+  },
+  "cache_safety": {
+    "unit_test": "cached_params_equal_recomputed_ones_and_fail_closed (k = 4): a miss computes, checks and writes; a hit returns identical bytes; one flipped byte, a truncated file, valid k = 5 parameters and k = 5 cut to the k = 4 size are all ignored, recomputed and replaced; a pinned digest that recomputation does not reproduce is an error",
+    "pinned_digest_at_k17": "a fresh Params::new(17) serialized to the pinned digest; the cache read back byte-identical",
+    "corrupt_read_only_cache": "one flipped byte in a read-only file (444) in a read-only directory (555): --prepare-params recomputed (82.6 s, params_already_cached false); a public verification of testnet-one-unit-nu7-v1 with that cache passed every check in 106 s, using parameters recomputed in memory; the file's hash was unchanged and no other cache was written. The corrupt bytes are never used and the check does not stop."
+  },
+  "parallel_payout_rows": {
+    "status": "wired, not measured",
+    "what": "DARKCALL_ROW_WORKERS (1, 2, 3 or 6; default 1) lets a fresh funded settlement prove its six payout rows several at a time with the warm worker's prove_rows and the same fixed verification per row. More than one passes the existing Linux memory guard (8 GiB total plus 8 GiB per worker, 8 GiB available per worker), checked by settle_fresh_book.py's preflight (darkcall-native-gate --row-capacity) before any deposit and again before the key is built. A resumed settlement with existing proofs keeps the one-at-a-time path.",
+    "this_machine": "refused for 2, 3 and 6 (not Linux); 1 is the unchanged default"
+  },
+  "warm_worker_not_integrated": "After the cache, building the payout key takes 28 s. A long-lived worker that keeps the proving key resident would save at most that per settlement, while holding the key in memory on a shared host; it was not wired into funded settlement.",
+  "regressions": {
+    "three_unit_regtest_final_binaries": {
+      "auction_id": "5836bfb7a57b93a53c52bf549e1984c1",
+      "deposit_txid": "5816ffb41cdf70f3bc2b4e6bbdfadae0d6e3e0717f87adac419d26ffd0ec2b3a",
+      "settlement_txid": "969f3d325c7242dc30b9108d75c2c082d703af8a90c1e95d683810b016e579ab",
+      "native_run": "settle-3ebc924448-settlement",
+      "price": 21,
+      "sold": 3,
+      "own_receipts": [
+        [
+          true,
+          79
+        ],
+        [
+          true,
+          79
+        ],
+        [
+          true,
+          79
+        ],
+        [
+          false,
+          100
+        ]
+      ],
+      "stage_seconds": {
+        "halo2_payout_key": 27.1,
+        "halo2_six_payout_rows": 527.2,
+        "mpc_gate_payout_reverification": 18.0,
+        "sdk_replay_before_frost": 17.4,
+        "settlement_driver_total": 623.4,
+        "public_verification_in_harness": 18.6,
+        "e2e_create_to_receipts": 836.8
+      },
+      "checks": "six payout proofs verified before signing and publicly, C++ auction proof, accepted book and recipients, native proofs and signatures, maximum bids not read; every refusal in the harness held",
+      "command": "python3 -B scripts/check_fresh_settlement.py --port 8891 --units 3 --bids 77,61,43,21 --reserve 20"
+    },
+    "eight_committed_bundles": {
+      "command": "python3 -B scripts/docker_verify_all.py (on the host)",
+      "environment": "host checkout with the pinned tools built; Darwin 23.0.0 arm64",
+      "results": [
+        {
+          "bundle": "testnet-auction-nu7-v2",
+          "txid": "be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67",
+          "seconds": 19.538,
+          "all_checks_passed": true,
+          "corrupted_receipt_proof_refused": true,
+          "private_material_read": false
+        },
+        {
+          "bundle": "testnet-one-unit-nu7-v1",
+          "txid": "1d85d98f15691b06337f791d3d470cfd04de261f0ab057f763663ffc01d282db",
+          "seconds": 19.216,
+          "all_checks_passed": true,
+          "corrupted_receipt_proof_refused": true,
+          "private_material_read": false
+        },
+        {
+          "bundle": "testnet-auction-nu7-v1",
+          "txid": "8e6da99bc6ab58b941e3b3ec53dde1dbea99fd5886618c2f7aae7009034f0db7",
+          "seconds": 19.394,
+          "all_checks_passed": true,
+          "corrupted_receipt_proof_refused": true,
+          "private_material_read": false
+        },
+        {
+          "bundle": "browser-auction-nu7-v3",
+          "txid": "e305699514938d382be010260533f01725e5970c895e11f0a843843351caf779",
+          "seconds": 19.172,
+          "all_checks_passed": true,
+          "corrupted_receipt_proof_refused": true,
+          "private_material_read": false
+        },
+        {
+          "bundle": "browser-auction-nu7-v2",
+          "txid": "e3ffa436a2fd747653dec92e052f622135f51912c6707ec95b7373ab84769754",
+          "seconds": 18.982,
+          "all_checks_passed": true,
+          "corrupted_receipt_proof_refused": true,
+          "private_material_read": false
+        },
+        {
+          "bundle": "browser-auction-nu7-v1",
+          "txid": "3fee2c7ce3b64689c28700904a5b31e13272b41030ae5eedd58a6a87b5c0b5d7",
+          "seconds": 18.993,
+          "all_checks_passed": true,
+          "corrupted_receipt_proof_refused": true,
+          "private_material_read": false
+        },
+        {
+          "bundle": "fresh-book-nu7-v1",
+          "txid": "54941ffd845509ee5dc7b23e08b0756526bf97b3123017d581c9c40345c76ee6",
+          "seconds": 19.574,
+          "all_checks_passed": true,
+          "corrupted_receipt_proof_refused": true,
+          "private_material_read": false
+        },
+        {
+          "bundle": "canonical-nu7-funded-v1",
+          "txid": "47019e02e49557ca1e8ef899b94ff1e464a9f29ec14accc298fb0bad3a211938",
+          "seconds": 20.004,
+          "all_checks_passed": true,
+          "corrupted_receipt_proof_refused": true,
+          "private_material_read": false
+        }
+      ],
+      "bundles_unchanged": "git status shows no change under demo/"
+    },
+    "cheat_lab_rerun": {
+      "command": "python3 -B scripts/cheat_lab.py none book price payout",
+      "results": [
+        {
+          "cheat": "none",
+          "outcome": "accepted",
+          "seconds": 18.7,
+          "verifier_message": null
+        },
+        {
+          "cheat": "book",
+          "outcome": "refused",
+          "seconds": 1.9,
+          "verifier_message": "final accepted root differs from exact Noir encoding"
+        },
+        {
+          "cheat": "price",
+          "outcome": "refused",
+          "seconds": 19.4,
+          "verifier_message": "NU7 fixed C++ auction proof rejected"
+        },
+        {
+          "cheat": "payout",
+          "outcome": "refused",
+          "seconds": 16.0,
+          "verifier_message": "NU7 fixed native row proof rejection"
+        }
+      ],
+      "earlier_record": "evidence/2026-10-21-cheat-lab.json: accepted 107.7 s, refused 2.1 s, 102.1 s, 97.4 s; same outcomes and same targeted checks"
+    }
+  },
+  "public_verification_range": "18-32 s with the cache on this machine across runs; 99-127 s when the parameters are recomputed. Claimed as about 20-30 s, and about 2 min for a machine's first check.",
+  "hosted_image": "Not built here (disk). The Dockerfile computes the cache at build time into /src/params as root with DARKCALL_HALO2_PARAMS set, outside the /src/.local volume that compose mounts; confirm on the server."
+}

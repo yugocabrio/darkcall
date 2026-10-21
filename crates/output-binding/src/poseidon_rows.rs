@@ -24,6 +24,65 @@ pub const K: u32 = 17;
 pub const HASH_RULE: &str = "bn254-poseidon2-packed-row-v1";
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+/// SHA-256 of `Params::<vesta::Affine>::new(K)` as written by `Params::write`.
+/// Every recomputation is checked against it.
+pub const PARAMS_SHA256: &str = "7c65b8e3d12f2c1054f07c2721da8670d97f0f14c846df6bcf4d390dd62cbceb";
+
+/// The fixed K=17 commitment parameters, and whether they came from the cache.
+/// `Params::new(K)` is deterministic but takes about 90 s. A cached copy is used
+/// only if its bytes hash to PARAMS_SHA256, so it equals a recomputation;
+/// otherwise they are recomputed, checked against the same digest and cached.
+pub fn fixed_params() -> Result<(Params<vesta::Affine>, bool)> {
+    let path = std::env::var_os("DARKCALL_HALO2_PARAMS")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| {
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../.local/cache/halo2-vesta-k17.params")
+        });
+    cached_params(K, PARAMS_SHA256, &path)
+}
+
+fn cached_params(
+    k: u32,
+    digest: &str,
+    path: &std::path::Path,
+) -> Result<(Params<vesta::Affine>, bool)> {
+    use std::io::Read;
+    // k, then g and g_lagrange (2^k compressed points each), then w and u.
+    let size = 4 + 2 * (1u64 << k) * 32 + 64;
+    let mut bytes = Vec::new();
+    let cached = std::fs::File::open(path).and_then(|file| {
+        if file.metadata()?.len() != size {
+            return Err(std::io::ErrorKind::InvalidData.into());
+        }
+        file.take(size).read_to_end(&mut bytes)
+    });
+    match cached {
+        Ok(_) if format!("{:x}", Sha256::digest(&bytes)) == digest => {
+            return Ok((Params::read(&mut bytes.as_slice())?, true));
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        _ => eprintln!("Halo2 parameter cache does not match the pinned digest; recomputing"),
+    }
+    let params = Params::new(k);
+    bytes.clear();
+    params.write(&mut bytes)?;
+    if format!("{:x}", Sha256::digest(&bytes)) != digest {
+        return Err("Halo2 parameters differ from the pinned digest".into());
+    }
+    // Best effort: without a writable cache the next run recomputes.
+    let temporary = path.with_extension(format!("tmp-{}", std::process::id()));
+    let written = path
+        .parent()
+        .map_or(Ok(()), std::fs::create_dir_all)
+        .and_then(|_| std::fs::write(&temporary, &bytes))
+        .and_then(|_| std::fs::rename(&temporary, path));
+    if written.is_err() {
+        let _ = std::fs::remove_file(&temporary);
+    }
+    Ok((params, false))
+}
+
 /// Public static circuit metadata only; no witness, SRS, key or proof allocation.
 pub fn circuit_profile() -> Result<serde_json::Value> {
     profile::<PoseidonBinding>("working-33-column-v1")
@@ -261,7 +320,7 @@ impl SharedRowProver {
     }
     fn new_profiled() -> Result<(Self, serde_json::Value)> {
         let started = std::time::Instant::now();
-        let params = Params::new(K);
+        let (params, params_cached) = fixed_params()?;
         let params_seconds = started.elapsed().as_secs_f64();
         let empty = SharedPoseidonBinding::default();
         let vk_start = std::time::Instant::now();
@@ -273,7 +332,7 @@ impl SharedRowProver {
         Ok((
             Self { params, pk },
             serde_json::json!({
-                "params_seconds":params_seconds,"vk_seconds":vk_seconds,"pk_seconds":pk_seconds,
+                "params_seconds":params_seconds,"params_cached":params_cached,"vk_seconds":vk_seconds,"pk_seconds":pk_seconds,
                 "total_seconds":started.elapsed().as_secs_f64()
             }),
         ))
@@ -328,7 +387,7 @@ pub fn verify_shared_one(proof: &[u8], public: &[pallas::Base]) -> Result<()> {
     if proof.len() > 65536 || public.len() != 10 {
         return Err("bounded shared row statement required".into());
     }
-    let params = Params::new(K);
+    let params = fixed_params()?.0;
     let vk = keygen_vk(&params, &SharedPoseidonBinding::default())?;
     let verify = |proof: &[u8], public: &[pallas::Base]| {
         let mut transcript = Blake2bRead::<_, vesta::Affine, Challenge255<_>>::init(proof);
@@ -358,7 +417,7 @@ pub fn verify_shared_one(proof: &[u8], public: &[pallas::Base]) -> Result<()> {
 impl RowProver {
     /// One key for all six rows. The circuit is chosen here, never from a proof.
     pub fn new() -> Result<Self> {
-        let params = Params::new(K);
+        let params = fixed_params()?.0;
         let empty = PoseidonBinding::default().without_witnesses();
         let vk = keygen_vk(&params, &empty)?;
         let pk = keygen_pk(&params, vk, &empty)?;
@@ -422,7 +481,7 @@ fn verify_set_with<C: Circuit<pallas::Base> + Default>(
         &statement.native_actions,
     )
     .map_err(|_| "invalid native action mapping")?;
-    let params = Params::new(K);
+    let params = fixed_params()?.0;
     let vk = keygen_vk(&params, &C::default())?;
     for (i, proof) in proofs.iter().enumerate() {
         let public = row_public(statement, i)?;
@@ -445,7 +504,7 @@ pub fn verify_one(proof: &[u8], public: &[pallas::Base]) -> Result<()> {
     if proof.len() > 65536 || public.len() != 10 {
         return Err("expected one bounded row proof and ten public inputs".into());
     }
-    let params = Params::new(K);
+    let params = fixed_params()?.0;
     let vk = keygen_vk(&params, &PoseidonBinding::default())?;
     let mut transcript = Blake2bRead::<_, vesta::Affine, Challenge255<_>>::init(proof);
     verify_proof(
@@ -487,6 +546,43 @@ mod layout_tests {
             std::fs::remove_file(path).unwrap();
         }
         std::fs::remove_dir(dir).unwrap();
+    }
+    #[test]
+    fn cached_params_equal_recomputed_ones_and_fail_closed() {
+        let dir = std::env::temp_dir().join(format!("darkcall-params-{}", std::process::id()));
+        let path = dir.join("cache/k4.params");
+        let bytes = |params: &Params<vesta::Affine>| {
+            let mut out = Vec::new();
+            params.write(&mut out).unwrap();
+            out
+        };
+        let reference = bytes(&Params::new(4));
+        let digest = format!("{:x}", Sha256::digest(&reference));
+        // Miss: computed, checked and cached. Hit: the same bytes, read back.
+        let (params, cached) = cached_params(4, &digest, &path).unwrap();
+        assert!(!cached && bytes(&params) == reference);
+        assert_eq!(std::fs::read(&path).unwrap(), reference);
+        let (params, cached) = cached_params(4, &digest, &path).unwrap();
+        assert!(cached && bytes(&params) == reference);
+        // A changed or truncated cache, or other valid parameters (here k = 5,
+        // and k = 5 cut to the k = 4 size), is ignored and replaced.
+        let mut changed = reference.clone();
+        changed[40] ^= 1;
+        let other = bytes(&Params::new(5));
+        for bad in [
+            changed,
+            reference[..100].to_vec(),
+            other.clone(),
+            other[..reference.len()].to_vec(),
+        ] {
+            std::fs::write(&path, bad).unwrap();
+            let (params, cached) = cached_params(4, &digest, &path).unwrap();
+            assert!(!cached && bytes(&params) == reference);
+            assert_eq!(std::fs::read(&path).unwrap(), reference);
+        }
+        // A pinned digest that recomputation does not reproduce is an error.
+        assert!(cached_params(4, &"0".repeat(64), &dir.join("other.params")).is_err());
+        std::fs::remove_dir_all(dir).unwrap();
     }
     #[test]
     fn existing_circuit_configuration_is_unchanged_and_shared_layout_is_distinct() {

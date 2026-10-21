@@ -37,6 +37,19 @@ Updated: 2026-10-21 (git HEAD is authoritative).
 - **One to three units (Oct 21):** the same four-bid protocol now settles one-
   and two-unit auctions; a one-unit auction settled on public testnet (price 61,
   tx `1d85d98f…82db`), committed as `demo/artifacts/testnet-one-unit-nu7-v1`.
+- **Faster settlement and verification (Oct 21):** Halo2 `Params::new(17)` (about 87 s, deterministic)
+  was rebuilt by every process that needed it: three times per settlement and once per public check.
+  It is now cached behind a SHA-256 pinned in the source; a copy that does not match is ignored and
+  the parameters are recomputed. No circuit, key, proof, statement, check or signing rule changed.
+  Same one-unit regtest auction, same binaries: the three affected stages 313 s → 61 s (−251 s);
+  settlement driver 1025 s → 561 s, the rest of the gap being machine load, not claimed; public
+  check 106 s → 18 s. Three-unit regression 623 s, receipts 79/79/79/100. Proofs made with either
+  parameter source verify with the other; all eight committed bundles verify (about 19 s each) with
+  the corrupted-receipt refusal; cheat lab outcomes unchanged (control 19 s, bid 2 s, price 19 s,
+  payouts 16 s). A corrupt read-only cache is not used: the check recomputes and passes. The hosted
+  image prepares the cache outside the `.local` volume (image not built here). Parallel payout rows
+  (`DARKCALL_ROW_WORKERS`, Linux memory guard, checked before deposits) are wired, not measured.
+  `evidence/2026-10-21-halo2-params-cache.json`.
 - **Bidding from the browser, spike (Oct 21):** a browser page sealed synthetic bids itself:
   commitment, REP3 share pairs (byte-identical to `prepare-one`'s format) and the `bid_input`
   proof with bb.js 5.0.0-nightly.20260522 (the same commit as the pinned bb) and noir_js

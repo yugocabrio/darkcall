@@ -37,13 +37,13 @@ reveal, no published viewing key, no operator reconstructs the bid book.
    (blocks 4,518,254 and 4,518,315) on a testnet explorer.
 2. **That auction, from creation to receipts** (2 minutes). The video is edited
    stills of that same run, with every time cut labelled.
-3. **Try to cheat it** (live demo, `/demo/settled`, 2 s to 2 minutes per try).
+3. **Try to cheat it** (live demo, `/demo/settled`, 2 to 30 s per try).
    Change an accepted bid, claim a higher price or swap two payout proofs: the
    page makes that one change to a copy of the recorded settlement and runs the
    real verifiers. Each is refused by the check it targets, and the page says
    which claim broke.
 4. **The settlement verifies with no secrets, and tampering is refused**
-   (about 100 s per bundle once the pinned tools are built). `scripts/docker_verify.sh`
+   (about 20 s per bundle once the pinned tools are built and the fixed Halo2 parameters cached; the first check computes them, about 1.5 min more). `scripts/docker_verify.sh`
    builds every tool from committed source in a clean Linux container (about
    17 minutes of compiling on 4 cores) and checks all seven bundles: the auction
    proof, the six output bindings, the signed accepted book and a corrupted proof.
@@ -223,8 +223,9 @@ frost-tools and Zebra at pinned versions. See `docs/dependencies.md`.
 ## Measured (shared 16 GiB M1)
 
 Browser clearing: about 9 s. Funding + admission: about 2 min. Native settlement
-of a fresh book: about 15 min (885–951 s, uninterrupted). Public verification:
-about 2 min. Settle to verified: about 17 min (998–1024 s). Own receipt: about
+of a fresh book: about 10 min with the fixed Halo2 parameters cached (561 s one
+unit, 623 s three units; 885–951 s before). Public verification: about 20–30 s
+(about 2 min on a machine's first check). Settle to verified: about 10 min on regtest with the parameters cached (580–642 s; 998–1024 s before). Own receipt: about
 3 s.
 
 ## Links

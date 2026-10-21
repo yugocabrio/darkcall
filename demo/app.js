@@ -93,7 +93,7 @@ async function cheat(kind) {
   if (busy || !state) return;
   lock(true); setError('');
   $('cheat-detail').hidden=true;
-  $('tamper-result').textContent='Copying this settlement with that one change and running the real verifiers on it'+(kind==='book'?'…':'. About 2 minutes…');
+  $('tamper-result').textContent='Copying this settlement with that one change and running the real verifiers on it'+(kind==='book'?'…':'. About 30 seconds…');
   try {
     const response=await fetch('/api/cheat',{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify({kind})});
     const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Cheat check failed');
@@ -205,7 +205,7 @@ function showRecordedClaims() {
 $('settlement').addEventListener('click', async () => {
   if (busy || !state) return;
   lock(true); setError('');
-  $('settlement-result').textContent = 'Running the real public verifier on this server. About 100 seconds…';
+  $('settlement-result').textContent = 'Running the real public verifier on this server. About 20–30 seconds…';
   $('settlement-claims').classList.add('pending');
   try {
     const response = await fetch('/api/settlement', {method:'POST', headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:'{}'});
@@ -245,7 +245,7 @@ fetch('/api/state').then(async response => {
     $('case-tabs').hidden = true;
     $('scope-description').textContent = 'Recorded proof-backed demo · synthetic funding, no broadcast.';
     $('native-shape').textContent = 'Ironwood · NU7 · 6 outputs / 4 encrypted receipts';
-    $('settlement-scope').textContent = 'Verify that the shielded Zcash transaction matches the auction outcome, without seeing the bids. About 100 seconds.';
+    $('settlement-scope').textContent = 'Verify that the shielded Zcash transaction matches the auction outcome, without seeing the bids. About 20–30 seconds.';
     $('remaining-scope').textContent = 'Synthetic funding and no broadcast in this view; all parties on one host. Funded runs on public testnet and regtest are served by ./demo.sh.';
     if (state.funded_canonical) {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';

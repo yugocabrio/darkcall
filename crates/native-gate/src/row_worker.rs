@@ -54,6 +54,21 @@ impl Job {
     }
 }
 
+/// Row proofs to run at once in a funded settlement: DARKCALL_ROW_WORKERS
+/// (1, 2, 3 or 6; default 1). More than one passes the same Linux memory guard
+/// as the warm workers, before any key is built; this Mac stays at one.
+pub(crate) fn funded_row_workers() -> Result<usize> {
+    let workers = match std::env::var("DARKCALL_ROW_WORKERS") {
+        Ok(text) => text
+            .parse()
+            .map_err(|_| "DARKCALL_ROW_WORKERS must be 1, 2, 3 or 6")?,
+        Err(std::env::VarError::NotPresent) => 1,
+        Err(_) => return Err("DARKCALL_ROW_WORKERS must be 1, 2, 3 or 6".into()),
+    };
+    capacity(workers)?;
+    Ok(workers)
+}
+
 pub(crate) fn capacity(workers: usize) -> Result<()> {
     if ![1, 2, 3, 6].contains(&workers) {
         return Err("supported worker concurrency: 1/2/3/6".into());
@@ -116,6 +131,7 @@ pub(crate) fn prove_rows(
     bindings: &[Binding],
     rows: &[usize],
     output: &std::path::Path,
+    marker: &str,
 ) -> Result<Vec<serde_json::Value>> {
     capacity(workers)?;
     if bindings.len() != 6
@@ -135,10 +151,10 @@ pub(crate) fn prove_rows(
                 let path = output.join(format!("native-binding-proof-{i}"));
                 Ok(scope.spawn(move || -> Result<serde_json::Value> {
                     let row_start = Instant::now();
-                    eprintln!("Warm native row {i} proof started");
+                    eprintln!("{marker} native row {i} proof started");
                     let proof = prover.shared_prove_profiled(opening, &public).map_err(|_| "worker fixed proof/verification failed")?;
                     write_private(&path, &proof.proof)?;
-                    eprintln!("Warm native row {i} proof and fixed verification complete");
+                    eprintln!("{marker} native row {i} proof and fixed verification complete");
                     Ok(serde_json::json!({"row":i,"proof_bytes":proof.proof.len(),
                         "proof_create_seconds":proof.create_seconds,"proof_verify_seconds":proof.verify_seconds,
                         "proof_and_verify_seconds":row_start.elapsed().as_secs_f64()}))
@@ -193,7 +209,9 @@ pub fn run(workers: usize) -> Result<()> {
             .create(&output)
             .map_err(|_| "preserve existing worker job")?;
         let job_start = Instant::now();
-        let results = prove_rows(&prover, workers, &statement, &bindings, &job.rows, &output)?;
+        let results = prove_rows(
+            &prover, workers, &statement, &bindings, &job.rows, &output, "Warm",
+        )?;
         emit(
             &serde_json::json!({"completed":true,"job":job.name,"rows":results,"workers":workers,
             "proving_key_generated":false,"same_fixed_verifier":true,"seconds":job_start.elapsed().as_secs_f64(),
@@ -275,6 +293,8 @@ mod tests {
                 .is_err()
         );
         assert!(capacity(0).is_err());
+        // Unset means one row at a time; anything else must pass the guard.
+        assert_eq!(funded_row_workers().unwrap(), 1);
         assert!(
             serde_json::from_str::<AuctionJob>(r#"{"book":"x","name":"a","funding":"external"}"#)
                 .is_err()

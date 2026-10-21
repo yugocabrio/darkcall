@@ -173,6 +173,11 @@ def preflight(progress, root, phase, chain=REGTEST):
         raise RuntimeError('Build the pinned tools first; missing ' + ', '.join(missing))
     if shutil.disk_usage(ROOT).free < MIN_START_DISK:
         raise RuntimeError('At least 10 GiB of free disk is required before funding a settlement')
+    # Parallel payout proofs (DARKCALL_ROW_WORKERS) must pass the memory guard now,
+    # not after the deposits.
+    capacity = subprocess.run([str(REQUIRED[0]), '--row-capacity'], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    if capacity.returncode:
+        raise RuntimeError('DARKCALL_ROW_WORKERS refused by the memory guard: ' + capacity.stderr.strip()[-200:])
     snapshot = chain.status()
     progress.event(phase, 'done', height=snapshot['blocks'], accepted_root=root, chain=chain.name)
     return snapshot

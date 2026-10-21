@@ -608,6 +608,27 @@ fn main() -> Result<()> {
         );
         return Ok(());
     }
+    if args.len() == 1 && args[0] == "--prepare-params" {
+        // Compute (checked against the pinned digest) and cache the fixed Halo2
+        // parameters, e.g. while building an image, so the first proof or
+        // verification does not spend about 90 s on them.
+        let started = std::time::Instant::now();
+        let (_, cached) =
+            darkcall_output_binding::poseidon_rows::fixed_params().map_err(|e| e.to_string())?;
+        println!(
+            "{}",
+            serde_json::json!({"params_already_cached": cached,
+            "seconds": started.elapsed().as_secs_f64()})
+        );
+        return Ok(());
+    }
+    if args.len() == 1 && args[0] == "--row-capacity" {
+        // Preflight for DARKCALL_ROW_WORKERS, so a host that fails the memory
+        // guard is refused before deposits rather than at proving time.
+        let workers = row_worker::funded_row_workers()?;
+        println!("{}", serde_json::json!({"row_workers": workers}));
+        return Ok(());
+    }
     if args.len() == 2 && args[0] == "--warm-row-worker" {
         return row_worker::run(args[1].parse().map_err(|_| "worker concurrency")?);
     }

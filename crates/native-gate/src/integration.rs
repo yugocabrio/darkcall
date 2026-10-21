@@ -477,6 +477,20 @@ impl Integration {
                 "cold/cache preparation"
             }
         );
+        // Fresh funded rows may run several at once on a host that passes the
+        // memory guard (DARKCALL_ROW_WORKERS); checked before the key is built.
+        // A resumed set with existing proofs keeps the one-at-a-time path.
+        let fresh = self.native_proof_source.as_ref().is_none_or(|source| {
+            (0..6).all(|i| !source.join(format!("native-binding-proof-{i}")).exists())
+        });
+        let row_workers = if cached.is_none() && warm.is_none() && fresh {
+            crate::row_worker::funded_row_workers()?
+        } else {
+            1
+        };
+        if row_workers > 1 && self.layout != RowLayout::Shared18 {
+            return Err("parallel native rows require the shared18 layout".into());
+        }
         let key_start = Instant::now();
         let prover = if cached.is_some() || warm.is_some() {
             None
@@ -487,7 +501,11 @@ impl Integration {
         let mut times = Vec::new();
         let mut reused = 0;
         let mut warm_row_profiles = None;
-        if let Some((prover, workers)) = warm {
+        let parallel = match &prover {
+            Some(prover) if row_workers > 1 => Some((prover, row_workers)),
+            _ => None,
+        };
+        if let Some((prover, workers)) = warm.or(parallel) {
             let openings = (0..6)
                 .map(|i| {
                     binding_from_note(&rows[i], &notes[i]).map_err(|e| fail("native opening", e))
@@ -500,7 +518,16 @@ impl Integration {
                 &openings,
                 &[0, 1, 2, 3, 4, 5],
                 &self.directory,
+                "Integrated",
             )?;
+            for i in 0..6 {
+                fs::File::open(self.directory.join(format!("native-binding-proof-{i}")))
+                    .and_then(|f| f.sync_all())
+                    .map_err(|e| fail("sync row proof", e))?;
+            }
+            fs::File::open(&self.directory)
+                .and_then(|f| f.sync_all())
+                .map_err(|e| fail("sync row directory", e))?;
             times = measurements
                 .iter()
                 .map(|v| {
@@ -561,7 +588,7 @@ impl Integration {
         let proving_key_generated = prover.is_some();
         drop(prover);
         let summary = serde_json::json!({"proof_verified":true,"book_context_supplied":true,"hash_rule":HASH_RULE,"layout":self.layout.id(),"rows":6,"key_seconds":key_seconds,"row_proof_and_verify_seconds":times,"reused_native_row_proofs":reused,"seconds":start.elapsed().as_secs_f64(),"synthetic_inputs":self.funding_is_synthetic,"fills_from_plaintext_oracle_fixture":false,"private_fill_delivery_verified":true,"private_winner_flags_verified":self.delivery.winners.is_some(),"delivery_rule":self.delivery.rule(),"price":self.delivery.price,"sold":self.delivery.sold,"delivery_run":self.delivery.run.file_name().unwrap().to_string_lossy(),"funding_proven":false,"native_custody_signature_verified":false,"proving_key_generated":proving_key_generated,"cached_set_verify_seconds":cached_set_verify_seconds,
-            "warm_proving_key_reused":warm.is_some(),"row_workers":warm.map_or(1, |(_, workers)| workers),
+            "warm_proving_key_reused":warm.is_some(),"row_workers":warm.map_or(row_workers, |(_, workers)| workers),
             "warm_row_profiles":warm_row_profiles});
         fs::write(
             self.directory.join("native-proof-summary.json"),

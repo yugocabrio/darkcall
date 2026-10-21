@@ -28,7 +28,7 @@ month, where this month's ceilings would otherwise set next month's floor.
    is the auction in the video, and bidders are numbered as they were there.
    Start as the public (what you can and cannot see), switch to a bidder to open
    only that bidder's receipt, and read the four verified claims (recorded on
-   Oct 19; re-run them here in about 100 s). **Inspect the proof trail** under
+   Oct 19; re-run them here in about 20–30 s). **Inspect the proof trail** under
    them shows the public data behind each claim, read from the committed bundle
    only: the four bid commitments and the root the three operators signed, the
    auction proof's public inputs (price 21, sold 3, terms), each payout row's
@@ -38,10 +38,13 @@ month, where this month's ceilings would otherwise set next month's floor.
    the recorded bundle and checked by the same fixed verifiers
    (`scripts/cheat_lab.py`), and counts as refused only when the check it
    targets refuses it. The result sets the original bundle beside your changed
-   copy and shows the exact field, before and after. In the recorded run an unchanged control copy passed and
-   all three changes were refused: the bid in 2 s (signed book), a higher price
-   in 102 s (auction proofs), two swapped payout proofs in 97 s (output
-   bindings): [evidence/2026-10-21-cheat-lab.json](../evidence/2026-10-21-cheat-lab.json).
+   copy and shows the exact field, before and after. In the latest run an unchanged control copy passed in 19 s
+   and all three changes were refused: the bid in 2 s (signed book), a higher
+   price in 19 s (auction proofs), two swapped payout proofs in 16 s (output
+   bindings); the first recorded run took 2, 102 and 97 s, before the fixed
+   Halo2 parameters were cached:
+   [evidence/2026-10-21-cheat-lab.json](../evidence/2026-10-21-cheat-lab.json),
+   [rerun](../evidence/2026-10-21-halo2-params-cache.json).
 2. **The product, live.** `./demo.sh --chain testnet` (or `./demo.sh` on the
    local regtest), then **Run an auction**. Create an
    auction, seal four demo bids, certify the book, then **Fund on Zcash**: real
@@ -107,7 +110,7 @@ pinned native, Halo2 and C++ verifiers establish validity.
 | Who saw the demo bids? | Only each bidder's own client, which builds the proof and shares; here it is a localhost service. Operators receive shares and proofs. All operators, the test bank and the bidder wallets run on one machine. |
 | Can bidders deposit from their own wallets? | The deposit format already allows it: one ordinary Ironwood payment of budget plus fee to the escrow address, with a memo binding it to the ticket (network, auction conditions, ticket ID, a fresh client key and a nonce), which a ZIP-321 request can carry. In this demo one local test wallet builds all four deposits in one transaction, and admission from separate wallets or transactions is not exercised. No consumer wallet sent NU7 testnet transactions yet: at the Oct 15 Arborist call, Zallet's NU7 testnet release and Zodl's NU7 support were still in preparation. |
 | Public testnet or mainnet? | Public testnet, never mainnet. Two auctions settled on standard Zcash testnet (NU7) on Oct 19, one of them entirely from the browser (`be1157c8…a1c8ad67`, block 4,518,315); testnet chain data came from one trusted lightwalletd provider. Earlier runs used an isolated Zebra 7.0.0-rc.0 NU7 regtest with controlled confirmations. |
-| How large can an auction be? | The committed circuits have four bid slots and six outputs, and the native settlement path supports the default terms: 3 units, budget 100, reserve 0 or 20. Four is the circuit size, not a speed limit. Measured: gate counts of all three coNoir circuits at 4, 8 and 16 bids, and the joint clearing proof at 8 bids in 6.5 s (3.1 s at 4). Estimated, not run: the clearing proof at 16 bids (about 30 s) and full settlements above four bids, which the per-payout Halo2 bindings dominate (N + 2 rows, about 90 s each here, one after another; parallel proving is possible but not demonstrated). [Record](../evidence/2026-10-21-bid-scaling.json). |
+| How large can an auction be? | The committed circuits have four bid slots and six outputs, and the native settlement path supports the default terms: 3 units, budget 100, reserve 0 or 20. Four is the circuit size, not a speed limit. Measured: gate counts of all three coNoir circuits at 4, 8 and 16 bids, and the joint clearing proof at 8 bids in 6.5 s (3.1 s at 4). Estimated, not run: the clearing proof at 16 bids (about 30 s) and full settlements above four bids, which the per-payout Halo2 bindings dominate (N + 2 rows, about 80–150 s each here, one after another; a Linux host with enough memory can prove them in parallel, not yet measured). [Record](../evidence/2026-10-21-bid-scaling.json). |
 
 An earlier delivery commitment let a public observer guess refunds from two
 candidates. We reproduced the attack, withdrew the claim and replaced it with
@@ -121,9 +124,9 @@ independently blinded v2 commitments:
 | Browser REP3 clearing incl. proof + verification | ~9 s |
 | Fund on Zcash, regtest (deposits, chain admission, certificate; 120 s window) | about 2 min (121 s) |
 | Fund on Zcash, public testnet (10-minute window plus real confirmations) | about 10 min (612 s) |
-| Native settlement of a fresh browser book, uninterrupted | about 15 min (885–951 s regtest, 984–1122 s testnet) |
-| Settle → publicly verified | about 17–20 min (998–1024 s regtest, 1091–1224 s testnet) |
-| Public-only verification | ~2 min |
+| Native settlement of a fresh browser book, uninterrupted | about 10 min with the fixed Halo2 parameters cached (561 s one unit, 623 s three units, regtest, Oct 21); 885–951 s regtest and 984–1122 s testnet before |
+| Settle → publicly verified | about 10 min on regtest with the parameters cached (580 s one unit, 642 s three units); before: 998–1024 s regtest, 1091–1224 s testnet (testnet not re-measured) |
+| Public-only verification | about 20–30 s (18–32 s); about 2 min on a machine's first check, which computes the fixed Halo2 parameters once |
 | Own receipt opening | ~3 s |
 
 Settlement on public Zcash testnet is demonstrated (two auctions, Oct 19). No

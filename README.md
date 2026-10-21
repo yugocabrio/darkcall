@@ -258,7 +258,11 @@ It builds every pinned tool from source using only committed files, verifies
 every committed bundle, and checks that a corrupted proof is rejected. On Oct 19
 a fresh image built from commit `a7f67bd` verified all seven committed bundles,
 including both public-testnet runs, with the strict tamper refusal (about 100 s
-each; [record](evidence/2026-10-18-clean-room-linux-verification.json)). Remove
+each; [record](evidence/2026-10-18-clean-room-linux-verification.json)). Most
+of those 100 s rebuilt the fixed Halo2 parameters; they are now cached behind a
+digest pinned in the source, and on Oct 21 the eight committed bundles verified
+on the host in about 19 s each, the first check on a machine taking about
+1.5 min longer ([record](evidence/2026-10-21-halo2-params-cache.json)). Remove
 the image afterwards with `docker image rm`.
 
 **Or verify on the host.** Build the pinned tools
@@ -275,10 +279,12 @@ verifiers on each copy: one accepted bid's commitment changed in the signed
 book, a price one higher in both auction statements, and two payout proofs
 swapped so each is checked against the other output. A change counts as
 refused only when the check it targets refuses it, and an unchanged control
-copy must pass. In the recorded run the control passed and all three were
-refused: the bid by the signed book in 2 s, the price by the auction proofs in
-102 s and the swapped proofs by the output bindings in 97 s
-([record](evidence/2026-10-21-cheat-lab.json)). These change proofs and
+copy must pass. In the latest run the control passed in 19 s and all three
+were refused: the bid by the signed book in 2 s, the price by the auction proofs
+in 19 s and the swapped proofs by the output bindings in 16 s (the first
+recorded run took 2, 102 and 97 s, before the fixed Halo2 parameters were
+cached; [record](evidence/2026-10-21-cheat-lab.json),
+[rerun](evidence/2026-10-21-halo2-params-cache.json)). These change proofs and
 signed data, not the transaction: a quorum of operators that signed a
 different transaction is outside this test. The live demo's
 **See a settled auction** page has the same buttons.
@@ -302,7 +308,7 @@ python3 scripts/regtest_nu7_node.py start
 Then: **Run an auction → Create auction** (default terms) → seal four demo bids →
 wait for the close → **Certify closed book → Fund on Zcash** (real deposits and
 chain admission, about 2 minutes) **→ Clear this auction → Open my result →
-Settle on Zcash** (about 17 minutes on a 16 GiB M1, with live progress). After it finishes, **Open my shielded receipt** decrypts your
+Settle on Zcash** (about 10 minutes on the local regtest on a 16 GiB M1, with live progress). After it finishes, **Open my shielded receipt** decrypts your
 memo from the settlement transaction, and **Tamper with receipt** shows a
 corrupted proof being refused before your key is read.
 `./demo.sh --public-only` serves a key-less view that can verify and reject
@@ -374,9 +380,11 @@ the attack, withdrew the claim and replaced it with blinded v2 commitments:
 | Client bid: input ZK proof + shares + 3 operator signatures | 0.5–0.6 s |
 | Fund on Zcash: deposits + chain admission + certificate (includes a 120 s admission window) | 121 s |
 | Browser REP3 clearing incl. coNoir proof and verification | 7.6–9.4 s |
-| Native settlement of a fresh book, uninterrupted (2 threads) | 885–951 s |
-| Settle → publicly verified (fund-first flow) | 998–1024 s |
-| Public-only verification of a settlement (host or clean container) | 99–112 s |
+| Native settlement of a fresh book, uninterrupted (2 threads), Halo2 parameters cached | 561 s (1 unit), 623 s (3 units) |
+| Same, before the cache (parameters rebuilt three times per settlement) | 885–1025 s |
+| Settle → publicly verified (fund-first flow), parameters cached | 580–642 s (998–1024 s before) |
+| Public-only verification of a settlement, parameters cached | 18–32 s |
+| Same, on a machine's first check (computes the parameters, ~87 s) | 99–127 s |
 | Own receipt opening (proofs checked before key use) | ~3 s |
 | Recorded Oct 5 settlement (1 thread, memory pressure) | 1848 s |
 
@@ -400,10 +408,11 @@ clearing circuit's joint proof was run (4 and 8 bids, both verified); the
 winner-flag and settlement-plan joint proofs and a full settlement were not
 run above four bids. All-pairs ranking makes the joint proof grow
 quadratically, but it stays in seconds. The larger cost is linear: one Halo2
-binding per payout (N refunds, the seller, the fee), about 90 s each here after
-a one-time key. The rows are independent, so they could run in parallel; that
-speed-up is not demonstrated, since the prototype proves them one after
-another. Beyond a few dozen bids, all-pairs ranking should give way to a
+binding per payout (N refunds, the seller, the fee), about 80–150 s each here
+after a one-time key. The rows are independent: on a Linux host with enough
+memory, `DARKCALL_ROW_WORKERS=2`, `3` or `6` proves them in parallel under the
+existing memory guard (checked before any deposit). That is wired but not yet
+measured; this Mac proves them one after another. Beyond a few dozen bids, all-pairs ranking should give way to a
 sorting network.
 
 ## Repository

@@ -73,6 +73,12 @@ RUN for d in circuits/*/; do \
     && mkdir -p /src/.local && chown darkcall /src/.local && chown -R darkcall /src/circuits \
     && git config --system --add safe.directory /src/.deps/co-snarks \
     && git config --system --add safe.directory /src/.deps/barretenberg-src
+# The fixed Halo2 parameters, computed once here and checked against the digest
+# pinned in the source, so no settlement or check spends ~90 s on them. They sit
+# outside the .local volume and stay read-only to the app user; a copy that does
+# not match the digest is ignored and the parameters are recomputed.
+ENV DARKCALL_HALO2_PARAMS=/src/params/halo2-vesta-k17.params
+RUN target/release/darkcall-native-gate --prepare-params
 USER darkcall
 # External tools may cache under $HOME; /src stays read-only to this user.
 ENV HOME=/tmp/darkcall
