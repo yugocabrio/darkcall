@@ -13,6 +13,7 @@ import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BUNDLES = [('testnet-auction-nu7-v2', 'the auction in the demo video: created, funded, cleared and settled in the browser on public Zcash testnet, Oct 19'),
+           ('testnet-one-unit-nu7-v1', 'one-unit auction (price 61, one sold) created, funded, cleared and settled through the HTTP API on public Zcash testnet, Oct 21'),
            ('testnet-auction-nu7-v1', 'browser auction funded, cleared and settled on public Zcash testnet, Oct 19'),
            ('browser-auction-nu7-v3', 'the auction in the demo video: funded, cleared and settled through the UI, Oct 19'),
            ('browser-auction-nu7-v2', 'six-step browser auction: funded before clearing, then settled, Oct 19'),

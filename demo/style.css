@@ -683,3 +683,16 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .audit .why-flow {flex-direction:column;align-items:flex-start;gap:6px}
   .audit .why-arrow {transform:rotate(90deg);margin:10px 0 10px 18px}
 }
+
+/* FROST is custody, not correctness: a short callout before the binding section. */
+.custody-note {margin:48px 0 0;padding:20px 24px;border-left:3px solid var(--gold);background:var(--surface);border-radius:0 14px 14px 0}
+.custody-note .custody-title {margin:0 0 6px;font-size:18px;font-weight:600;color:var(--ink)}
+.custody-note p {margin:0;max-width:860px;font-size:15px;line-height:1.6;color:var(--ink-2)}
+.custody-steps {display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px!important;font-size:14px!important;font-weight:600;color:var(--ink)!important}
+.custody-steps span::before {content:"→ ";color:var(--gold-ink)}
+.custody-steps span:first-child::before {content:""}
+
+/* The single-unit testnet run, under the recorded run's facts. */
+.proven-more {margin:14px 0 0;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:15px;line-height:1.55;color:var(--ink-2)}
+.proven-more b {color:var(--ink)}
+.proven-more code {font:13px var(--mono)}

@@ -75,7 +75,10 @@ reveal, no published viewing key, no operator reconstructs the bid book.
   larger settlements are estimated, not run.
 - **Execution.** An auction was created, funded, cleared and settled by clicking
   through the browser on public Zcash testnet (settlement `be1157c8…a1c8ad67`,
-  block 4,518,315), and that is the run in the video. Seven public bundles,
+  block 4,518,315), and that is the run in the video. A single-unit auction
+  (price 61, one sold) settled the same way on testnet on Oct 21 (tx
+  `1d85d98f…82db`), and a two-unit one on regtest; one to three units now settle
+  with the same circuits and six outputs. Seven public bundles,
   both testnet runs included, verify in a clean Linux container with no network,
   and a tampered proof is refused.
 - **Originality.** Multi-party ZK proving: the operators generate the price's

@@ -330,8 +330,10 @@ assumptions:
 - **The price is one bid.** Under these rules the public clearing price equals
   the highest losing bid, or the reserve. That single value is public by design;
   who placed it is not, except to the operators, who know the winners and so can
-  tell whose bid it is when only one bid lost (as in the four-bid demo). Small
-  books and repeated auctions allow further inference.
+  tell whose bid it is when only one bid lost (as in the four-bid, three-unit
+  demo). With one unit there are three losers, and knowing the winner no longer
+  names the bid that set the price. Small books and repeated auctions allow
+  further inference.
 - **The bidder's client runs as a local service.** Only the bidder's own client sees the
   typed bid; operators receive shares and a proof. In this demo that client is a
   localhost service on the same machine as the operators. Deposits come from one local test wallet right
@@ -352,7 +354,9 @@ assumptions:
   mainnet funds are touched. The v6 settlement needs NU7, which is active on
   testnet and planned for mainnet on Nov 5, 2026.
 - **Fixed size.** The committed circuits have four bid slots and six outputs. The native
-  settlement path supports the default terms (3 units, budget 100, reserve 0 or 20).
+  settlement path takes one to three units with budget 100 and reserve 0 or 20: a
+  one-unit auction (price 61, one sold) settled on public testnet on Oct 21, tx
+  [`1d85d98f…82db`](https://testnet.zecblock.com/tx/1d85d98f15691b06337f791d3d470cfd04de261f0ab057f763663ffc01d282db).
   Four is the circuit size, not a speed limit: see [beyond four bids](#beyond-four-bids).
 - **Demo-sized amounts.** Bids stay within a 100-zatoshi budget, and the fixed
   15,000-zatoshi processing fee per ticket pays the settlement's 30,000-zatoshi

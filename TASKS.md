@@ -121,6 +121,14 @@ Done:
       the same chips, role lines and seals across the site. Hosted wording ("Live demo", "this
       server"), an end-of-page way in, a gavel icon and logo. README, judge guide and
       submission draft carry the same framing.
+- [x] One- and two-unit settlement (Oct 21): four checks pinned the funded path to three units
+      (rehearsal terms, settlement driver terms, SDK funded_prepare, native-gate integration);
+      they now take one to three units, nothing else changed. Fresh runs, bids 77/61/43/21:
+      one unit on regtest (price 61, refunds 39/100/100/100, tx 9af1952d…) and on public
+      testnet (price 61, tx 1d85d98f…82db, 3 confirmations, public check 110 s), two units on
+      regtest (price 43, refunds 57/57/100/100, tx ab3a2c61…). The testnet run is committed as
+      demo/artifacts/testnet-one-unit-nu7-v1 and verifies from the committed copy; added to
+      docker_verify_all. Record: evidence/2026-10-21-one-and-two-unit-settlement.json.
 - [x] Not planned: 8-bid end-to-end settlement (recorded run of 8 bids / 10 outputs,
       live demo stays at 4). Gap survey (Oct 21): the auction rule in circuits/protocol_lib is
       already generic in n (fees: n + 2 actions × 5,000), and the 8-bid clearing circuit is derived,

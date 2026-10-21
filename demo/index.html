@@ -91,7 +91,7 @@
           <div class="same-grid">
             <div class="same-book"><span>Bid book A</span><div class="same-bids"><b>77</b><b>61</b><b>43</b><b>21</b></div><small>Sponsors would have paid far more</small></div>
             <div class="same-book"><span>Bid book B</span><div class="same-bids"><b>22</b><b>22</b><b>22</b><b>21</b></div><small>Barely above the price</small></div>
-            <div class="same-out"><span>Public result of both</span><b>Price 21 · 3 of 3 sold</b><small>Both pass the same public check, and every refund is the same</small></div>
+            <div class="same-out"><span>Public result of both</span><b>Price 21 · 3 of 3 sold</b><small>The same price, winners and refunds. Each book has its own commitments and proofs, and neither public check reveals the winners' maximum bids or the full demand curve.</small></div>
           </div>
           <p class="same-note">A commit–reveal or viewing-key audit shows everyone which book it was, and next month's floor moves to match. DarkCall's public proofs tell a verifier the same thing for either book, price 21 and three sold, and no single operator learns which book it was.</p>
         </div>
@@ -122,6 +122,12 @@
           </div>
         </div>
         <p class="why-note">Assumes at most one semi-honest operator (REP3); two colluding operators could reconstruct the bids.</p>
+      </div>
+
+      <div class="custody-note">
+        <p class="custody-title">Threshold signatures don't prove the clearing price.</p>
+        <p>FROST spreads control over the funds. Publishing a viewing key makes the escrow auditable by disclosure. Both are useful, but neither proves a private clearing computation while the bids stay sealed. DarkCall goes further: multi-party ZK proves the clearing result without reconstructing the bid book, and Halo2 binds that result to the actual shielded payouts.</p>
+        <p class="custody-steps"><span>FROST distributes signing authority.</span><span>ZK proves clearing over accepted bids.</span><span>Multi-party ZK does it without opening them.</span></p>
       </div>
 
       <p class="bind-kicker">Multi-party ZK proving × Halo2 output binding</p>
@@ -191,12 +197,13 @@
         <div><dt>Settlement</dt><dd><a href="https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67"><code>be1157c8…a1c8ad67</code></a><small>Block 4,518,315 · 2 confirmations · settled in 19&nbsp;min</small></dd></div>
         <div><dt>Public check</dt><dd><strong>102 s</strong><small>No secrets · tampered proof refused</small></dd></div>
       </dl>
+      <p class="proven-more"><b>Also on testnet, Oct 21: a single-unit auction.</b> Four new sealed bids (the same demo amounts) for one unit: price 61, one sold, settled in one shielded transaction <a href="https://testnet.zecblock.com/tx/1d85d98f15691b06337f791d3d470cfd04de261f0ab057f763663ffc01d282db" rel="noopener"><code>1d85d98f…82db</code></a>, with the same circuits and proofs (<a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-21-one-and-two-unit-settlement.json">record</a>). One to three units now settle.</p>
       <p class="fine-print">Zcash validated these native transactions; DarkCall's public verifier checked the auction proof, the six output bindings and the signed accepted book. Transaction links open ZecBlock, a third-party testnet explorer. The run read chain data from one lightwalletd provider (testnet.zec.rocks). <a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
     </section>
 
     <section class="landing-more" aria-labelledby="compare-title">
       <h2 id="compare-title">Commit–reveal opens the bids to prove the price.</h2>
-      <p class="section-lead">So does publishing a viewing key: every bid amount is visible after the close. That matters wherever the same buyers come back: monthly sponsor slots, where this month's ceilings would set next month's floor, or a treasury selling blocks of a holding to funds, where each bid is a fund's valuation. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
+      <p class="section-lead">So do audits by a published viewing key or by bids revealed after the close: the bid information becomes readable. That matters wherever the same buyers come back: monthly sponsor slots, where this month's ceilings would set next month's floor, or a treasury selling blocks of a holding to funds, where each bid is a fund's valuation. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
       <div class="compare-wrap">
         <table class="compare">
           <thead><tr><th scope="col"><span class="visually-hidden">Property</span></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or decryption committee</th></tr></thead>

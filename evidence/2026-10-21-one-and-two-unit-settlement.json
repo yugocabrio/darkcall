@@ -1,0 +1,197 @@
+{
+  "date": "2026-10-21 (CEST)",
+  "question": "Can the existing four-bid protocol settle one- and two-unit auctions natively, with no circuit or proof change?",
+  "change": "The clearing, delivery and settlement-plan circuits already take units as a public input and the six-output transaction (four refunds, seller, fee) has the same shape at any unit count. Four checks pinned the funded path to three units: scripts/rehearsal.py standard_terms, scripts/settle_fresh_book.py TERMS, tools/nu7-compat funded_prepare and crates/native-gate integration terms. They now accept one to three units; budget 100, the 15,000 fee and reserve 0 or 20 stay pinned. No circuit, proof, verifying key, trusted-key check, admission rule or resource guard changed.",
+  "method": "scripts/check_fresh_settlement.py drives the running demo over HTTP exactly like the browser: create, four sealed demo bids, certified close, Fund (real deposits and chain admission), REP3 clearing, own results, Settle (MPC delivery, six Halo2 bindings, 2-of-3 FROST, broadcast, confirmations, public verification), then each bidder opens its own shielded receipt; a corrupted receipt proof and a foreign capability must be refused.",
+  "commands": [
+    "python3 -B scripts/check_fresh_settlement.py --port 8891 --units 1 --bids 77,61,43,21 --reserve 20 --output .local/fresh-1unit-regtest.json",
+    "python3 -B scripts/check_fresh_settlement.py --port 8877 --units 1 --bids 77,61,43,21 --reserve 20 --output .local/fresh-1unit-testnet.json",
+    "python3 -B scripts/check_fresh_settlement.py --port 8891 --units 2 --bids 77,61,43,21 --reserve 20 --output .local/fresh-2unit-regtest.json",
+    "python3 -B scripts/funded_public_bundle.py demo/artifacts/testnet-one-unit-nu7-v1 --authority demo/authority/testnet-one-unit-nu7-v1.json"
+  ],
+  "machine": "shared 16 GiB Apple M1; every party on one host; deposits from one local test bank",
+  "runs": {
+    "one_unit_regtest": {
+      "chain": "isolated NU7 regtest",
+      "terms": {
+        "units": 1,
+        "reserve": 20,
+        "budget": 100
+      },
+      "bids_in_sealing_order": [
+        77,
+        61,
+        43,
+        21
+      ],
+      "auction_id": "de9aa749657a2c1f1d28a8a3027400c8",
+      "clearing": {
+        "price": 61,
+        "sold": 1,
+        "seconds": 9.6
+      },
+      "deposit_txid": "d8babc35172507cc3a94aaf929f8a7771f3fecb85d9e99d1b35512bfb20d22c0",
+      "settlement_txid": "9af1952d67b16d0ff6d6738823d1d5fbb0dea796fef3e14ce158cc4eee8577b1",
+      "confirmations": 2,
+      "settlement_seconds": 1325,
+      "public_verification_seconds": 374,
+      "own_receipts": [
+        {
+          "won": true,
+          "refund": 39
+        },
+        {
+          "won": false,
+          "refund": 100
+        },
+        {
+          "won": false,
+          "refund": 100
+        },
+        {
+          "won": false,
+          "refund": 100
+        }
+      ],
+      "checks": {
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "native_proof_and_signatures_verified": true,
+        "maximum_bids_read": false
+      },
+      "refusals": {
+        "native_tamper_rejected_before_key_read": true,
+        "foreign_capability_refused": true,
+        "settle_before_clear_refused": true,
+        "clear_and_settle_before_funding_refused_400": true
+      },
+      "recorded_auction_unchanged": true,
+      "total_seconds": 1900
+    },
+    "one_unit_testnet": {
+      "chain": "public Zcash testnet (NU7)",
+      "terms": {
+        "units": 1,
+        "reserve": 20,
+        "budget": 100
+      },
+      "bids_in_sealing_order": [
+        77,
+        61,
+        43,
+        21
+      ],
+      "auction_id": "d40d6cab7495eb66d777812f6c5da480",
+      "clearing": {
+        "price": 61,
+        "sold": 1,
+        "seconds": 8.2
+      },
+      "deposit_txid": "0087fad76454fa0d77b36587e2b76b351022f96c277723a3260bb68d7507da72",
+      "settlement_txid": "1d85d98f15691b06337f791d3d470cfd04de261f0ab057f763663ffc01d282db",
+      "confirmations": 3,
+      "settlement_seconds": 1410,
+      "public_verification_seconds": 110,
+      "own_receipts": [
+        {
+          "won": true,
+          "refund": 39
+        },
+        {
+          "won": false,
+          "refund": 100
+        },
+        {
+          "won": false,
+          "refund": 100
+        },
+        {
+          "won": false,
+          "refund": 100
+        }
+      ],
+      "checks": {
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "native_proof_and_signatures_verified": true,
+        "maximum_bids_read": false
+      },
+      "refusals": {
+        "native_tamper_rejected_before_key_read": true,
+        "foreign_capability_refused": true,
+        "settle_before_clear_refused": true,
+        "clear_and_settle_before_funding_refused_400": true
+      },
+      "recorded_auction_unchanged": true,
+      "total_seconds": 2381
+    },
+    "two_unit_regtest": {
+      "chain": "isolated NU7 regtest",
+      "terms": {
+        "units": 2,
+        "reserve": 20,
+        "budget": 100
+      },
+      "bids_in_sealing_order": [
+        77,
+        61,
+        43,
+        21
+      ],
+      "auction_id": "91fa5f767bb2a7276828cdc1875fffee",
+      "clearing": {
+        "price": 43,
+        "sold": 2,
+        "seconds": 8.4
+      },
+      "deposit_txid": "94c4a6ace2067d03e32c0c51b50de14fcf4dcb71512b24178a11a9a665e62041",
+      "settlement_txid": "ab3a2c616f1639ffec689c38146d5b007d71101be43976d4ce4451a32b7b66b4",
+      "confirmations": 2,
+      "settlement_seconds": 1219,
+      "public_verification_seconds": 126,
+      "own_receipts": [
+        {
+          "won": true,
+          "refund": 57
+        },
+        {
+          "won": true,
+          "refund": 57
+        },
+        {
+          "won": false,
+          "refund": 100
+        },
+        {
+          "won": false,
+          "refund": 100
+        }
+      ],
+      "checks": {
+        "native_row_proofs_verified": true,
+        "normal_cpp_auction_proof_verified": true,
+        "accepted_book_and_recipients_authenticated": true,
+        "native_proof_and_signatures_verified": true,
+        "maximum_bids_read": false
+      },
+      "refusals": {
+        "native_tamper_rejected_before_key_read": true,
+        "foreign_capability_refused": true,
+        "settle_before_clear_refused": true,
+        "clear_and_settle_before_funding_refused_400": true
+      },
+      "recorded_auction_unchanged": true,
+      "total_seconds": 1544
+    }
+  },
+  "public_bundle": {
+    "path": "demo/artifacts/testnet-one-unit-nu7-v1",
+    "authority": "demo/authority/testnet-one-unit-nu7-v1.json",
+    "verified_from_the_committed_copy": true,
+    "added_to": "scripts/docker_verify_all.py"
+  },
+  "privacy_note": "With one unit the operators know the winner and three losing tickets; the public price (61, the highest losing bid) does not name which loser placed it, unlike the three-unit case with a single loser. Operators still learn winners and refunds, and two colluding operators can still reconstruct bids.",
+  "three_unit_regression": "the recorded three-unit auction is unchanged; its HTTP check and the native-gate tests pass"
+}

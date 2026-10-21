@@ -34,6 +34,9 @@ Updated: 2026-10-21 (git HEAD is authoritative).
   blind auction, reveal-to-audit, DarkCall's proofs without revealing), the
   same-result bid books, who needs a viewing key, and one worked example
   (monthly sponsor slots). README, judge guide and submission draft match.
+- **One to three units (Oct 21):** the same four-bid protocol now settles one-
+  and two-unit auctions; a one-unit auction settled on public testnet (price 61,
+  tx `1d85d98f…82db`), committed as `demo/artifacts/testnet-one-unit-nu7-v1`.
 - **Tests and hosting (Oct 21):** the three CI jobs (Noir 34, Rust workspace,
   Python 28) pass on a fresh `git archive` export with no local state, and a
   manual run on GitHub was green; the workflow runs on every push to main again. The hosted demo
