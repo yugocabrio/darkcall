@@ -113,7 +113,7 @@ function showClaims(result) {
   $('settlement-claims').replaceChildren(
     claim(result.normal_cpp_auction_proof_verified,'The price is right.',price+' zatoshi follows the auction rule over exactly the four sealed bids. This check needs no bid, and the proof reveals none.'),
     claim(payouts,'Every payout matches the result.','Each shielded output pays the amount and recipient the result says:',rows),
-    claim(result.native_proof_and_signatures_verified,'The payment is real Zcash.','One valid shielded Zcash transaction, signed with the escrow key that 2 of the 3 operators share.'),
+    claim(result.native_proof_and_signatures_verified,'The payment is real Zcash.','One valid shielded Zcash transaction, signed from the escrow by 2 of the 3 operators together; no single operator can sign.'),
     claim(Boolean(result.acceptance_or_recipient_receipts_authenticated),'These are the accepted bids.','All three operators signed this exact book of four sealed bids.'),
     note);
   $('settlement-claims').hidden=false;
