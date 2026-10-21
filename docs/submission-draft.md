@@ -15,6 +15,11 @@ clearing price is generated without opening the bids, and one shielded
 transaction that anyone can verify pays the seller and refunds every bidder
 exactly as proven.
 
+Blind auctions keep the bids secret but ask everyone to trust the result.
+Reveal-to-audit designs win the check back by opening the bids or publishing a
+viewing key. DarkCall keeps the bids secret and still lets anyone check: no bid
+reveal, no published viewing key, no operator reconstructs the bid book.
+
 - **Multi-party computation** (REP3). Each bid becomes secret shares; no single
   operator can read one.
 - **Multi-party ZK proving** (coNoir). The operators compute the clearing price
@@ -48,14 +53,21 @@ exactly as proven.
 ## Against the four judging criteria
 
 - **Privacy.** No bid amount is ever opened, not at the close and not to any
-  single operator. Only the clearing price is public; by the auction rule it is
-  the highest losing bid or the reserve. Payouts and refunds are one shielded
+  single operator, and auditing it needs no bid reveal and no published viewing
+  key: verifiers use proofs only, each bidder keeps its own key, and only the
+  three operators hold the escrow's. No operator reconstructs the bid book. Only
+  the clearing price is public; by the auction rule it is the highest losing bid
+  or the reserve, and the operators, who know the winners, can tell whose it is
+  when only one bid lost. Payouts and refunds are one shielded
   transaction, and each bidder decrypts only their own receipt. Limits, stated
   in full below: semi-honest REP3 (two colluding operators could reconstruct
   bids or move escrowed funds), and operators learn winners and refunds.
-- **Usefulness.** Batch sales that close once, such as allocation rounds, ad
-  slots or blocks of seats, where published bid amounts hand the seller and
-  rivals the demand curve. Clearing takes about 9 s; settlement follows in
+- **Usefulness.** A newsletter sells three sponsor slots every month. If this
+  month's ceilings leak, next month's floor is set from them and rival sponsors
+  learn each other's budgets. Bid books 77 · 61 · 43 · 21 and 22 · 22 · 22 · 21
+  clear the same (price 21, three sold, the same refunds); a reveal-to-audit
+  check tells everyone which it was, DarkCall's cannot. The same holds for a
+  treasury selling blocks of a holding to funds. Clearing takes about 9 s; settlement follows in
   15–20 min with every output proven. It needs three independent operators.
   The committed circuits take four bids; an 8-bid version of the clearing
   circuit proves jointly in 6.5 s (3.1 s at 4 bids, both measured). Settlement
@@ -75,8 +87,9 @@ exactly as proven.
 
 ## The problem
 
-Selling a batch of identical units fairly, such as tickets, allocation slots,
-compute or ad inventory, works best as a uniform-price sealed-bid auction. In
+Selling a batch of identical units fairly, such as a newsletter's monthly
+sponsor slots, tickets, allocation slots or blocks of a treasury holding, works
+best as a uniform-price sealed-bid auction. In
 practice bidders must trust an auctioneer with their maximum willingness to pay,
 or the bids are revealed after the close so that anyone can audit the result.
 Either way, each bidder's maximum price leaks, and in on-chain settlement so

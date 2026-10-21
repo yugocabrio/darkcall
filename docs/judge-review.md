@@ -8,6 +8,15 @@ every bidder; six Halo2 proofs bind its outputs to the proven result. Anyone can
 verify the public bundle without secrets. Each bidder decrypts only their own
 receipt memo.
 
+In short: blind auctions keep the bids secret but ask everyone to trust the
+result; reveal-to-audit designs open the bids, or publish a viewing key, to
+check it. DarkCall keeps the bids secret and still lets anyone check, with no
+published viewing key and no operator reconstructing the bid book. The landing's
+"Auditable without revealing" block shows the three side by side, and two bid
+books (77 · 61 · 43 · 21 and 22 · 22 · 22 · 21) that give the same public
+result. The worked example is a newsletter selling three sponsor slots every
+month, where this month's ceilings would otherwise set next month's floor.
+
 ## What to look at
 
 0. **The 2-minute video.** Watch [demo/media/v2/darkcall-demo-v2.mp4](../demo/media/v2/darkcall-demo-v2.mp4).
@@ -89,8 +98,10 @@ pinned native, Halo2 and C++ verifiers establish validity.
 | Question | Answer |
 | --- | --- |
 | Can one operator see the bid list? | No, under REP3 with at most one semi-honest corrupt operator. Two colluding operators can reconstruct it. |
-| Can operators see who won? | Yes. Operators learn refunds and winners and hold escrow viewing capability. |
+| Can operators see who won? | Yes. Operators learn refunds and winners and hold the escrow's viewing key, which shows them fixed-size deposits, not bids. None alone rebuilds the bid book, but knowing the winners they can tell whose losing bid the price is; in the four-bid demo, with one loser, that bid (21) is known to them. |
+| Who needs a viewing key? | Verifiers need none: the public check uses proofs, signatures and the transaction only. Each bidder opens its own receipt with its own key and hands it to no one. Only the three operators hold the escrow's viewing key. No viewing key is published. |
 | What does the public price reveal? | The clearing price is the highest losing bid, or the reserve, so that one bid value is public by the rules. Who placed it, and every other bid, is not. |
+| Can operators drop a bid? | The public check cannot rule it out: it proves the result over the operators' signed book, not that every funded bid made it in. Each bidder holds all three operators' signed acceptance and checks that its own ticket is in the book, so dropping an accepted bid is visible to that bidder, not to outsiders. |
 | Who controls funds? | Two of three DKG FROST signers. No master key exists, but two colluders can move funds, and bidders have no unilateral refund. |
 | Is funding proven publicly? | No. Operator signatures attest funding. The bundle proves transaction validity and output binding, not chain inclusion. |
 | Who saw the demo bids? | Only each bidder's own client, which builds the proof and shares; here it is a localhost service. Operators receive shares and proofs. All operators, the test bank and the bidder wallets run on one machine. |

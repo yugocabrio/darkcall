@@ -214,7 +214,7 @@ $('settlement').addEventListener('click', async () => {
     if (!result.native_row_proofs_verified || !result.native_proof_and_signatures_verified || !result.normal_cpp_auction_proof_verified || !result.actual_transaction_outputs_match || result.private_openings_read || result.chain_funding_or_finality_verified) throw new Error('Incomplete settlement verification');
     if (state.six_output_memo_e2e && (result.txid !== state.cases[0].txid || !result.receipt_fixed_proof_verified || !result.receipt_settlement_context_link_verified)) throw new Error('Settlement belongs to a different receipt auction');
     settlementVerified = true; stages();
-    $('settlement-result').replaceChildren(element('b','Verified again just now: '),document.createTextNode('in '+Math.round(result.seconds)+' s on this server, with no secret. What that proves:'));
+    $('settlement-result').replaceChildren(element('b','Verified again just now: '),document.createTextNode('in '+Math.round(result.seconds)+' s on this server, with no viewing key or other secret. What that proves:'));
     showClaims({price:result.normal_cpp_auction_proof_verified, payouts:result.native_row_proofs_verified && result.actual_transaction_outputs_match,
       transaction:result.native_proof_and_signatures_verified, book:Boolean(result.acceptance_or_recipient_receipts_authenticated)});
     $('settlement-detailed-result').textContent = 'Native authorization, six bindings, fixed auction/receipt proofs and context verified. ' + (result.acceptance_or_recipient_receipts_authenticated ? 'Accepted-book signatures verified. ' : 'No funded admission certificate for this synthetic run. ') + 'Transaction: '+result.txid;
@@ -251,7 +251,7 @@ fetch('/api/state').then(async response => {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
       if (recordedTestnet) {
         // Already verified when recorded; the button re-runs the same check here.
-        $('settlement-scope').textContent='Check that the shielded Zcash transaction matches the auction outcome, without seeing any bid. The result below is recorded; run the same check again here in about 100 seconds, with no secret.';
+        $('settlement-scope').textContent='Check that the shielded Zcash transaction matches the auction outcome, without seeing any bid. The result below is recorded; run the same check again here in about 100 seconds, with no viewing key or other secret.';
         $('settlement').textContent='Re-run verification';
       }
       $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts and larger bid counts remain unverified.';
@@ -290,7 +290,7 @@ fetch('/api/state').then(async response => {
   $('cheat-price-label').textContent='Claim the price was '+(hero.price+1);
   // What is sold and what the refunds mean, from the served terms.
   const words=['no','one','two','three','four'], losers=hero.tickets-hero.sold;
-  if (Number.isInteger(hero.budget) && hero.sold>0 && hero.sold<=hero.units) $('auction-story').textContent='Think of a seller offering '+words[hero.units]+' ad slots. Each bidder locked a budget of '+hero.budget+' zatoshi, plus a fixed fee. The '+words[hero.sold]+' highest bidders each got a slot at the same price, '+hero.price+' zatoshi, and '+(hero.budget-hero.price)+' back'+(losers?'; the other '+(losers===1?'bidder':words[losers]+' bidders')+' got all '+hero.budget+' back':'')+'. No operator ever rebuilds the bid book, not even to prove the price; only the clearing price is published, and by the auction rule it is the highest losing bid.';
+  if (Number.isInteger(hero.budget) && hero.sold>0 && hero.sold<=hero.units) $('auction-story').textContent='Think of a newsletter selling '+words[hero.units]+' sponsor slots this month. Each sponsor locked a budget of '+hero.budget+' zatoshi, plus a fixed fee. The '+words[hero.sold]+' highest sponsors each got a slot at the same price, '+hero.price+' zatoshi, and '+(hero.budget-hero.price)+' back'+(losers?'; the other '+(losers===1?'sponsor':words[losers]+' sponsors')+' got all '+hero.budget+' back':'')+'. No operator ever rebuilds the bid book, not even to prove the price, so next month\'s floor can\'t be set from the winners\' ceilings; only the clearing price is published, and by the auction rule it is the highest losing bid.';
   $('hero-price').textContent=hero.price; $('hero-tickets').textContent=hero.tickets+' sealed bids';
   $('hero-sold').textContent=hero.sold+' of '+hero.units+' units sold · every winner pays the same';
   $('hero-txid').textContent=recordedTx.slice(0,8)+'…'+recordedTx.slice(-8); $('hero-txid').title=recordedTx;
@@ -748,7 +748,7 @@ setInterval(refreshRoom,1000);
     [['Fund. ',1],['Each ticket locks 15,100 zatoshi, its 100 budget plus a 15,000 processing fee for the network and operator fees, in a ',0],['shielded 2-of-3 escrow',1],['. The operators check the deposits against the same proofs and secret shares, then all three ',0],['sign the accepted book',1],['. Its key was made jointly by DKG, so no operator holds it whole; any two of the three must sign together (FROST) to pay out.',0]],
     [['Prove. ',1],['The three operators compute together on their secret shares and generate one proof jointly: multi-party ZK proving with coNoir. With the demo bids 77, 61, 43 and 21 and three units, the top three win and each pays the ',0],['price of 21',1],[', the highest losing bid. The proof shows it follows the rules over exactly the committed bids; ',0],['no bid list is ever rebuilt',1],['.',0]],
     [['Settle. ',1],['The same computation yields six payment rows. Each winner gets its 100 budget back minus the price, 79; the loser gets all 100; the seller gets 3 × 21 = 63; the operator gets a 30,000 fee. The other 30,000 deposited pays the network fee. ',0],['Six Halo2 proofs bind each row to a real note',1],[' in one shielded transaction. Once every proof checks out, ',0],['two of the three operators sign it together with FROST',1],[': each adds a signature share, so no single operator can move the escrow.',0]],
-    [['Verify. ',1],['Anyone checks the proofs ',0],['with no secrets',1],[': price 21, three sold, every output bound to the result. Ticket 01 decrypts its own memo with its own key: ',0],['won, refund 79',1],['.',0]],
+    [['Verify. ',1],['Anyone checks the proofs ',0],['with no secrets and no viewing key',1],[': price 21, three sold, every output bound to the result. Ticket 01 decrypts its own memo with its own key: ',0],['won, refund 79',1],['.',0]],
   ];
   let step=1, timer=null; const sealTimers={};
   // Show the demo values for a moment, then let the mask close over them.

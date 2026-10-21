@@ -59,24 +59,36 @@ secret. Each bidder decrypts only their own outcome.
 
 ## Who it is for
 
-Anyone who sells a batch of identical units and wants one fair price: event
-seats, allocation slots in a token or NFT drop, sponsorship or ad slots, or
-reserved compute. A uniform-price sealed-bid auction is the fair format: every
-winner pays the same price, set by the highest losing bid (or the reserve), so a
-bidder who wants one unit does best by bidding their true value.
+**A newsletter sells three sponsor slots every month.** Wallet makers,
+exchanges and infrastructure firms bid; three independent operators run the
+auction: the newsletter, a community foundation and an auditor. In an open or
+commit–reveal auction every sponsor's ceiling is public after the close, so next
+month's floor is set from it and rival sponsors learn each other's budgets. In a
+negotiated deal the newsletter sees every offer and no one can check the price.
+With DarkCall each sponsor bids its real ceiling, every winner pays the same
+proven price in shielded ZEC, and neither the newsletter nor a rival sees a
+sponsor's bid; only the clearing price, by the rules the highest losing bid, is
+public.
+
+The same holds wherever the same buyers come back or a bid is a valuation: a
+treasury selling blocks of a holding to funds, for example.
+
+A uniform-price sealed-bid auction is the fair format for such batch sales:
+every winner pays the same price, set by the highest losing bid (or the
+reserve), so a bidder who wants one unit does best by bidding their true value.
 DarkCall adds what on-chain auctions lack. Outsiders cannot see what you bid or
 whether you won. By design, no single operator holds your bid. Payment is
 shielded ZEC, and the result is still verifiable.
 
 **Why the settlement time is acceptable.** These are batch sales that close
-once: an allocation round, a weekly ad slot, a block of seats. Bidding takes
+once: a month's sponsor slots, a block sale, a round of seats. Bidding takes
 minutes to days; settling in 15–20 minutes after the close, with every output
 proven, fits that rhythm. Clearing itself, the moment the price is known, takes
 about 9 seconds.
 
-**What running one takes.** A seller and three independent operators (for
-example the seller, a community member and an auditor), each with a laptop-class
-machine. In a deployment each bidder runs the DarkCall client and deposits from
+**What running one takes.** A seller and three independent operators (in the
+example, the newsletter, a community foundation and an auditor), each with a
+laptop-class machine. In a deployment each bidder runs the DarkCall client and deposits from
 their own Zcash wallet, with the signed claim in the memo; in this demo one local
 test wallet funds all four tickets. The operators never see a bid, and anyone
 can check the outcome from the public bundle. Today this runs on public testnet;
@@ -95,10 +107,33 @@ DarkCall proves the price without opening them, then pays out in shielded ZEC.
 | Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | No, you trust it |
 | Payments and refunds stay private | **Yes, one shielded transaction** | No | Possible, if paid shielded | Possible, if it pays shielded |
 | Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | By contract, or audited afterwards | No, the signers decide |
+| Audit without revealing bids or keys | **Yes, proofs only** | No, nothing is hidden | No, opens the bids or publishes a key | No, only it can check |
 
 Common designs compared, not specific projects. "Any single operator" is the
 REP3 bound: two colluding operators could reconstruct bids (see
 [Trust model and limits](#trust-model-and-limits)).
+
+**Auditable without revealing.** Blind auctions keep the bids secret but ask
+everyone to trust the seller's result. Reveal-to-audit designs win the check back
+by opening the bids or publishing a viewing key. DarkCall keeps the bids secret
+and still lets anyone check. No bid reveal, no published viewing key, and no
+operator reconstructs the bid book: anyone verifies the clearing price and every
+shielded payout from public zero-knowledge proofs, without decrypting a bid.
+Two bid books for three slots, 77 · 61 · 43 · 21 and 22 · 22 · 22 · 21, give the
+same public result (price 21, three sold, the same refunds). A commit–reveal or
+viewing-key audit shows which one it was, and next month's floor moves to match;
+DarkCall's public check cannot tell them apart, and neither can any single
+operator. Who needs a viewing key:
+
+| Who | Viewing key | What it gives them |
+| --- | --- | --- |
+| Anyone verifying | None | The price and every payout, checked from proofs, signatures and the transaction; no bid or refund decrypted |
+| Each bidder | Its own, kept | Its own encrypted receipt; the key is never handed to anyone, verifiers included |
+| The three operators | The escrow's viewing key | Admitting deposits: fixed-size deposits, never a bid. They learn winners and refunds; none alone can rebuild the bid book (REP3), though knowing the winners they can tell whose bid the price is when only one bid lost |
+
+No viewing key is ever published. In this demo every party runs on one host, so
+each key staying on its owner's own device is the deployment model, not
+something the recorded run shows.
 
 Typical sealed-bid designs either trust an auctioneer with every bid or **reveal
 the bids after the close** so that anyone can audit the result (commit-reveal, or
@@ -287,17 +322,25 @@ assumptions:
   Two colluding operators can reconstruct bids. It is not malicious-secure MPC.
 - **Custody** is 2-of-3 FROST from a DKG. No escrow master key exists, but two
   colluding signers can move funds, and bidders have no unilateral refund path.
-- **Operators see outcomes.** They hold escrow viewing capability and learn refunds and
-  winners.
+- **Operators see outcomes.** The three operators hold the escrow's viewing key,
+  which admitting deposits needs: it shows them fixed-size deposits, not bids, and
+  they learn refunds and winners. No viewing key is published, and public
+  verification needs none.
 - **The price is one bid.** Under these rules the public clearing price equals
   the highest losing bid, or the reserve. That single value is public by design;
-  who placed it is not. Small books and repeated auctions allow further
-  inference.
+  who placed it is not, except to the operators, who know the winners and so can
+  tell whose bid it is when only one bid lost (as in the four-bid demo). Small
+  books and repeated auctions allow further inference.
 - **The bidder's client runs as a local service.** Only the bidder's own client sees the
   typed bid; operators receive shares and a proof. In this demo that client is a
   localhost service on the same machine as the operators. Deposits come from one local test wallet right
   after the close; in a deployment each bidder's own wallet deposits. All
   three operators run on one machine.
+- **The book is complete only by the operators' word.** The public check proves
+  the result over the operators' signed book; it cannot show that every funded
+  bid made it in. Each bidder holds all three operators' signed acceptance and
+  checks that its own ticket is in the book, so dropping an accepted bid is
+  visible to that bidder, not to outsiders.
 - **Funding is attested, not proven.** Admission signatures attest funding; they are not a public ZK funding
   proof. The public bundle proves transaction validity and output binding, not
   chain inclusion. Confirmations are observed through one lightwalletd provider

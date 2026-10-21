@@ -100,6 +100,18 @@ Done:
       tickets named by public-book order, so the trail adds nothing beyond the bundle; the page
       says these are 35 consistency checks between files, not proofs. Recorded confirmations
       were already present (2), contrary to the review.
+- [x] Site framing and first-time-judge pass (Oct 21): the hero opens with "other verifiable
+      auctions reveal the bids to prove the price; DarkCall does not"; an "Auditable without
+      revealing" block compares a trusted blind auction, a reveal-to-audit design and DarkCall,
+      shows two bid books with the same public result (77·61·43·21 vs 22·22·22·21), and says who
+      needs a viewing key (verifiers none, each bidder its own, the operators the escrow's; the
+      operators can infer the price's owner when one bid lost). Worked example: a newsletter's
+      monthly sponsor slots, a treasury block sale as the second. Walkthrough: colour role
+      emoji, share chips 1/2/3 with their meaning, striped seals with a reveal-then-seal step,
+      the operators' jobs per step with FROST, numbered outputs, what each side cannot see;
+      the same chips, role lines and seals across the site. Hosted wording ("Live demo", "this
+      server"), an end-of-page way in, a gavel icon and logo. README, judge guide and
+      submission draft carry the same framing.
 - [x] Not planned: 8-bid end-to-end settlement (recorded run of 8 bids / 10 outputs,
       live demo stays at 4). Gap survey (Oct 21): the auction rule in circuits/protocol_lib is
       already generic in n (fees: n + 2 actions × 5,000), and the 8-bid clearing circuit is derived,

@@ -646,3 +646,38 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .chip {font-style:normal;font-size:12px;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:999px;padding:2px 9px}
 .on-dark .chips strong {color:#fff}
 .on-dark .chip {color:#fff;background:#2a2926;border-color:#4a4944}
+
+/* Same result, different demand: two bid books one public result cannot tell apart. */
+.same-result {margin-top:22px}
+.same-lead {margin:0 0 10px;font-size:14px;color:var(--ink-2)}
+.same-grid {display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:stretch}
+.same-book,.same-out {border-radius:14px;padding:14px 16px}
+.same-book {border:1px solid var(--line);background:var(--surface)}
+.same-out {background:var(--ink);color:#fff}
+.same-book > span,.same-out > span {display:block;font-size:13px;color:var(--ink-3)}
+.same-out > span {color:#c9c7bf}
+.same-bids {display:flex;gap:6px;margin:8px 0 6px}
+.same-bids b {flex:1;text-align:center;padding:6px 0;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font:600 16px var(--mono)}
+.same-out b {display:block;margin:10px 0 6px;font-size:20px;letter-spacing:-.01em}
+.same-book small {font-size:13px;color:var(--ink-2)}
+.same-out small {font-size:13px;color:#d8d6cf}
+.same-note {margin:10px 0 0;max-width:820px;font-size:14px;line-height:1.55;color:var(--ink-2)}
+/* Who needs a viewing key: the public, each bidder, the operators. */
+.audit {margin-bottom:8px}
+/* Three designs side by side: each card's flow runs top to bottom. */
+.why-grid.three {grid-template-columns:repeat(3,1fr)}
+.why-grid.three .why-flow {flex-direction:column;align-items:flex-start;gap:6px}
+.why-grid.three .why-arrow {transform:rotate(90deg);margin:10px 0 10px 18px}
+.key-roles {margin-top:18px}
+.key-title {margin:0 0 10px;font-size:16px;font-weight:600}
+.key-grid {display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.key-grid > div {border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--surface)}
+.key-who {display:block;font-size:13px;color:var(--ink-3)}
+.key-grid b {display:block;margin-top:4px;font-size:16px;font-weight:600}
+.key-grid p {margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
+@media (max-width:760px) {
+  .key-grid,.same-grid,.why-grid.three {grid-template-columns:1fr}
+  /* Three steps do not fit side by side on a phone: stack them, arrows pointing down. */
+  .audit .why-flow {flex-direction:column;align-items:flex-start;gap:6px}
+  .audit .why-arrow {transform:rotate(90deg);margin:10px 0 10px 18px}
+}

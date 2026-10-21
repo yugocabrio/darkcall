@@ -22,7 +22,7 @@
         <div class="hero-copy">
           <p class="kicker">ZECATHON 2026 · Private Markets</p>
           <h1>No bid is ever opened.<br>The price is still proven.<br>Settled on Zcash.</h1>
-          <p class="lead lead-key">To be verifiable, commit–reveal auctions publish what every bidder was willing to pay. <b>DarkCall never opens a bid: not at the close, not for any single operator, not even to generate the zero-knowledge proof.</b> One shielded transaction pays the seller and refunds every bidder exactly as proven.</p>
+          <p class="lead lead-key">Other verifiable auctions reveal the bids to prove the price. <b>DarkCall proves the price without revealing them: not at the close, not to any single operator, not even to generate the zero-knowledge proof.</b> One shielded transaction pays the seller and refunds every bidder exactly as proven, and checking it needs no published viewing key.</p>
           <ol class="hero-flow" aria-label="How it works: split, prove, pay">
             <li><span class="hero-step"><b>Split</b><span class="hero-tag">REP3</span></span><span class="hero-cat">Multi-party computation</span><p>Each bidder's client splits the bid into secret shares for the operators. No operator can read one.</p></li>
             <li><span class="hero-step"><b>Prove</b><span class="hero-tag">coNoir</span></span><span class="hero-cat">Multi-party ZK proving</span><p>The operators jointly prove the price. No one holds the bid book.</p></li>
@@ -52,7 +52,7 @@
     <section class="how" aria-labelledby="how-title">
       <p class="section-kicker">How it works</p>
       <h2 id="how-title">How can a sealed auction be publicly verified?</h2>
-      <p class="section-lead"><b>A bid is a willingness to pay.</b> If an ad buyer's ceiling leaks after the close, the seller and rivals can use it against them in the next sale. In four stages, DarkCall turns private bids into a provably correct Zcash payment.</p>
+      <p class="section-lead"><b>A bid is a willingness to pay.</b> Say a newsletter sells three sponsor slots every month. If a sponsor's ceiling leaks after the close, next month's floor is set from it, and rival sponsors learn each other's budgets. In four stages, DarkCall turns private bids into a provably correct Zcash payment.</p>
       <ol class="stages">
         <li><span>01 · Seal</span><b>Commit and split each bid</b><small>Commitment · REP3 secret shares · client ZK proof</small><em class="who"><span class="icon" aria-hidden="true">🧑🏻</span>Each bidder's own client</em></li>
         <li><span>02 · Fund</span><b>Lock deposits on Zcash</b><small>Shielded deposits · 2-of-3 FROST escrow · signed accepted book</small><em class="who"><span class="icon" aria-hidden="true">🧑🏻</span>Bidders deposit · <span class="icon" aria-hidden="true">🖥️</span>all three operators sign</em></li>
@@ -61,7 +61,49 @@
       </ol>
       <div class="disclosure">
         <div><b><span class="icon" aria-hidden="true">🌐</span>Public</b><p class="chips"><em class="chip">✓ auction terms</em><em class="chip">✓ clearing price</em><em class="chip">✓ units sold</em><em class="chip">✓ the proofs</em><em class="chip">✓ one shielded transaction</em></p></div>
-        <div class="on-dark"><b>Never published</b><p class="chips"><em class="chip">✕ the bid book</em><em class="chip">✕ any winner's maximum bid</em><em class="chip">✕ each refund</em><em class="chip">✕ who paid which deposit</em></p><small>The operators learn who won and each refund, but never a bid.</small></div>
+        <div class="on-dark"><b>Never published</b><p class="chips"><em class="chip">✕ the bid book</em><em class="chip">✕ any winner's maximum bid</em><em class="chip">✕ each refund</em><em class="chip">✕ who paid which deposit</em><em class="chip">✕ any viewing key</em></p><small>The operators learn who won and each refund, never the bid book. Knowing the winners, they can tell whose losing bid the price is.</small></div>
+      </div>
+
+      <div class="why audit" aria-labelledby="audit-title">
+        <p class="section-kicker">Auditable without revealing</p>
+        <h3 id="audit-title" class="why-title">Why should an audit reveal the bids?</h3>
+        <p class="why-lead">Blind auctions keep the bids secret but ask everyone to trust the result. Reveal-to-audit designs win the check back by opening the bids. <b>DarkCall keeps the bids secret and still lets anyone check:</b> no bid reveal, no published viewing key, no operator reconstructs the bid book.</p>
+        <div class="why-grid three">
+          <div class="why-card">
+            <span class="why-label">Trusted blind auction</span>
+            <div class="why-flow"><span class="why-box">Sealed bids</span><span class="why-arrow" aria-hidden="true"></span><span class="why-box">The seller clears<i>sees every bid</i></span><span class="why-arrow" aria-hidden="true"></span><span class="why-box">Announces a price</span></div>
+            <p>Bids stay hidden from the public, but the price and the escrow rest on trusting whoever runs it. <b>No one else can check the result.</b></p>
+          </div>
+          <div class="why-card">
+            <span class="why-label">Commit–reveal or viewing-key audit</span>
+            <div class="why-flow"><span class="why-box">Sealed bids</span><span class="why-arrow" aria-hidden="true"></span><span class="why-box">Open them<i>reveal, or publish a key</i></span><span class="why-arrow" aria-hidden="true"></span><span class="why-box">Recompute</span></div>
+            <p>Auditability comes from making the bids readable after the close. <b>Every bid amount becomes public.</b></p>
+          </div>
+          <div class="why-card us">
+            <span class="why-label">DarkCall</span>
+            <div class="why-flow"><span class="why-box">Sealed bids</span><span class="why-arrow" aria-hidden="true"></span><span class="why-box">Joint ZK proof<i>nothing disclosed</i></span><span class="why-arrow" aria-hidden="true"></span><span class="why-box">Anyone verifies</span></div>
+            <p>Auditability comes from proofs, not from access to the bids. <b>Verifying needs no bid and no viewing key.</b></p>
+          </div>
+        </div>
+        <div class="same-result" aria-labelledby="same-title">
+          <p id="same-title" class="key-title">The auction ends. The bidding strategy stays private.</p>
+          <p class="same-lead">Two bid books for the same three sponsor slots, reserve 20:</p>
+          <div class="same-grid">
+            <div class="same-book"><span>Bid book A</span><div class="same-bids"><b>77</b><b>61</b><b>43</b><b>21</b></div><small>Sponsors would have paid far more</small></div>
+            <div class="same-book"><span>Bid book B</span><div class="same-bids"><b>22</b><b>22</b><b>22</b><b>21</b></div><small>Barely above the price</small></div>
+            <div class="same-out"><span>Public result of both</span><b>Price 21 · 3 of 3 sold</b><small>Both pass the same public check, and every refund is the same</small></div>
+          </div>
+          <p class="same-note">A commit–reveal or viewing-key audit shows everyone which book it was, and next month's floor moves to match. DarkCall's public check cannot tell them apart, and neither can any single operator.</p>
+        </div>
+        <div class="key-roles" aria-labelledby="keys-title">
+          <p id="keys-title" class="key-title">Who needs a viewing key?</p>
+          <div class="key-grid">
+            <div><span class="key-who"><span class="icon" aria-hidden="true">🌐</span>Anyone verifying</span><b>No viewing key</b><p>Checks the price and every payout from public proofs, signatures and the transaction. Decrypts no bid and no refund.</p></div>
+            <div><span class="key-who"><span class="icon" aria-hidden="true">🔑</span>Each bidder</span><b>Its own key, kept</b><p>Opens only its own encrypted receipt, and never hands the key to anyone, verifiers included.</p></div>
+            <div><span class="key-who"><span class="icon" aria-hidden="true">🖥️</span>The three operators</span><b>The escrow's viewing key</b><p>Needed to admit deposits; it shows fixed-size deposits, never a bid. They learn winners and refunds, and none of them alone can rebuild the bid book (REP3). Knowing the winners, they can tell whose bid the price is when only one bid lost.</p></div>
+          </div>
+          <p class="why-note">No viewing key is ever published. In this demo every party runs on one host, so each key staying on its owner's own device is the deployment model, not something this run shows.</p>
+        </div>
       </div>
 
       <div class="why" aria-labelledby="why-title">
@@ -124,7 +166,7 @@
           <div class="w-result w-from" data-from="3"><span>Computed on secret shares</span><b>Price 21 · 3 of 3 sold</b><small class="w-proof">coNoir proof ✓ · no bid list rebuilt</small></div>
           <div class="w-settle w-from" data-from="4"><span>One shielded transaction · six outputs</span><ol><li><span>Refund · Ticket 01</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 02</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 03</span><b class="w-seal"><i>79</i></b><em>Halo2 ✓ note</em></li><li><span>Refund · Ticket 04</span><b class="w-seal"><i>100</i></b><em>Halo2 ✓ note</em></li><li><span>Seller · payment</span><b class="w-seal"><i>63</i></b><em>Halo2 ✓ note</em></li><li><span>Operator · fee</span><b class="w-seal"><i>30,000</i></b><em>Halo2 ✓ note</em></li></ol><small class="w-fee">Plus a 30,000 zatoshi network fee, public on chain. Six outputs + fee = 4 × 15,100.</small><small class="w-signed"><span class="icon" aria-hidden="true">🖥️</span><span class="icon" aria-hidden="true">🖥️</span>Signed 2-of-3 with FROST by two operators; on chain it is an ordinary shielded transaction.</small></div>
           <p class="w-lane"><span class="icon" aria-hidden="true">👀</span><b>Who sees what</b> · the public checks the proofs but sees no bid, winner or refund; each bidder opens only its own receipt</p>
-          <div class="w-public w-from" data-from="5"><div><span><span class="icon" aria-hidden="true">🌐</span>Anyone sees</span><b>Price 21 · 3 sold · proofs ✓</b><small>No secrets needed to verify</small><small class="w-unseen chips"><strong>Never sees</strong><em class="chip">✕ any bid</em><em class="chip">✕ who won</em><em class="chip">✕ any refund</em><em class="chip">✕ who was paid</em></small></div><div class="w-own on-dark"><span><span class="icon" aria-hidden="true">🔑</span>Ticket 01's private receipt</span><b>Won · refund 79</b><small>Decrypted from its own memo with its own key</small><small class="w-unseen chips"><strong>Cannot open</strong><em class="chip">✕ any other ticket's receipt</em></small></div></div>
+          <div class="w-public w-from" data-from="5"><div><span><span class="icon" aria-hidden="true">🌐</span>Anyone sees</span><b>Price 21 · 3 sold · proofs ✓</b><small>No secret and no viewing key needed to verify</small><small class="w-unseen chips"><strong>Never sees</strong><em class="chip">✕ any bid</em><em class="chip">✕ who won</em><em class="chip">✕ any refund</em><em class="chip">✕ who was paid</em></small></div><div class="w-own on-dark"><span><span class="icon" aria-hidden="true">🔑</span>Ticket 01's private receipt</span><b>Won · refund 79</b><small>Decrypted from its own memo with its own key, which it keeps</small><small class="w-unseen chips"><strong>Cannot open</strong><em class="chip">✕ any other ticket's receipt</em></small></div></div>
         </div>
       </div>
 
@@ -154,7 +196,7 @@
 
     <section class="landing-more" aria-labelledby="compare-title">
       <h2 id="compare-title">Commit–reveal opens the bids to prove the price.</h2>
-      <p class="section-lead">So does publishing a viewing key: every bid amount is visible after the close. That matters wherever amounts are strategic: allocation rounds, ad slots, procurement. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
+      <p class="section-lead">So does publishing a viewing key: every bid amount is visible after the close. That matters wherever the same buyers come back: monthly sponsor slots, where this month's ceilings would set next month's floor, or a treasury selling blocks of a holding to funds, where each bid is a fund's valuation. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
       <div class="compare-wrap">
         <table class="compare">
           <thead><tr><th scope="col"><span class="visually-hidden">Property</span></th><th scope="col" class="us">DarkCall</th><th scope="col">Open on-chain auction</th><th scope="col">Commit–reveal or published viewing key</th><th scope="col">Trusted auctioneer or decryption committee</th></tr></thead>
@@ -163,7 +205,7 @@
             <tr><th scope="row">Bids hidden from whoever runs it</th><td class="yes us">Yes, from any single operator</td><td class="no">No</td><td class="no">No</td><td class="no">No, it decrypts them</td></tr>
             <tr><th scope="row">Anyone can check the price</th><td class="yes us">Yes, by zero-knowledge proof</td><td class="yes">Yes</td><td class="yes">Yes, by opening every bid amount</td><td class="no">No, you trust it</td></tr>
             <tr><th scope="row">Payments and refunds stay private</th><td class="yes us">Yes, one shielded transaction</td><td class="no">No</td><td class="part">Possible, if paid shielded</td><td class="part">Possible, if it pays shielded</td></tr>
-            <tr><th scope="row">Anyone can verify payouts match the result</th><td class="yes us">Yes, six output proofs</td><td class="yes">Yes, by contract</td><td class="part">By contract, or audited afterwards</td><td class="no">No, the signers decide</td></tr>
+            <tr><th scope="row">Anyone can verify payouts match the result</th><td class="yes us">Yes, six output proofs</td><td class="yes">Yes, by contract</td><td class="part">By contract, or audited afterwards</td><td class="no">No, the signers decide</td></tr><tr><th scope="row">Audit without revealing bids or keys</th><td class="yes us">Yes, proofs only</td><td class="no">No, nothing is hidden</td><td class="no">No, opens the bids or publishes a key</td><td class="no">No, only it can check</td></tr>
           </tbody>
         </table>
       </div>
@@ -176,9 +218,9 @@
       <details class="landing-trust"><summary>Trust model: what DarkCall does not prove</summary><ul>
         <li>Bid secrecy holds against at most one semi-honest operator (REP3). Two colluding operators can reconstruct the bids. This is not malicious-secure MPC.</li>
         <li>Custody is 2-of-3 FROST from a DKG. Two colluding signers can move escrowed funds, and bidders have no unilateral refund. Such a payout fails public verification but is not prevented.</li>
-        <li>Operators hold the escrow viewing capability and learn winners and refunds.</li>
-        <li>The public price is the highest losing bid, or the reserve, so one bid value can follow from it.</li>
-        <li>Public verification trusts the auction's operator admission keys, which a verifier must obtain independently of the bundle. Funding is certified by those operators' signatures, not proven in zero knowledge, and the bundle alone does not prove chain inclusion.</li>
+        <li>The three operators hold the escrow's viewing key, which admitting deposits needs: it shows them fixed-size deposits, not bids, and they learn winners and refunds. No viewing key is published, and public verification needs none.</li>
+        <li>The public price is the highest losing bid, or the reserve, so one bid value can follow from it; the operators, who know the winners, can tell whose it is when only one bid lost.</li>
+        <li>Public verification trusts the auction's operator admission keys, which a verifier must obtain independently of the bundle. Funding is certified by those operators' signatures, not proven in zero knowledge, and the bundle alone does not prove chain inclusion.</li><li>The public check proves the result over the operators' signed book; it cannot show that every funded bid made it in. Each bidder holds all three operators' signed acceptance and checks that its own ticket is in the book, so dropping an accepted bid is visible to that bidder, not to outsiders.</li>
         <li>In this demo every party runs on one host: each bidder's client (which sees its own typed bid) and all three operators, and one test wallet funds all four tickets.</li>
       </ul></details>
       <p class="fine-print">Common designs compared, not specific projects. Other ZK and MPC auction designs also keep bids private; DarkCall's focus is combining multi-party ZK proving with proof-bound, native shielded settlement on Zcash. Timings from one 16 GiB laptop; testnet coins only.</p>
@@ -288,7 +330,7 @@
       <article class="auction-panel">
         <div class="panel-top"><span class="eyebrow">The auction</span><span class="recorded-label">Recorded</span></div>
         <h2>Four sealed bids, three units</h2>
-        <p id="auction-story" class="auction-story">Think of a seller offering three ad slots. No operator ever rebuilds the bid book; only the clearing price is published.</p>
+        <p id="auction-story" class="auction-story">Think of a newsletter selling three sponsor slots this month. No operator ever rebuilds the bid book; only the clearing price is published.</p>
         <div id="case-tabs" class="case-tabs" role="group" aria-label="Auction scenario"><button data-case="positive" class="active" aria-pressed="true">Standard clearing</button><button data-case="zero" aria-pressed="false">Zero-price tie</button></div>
         <div class="market-stats"><div><span>Clearing price</span><strong id="price">—</strong><small>zatoshi per unit</small></div><div><span>Units sold</span><strong id="sold">—<i>/ 3</i></strong><small>units</small></div></div>
         <div class="sealed-tickets" aria-label="Four sealed bids"><div><span>01</span><b></b><small>sealed</small></div><div><span>02</span><b></b><small>sealed</small></div><div><span>03</span><b></b><small>sealed</small></div><div><span>04</span><b></b><small>sealed</small></div></div>
@@ -311,7 +353,7 @@
     
     <section class="technical-section" aria-label="Further details">
       <details class="public-details"><summary>Technical details</summary><p>REP3 computation · FROST signing · Halo2 output bindings · NU7</p><dl><dt>Transaction ID</dt><dd id="txid">—</dd><dt>Accepted root</dt><dd id="root">—</dd><dt>Native format</dt><dd id="native-shape">—</dd><dt>Network fee</dt><dd id="fee">—</dd><dt>Verification stages</dt><dd id="stage-status">Recorded clearing; own receipt unopened. Settlement not reverified in this session.</dd><dt>Public check</dt><dd id="settlement-detailed-result">Not run in this page session.</dd></dl></details>
-      <details class="public-details"><summary>Trust model and limits</summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds, and users cannot force a unilateral refund.</li><li>Operators have escrow viewing capability and learn refunds and who won. Public outcomes can allow inference.</li><li>Every party of the recorded auction ran on one host; see the chain note below. No malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The admission authority is configured and trusted separately.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded settlement; separate offline rehearsal with synthetic funding.</p></details>
+      <details class="public-details"><summary>Trust model and limits</summary><ul><li>Bid secrecy assumes at most one semi-honest REP3 party is corrupt. Two colluding parties can reconstruct bids.</li><li>Custody is 2-of-3. Two signers can move funds, and users cannot force a unilateral refund.</li><li>The three operators hold the escrow's viewing key (it shows fixed-size deposits, not bids) and learn refunds and who won. Public outcomes can allow inference. No viewing key is published; verifying needs none.</li><li>Every party of the recorded auction ran on one host; see the chain note below. No malicious-MPC or production-custody claim.</li><li>Accepted-book signatures attest funding; they are not a public ZK funding proof. The admission authority is configured and trusted separately.</li><li>The public check proves the result over the operators' signed book; it cannot show that every funded bid made it in. Each bidder holds all three operators' signed acceptance and checks that its own ticket is in the book, so dropping an accepted bid is visible to that bidder, not to outsiders.</li><li>Item delivery, network anonymity and Sybil resistance are outside this prototype.</li></ul><p id="chain-scope">No chain inclusion proof in the public bundle.</p><p id="remaining-scope">Recorded settlement; separate offline rehearsal with synthetic funding.</p></details>
     </section>
     </div>
   </main>

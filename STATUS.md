@@ -30,6 +30,10 @@ Updated: 2026-10-21 (git HEAD is authoritative).
   public data behind each claim with 35 recomputed consistency checks
   (`scripts/proof_trail.py`, `/api/trail`, committed bundle only), and each
   cheat result shows the original beside the changed copy and the exact field.
+- **How it is told (Oct 21):** three designs side by side on the landing (trusted
+  blind auction, reveal-to-audit, DarkCall's proofs without revealing), the
+  same-result bid books, who needs a viewing key, and one worked example
+  (monthly sponsor slots). README, judge guide and submission draft match.
 - **Tests and hosting (Oct 21):** the three CI jobs (Noir 34, Rust workspace,
   Python 28) pass on a fresh `git archive` export with no local state, and a
   manual run on GitHub was green; the workflow runs on every push to main again. The hosted demo
