@@ -25,8 +25,8 @@ Updated: 2026-10-21 (git HEAD is authoritative).
   starts as the public, then contrasts a bidder's receipt with what everyone
   else sees, and states the settlement check as four claims.
 - **Tests and hosting (Oct 21):** the three CI jobs (Noir 34, Rust workspace,
-  Python 28) pass on a fresh `git archive` export with no local state; the
-  GitHub workflow stays manual until one run there is green. The hosted demo
+  Python 28) pass on a fresh `git archive` export with no local state, and a
+  manual run on GitHub was green; the workflow runs on every push to main again. The hosted demo
   image (`docker/demo`) is prepared but not built or deployed; it now lets its
   unprivileged user pass the pinned-checkout git checks.
 - **Product flow (browser and API):** Create → Bid → Fund on Zcash → Clear →

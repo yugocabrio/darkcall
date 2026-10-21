@@ -71,8 +71,8 @@ Done:
       proofs run and verified; 16 estimated). README, judge guide and draft say four is the circuit
       size, not a speed limit. Next if needed: a sorting network beyond a few dozen bids.
 - [x] CI (Oct 21): GitHub Actions runs 34 Noir, 66 Rust (release) and 28 Python tests; all pass
-      locally. Push runs failed on GitHub and emailed the author, so the workflow is manual
-      (workflow_dispatch) until a clean-checkout run is green (next item). Own-wallet deposits: format allows ZIP-321 payment, but no consumer wallet
+      locally. Push runs failed on GitHub and emailed the author, so the workflow was manual
+      (workflow_dispatch) until a clean-checkout run was green (see below). Own-wallet deposits: format allows ZIP-321 payment, but no consumer wallet
       sends NU7 testnet transactions yet (Oct 15 Arborist call); recorded in the judge guide.
 - [x] One site (Oct 21): the static evidence page (docs/index.html, docs/site, build_evidence_site.py)
       is retired; the landing at / and the live demo at /demo/settled and /demo/run are the site,
@@ -93,7 +93,8 @@ Done:
       wallet-bridge test that assumed .local exists (it now creates it, owner-only). Noir 34,
       Rust all crates (slowest 107 s, peak RSS about 0.4 GiB), Python 28 pass. A macOS-only
       flake in the resource guard (EPERM from killpg on a zombie-only group, 1 in 6) is fixed:
-      0 in 15. The workflow stays manual until one run on GitHub is green.
+      0 in 15. The author ran the workflow on GitHub by hand and all jobs were green, so it
+      runs again on every push to main (and on demand).
 - [x] Settled page, checked by the judge (Oct 21): starts as the public (can / cannot see), a
       bidder's receipt is contrasted with what everyone else sees, the settlement check is four
       plain claims (price, six payouts, real Zcash payment, accepted bids) with the Oct 19 record,

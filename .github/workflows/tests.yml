@@ -4,9 +4,11 @@
 # pinned prover builds and minutes of proving.
 name: tests
 
-# Manual only until the first green run is confirmed: automatic runs on
-# every push were failing and emailing the author.
+# Runs on every push to main and on demand. The first green run on GitHub was
+# a manual one on Oct 21, after the suites were fixed to pass in a fresh checkout.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
