@@ -233,6 +233,19 @@ the image afterwards with `docker image rm`.
   --authority demo/authority/browser-auction-nu7-v2.json
 ```
 
+**Try to cheat it.** With the pinned tools built, this makes one dishonest
+change at a time to a copy of the recorded testnet settlement (a different bid
+in the signed book, a price one higher, two refunds swapped) and runs the same
+verifiers on each copy. All three are refused: the bid by the signed book in
+about 4 s, the price by the auction proof and the refunds by the output
+bindings in about 2 minutes each
+([record](evidence/2026-10-21-cheat-lab.json)). The live demo's
+**See a settled auction** page has the same buttons.
+
+```sh
+python3 -B scripts/cheat_lab.py book price payout
+```
+
 **Run the whole product locally.** You need the pinned tools, Docker, and the
 local NU7 regtest node and test bank ([regtest.md](docs/regtest.md)).
 
