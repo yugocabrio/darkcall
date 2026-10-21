@@ -16,7 +16,7 @@ import urllib.request
 from regtest_deposits import ROOT, private_write
 
 
-def run(port, bids, reserve):
+def run(port, bids, reserve, units=3):
     origin = 'http://127.0.0.1:' + str(port)
     started = time.monotonic()
     state = {}
@@ -40,7 +40,7 @@ def run(port, bids, reserve):
     code, odd = call('/api/rehearsal/create', {'units': 2, 'reserve': 10, 'budget': 100,
                                                'closes_at_utc': int(time.time()) + 3600})
     assert code == 200 and odd['settlement_available'] is False
-    terms = {'units': 3, 'reserve': reserve, 'budget': 100, 'closes_at_utc': int(time.time()) + 40}
+    terms = {'units': units, 'reserve': reserve, 'budget': 100, 'closes_at_utc': int(time.time()) + 40}
     code, auction = call('/api/rehearsal/create', terms)
     assert code == 200 and auction['settlement_available'], auction
     scope = {'auction_id': auction['auction_id']}
@@ -77,7 +77,8 @@ def run(port, bids, reserve):
     settle_started = time.monotonic()
     # A second request while the job owns the proof lock is refused, not duplicated.
     assert call('/api/rehearsal/settle', scope)[0] == 409
-    assert call('/api/verify', {'case': 'positive', 'ticket': 0, 'action': 'verify'})[0] == 409
+    # The settled auction's checks have their own lock: they still answer.
+    assert call('/api/verify', {'case': 'positive', 'ticket': 0, 'action': 'verify'})[0] == 200
     phases = []
     while True:
         time.sleep(10)
@@ -120,7 +121,7 @@ def run(port, bids, reserve):
         'settlement': settled, 'progress_phases': phases, 'own_native_receipts': receipts,
         'own_receipts_equal_browser_results': True, 'native_tamper_rejected_before_key_read': True,
         'foreign_capability_refused': True, 'settle_before_clear_refused': True,
-        'concurrent_settle_and_recorded_proof_refused_409': True, 'non_default_terms_not_settleable': True,
+        'concurrent_settle_refused_409_and_recorded_check_answered': True, 'non_default_terms_not_settleable': True,
         'recorded_txid_unchanged': state['cases'][0]['txid'] == recorded,
         'seconds': time.monotonic() - started}
 
@@ -130,9 +131,10 @@ def main():
     parser.add_argument('--port', type=int, default=8877)
     parser.add_argument('--bids', default='77,61,43,21')
     parser.add_argument('--reserve', type=int, choices=(0, 20), default=20)
+    parser.add_argument('--units', type=int, choices=(1, 2, 3), default=3)
     parser.add_argument('--output', required=True)
     args = parser.parse_args()
-    result = run(args.port, [int(b) for b in args.bids.split(',')], args.reserve)
+    result = run(args.port, [int(b) for b in args.bids.split(',')], args.reserve, args.units)
     private_write(ROOT / args.output, result)
     print(json.dumps(result, indent=2))
 

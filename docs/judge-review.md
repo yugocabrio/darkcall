@@ -98,7 +98,7 @@ pinned native, Halo2 and C++ verifiers establish validity.
 | Question | Answer |
 | --- | --- |
 | Can one operator see the bid list? | No, under REP3 with at most one semi-honest corrupt operator. Two colluding operators can reconstruct it. |
-| Can operators see who won? | Yes. Operators learn refunds and winners and hold the escrow's viewing key, which shows them fixed-size deposits, not bids. None alone rebuilds the bid book, but knowing the winners they can tell whose losing bid the price is; in the four-bid demo, with one loser, that bid (21) is known to them. |
+| Can operators see who won? | Yes. Operators learn refunds and winners and hold the escrow's viewing key, which shows them fixed-size deposits, not bids. None alone rebuilds the bid book. When only one bid loses, knowing the winners tells them that bid was the price: in the four-bid, three-unit demo, the loser's 21. |
 | Who needs a viewing key? | Verifiers need none: the public check uses proofs, signatures and the transaction only. Each bidder opens its own receipt with its own key and hands it to no one. Only the three operators hold the escrow's viewing key. No viewing key is published. |
 | What does the public price reveal? | The clearing price is the highest losing bid, or the reserve, so that one bid value is public by the rules. Who placed it, and every other bid, is not. |
 | Can operators drop a bid? | The public check cannot rule it out: it proves the result over the operators' signed book, not that every funded bid made it in. Each bidder holds all three operators' signed acceptance and checks that its own ticket is in the book, so dropping an accepted bid is visible to that bidder, not to outsiders. |

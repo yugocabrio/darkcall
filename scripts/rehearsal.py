@@ -35,8 +35,10 @@ SETTLE_FIELDS={'phase','state','elapsed_seconds','at_unix','height','accepted_ro
 
 
 def standard_terms(a):
-    # The existing native funded path is pinned to these prototype terms.
-    return a['units']==3 and a['budget']==100 and a['reserve'] in (0,20)
+    # The native funded path takes the prototype terms: budget 100, reserve 0 or
+    # 20, and one to three units. Every unit count keeps the same four tickets
+    # and six outputs; only the clearing price and the number sold change.
+    return a['units'] in (1,2,3) and a['budget']==100 and a['reserve'] in (0,20)
 
 
 def number(value,minimum,maximum):
@@ -295,7 +297,7 @@ class Rehearsal:
         a=self.lookup(value['auction_id'])
         if a[kind] is not None: return self.settlement_view(a,kind),False
         if not self.settlement_available: raise ValueError('Regtest settlement tools are unavailable on this checkout')
-        if not standard_terms(a): raise ValueError('Regtest settlement supports 3 units, budget 100 and reserve 0 or 20')
+        if not standard_terms(a): raise ValueError('Settlement supports 1 to 3 units, budget 100 and reserve 0 or 20')
         if a['poisoned'] or not a['certificate'] or len(a['clients'])!=4:
             raise ValueError('Certify the closed book with four tickets first')
         if kind=='settlement':

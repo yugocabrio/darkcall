@@ -120,10 +120,11 @@ and still lets anyone check. No bid reveal, no published viewing key, and no
 operator reconstructs the bid book: anyone verifies the clearing price and every
 shielded payout from public zero-knowledge proofs, without decrypting a bid.
 Two bid books for three slots, 77 · 61 · 43 · 21 and 22 · 22 · 22 · 21, give the
-same public result (price 21, three sold, the same refunds). A commit–reveal or
-viewing-key audit shows which one it was, and next month's floor moves to match;
-DarkCall's public check cannot tell them apart, and neither can any single
-operator. Who needs a viewing key:
+same result (price 21, three sold, the same refunds). A commit–reveal or
+viewing-key audit shows which one it was, and next month's floor moves to match.
+DarkCall's public proofs tell a verifier the same thing for either book (the bid
+commitments differ but reveal no amount), and no single operator learns which
+book it was. Who needs a viewing key:
 
 | Who | Viewing key | What it gives them |
 | --- | --- | --- |

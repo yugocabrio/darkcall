@@ -93,7 +93,8 @@ pub(super) fn load(path: &Path, reserved: Option<[u8; 32]>) -> Result<Validated>
     let c = &manifest.context;
     let book = &certificate.endorsements[0].book;
     let chain = crate::network::Chain::from_genesis_bytes(&c.network_genesis)?;
-    if c.units != 3
+    // One to three units: the same four tickets and six outputs at any count.
+    if !(1..=3).contains(&c.units)
         || c.budget != 100
         || c.processing_fee != 15000
         || std::time::SystemTime::now()

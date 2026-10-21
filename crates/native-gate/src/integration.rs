@@ -222,12 +222,17 @@ impl Integration {
             &fs::read(book.join("book.json")).map_err(|e| fail("read book", e))?,
         )
         .map_err(|e| fail("parse book", e))?;
-        for (key, value) in [("units", 3), ("budget", 100), ("processing_fee", 15000)] {
+        // Four tickets at the standard budget and fee, one to three units: the
+        // delivery and amount checks below hold for any of those unit counts.
+        for (key, value) in [("budget", 100), ("processing_fee", 15000)] {
             if data[key].as_u64() != Some(value) {
                 return Err(
                     "offline integration requires the four-bid standard fixture terms".into(),
                 );
             }
+        }
+        if !matches!(data["units"].as_u64(), Some(1..=3)) {
+            return Err("offline integration requires one to three units".into());
         }
         let flags = match data["reserve"].as_u64() {
             Some(0) => true,

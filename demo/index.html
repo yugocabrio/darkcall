@@ -61,7 +61,7 @@
       </ol>
       <div class="disclosure">
         <div><b><span class="icon" aria-hidden="true">🌐</span>Public</b><p class="chips"><em class="chip">✓ auction terms</em><em class="chip">✓ clearing price</em><em class="chip">✓ units sold</em><em class="chip">✓ the proofs</em><em class="chip">✓ one shielded transaction</em></p></div>
-        <div class="on-dark"><b>Never published</b><p class="chips"><em class="chip">✕ the bid book</em><em class="chip">✕ any winner's maximum bid</em><em class="chip">✕ each refund</em><em class="chip">✕ who paid which deposit</em><em class="chip">✕ any viewing key</em></p><small>The operators learn who won and each refund, never the bid book. Knowing the winners, they can tell whose losing bid the price is.</small></div>
+        <div class="on-dark"><b>Never published</b><p class="chips"><em class="chip">✕ the bid book</em><em class="chip">✕ any winner's maximum bid</em><em class="chip">✕ each refund</em><em class="chip">✕ who paid which deposit</em><em class="chip">✕ any viewing key</em></p><small>The operators learn who won and each refund, never the bid book. When only one bid loses, as in this demo, knowing the winners tells them that bid was the price.</small></div>
       </div>
 
       <div class="why audit" aria-labelledby="audit-title">
@@ -93,7 +93,7 @@
             <div class="same-book"><span>Bid book B</span><div class="same-bids"><b>22</b><b>22</b><b>22</b><b>21</b></div><small>Barely above the price</small></div>
             <div class="same-out"><span>Public result of both</span><b>Price 21 · 3 of 3 sold</b><small>Both pass the same public check, and every refund is the same</small></div>
           </div>
-          <p class="same-note">A commit–reveal or viewing-key audit shows everyone which book it was, and next month's floor moves to match. DarkCall's public check cannot tell them apart, and neither can any single operator.</p>
+          <p class="same-note">A commit–reveal or viewing-key audit shows everyone which book it was, and next month's floor moves to match. DarkCall's public proofs tell a verifier the same thing for either book, price 21 and three sold, and no single operator learns which book it was.</p>
         </div>
         <div class="key-roles" aria-labelledby="keys-title">
           <p id="keys-title" class="key-title">Who needs a viewing key?</p>

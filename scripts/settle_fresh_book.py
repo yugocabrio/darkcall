@@ -31,7 +31,7 @@ BANK = ROOT / '.local/nu7-bank-20261005'
 # The funded settlement driver refuses to start proving below this headroom;
 # check it before any deposit so a refusal never strands funded tickets.
 MIN_START_DISK = 10 * 1024 ** 3
-TERMS = {'units': 3, 'budget': 100, 'processing_fee': 15000}
+TERMS = {'budget': 100, 'processing_fee': 15000}
 # Every executable the existing funded drivers invoke; refuse before funding
 # instead of discovering a missing tool after deposits are already made.
 REQUIRED = [ROOT / 'target/release' / n for n in ('darkcall-native-gate', 'darkcall-input-tool', 'poseidon_batch',
@@ -159,8 +159,9 @@ def book_run_for(auction):
         raise RuntimeError('Expected an ignored browser rehearsal auction directory')
     book_run = auction / 'clearing-book'
     book = json.loads(private_read(book_run / 'book.json', 16384))
-    if any(book[k] != v for k, v in TERMS.items()) or book['reserve'] not in (0, 20) or book['active'] != [True] * 4:
-        raise RuntimeError('Native settlement prototype supports 3 units, budget 100, reserve 0 or 20')
+    if (any(book[k] != v for k, v in TERMS.items()) or book['units'] not in (1, 2, 3)
+            or book['reserve'] not in (0, 20) or book['active'] != [True] * 4):
+        raise RuntimeError('Native settlement prototype supports 1 to 3 units, budget 100, reserve 0 or 20')
     root, tickets = certified_root(auction / 'final-certificate.json')
     return auction, book_run, root, tickets
 
