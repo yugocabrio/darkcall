@@ -14,6 +14,7 @@
   --green:#1e7a4c; --green-soft:#e7f2eb; --red:#b3261e; --red-soft:#fbeae8;
   --sans:"Plex",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
   --mono:"Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --seal:repeating-linear-gradient(135deg,#141413 0 8px,#2a2926 8px 16px);
   --radius:14px; --shadow:0 1px 2px rgba(20,20,19,.05),0 10px 30px rgba(20,20,19,.05);
 }
 * {box-sizing:border-box}
@@ -33,7 +34,8 @@ h1,h2,h3 {font-weight:600;letter-spacing:-.02em;line-height:1.15;margin:0}
 /* Header and footer */
 .topbar {max-width:1160px;margin:0 auto;padding:22px 32px;display:flex;align-items:center;gap:24px}
 .brand {display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:18px;letter-spacing:-.01em;text-decoration:none}
-.brand-mark {width:12px;height:12px;background:var(--gold);transform:rotate(45deg);border-radius:2px}
+/* The gavel, the same as the site icon. */
+.brand-mark {width:20px;height:20px;flex:none}
 .top-label {color:var(--ink-3);font-size:14px}
 .local-pill {margin-left:auto;font-size:13px;color:var(--ink-2);border:1px solid var(--line-strong);border-radius:999px;padding:4px 12px}
 footer {max-width:1160px;margin:96px auto 0;padding:28px 32px 48px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;color:var(--ink-3);font-size:13px}
@@ -67,7 +69,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .receipt-bids {display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;padding:18px 0 16px;border-bottom:1px solid var(--line)}
 .receipt-bids > span {color:var(--ink-2)}
 .receipt-bids div {display:flex;gap:6px;justify-content:flex-end}
-.receipt-bids b {width:38px;height:14px;border-radius:3px;background:var(--ink)}
+.receipt-bids b {width:38px;height:14px;border-radius:3px;background:var(--seal)}
 .receipt-bids small {grid-column:1/-1;font-size:12px;color:var(--ink-3)}
 .receipt-price {padding:18px 0 14px}
 .receipt-price > span {font-size:13px;color:var(--ink-3)}
@@ -124,6 +126,8 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .stages span {display:block;font:500 12px var(--mono);color:var(--gold-ink);margin-bottom:10px}
 .stages b {display:block;font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
 .stages small {display:block;margin-top:10px;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.stages .who .icon {display:inline-block;margin:0 .35em 0 0;font:14px/1 var(--sans);color:inherit}
+.stages .who {display:block;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line-strong);font-style:normal;font-size:12px;color:var(--ink-2)}
 .disclosure {display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .disclosure div {border-radius:14px;padding:16px 20px}
 .disclosure div:first-child {background:var(--surface-2);border:1px solid var(--line)}
@@ -175,7 +179,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
    At step 1 a bid shows for a moment (its bidder knows it), then the mask
    closes over it; pointing at or tapping a seal lifts it so the value reads plainly. */
 .w-seal {position:relative;display:grid;place-items:center;height:28px;margin-top:8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);cursor:default}
-.w-seal::before {content:"";position:absolute;inset:-1px;border-radius:inherit;background:repeating-linear-gradient(135deg,#141413 0 8px,#2a2926 8px 16px);opacity:1;transition:opacity .9s ease}
+.w-seal::before {content:"";position:absolute;inset:-1px;border-radius:inherit;background:var(--seal);opacity:1;transition:opacity .9s ease}
 .w-seal i {position:relative;font:500 14px var(--mono);font-style:normal;color:#fff;opacity:.3;transition:opacity .9s ease,color .9s ease}
 .w-seal:hover::before,.w-seal.peek::before {opacity:.12;transition-duration:.25s}
 .w-seal:hover i,.w-seal.peek i {opacity:1;color:var(--ink);transition-duration:.25s}
@@ -184,12 +188,19 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .w-ops {grid-column:1/9;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;background:transparent!important;border:0!important;padding:0!important}
 .w-op {border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);transition:opacity .45s ease,transform .45s ease,border-color .3s}
 .w-escrow {grid-column:9/13}
+/* What the operators do at Fund, Prove and Settle; each lights up at its step. */
+.w-jobs {grid-column:1/13;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;background:transparent!important;border:0!important;padding:0!important}
+.w-job {border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--surface)}
+.w-job b {display:block;margin-top:2px;font-size:14px}
+.w-signed {margin-top:6px!important;color:var(--ink-2)!important}
 .w-result {grid-column:1/5}
 .w-result b {display:block;margin-top:6px;font-size:22px;letter-spacing:-.02em}
 .w-proof {color:var(--green)!important;font-weight:500}
 .w-settle {grid-column:5/13}
-.w-settle ol {list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
-.w-settle li {display:grid;grid-template-columns:minmax(0,1fr) 58px auto;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+.w-settle ol {list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;counter-reset:output}
+.w-settle li {display:grid;grid-template-columns:20px minmax(0,1fr) 58px auto;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);counter-increment:output}
+/* Output numbers in mono, so they never read as the 1 2 3 share chips. */
+.w-settle li::before {content:"#" counter(output);font:500 11px var(--mono);color:var(--ink-3)}
 .w-settle li span {font-size:12px;color:var(--ink-2)}
 .w-settle .w-seal {height:20px;margin:0}
 .w-settle .w-seal i {font-size:12px}
@@ -207,10 +218,12 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .w-public b {display:block;margin-top:4px;font-size:16px}
 .w-own {background:var(--ink)!important;border-color:var(--ink)!important;color:#fff}
 .w-own span,.w-own small {color:#c9c7bf!important}
+.w-public .w-unseen {display:flex!important;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-strong)}
+.w-own .w-unseen {border-top-color:#4a4944}
 .walk-stage .w-from {opacity:.16;transform:translateY(6px)}
 .walk-stage .w-from.on {opacity:.62;transform:none}
 .walk-stage .w-from.on.now {opacity:1}
-.walk-stage .w-op.now,.walk-stage .w-escrow.now,.walk-stage .w-result.now,.walk-stage .w-settle.now,.walk-stage .w-public.now > div:first-child {border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.walk-stage .w-op.now,.walk-stage .w-job.now,.walk-stage .w-escrow.now,.walk-stage .w-result.now,.walk-stage .w-settle.now,.walk-stage .w-public.now > div:first-child {border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
 .walk-stage.static .w-from {opacity:1;transform:none}
 /* Shares: each bid becomes 1 2 3; each operator holds two different ones. */
 .w-shares {display:flex;align-items:center;gap:5px;margin-top:10px}
@@ -245,6 +258,7 @@ i.share.s3 {background:var(--surface);color:var(--ink);border:1.5px solid var(--
 .steps h4 {margin:3px 0 2px;font-size:17px;font-weight:600;letter-spacing:-.01em}
 .steps p {margin:8px 0 0;font-size:14px;line-height:1.55;color:var(--ink-2)}
 .steps .q {margin-top:2px;color:var(--ink-3);font-style:italic}
+.steps .who {margin:2px 0 0;font-size:12px;color:var(--ink-2)}
 .steps p b,.bind-lead b,.lead b {color:var(--ink);font-weight:600}
 .steps .pp {padding-top:10px;border-top:1px dashed var(--line-strong);font-size:13px;color:var(--ink)}
 .steps .pp em {font-style:normal;font-weight:600;color:var(--gold-ink)}
@@ -292,7 +306,8 @@ i.share.s3 {background:var(--surface);color:var(--ink);border:1.5px solid var(--
   .walk {padding:20px 16px}
   .walk-top {flex-direction:column}
   .walk-stage {grid-template-columns:1fr}
-  .w-bidders,.w-ops,.w-escrow,.w-result,.w-settle,.w-public {grid-column:1/-1}
+  .w-bidders,.w-ops,.w-escrow,.w-jobs,.w-result,.w-settle,.w-public {grid-column:1/-1}
+  .w-jobs {grid-template-columns:1fr}
   .w-bidders {grid-template-columns:1fr 1fr}
   .w-ops {grid-template-columns:1fr}
   .w-settle ol,.w-public {grid-template-columns:1fr}
@@ -370,7 +385,7 @@ input[readonly] {background:var(--surface-2);font:13px var(--mono)}
 .sealed-slots span {display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px dashed var(--line-strong);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--ink-3)}
 .sealed-slots span.filled {border-style:solid;border-color:var(--line);background:var(--surface-2);color:var(--ink)}
 .sealed-slots b {display:block;width:44px;height:14px;border-radius:3px;background:var(--line)}
-.sealed-slots .filled b {background:var(--ink)}
+.sealed-slots .filled b {background:var(--seal)}
 
 details > summary {cursor:pointer;list-style:none;font-size:14px;font-weight:500;color:var(--ink-2)}
 details > summary::-webkit-details-marker {display:none}
@@ -475,7 +490,7 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .sealed-tickets {display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0 8px}
 .sealed-tickets div {display:grid;gap:8px;justify-items:start;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
 .sealed-tickets span {font:12px var(--mono);color:var(--ink-3)}
-.sealed-tickets b {width:100%;height:12px;border-radius:3px;background:var(--ink)}
+.sealed-tickets b {width:100%;height:12px;border-radius:3px;background:var(--seal)}
 .sealed-tickets small {font-size:12px;color:var(--ink-3)}
 .bidder-choice {display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .bidder-choice select {width:auto;min-width:160px;height:42px}
@@ -552,10 +567,6 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .public-view {list-style:none;margin:4px 0 10px;padding:0;display:grid;gap:4px;font-size:14px;color:var(--ink-2)}
 .public-view li::before {content:"✓ ";color:var(--green);font-weight:600}
 .sealed-view li::before {content:"✕ ";color:var(--ink-3)}
-.how-it-works {margin-top:44px}
-.how-it-works ol {list-style:none;padding:0;margin:14px 0 0;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-.how-it-works li {border-top:2px solid var(--ink);padding-top:12px;font-weight:500}
-.how-it-works li span {display:block;font:12px var(--mono);color:var(--ink-3);margin-bottom:4px}
 .technical-section {margin-top:36px;display:grid;gap:4px}
 .public-details {border-top:1px solid var(--line);padding:16px 0}
 .public-details p,.public-details li {color:var(--ink-2);font-size:14px}
@@ -615,7 +626,6 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   .cheat-compare {grid-template-columns:1fr}
   .trail-line {grid-template-columns:1fr}
   .trail-checks {grid-column:1}
-  .how-it-works ol {grid-template-columns:1fr 1fr}
   .has-experience .experience-picker {display:flex;width:100%}
   .has-experience .back-overview {margin:0 0 10px;padding:4px 0}
   .has-experience .experience-card {flex:1 1 0;align-items:center;padding:8px 10px}
@@ -623,3 +633,16 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
   footer {flex-direction:column}
 }
 @media (prefers-reduced-motion:reduce) {* {animation:none!important;transition:none!important}}
+
+/* End of the landing: the two ways into the demo again. */
+.end-cta {display:flex;align-items:center;justify-content:space-between;gap:20px 32px;flex-wrap:wrap;margin:48px 0 0;padding:28px 32px;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.end-cta h2 {margin:0;font-size:24px}
+.end-cta .section-kicker {margin-bottom:6px}
+.end-cta-actions {display:flex;gap:10px;flex-wrap:wrap}
+
+/* What one party can or cannot see, as chips: the walkthrough, How it works and results. */
+.chips {display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.chips strong {margin-right:2px;font-size:13px;font-weight:600;color:var(--ink)}
+.chip {font-style:normal;font-size:12px;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:999px;padding:2px 9px}
+.on-dark .chips strong {color:#fff}
+.on-dark .chip {color:#fff;background:#2a2926;border-color:#4a4944}
