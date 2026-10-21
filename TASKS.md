@@ -81,6 +81,9 @@ Done:
       compose), scripts/hosted_local_set.py (11 recorded-run files + testnet bank; the recorded-mode
       HTTP check passes with only that as .local). See docs/hosting-plan.md.
 - [ ] Deploy the hosted demo: waiting on the author's server and SSH access.
+- [ ] At the UI-freeze video re-record (about Oct 25): consider a short "try to cheat" segment
+      from /demo/settled of the same testnet auction, labelled with its own date and real
+      refusal time, if it fits the length.
 - [x] Hosted image fix (Oct 21): the image runs as an unprivileged user, and git refuses the
       root-owned pinned checkouts the drivers check at run time ("dubious ownership", reproduced
       in a Debian trixie container as uid 10001). Both checkouts are now listed as safe.directory
