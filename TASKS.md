@@ -81,6 +81,10 @@ Done:
       compose), scripts/hosted_local_set.py (11 recorded-run files + testnet bank; the recorded-mode
       HTTP check passes with only that as .local). See docs/hosting-plan.md.
 - [ ] Deploy the hosted demo: waiting on the author's server and SSH access.
+- [x] Hosted image fix (Oct 21): the image runs as an unprivileged user, and git refuses the
+      root-owned pinned checkouts the drivers check at run time ("dubious ownership", reproduced
+      in a Debian trixie container as uid 10001). Both checkouts are now listed as safe.directory
+      in the image's system git config. The full image has not been built here (disk).
 - [ ] CI green in a clean checkout: Python and Noir pass there; Rust tests that need .local,
       .deps or compiled circuits must skip or build what they need.
 - [x] Settled page, checked by the judge (Oct 21): starts as the public (can / cannot see), a

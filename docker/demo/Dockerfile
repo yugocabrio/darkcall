@@ -64,12 +64,15 @@ RUN cargo build --release --locked --workspace --bins --examples -j "$JOBS" \
 # Circuits, scripts, the UI, public bundles and authorities.
 COPY . /src
 # The drivers recompile circuits at run time, so circuits/ belongs to the
-# unprivileged user too.
+# unprivileged user too. They also check both pinned checkouts with git, which
+# refuses a repository owned by another user unless it is listed as safe.
 RUN for d in circuits/*/; do \
       if [ -f "$d/src/main.nr" ]; then .deps/noir-1.0.0-rc.2/nargo compile --program-dir "$d" || exit 1; fi; \
     done \
     && useradd --uid 10001 --home-dir /src --no-create-home darkcall \
-    && mkdir -p /src/.local && chown darkcall /src/.local && chown -R darkcall /src/circuits
+    && mkdir -p /src/.local && chown darkcall /src/.local && chown -R darkcall /src/circuits \
+    && git config --system --add safe.directory /src/.deps/co-snarks \
+    && git config --system --add safe.directory /src/.deps/barretenberg-src
 USER darkcall
 # External tools may cache under $HOME; /src stays read-only to this user.
 ENV HOME=/tmp/darkcall

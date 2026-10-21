@@ -91,9 +91,11 @@ def check(bundle, authority, kind, made, started):
     caught = sorted({claim for message in errors for text, claim in CAUGHT_BY if text in message.lower()})
     if receipt.returncode:
         caught = sorted(set(caught) | {'price'})
+    # The page shows the first message, never one that names a local path.
+    shown = [message for message in errors if '/' not in message]
     return {'cheat': kind, 'change': CHEATS[kind], 'refused': bool(receipt.returncode or full.returncode),
             'receipt_proof_rejected': receipt.returncode != 0, 'full_verification_rejected': full.returncode != 0,
-            'caught_by': caught, 'verifier_message': errors[0] if errors else None,
+            'caught_by': caught, 'verifier_message': shown[0] if shown else None,
             'seconds': round(time.monotonic() - started, 1)}
 
 
