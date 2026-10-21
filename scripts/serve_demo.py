@@ -32,6 +32,20 @@ PUBLIC = ROOT / '.local/regtest-shared-v2-public-20261005'
 AUTHORITY = ROOT / '.local/regtest-shared-v2-deposit4-20261005-admission/manifest.json'
 
 
+def recorded_check(txid):
+    """The committed clean-room result for this settlement, if any: a fresh Linux
+    image built from committed source verified each public bundle, no network."""
+    run = json.loads((ROOT / 'evidence/2026-10-18-clean-room-linux-verification.json').read_text())['run_head_rebuild']
+    for entry in run['results']:
+        if entry['txid'] == txid and run['all_passed']:
+            return {'date':run['date'].split(' ')[0], 'revision':run['revision'], 'seconds':entry['seconds'],
+                'record':'evidence/2026-10-18-clean-room-linux-verification.json',
+                'price':entry['normal_cpp_auction_proof_verified'], 'payouts':entry['native_row_proofs_verified'],
+                'transaction':entry['native_proof_and_signatures_verified'],
+                'book':entry['accepted_book_and_recipients_authenticated']}
+    return None
+
+
 class Demo:
     def __init__(self, cases, canonical=None, bundle=None, public_only=False, funded=False, authority=None, note=None, chain='regtest'):
         self.funded = funded
@@ -57,6 +71,18 @@ class Demo:
         self.lock = threading.Lock()
         self.rehearsal = Rehearsal(self.lock, enabled=not public_only and bool(canonical), chain=chain)
         self.last_settlement = None
+        self.ticket_order = None
+        self.trail_cache = None
+
+    def trail(self):
+        # The four claims' evidence, from the committed public bundle and the
+        # trusted authority only (scripts/proof_trail.py); never from .local.
+        if not (self.canonical and self.funded):
+            raise ValueError('No proof trail for this demo')
+        if self.trail_cache is None:
+            from proof_trail import trail
+            self.trail_cache = trail(self.bundle, self.authority)
+        return self.trail_cache
 
     def state(self):
         cases = []
@@ -96,7 +122,19 @@ class Demo:
                 raise RuntimeError('Demo receipt statement or recorded execution scope differs')
             price = int.from_bytes(statement[177*32:178*32], 'big')
             sold = int.from_bytes(statement[178*32:179*32], 'big')
+            # Bidder numbers: the public book is sorted by ticket id; a recorded
+            # sealing order (scripts/ticket_order.py) numbers them as the
+            # browser did when each bid was sealed.
+            ids = [bytes(ticket).hex() for ticket in book.get('ids', [])]
+            labels = list(range(1, 5))
+            if self.ticket_order is not None:
+                order = self.ticket_order['sealing_order']
+                if sorted(order) != sorted(ids) or self.ticket_order['txid'] != summary['txid']:
+                    raise RuntimeError('Ticket order belongs to a different auction')
+                labels = [order.index(ticket) + 1 for ticket in ids]
             cases.append({'id':name, 'price':price, 'sold':sold, 'units':3, 'tickets':4,
+                'budget':book.get('budget'), 'labels':labels, 'labels_in_sealing_order':self.ticket_order is not None,
+                'recorded_check':recorded_check(summary['txid']) if self.funded else None,
                 'root':book['root'], 'txid':summary['txid'], 'fee':summary['fee'],
                 'bytes':summary['transaction_bytes'], 'branch':summary['branch'],
                 'scope':'recorded actual isolated NU7 certified funded memo auction' if self.funded else 'synthetic six-output auction with four receipt memos' if self.canonical else 'synthetic receipt component; separate one-input/four-output transfer'})
@@ -328,6 +366,10 @@ def handler(demo, port, public_origin=None):
             if self.path == '/api/state':
                 try: return self.reply(200,{**demo.state(),'hosted':public_origin is not None})
                 except Exception: return self.reply(503,{'error':'Demo checkpoints unavailable'})
+            if self.path == '/api/trail':
+                try: return self.reply(200,demo.trail())
+                except ValueError: return self.reply(404,{'error':'No proof trail for this demo'})
+                except Exception: return self.reply(503,{'error':'Public bundle unavailable'})
             if self.path.startswith('/api/rehearsal/auction/'):
                 try: return self.reply(200,demo.rehearsal.get(self.path.removeprefix('/api/rehearsal/auction/')))
                 except ValueError: return self.reply(404,{'error':'Unknown local demo auction'})
@@ -390,6 +432,7 @@ def main():
     parser.add_argument('--funded',action='store_true',help='Recorded certified actual-note isolated NU7 run')
     parser.add_argument('--authority',type=pathlib.Path,help='Separate caller-trusted admission manifest')
     parser.add_argument('--recorded-note',help='Short public description of the recorded auction')
+    parser.add_argument('--ticket-order',type=pathlib.Path,help='Recorded sealing order of the tickets (demo/ticket-order)')
     parser.add_argument('--public-origin',help='Hosted mode: the HTTPS origin a local TLS proxy forwards to this loopback server')
     parser.add_argument('--chain',choices=('regtest','testnet'),default='regtest',
                         help='Where Fund and Settle run; testnet uses public testnet coins through the pinned provider')
@@ -418,6 +461,8 @@ def main():
                 note=args.recorded_note,chain=args.chain)
     else:
         demo = Demo({'positive':args.positive,'zero':args.zero})
+    if args.ticket_order is not None:
+        demo.ticket_order = json.loads(args.ticket_order.read_text())
     demo.state()  # Fail before binding if fixtures are missing or wrong scope.
     if args.public_origin and demo.rehearsal.enabled: demo.rehearsal.prune_after = 3 * 3600
     server = ThreadingHTTPServer(('127.0.0.1',args.port),handler(demo,args.port,args.public_origin))

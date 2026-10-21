@@ -1,52 +1,112 @@
 {
   "date": "2026-10-21 (CEST)",
   "question": "If an operator changes one thing in the recorded Oct 19 testnet settlement, does the public verifier notice, and which check refuses it?",
-  "method": "scripts/cheat_lab.py copies the committed public bundle demo/artifacts/testnet-auction-nu7-v2, makes one dishonest change, re-seals the copy's manifest so packaging digests match, then runs the same fixed verifiers as the settlement check: the receipt (winner-flag) proof with the pinned Barretenberg verifier (scripts/verify_external.py, circuit delivery_flags4), then the NU7 SDK verify-funded-auction (native transaction, auction proof, six output bindings, signed accepted book). The answer is whatever those verifiers return; no result is simulated or hard-coded. No key, pad or private opening is read. The live demo runs the same function through POST /api/cheat on /demo/settled.",
+  "method": "scripts/cheat_lab.py copies the committed public bundle demo/artifacts/testnet-auction-nu7-v2, makes one dishonest change, re-seals the copy's manifest so packaging digests match, then runs the same fixed verifiers as the settlement check: the receipt (winner-flag) proof with the pinned Barretenberg verifier (scripts/verify_external.py, circuit delivery_flags4), then the NU7 SDK verify-funded-auction (native transaction, auction proof, six output bindings, signed accepted book). The answer is whatever those verifiers return; no result is simulated or hard-coded. No key, pad or private opening is read. The live demo runs the same function through POST /api/cheat on /demo/settled. A cheat counts as refused only when the check it targets refuses it (the signed book for book, the auction proofs for price, the output bindings for payout; a receipt-proof refusal counts only when bb itself reports 'Proof verification failed'). Any other verifier failure is reported as a test error, not a refusal. The control (none) runs the same pipeline on an unchanged copy, which must be accepted.",
   "scope": "Each cheat is one change by a party who can rewrite the published files but cannot forge the three operators' endorsement signatures, the escrow's FROST signature or a proof. It shows the published checks bind these values; it is not a proof of security against colluding operators, which the semi-honest REP3 setting does not claim.",
+  "what_each_change_is": {
+    "book": "the commitment of one accepted bid in the operators' signed books; the operators' signatures are not redone",
+    "price": "the clearing price in the public inputs of both auction statements; the proofs are not redone",
+    "payout": "the output-binding proofs of two refunds swapped, so each is checked against the other output; the transaction is unchanged. A transaction that really pays a different recipient would need the escrow's signing shares and is not part of this test"
+  },
   "commands": [
-    "python3 -B scripts/cheat_lab.py book price payout"
+    "python3 -B scripts/cheat_lab.py none book price payout"
   ],
-  "repository_head_before_commit": "780f9ac",
+  "repository_head_before_commit": "c98f5e7",
   "machine": "shared 16 GiB Apple M1, macOS 14.0",
   "bundle": "demo/artifacts/testnet-auction-nu7-v2",
   "authority": "demo/authority/testnet-auction-nu7-v2.json",
   "results": [
     {
-      "cheat": "book",
-      "change": "Replace the third accepted bid's commitment in all three operators' signed books",
-      "refused": true,
+      "cheat": "none",
+      "change": "No change: the control copy must be accepted",
+      "expected_check": null,
+      "outcome": "accepted",
+      "refused": false,
+      "caught_by": [],
+      "test_error": null,
       "receipt_proof_rejected": false,
-      "full_verification_rejected": true,
+      "full_verification_rejected": false,
+      "verifier_message": null,
+      "seconds": 107.7
+    },
+    {
+      "cheat": "book",
+      "change": "Change the third accepted bid's commitment in all three operators' signed books",
+      "expected_check": "book",
+      "outcome": "refused",
+      "refused": true,
       "caught_by": [
         "book"
       ],
+      "test_error": null,
+      "receipt_proof_rejected": false,
+      "full_verification_rejected": true,
       "verifier_message": "final accepted root differs from exact Noir encoding",
-      "seconds": 3.5
+      "seconds": 2.1
     },
     {
       "cheat": "price",
       "change": "Claim a clearing price one zatoshi higher, in both auction statements",
+      "expected_check": "price",
+      "outcome": "refused",
       "refused": true,
-      "receipt_proof_rejected": true,
-      "full_verification_rejected": true,
       "caught_by": [
         "price"
       ],
+      "test_error": null,
+      "receipt_proof_rejected": true,
+      "full_verification_rejected": true,
       "verifier_message": "NU7 fixed C++ auction proof rejected",
-      "seconds": 129.3
+      "seconds": 102.1
     },
     {
       "cheat": "payout",
-      "change": "Swap the output-binding proofs of the first two refunds, as if each went to the other bidder's output",
+      "change": "Swap the output-binding proofs of the first two refunds, so each is checked against the other output",
+      "expected_check": "payouts",
+      "outcome": "refused",
       "refused": true,
-      "receipt_proof_rejected": false,
-      "full_verification_rejected": true,
       "caught_by": [
         "payouts"
       ],
+      "test_error": null,
+      "receipt_proof_rejected": false,
+      "full_verification_rejected": true,
       "verifier_message": "NU7 fixed native row proof rejection",
-      "seconds": 121.0
+      "seconds": 97.4
     }
   ],
-  "all_refused": true
+  "control_accepted": true,
+  "all_cheats_refused_by_their_targeted_check": true,
+  "first_run_without_strict_targets": {
+    "head": "780f9ac",
+    "results": [
+      {
+        "cheat": "book",
+        "refused": true,
+        "caught_by": [
+          "book"
+        ],
+        "seconds": 3.5,
+        "verifier_message": "final accepted root differs from exact Noir encoding"
+      },
+      {
+        "cheat": "price",
+        "refused": true,
+        "caught_by": [
+          "price"
+        ],
+        "seconds": 129.3,
+        "verifier_message": "NU7 fixed C++ auction proof rejected"
+      },
+      {
+        "cheat": "payout",
+        "refused": true,
+        "caught_by": [
+          "payouts"
+        ],
+        "seconds": 121.0,
+        "verifier_message": "NU7 fixed native row proof rejection"
+      }
+    ]
+  }
 }

@@ -234,16 +234,25 @@ the image afterwards with `docker image rm`.
 ```
 
 **Try to cheat it.** With the pinned tools built, this makes one dishonest
-change at a time to a copy of the recorded testnet settlement (a different bid
-in the signed book, a price one higher, two refunds swapped) and runs the same
-verifiers on each copy. All three are refused: the bid by the signed book in
-about 4 s, the price by the auction proof and the refunds by the output
-bindings in about 2 minutes each
-([record](evidence/2026-10-21-cheat-lab.json)). The live demo's
+change at a time to a copy of the recorded testnet settlement and runs the same
+verifiers on each copy: one accepted bid's commitment changed in the signed
+book, a price one higher in both auction statements, and two payout proofs
+swapped so each is checked against the other output. A change counts as
+refused only when the check it targets refuses it, and an unchanged control
+copy must pass. In the recorded run the control passed and all three were
+refused: the bid by the signed book in 2 s, the price by the auction proofs in
+102 s and the swapped proofs by the output bindings in 97 s
+([record](evidence/2026-10-21-cheat-lab.json)). These change proofs and
+signed data, not the transaction: a quorum of operators that signed a
+different transaction is outside this test. The live demo's
 **See a settled auction** page has the same buttons.
 
+The same page's **Inspect the proof trail** prints the public data behind each
+claim with 35 consistency checks between the bundle's files and the transaction bytes; the same from the shell:
+
 ```sh
-python3 -B scripts/cheat_lab.py book price payout
+python3 -B scripts/proof_trail.py demo/artifacts/testnet-auction-nu7-v2 demo/authority/testnet-auction-nu7-v2.json
+python3 -B scripts/cheat_lab.py none book price payout
 ```
 
 **Run the whole product locally.** You need the pinned tools, Docker, and the

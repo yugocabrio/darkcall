@@ -9,6 +9,11 @@ function stages() {
   checks.hidden = !checks.childElementCount;
 }
 const setError = message => { $('error').textContent = message; $('error').hidden = !message; };
+const bidderName = n => 'Bidder '+String(n).padStart(2,'0');
+const labelOf = i => ((state.cases.find(c => c.id === selected) || state.cases[0]).labels || [1,2,3,4])[i];
+// A role emoji (the same set as the walkthrough), hidden from screen readers.
+const ICONS={bidder:'🧑🏻',operator:'🖥️',escrow:'🔒',public:'🌐',key:'🔑'};
+function icon(name) { const node=document.createElement('span'); node.className='icon'; node.setAttribute('aria-hidden','true'); node.textContent=ICONS[name]; return node; }
 function element(tag, text, className) { const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node; }
 function resetResult() {
   receiptVerified = false; stages();
@@ -17,7 +22,8 @@ function resetResult() {
   for (const line of ['The clearing price and the units sold','Four sealed tickets, no amounts','One shielded transaction with six outputs']) sees.append(element('li',line));
   const hidden=element('ul','','public-view sealed-view');
   for (const line of ['Who won','Any bid','Any refund']) hidden.append(element('li',line));
-  result.replaceChildren(element('h3','You are the public.'), element('p','You can see:'), sees, element('p','You cannot see:'), hidden);
+  const title=element('h3','You are the public.'); title.prepend(icon('public'));
+  result.replaceChildren(title, element('p','You can see:'), sees, element('p','You cannot see:'), hidden);
   ['proof','native','open'].forEach(step => $('step-'+step).classList.remove('done'));
   $('verify').textContent='Switch to '+$('ticket').selectedOptions[0].textContent+"'s view";
   $('tamper-result').textContent = ''; setError('');
@@ -43,13 +49,13 @@ async function run(action) {
   if (action === 'verify') {
     resetResult(); $('result').className = 'result-box loading';
     $('result').replaceChildren(element('h3','Verifying…'),element('p','Checking the proof and opening only your receipt.'));
-  } else $('tamper-result').textContent = 'Changing one byte of a bidder\'s receipt proof and giving it to the real verifier…';
+  } else { $('cheat-detail').hidden=true; $('tamper-result').textContent = 'Changing one byte of a bidder\'s receipt proof and giving it to the real verifier…'; }
   try {
     const response = await fetch('/api/verify', {method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify({case:selected,ticket,action})});
     const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Verification failed');
     if (action === 'tamper') {
       if (!result.rejected || result.key_read || result.memo_decrypted) throw new Error('Unexpected tamper result');
-      $('tamper-result').replaceChildren(element('b','✗ Refused. '),document.createTextNode('The fixed verifier rejects the forged receipt proof before the bidder\'s key is read, so the receipt stays encrypted.'));
+      $('tamper-result').replaceChildren(element('b','✗ Refused. '),document.createTextNode('The fixed verifier rejects the corrupted receipt proof before the bidder\'s key is read, so the receipt stays encrypted.'));
     } else {
       if (!result.fixed_cpp_ticket_proof_verified || !result.native_proof_and_signatures_verified || !result.own_ticket_opening_verified || !result.native_amount_matches_refund || result.ticket_index !== ticket) throw new Error('Incomplete verification result');
       const current = state.cases.find(c => c.id === selected);
@@ -62,9 +68,9 @@ async function run(action) {
         const column = element('div',''); column.append(element('span',label),element('strong',String(amount))); amounts.append(column);
       }
       box.append(amounts);
-      const who='Bidder '+String(ticket+1).padStart(2,'0');
-      const mine=element('div','','contrast-box'); mine.append(element('b','What '+who+' sees'),element('p',(result.won?'Won a unit at '+result.price:'No unit')+' · refund '+result.refund+' zatoshi, decrypted with '+who+"'s own key."));
-      const pub=element('div','','contrast-box'); pub.append(element('b','What everyone else sees'),element('p','One shielded transaction with six outputs: no amounts, no addresses, no memo text.'));
+      const who=bidderName(labelOf(ticket));
+      const mine=element('div','','contrast-box'), mineTitle=element('b','What '+who+' sees'); mineTitle.prepend(icon('key')); mine.append(mineTitle,element('p',(result.won?'Won a unit at '+result.price:'No unit')+' · refund '+result.refund+' zatoshi, decrypted with '+who+"'s own key."));
+      const pub=element('div','','contrast-box'), pubTitle=element('b','What everyone else sees'); pubTitle.prepend(icon('public')); pub.append(pubTitle,element('p','One shielded transaction with six outputs: no amounts, no addresses, no memo text.'));
       if (state.recorded_chain==='testnet') pub.lastChild.append(document.createTextNode(' '),Object.assign(document.createElement('a'),{href:'https://testnet.zecblock.com/tx/'+result.txid,textContent:'Open it on the explorer',rel:'noopener'}));
       const contrast=element('div','','contrast'); contrast.append(mine,pub); box.append(contrast);
       ['proof','native','open'].forEach(step => $('step-'+step).classList.add('done'));
@@ -78,23 +84,42 @@ $('ticket').addEventListener('change',resetResult);
 $('verify').addEventListener('click',() => run('verify'));
 // Cheat lab: each cheat changes a copy of the recorded settlement one way and
 // reports which of the four claims the real verifiers say it breaks.
-const CLAIMS={price:'The price is right',payouts:'Every payout matches the result',book:'These are the accepted bids',transaction:'The payment is real Zcash',bundle:'The package check'};
-const WHY={book:'The changed bid no longer adds up to the accepted root that the operators signed and the proofs were made over.',
+const CLAIMS={price:'The price is right',payouts:'Every payout matches the result',book:'These are the accepted bids',transaction:'The Zcash transaction is valid',bundle:'The package check'};
+const CHECK={book:'the signed-book check',price:'the auction proofs',payouts:'the output bindings'};
+const WHY={book:'The changed bid no longer hashes to the accepted root that all three operators signed and that the proofs were made over.',
   price:'The auction proofs were made for the true price; they do not verify for any other.',
-  payout:'Each payout proof fits exactly one output of the transaction; swapped, neither fits.'};
+  payout:'Each payout proof is bound to one output of the transaction and one row of the result; checked against another output, it fails.'};
 async function cheat(kind) {
   if (busy || !state) return;
   lock(true); setError('');
-  $('tamper-result').textContent='Copying this settlement with that one change and running the real verifiers on it'+(kind==='book'?'…':'. About 100 seconds…');
+  $('cheat-detail').hidden=true;
+  $('tamper-result').textContent='Copying this settlement with that one change and running the real verifiers on it'+(kind==='book'?'…':'. About 2 minutes…');
   try {
     const response=await fetch('/api/cheat',{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify({kind})});
     const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Cheat check failed');
-    if (!result.refused) throw new Error('The verifiers accepted a forged settlement. Please report this.');
+    if (result.outcome==='accepted') throw new Error('The verifiers accepted a changed settlement. Please report this.');
+    if (result.outcome!=='refused') { $('tamper-result').textContent='This test did not run as intended ('+(result.test_error||'no targeted refusal')+'), so it is not counted as a refusal.'; return; }
     const broken=result.caught_by.map(c=>'“'+(CLAIMS[c]||c)+'”').join(' and ');
     $('tamper-result').replaceChildren(element('b','✗ Refused in '+Math.round(result.seconds)+' s. '),
-      document.createTextNode(broken+' fails. '+(WHY[kind]||'')+(result.verifier_message?' The verifier says: '+result.verifier_message+'.':'')+' This copy could not pass as the auction\'s settlement.'));
+      document.createTextNode(broken+' fails. '+(WHY[kind]||'')));
+    showCheatDetail(result);
   } catch (error) { $('tamper-result').textContent=''; setError(error.message); }
   finally { lock(false); }
+}
+// Original bundle beside the changed copy, then exactly what changed.
+function showCheatDetail(result) {
+  const box=(cls,title,text)=>{ const b=element('div','','cheat-side '+cls); b.append(element('b',title),element('p',text)); return b; };
+  const sides=element('div','','cheat-compare');
+  sides.append(box('ok','Original bundle','✓ Accepted. The same verifiers pass it: the unchanged control copy and the recorded check.'),
+    box('no','Your changed copy','✗ Rejected in '+Math.round(result.seconds)+' s by '+(CHECK[result.expected_check]||'the verifier')+(result.verifier_message?': “'+result.verifier_message+'”':'')+'.'));
+  const c=result.changed||{}, more=document.createElement('details'), list=element('div','','cheat-diff');
+  more.append(element('summary','What exactly changed'));
+  const who=Number.isInteger(c.ticket_index)?'Ticket '+(c.ticket_index+1)+' in the public book · ':'';
+  for (const [label,value] of [['File',(c.files||[]).join(', ')],['Field',who+(c.field||'')],['Before',c.before],['After',c.after]]) {
+    if (!value) continue; const row=element('div',''); row.append(element('span',label),element('code',value)); list.append(row);
+  }
+  more.append(list,element('p','The bundle in the repository is not touched. The change is made to a working copy whose bundle.json is re-sealed with the new file digests, so the package check passes and the refusal comes from the verifier itself.','cheat-note'));
+  $('cheat-detail').replaceChildren(sides,more); $('cheat-detail').hidden=false;
 }
 document.querySelectorAll('[data-cheat]').forEach(button=>button.addEventListener('click',()=>cheat(button.dataset.cheat)));
 $('tamper').addEventListener('click',() => run('tamper'));
@@ -104,25 +129,84 @@ function claim(ok,title,text,extra) {
   const body=element('div',''); body.append(element('b',title),document.createTextNode(' '+text)); if (extra) body.append(extra);
   row.append(element('span',ok?'✓':'✗','claim-mark'),body); return row;
 }
-function showClaims(result) {
-  const price=state.cases[0].price, payouts=result.native_row_proofs_verified && result.actual_transaction_outputs_match;
+function showClaims(checks) {
+  const price=state.cases[0].price, labels=[...(state.cases[0].labels||[1,2,3,4])].sort((a,b)=>a-b);
   const rows=element('div','','claim-rows');
-  for (const label of ['Refund · Bidder 01','Refund · Bidder 02','Refund · Bidder 03','Refund · Bidder 04','Seller','Operator fee']) rows.append(element('span',label+(payouts?' ✓':' ✗')));
+  for (const label of [...labels.map(n=>'Refund · '+bidderName(n)),'Seller','Operator fee']) rows.append(element('span',label+(checks.payouts?' ✓':' ✗')));
   const tx=state.cases[0].txid, explorer=state.recorded_chain==='testnet'?Object.assign(document.createElement('a'),{href:'https://testnet.zecblock.com/tx/'+tx,textContent:'See it on the explorer',rel:'noopener'}):null;
   const note=element('p','Not part of this check: whether the transaction is in the chain. ','claim-note'); if (explorer) note.append(explorer,document.createTextNode('.'));
   $('settlement-claims').replaceChildren(
-    claim(result.normal_cpp_auction_proof_verified,'The price is right.',price+' zatoshi follows the auction rule over exactly the four sealed bids. This check needs no bid, and the proof reveals none.'),
-    claim(payouts,'Every payout matches the result.','Each shielded output pays the amount and recipient the result says:',rows),
-    claim(result.native_proof_and_signatures_verified,'The payment is real Zcash.','One valid shielded Zcash transaction, signed from the escrow by 2 of the 3 operators together; no single operator can sign.'),
-    claim(Boolean(result.acceptance_or_recipient_receipts_authenticated),'These are the accepted bids.','All three operators signed this exact book of four sealed bids.'),
+    claim(checks.price,'The price is right.',price+' zatoshi follows the auction rule over exactly the four sealed bids. This check needs no bid, and the proof reveals none.'),
+    claim(checks.payouts,'Every payout matches the result.','Each shielded output pays the amount and recipient the result says:',rows),
+    claim(checks.transaction,'The Zcash transaction is valid.','One valid shielded Zcash transaction, signed from the escrow by 2 of the 3 operators together; no single operator can sign.'),
+    claim(checks.book,'These are the accepted bids.','All three operators signed this exact book of four sealed bids.'),
     note);
-  $('settlement-claims').hidden=false;
+  $('settlement-claims').hidden=false; $('settlement-claims').classList.remove('pending');
+}
+// The proof trail: each claim's public data, with the consistency checks that
+// tie one file to another and to the transaction bytes (recomputed by the
+// server from the committed bundle). Values show shortened; click one for all
+// of it, and each line links to its file in the repository.
+const REPO='https://github.com/yugocabrio/ZECATHON/blob/main/';
+const shortValue = v => /^(0x)?[0-9a-f]{24,}$/i.test(v) ? v.slice(0,12)+'…'+v.slice(-8) : v;
+function mark(ok) { return element('span',ok?'✓':'✗',ok?'trail-ok':'trail-no'); }
+function value(name, full) {
+  const wrap=element('span','','trail-value'), code=element('code',shortValue(String(full)));
+  if (shortValue(String(full))===String(full)) { code.className='plain'; if (name) wrap.append(document.createTextNode(name+' ')); wrap.append(code); return wrap; }
+  code.title='Click to show all of it'; code.tabIndex=0;
+  const toggle=()=>{ code.textContent=code.textContent===String(full)?shortValue(String(full)):String(full); };
+  code.addEventListener('click',toggle); code.addEventListener('keydown',e=>{ if (e.key==='Enter') toggle(); });
+  if (name) wrap.append(document.createTextNode(name+' ')); wrap.append(code); return wrap;
+}
+function trailLine(label, items, file, ...checks) {
+  const row=element('div','','trail-line'), values=element('div','','trail-values');
+  for (const [name,full] of items) values.append(value(name,full));
+  if (file && trailBundle) values.append(Object.assign(document.createElement('a'),{href:REPO+trailBundle+'/'+file,textContent:file+' ↗',className:'trail-file',rel:'noopener'}));
+  const c=element('div','','trail-checks'); for (const [ok,text] of checks) c.append(mark(ok),document.createTextNode(' '+text+' '));
+  row.append(element('span',label,'trail-label'),values,c); return row;
+}
+function trailSection(title, why, ...lines) {
+  const box=element('section','','trail-section'); box.append(element('h4',title),element('p',why,'trail-why'),...lines); return box;
+}
+let trailBundle=null;
+function showTrail(t) {
+  trailBundle=t.bundle.path;
+  const b=t.book, p=t.price, x=t.transaction, kb=n=>n.toLocaleString()+' bytes';
+  const book=trailSection('These are the accepted bids','The auction proof takes the four bid commitments and their root as public inputs, and all three operators signed the same root. Change one bid and they no longer agree: try it below. Tickets are listed in public-book order (sorted by ticket id).',
+    ...b.commitments.map(c=>trailLine('Ticket '+c.ticket+' commitment',[['',c.commitment]],b.file,[c.in_auction_proof,'in the auction proof\'s public inputs'])),
+    trailLine('Accepted root',[['',b.accepted_root]],b.file,[b.root_in_auction_proof,'auction proof'],[b.root_in_receipt_proof,'receipt proof']),
+    ...b.operators.map(o=>trailLine('Operator '+o.operator,[['signature',o.signature],['trusted key',o.trusted_key]],o.file,[o.signed_root_matches,'signed this root'],[o.signed_commitments_match,'signed the same four bids'])));
+  const price=trailSection('The price is right','These are public inputs of the auction proof. It verifies only for exactly these values, so a changed price or terms are refused: try it below.',
+    trailLine('Price · sold',[['',p.price+' zatoshi · '+p.sold+' of '+p.units]],p.file,[p.receipt_proof_same_price_and_sold,'same in the receipt proof']),
+    trailLine('Terms',[['','reserve '+p.reserve+' · budget '+p.budget+' · fee '+p.processing_fee.toLocaleString()]],p.file,[p.terms_match_authority,'match the trusted authority']),
+    trailLine('Auction proof',[[kb(p.proof.bytes)+' · sha256',p.proof.sha256]],p.proof.file),
+    trailLine('Verifying key',[[p.public_inputs+' public inputs · sha256',p.verifying_key.sha256]],p.verifying_key.file),
+    trailLine('Proof system',[['',p.proof_system]]));
+  const payouts=trailSection('Every payout matches the result','Each row hash is an output of the auction proof. Its Halo2 proof shows that the transaction note at that action pays exactly that row\'s amount to that row\'s recipient, without revealing either. Which output pays which ticket is public; the amount and recipient are not.',
+    ...t.payouts.map(r=>trailLine(r.payee,[['row hash',r.row_hash],['action',String(r.action_index)],['cmx',r.cmx],['Halo2 proof sha256',r.halo2_proof.sha256]],r.file,
+      [r.row_hash_in_auction_proof,'row hash in the auction proof'],[r.action_index_in_auction_proof,'action in the auction proof'],[r.cmx_in_transaction_bytes_at_that_action,'cmx read from the transaction bytes at that action'])));
+  const txLines=[trailLine('Transaction',[['txid',x.txid],['sha256',x.sha256]],x.file,[x.txid_from_bytes_matches_bundle,'txid computed from the bytes'],[x.actions_from_bytes_match_bundle,'six cmx read from the bytes']),
+    trailLine('Shape',[['','NU7 branch '+x.branch+' · '+kb(x.bytes)+' · '+x.actions+' actions']])];
+  if (x.recorded_block) txLines.push(trailLine('On chain (recorded)',[['','block '+x.recorded_block.height.toLocaleString()+' · '+x.recorded_block.confirmations+' confirmations, observed through '+x.recorded_block.observed_through+'; not proven by the bundle']]));
+  const tx=trailSection('The Zcash transaction is valid','The verifier checks the transaction\'s own proof and its 2-of-3 escrow signature. Here its txid and note commitments are read from the bytes and compared with the bundle. Whether it is on chain is a separate observation, shown last.',...txLines);
+  const sections=[book,price,payouts,tx], count=sections.reduce((n,s)=>n+s.querySelectorAll('.trail-ok,.trail-no').length,0);
+  const intro=element('p','','trail-intro');
+  intro.append(mark(t.bundle.all_digests_match_bundle_json),document.createTextNode(' Read from the committed public bundle ('+t.bundle.files+' files, each matching its digest in bundle.json) and the trusted authority, never from private files. ✓ marks one of '+(count+1)+' consistency checks between these files and the transaction bytes, recomputed when this page loads. They are not proofs: the proofs and signatures are checked by Re-run verification.'));
+  const how=element('p','','trail-intro'); how.append(document.createTextNode('Rebuild it yourself: '),element('code','python3 -B scripts/proof_trail.py '+t.bundle.path+' '+t.bundle.authority));
+  $('trail-body').replaceChildren(intro,...sections,how); $('trail').hidden=false;
+}
+const shortDate = iso => new Date(iso+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
+function showRecordedClaims() {
+  const recorded=state.cases[0].recorded_check; if (!recorded) return false;
+  const record=Object.assign(document.createElement('a'),{href:'https://github.com/yugocabrio/ZECATHON/blob/main/'+recorded.record,textContent:'record',rel:'noopener'});
+  $('settlement-result').replaceChildren(element('b','Recorded: '),document.createTextNode('verified on '+shortDate(recorded.date)+' in a clean Linux container built from the committed source ('),record,document.createTextNode('). What that proves:'));
+  showClaims(recorded); return true;
 }
 $('settlement').addEventListener('click', async () => {
   if (busy || !state) return;
   lock(true); setError('');
-  $('settlement-result').textContent = 'Running the real public verifier on the recorded auction. About 100 seconds…';
-  $('settlement-claims').hidden=true;
+  $('settlement-result').textContent = 'Running the real public verifier on this server. About 100 seconds…';
+  $('settlement-claims').classList.add('pending');
   try {
     const response = await fetch('/api/settlement', {method:'POST', headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:'{}'});
     const result = await response.json();
@@ -130,22 +214,27 @@ $('settlement').addEventListener('click', async () => {
     if (!result.native_row_proofs_verified || !result.native_proof_and_signatures_verified || !result.normal_cpp_auction_proof_verified || !result.actual_transaction_outputs_match || result.private_openings_read || result.chain_funding_or_finality_verified) throw new Error('Incomplete settlement verification');
     if (state.six_output_memo_e2e && (result.txid !== state.cases[0].txid || !result.receipt_fixed_proof_verified || !result.receipt_settlement_context_link_verified)) throw new Error('Settlement belongs to a different receipt auction');
     settlementVerified = true; stages();
-    $('settlement-result').textContent = 'Verified in '+Math.round(result.seconds)+' s on this server, with no secret. What that proves:';
-    showClaims(result);
+    $('settlement-result').replaceChildren(element('b','Verified again just now: '),document.createTextNode('in '+Math.round(result.seconds)+' s on this server, with no secret. What that proves:'));
+    showClaims({price:result.normal_cpp_auction_proof_verified, payouts:result.native_row_proofs_verified && result.actual_transaction_outputs_match,
+      transaction:result.native_proof_and_signatures_verified, book:Boolean(result.acceptance_or_recipient_receipts_authenticated)});
     $('settlement-detailed-result').textContent = 'Native authorization, six bindings, fixed auction/receipt proofs and context verified. ' + (result.acceptance_or_recipient_receipts_authenticated ? 'Accepted-book signatures verified. ' : 'No funded admission certificate for this synthetic run. ') + 'Transaction: '+result.txid;
-  } catch (error) { $('settlement-result').textContent=''; setError(error.message); }
+  } catch (error) { if (!showRecordedClaims()) { $('settlement-result').textContent=''; $('settlement-claims').hidden=true; } setError(error.message); }
   finally { lock(false); }
 });
 lock(true);
 fetch('/api/state').then(async response => {
   const data=await response.json(); if (!response.ok) throw new Error(data.error || 'Demo unavailable'); state=data;
   const recordedTestnet=state.recorded_chain==='testnet';
+  // Bidders in label order; the value stays the ticket's place in the public book.
+  const labels=state.cases[0].labels||[1,2,3,4];
+  $('ticket').replaceChildren(...labels.map((n,i)=>[n,i]).sort((a,b)=>a[0]-b[0]).map(([n,i])=>Object.assign(document.createElement('option'),{value:String(i),textContent:bidderName(n)})));
+  if (state.cases[0].labels_in_sealing_order) document.querySelector('.receipt-panel .panel-lead').append(' Numbered in the order the bids were sealed'+(recordedTestnet?', as in the video.':'.'));
   $('proof-card-scope').textContent=state.funded_canonical?(recordedTestnet?'Recorded on public Zcash testnet':'Recorded auction · isolated regtest'):'Separate example · synthetic transactions';
   if (recordedTestnet) $('hero-chain').textContent='Zcash NU7 · public testnet';
   if (state.hosted) {
     // Hosted: the bidder client runs on this server, so say so wherever a bid is typed.
-    $('client-scope').textContent="On this hosted demo each bidder's client runs on the server, so the server sees the demo bid you type; operators receive only shares and proofs. In a deployment the client runs on the bidder's own device.";
-    $('bid-client-scope').textContent='On this hosted demo your bid client runs on the server, which sees the demo bid you type; operators get only shares and a proof.';
+    $('client-scope').textContent="On this hosted demo each bidder's client runs on the server, so the server sees the demo bid you type; operators receive only secret shares of each bid and proofs. In a deployment the client runs on the bidder's own device.";
+    $('bid-client-scope').textContent='On this hosted demo your bid client runs on the server, which sees the demo bid you type; operators get only secret shares of it and a proof.';
     $('share-scope').textContent='Open this link in another browser to follow the same auction.';
   }
   if (state.six_output_memo_e2e) {
@@ -158,8 +247,7 @@ fetch('/api/state').then(async response => {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
       if (recordedTestnet) {
         // Already verified when recorded; the button re-runs the same check here.
-        const record=Object.assign(document.createElement('a'),{href:'https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json',textContent:'see the record',rel:'noopener'});
-        $('settlement-scope').replaceChildren('This settlement passed this check when it was recorded on Oct 19 (',record,'). Run the same check again here: about 100 seconds, with no secret.');
+        $('settlement-scope').textContent='Check that the shielded Zcash transaction matches the auction outcome, without seeing any bid. The result below is recorded; run the same check again here in about 100 seconds, with no secret.';
         $('settlement').textContent='Re-run verification';
       }
       $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts and larger bid counts remain unverified.';
@@ -176,7 +264,9 @@ fetch('/api/state').then(async response => {
   }
   renderCase();
   if (!state.recipient_identities_available) $('result').replaceChildren(element('h3','Public verification view.'),element('p','No recipient keys are included in Git. Verify settlement or run the tamper check.'));
-  if (state.last_settlement) {
+  const recordedShown = state.funded_canonical && showRecordedClaims();
+  if (state.funded_canonical) fetch('/api/trail').then(r=>r.ok?r.json():null).then(t=>{ if (t) showTrail(t); }).catch(()=>{});
+  if (state.last_settlement && !recordedShown) {
     $('settlement-result').textContent = 'Previous public check passed. Run again to reverify.';
     $('settlement-detailed-result').textContent = 'Previous public verification passed for transaction: '+state.last_settlement.txid+'. Not reverified in this page session.';
   }
@@ -193,7 +283,10 @@ fetch('/api/state').then(async response => {
     $('settle-time').textContent='About 16 to 19 minutes on public testnet, including two confirmations.';
   }
   const recordedTx=state.cases[0].txid, hero=state.cases[0];
-  $('cheat-price-label').textContent='Raise the price to '+(hero.price+1);
+  $('cheat-price-label').textContent='Claim the price was '+(hero.price+1);
+  // What is sold and what the refunds mean, from the served terms.
+  const words=['no','one','two','three','four'], losers=hero.tickets-hero.sold;
+  if (Number.isInteger(hero.budget) && hero.sold>0 && hero.sold<=hero.units) $('auction-story').textContent='Think of a seller offering '+words[hero.units]+' ad slots. Each bidder locked a budget of '+hero.budget+' zatoshi, plus a fixed fee. The '+words[hero.sold]+' highest bidders each got a slot at the same price, '+hero.price+' zatoshi, and '+(hero.budget-hero.price)+' back'+(losers?'; the other '+(losers===1?'bidder':words[losers]+' bidders')+' got all '+hero.budget+' back':'')+'. No operator ever rebuilds the bid book, not even to prove the price; only the clearing price is published, and by the auction rule it is the highest losing bid.';
   $('hero-price').textContent=hero.price; $('hero-tickets').textContent=hero.tickets+' sealed bids';
   $('hero-sold').textContent=hero.sold+' of '+hero.units+' units sold · every winner pays the same';
   $('hero-txid').textContent=recordedTx.slice(0,8)+'…'+recordedTx.slice(-8); $('hero-txid').title=recordedTx;
@@ -439,7 +532,7 @@ function renderFunding() {
     if (job.result.accepted_root!==room.accepted_root) { $('fund-status').textContent='Funding does not match this book.'; return; }
     if (!fundedFocused) { fundedFocused=true; focusNext('clear-auction'); }
     $('fund-deposit').textContent=job.result.deposit_txid;
-    $('fund-admission').textContent='✓ '+job.result.client_proofs+' bid proofs + '+job.result.share_pairs+' share pairs re-verified · '+job.result.receipt_signatures+' receipts · '+job.result.final_book_signatures+' book signatures · same root '+shortId(job.result.accepted_root);
+    $('fund-admission').textContent='✓ '+job.result.client_proofs+' bid proofs + '+job.result.share_pairs+' secret-share pairs re-verified · '+job.result.receipt_signatures+' receipts · '+job.result.final_book_signatures+' book signatures · same root '+shortId(job.result.accepted_root);
   }
   if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
 }
@@ -566,21 +659,21 @@ $('create-form').addEventListener('submit',async event=>{
     if (!Number.isSafeInteger(cutoff) || cutoff<Date.now()/1000+30 || cutoff>Date.now()/1000+86400) throw new Error('Choose a close time between 30 seconds and 24 hours from now.');
     const result=await rehearsalRequest('create',{units:integer('create-units'),reserve:integer('create-reserve'),budget:integer('create-budget'),closes_at_utc:cutoff});
     showRoom(result); history.replaceState(null,'','#auction='+room.auction_id);
-    $('rehearsal-status').textContent='✓ Auction created. Share the local link and seal a demo bid.';
+    $('rehearsal-status').textContent='✓ Auction created. Seal a demo bid; the auction link opens it in another browser.';
     focusNext('maximum-bid');
   } catch (error) { rehearsalError(error.message); $('rehearsal-status').textContent=''; }
   finally { lock(false); refreshRoom(); }
 });
 $('bid-form').addEventListener('submit',async event=>{
   event.preventDefault(); if (busy || !state || !room) return;
-  rehearsalError(''); lock(true); $('rehearsal-status').textContent='Generating an input ZK proof and three REP3 share pairs, then verifying admission…';
+  rehearsalError(''); lock(true); $('rehearsal-status').textContent='Generating an input ZK proof and splitting the bid into REP3 secret shares, a pair for each operator, then verifying admission…';
   try {
     const maximum=integer('maximum-bid'); $('maximum-bid').value='';
     const result=await rehearsalRequest('bid',{auction_id:room.auction_id,maximum_bid:maximum});
     if (!result.accepted || !result.client_input_proof_verified || result.share_pairs_verified!==3 || result.receipt_signatures_verified!==3 || result.chain_funding_verified || result.native_settlement_started || result.auction.auction_id!==room.auction_id) throw new Error('Incomplete signed acceptance.');
     lastAcceptance=result; showRoom(result.auction);
     myTickets.push({ticket:result.ticket,opening_token:result.opening_token,ticket_number:result.ticket_number}); selectedTicket=myTickets.length-1;
-    $('bid-accepted').hidden=false; $('bid-accepted').replaceChildren(element('h3','Bid sealed'),element('p','Ticket '+String(result.ticket_number).padStart(2,'0')+' · proof, 3 share pairs and 3 operator signatures verified'+(room.funding_required?' · deposit after close':'')+'.'));
+    $('bid-accepted').hidden=false; $('bid-accepted').replaceChildren(element('h3','Bid sealed'),element('p','Ticket '+String(result.ticket_number).padStart(2,'0')+' · proof, 3 secret-share pairs (one per operator) and 3 operator signatures verified'+(room.funding_required?' · deposit after close':'')+'.'));
     $('copy-acceptance').hidden=false; $('acceptance-details').hidden=false;
     $('acceptance-public').textContent=JSON.stringify({client_input_proof_verified:true,share_pairs_verified:3,receipt_signatures_verified:3,ticket:result.ticket,commitment:result.commitment,receipt:result.receipt},null,2);
     $('rehearsal-status').textContent='✓ Bid sealed and pre-checked in '+result.seconds.toFixed(1)+' seconds.';
@@ -645,15 +738,22 @@ setInterval(refreshRoom,1000);
 (function walkthrough() {
   const stage=$('walk-stage'); if (!stage) return;
   const captions=[
-    [['Seal. ',1],['Each bid becomes a commitment and three secret shares, ① ② ③. Operator A holds ① ③, B holds ② ①, C holds ③ ②: ',0],['no operator ever holds all three, so none can read a bid',1],['. A zero-knowledge proof ties every commitment to its shares.',0]],
-    [['Fund. ',1],['Each ticket locks 15,100 zatoshi, its 100 budget plus a 15,000 processing fee for the network and operator fees, in a ',0],['shielded 2-of-3 escrow',1],['. The operators check the deposits against the same proofs and shares, then all three ',0],['sign the accepted book',1],['; any two can later authorize the payout.',0]],
-    [['Prove. ',1],['The three operators compute together on their shares and generate one proof jointly: multi-party ZK proving with coNoir. With the demo bids 77, 61, 43 and 21 and three units, the top three win and each pays the ',0],['price of 21',1],[', the highest losing bid. The proof shows it follows the rules over exactly the committed bids; ',0],['no bid list is ever rebuilt',1],['.',0]],
+    [['Seal. ',1],['The bidder\'s own client turns each bid into a commitment and three secret shares, {1}{2}{3}, and sends them to the operators. Operator A receives {1}{3}, B {2}{1}, C {3}{2}: ',0],['no operator ever holds all three, so none can read a bid',1],['. A zero-knowledge proof ties every commitment to its shares.',0]],
+    [['Fund. ',1],['Each ticket locks 15,100 zatoshi, its 100 budget plus a 15,000 processing fee for the network and operator fees, in a ',0],['shielded 2-of-3 escrow',1],['. The operators check the deposits against the same proofs and secret shares, then all three ',0],['sign the accepted book',1],['; any two can later authorize the payout.',0]],
+    [['Prove. ',1],['The three operators compute together on their secret shares and generate one proof jointly: multi-party ZK proving with coNoir. With the demo bids 77, 61, 43 and 21 and three units, the top three win and each pays the ',0],['price of 21',1],[', the highest losing bid. The proof shows it follows the rules over exactly the committed bids; ',0],['no bid list is ever rebuilt',1],['.',0]],
     [['Settle. ',1],['The same computation yields six payment rows. Each winner gets its 100 budget back minus the price, 79; the loser gets all 100; the seller gets 3 × 21 = 63; the operator gets a 30,000 fee. The other 30,000 deposited pays the network fee. ',0],['Six Halo2 proofs bind each row to a real note',1],[' in one shielded transaction.',0]],
     [['Verify. ',1],['Anyone checks the proofs ',0],['with no secrets',1],[': price 21, three sold, every output bound to the result. Ticket 01 decrypts its own memo with its own key: ',0],['won, refund 79',1],['.',0]],
   ];
-  let step=1, timer=null;
+  let step=1, timer=null; const sealTimers={};
+  // Show the demo values for a moment, then let the mask close over them.
+  function sealing(name) {
+    clearTimeout(sealTimers[name]); stage.classList.add(name);
+    sealTimers[name]=setTimeout(()=>stage.classList.remove(name),1200);
+  }
   function show(n) {
     step=n; stage.dataset.step=String(n);
+    if (n===1) sealing('open-bids');
+    if (n===4) { stage.classList.add('binding'); void stage.offsetWidth; requestAnimationFrame(()=>stage.classList.remove('binding')); }
     for (const node of stage.querySelectorAll('.w-from')) {
       node.classList.toggle('on',Number(node.dataset.from)<=n);
       node.classList.toggle('now',(node.dataset.now||node.dataset.from).split(' ').map(Number).includes(n));
@@ -661,7 +761,9 @@ setInterval(refreshRoom,1000);
     for (const button of document.querySelectorAll('.walk-steps button')) {
       if (Number(button.dataset.step)===n) button.setAttribute('aria-current','step'); else button.removeAttribute('aria-current');
     }
-    $('walk-caption').replaceChildren(...captions[n-1].map(([text,bold])=>bold?element('b',text):document.createTextNode(text)));
+    // {1}{2}{3} in a caption are drawn as the same share chips as the stage.
+    const withShares = text => text.split(/((?:\{[123]\})+)/).map((part,i)=>{ if (!(i%2)) return document.createTextNode(part); const group=element('i','','shares'); group.append(...[...part.matchAll(/[123]/g)].map(([n])=>element('i',n,'share s'+n))); return group; });
+    $('walk-caption').replaceChildren(...captions[n-1].map(([text,bold])=>{ if (!bold) return withShares(text); const b=element('b',''); b.append(...withShares(text)); return b; }).flat());
   }
   function stop() { if (timer) { clearInterval(timer); timer=null; $('walk-play').textContent='▶ Play'; } }
   for (const button of document.querySelectorAll('.walk-steps button')) button.addEventListener('click',()=>{ stop(); show(Number(button.dataset.step)); });
@@ -671,6 +773,12 @@ setInterval(refreshRoom,1000);
     $('walk-play').textContent='❚❚ Pause';
     timer=setInterval(()=>{ if (step>=5) stop(); else show(step+1); },3600);
   });
-  $('walk-values').addEventListener('change',event=>stage.classList.toggle('reveal',event.target.checked));
+  // Seals: tap to read one (pointing works on desktop through :hover).
+  for (const seal of stage.querySelectorAll('.w-seal')) seal.addEventListener('click',()=>seal.classList.toggle('peek'));
+  // The first time the stage scrolls into view, show the bids being sealed.
+  if ('IntersectionObserver' in window) {
+    const seen=new IntersectionObserver(entries=>{ if (entries.some(e=>e.isIntersecting)) { seen.disconnect(); if (step===1) sealing('open-bids'); } },{threshold:.6});
+    seen.observe(stage.querySelector('.w-bidders'));
+  }
   show(1);
 })();

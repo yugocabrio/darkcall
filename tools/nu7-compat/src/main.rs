@@ -27,6 +27,7 @@ async fn main() -> Result<()> {
     let result = match args.as_slice() {
         [command] if command == "synthetic-native" => native::gate(),
         [command] if command == "note-interop" => note_interop::gate(),
+        [command] if command == "transaction-identity" => auction::transaction_identity(),
         [command, name] if command == "synthetic-native-export" => native::gate_export(name),
         [command, directory] if command == "prepare-auction" => auction::prepare(std::path::Path::new(directory)),
         [command, directory] if command == "finalize-auction" => auction::finalize(std::path::Path::new(directory)),
@@ -57,7 +58,7 @@ async fn main() -> Result<()> {
         [command, endpoint, notes] if command == "testnet-source-check" => testnet::source_check(endpoint, std::path::Path::new(notes)).await,
         [command, wallet] if command == "testnet-address" => testnet::address(std::path::Path::new(wallet)).map(|a| serde_json::json!({"address":a})),
         [command, path] if command == "verify-old-native" => native::verify_old(path),
-        _ => Err("usage: darkcall-nu7-compat regtest-scan WALLET NODE_CAPTURE | regtest-transfer SOURCE_WALLET PRIVATE_NOTES RECIPIENT_WALLET FRESH_RUN_NAME | synthetic-native | note-interop | synthetic-native-export LOCAL_NAME | prepare-auction DIRECTORY | finalize-auction DIRECTORY | verify-auction PUBLIC_DIRECTORY | receipt-transport DIRECTORY | receipt-transport-open RECIPIENT_DIRECTORY INDEX OUT_MEMO | verify-export PUBLIC_DIRECTORY [PUBLIC_ROW] | probe-testnet HTTPS_ENDPOINT | verify-old-native PUBLIC_TRANSACTION".into()),
+        _ => Err("usage: darkcall-nu7-compat regtest-scan WALLET NODE_CAPTURE | regtest-transfer SOURCE_WALLET PRIVATE_NOTES RECIPIENT_WALLET FRESH_RUN_NAME | synthetic-native | note-interop | synthetic-native-export LOCAL_NAME | prepare-auction DIRECTORY | finalize-auction DIRECTORY | verify-auction PUBLIC_DIRECTORY | receipt-transport DIRECTORY | receipt-transport-open RECIPIENT_DIRECTORY INDEX OUT_MEMO | verify-export PUBLIC_DIRECTORY [PUBLIC_ROW] | probe-testnet HTTPS_ENDPOINT | verify-old-native PUBLIC_TRANSACTION | transaction-identity < TRANSACTION".into()),
     }?;
     println!("{}", serde_json::to_string_pretty(&result).unwrap());
     Ok(())

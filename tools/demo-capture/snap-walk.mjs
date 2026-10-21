@@ -8,8 +8,8 @@ await page.goto(process.env.DARKCALL_URL || 'http://127.0.0.1:8877/', { waitUnti
 const walk = await page.$('#walk');
 for (const step of [1, 3, 5]) {
   await page.click(`.walk-steps button[data-step="${step}"]`);
-  if (step === 5) await page.click('#walk-values');
-  await new Promise(r => setTimeout(r, 900));
+  // Wait past the sealing animation so each snapshot shows the closed seals.
+  await new Promise(r => setTimeout(r, 2400));
   await walk.screenshot({ path: `${out}/walk-${width}-${step}.png` });
 }
 await browser.close();

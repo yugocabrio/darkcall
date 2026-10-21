@@ -98,19 +98,31 @@ own receipt about 3 s.
    authorization, decrypts its memo, checks the expected ticket and book, and
    matches the native amount to the refund. The page then sets what that
    bidder sees beside what everyone else sees. No other identity is copied.
-3. **Re-run verification** checks the same native transaction, the six
-   binding proofs, the fixed MPC and receipt proofs, and the signed book under
-   the configured authority (about 2 minutes), and states the result as four
-   claims: the price is right, every payout matches the result, the payment is
-   real Zcash, these are the accepted bids.
-4. **Try to cheat**: raise the price, swap two bidders' refunds, swap in a
-   different bid, or fake a bidder's receipt. The first three change a copy of
-   the recorded bundle and run the same verifiers on it
-   (`scripts/cheat_lab.py`); the last corrupts a receipt proof, which is
-   refused before any key is read. Each result names the claim that broke.
+3. The four claims are shown at once from the committed clean-room record
+   (Oct 19): the price is right, every payout matches the result, the Zcash
+   transaction is valid, these are the accepted bids. **Re-run verification** checks
+   the same native transaction, the six binding proofs, the fixed MPC and
+   receipt proofs, and the signed book under the configured authority here
+   (about 2 minutes) and refreshes them. **Inspect the proof trail** lists the
+   public data behind each claim (`/api/trail`, built by `scripts/proof_trail.py`
+   from the committed bundle and authority only, every file checked against
+   bundle.json) with 35 recomputed consistency checks: commitments and root in the
+   proofs and in all three signed books, terms against the authority, each
+   row hash and action index in the auction proof, each cmx read from the transaction bytes at
+   that action.
+4. **Try to cheat**: change one accepted bid, corrupt a bidder's receipt
+   proof, claim a higher price, or swap two payout proofs. Except the receipt
+   proof, each changes a copy of the recorded bundle and runs the same
+   verifiers on it (`scripts/cheat_lab.py`), and counts as refused only when
+   the check it targets refuses it; anything else is shown as a test error.
+   The corrupted receipt proof is refused before any key is read. Each result
+   names the claim that broke, sets the original bundle beside the changed
+   copy, and shows the exact file, field, before and after.
 
-Bidders here are listed in canonical ticket order, not sealing order. Choosing
-one is a demo convenience, not a login. The settlement badge appears only after
+Bidders are numbered in the order their bids were sealed, as in the browser
+and the video (`demo/ticket-order`, written by `scripts/ticket_order.py` from
+the operators' acceptance receipts); without that file they follow the public
+book's ticket-id order. Choosing one is a demo convenience, not a login. The settlement badge appears only after
 a full public verification in this page session. The server binds IPv4
 loopback and serves three static files plus a same-origin, session-token API.
 It exposes no keys, pads, raw memos, signing or RPC.

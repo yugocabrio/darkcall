@@ -19,11 +19,17 @@ Updated: 2026-10-21 (git HEAD is authoritative).
   about 90 s each, dominate. Record: `evidence/2026-10-21-bid-scaling.json`.
 - **Try to cheat (Oct 21):** on `/demo/settled` a judge can make one dishonest
   change to a copy of the recorded testnet settlement and watch the real
-  verifiers refuse it: a swapped bid in 3.5 s (signed book), a price one higher
-  in 129 s (auction proof), two swapped refunds in 121 s (output bindings).
-  `scripts/cheat_lab.py`; record `evidence/2026-10-21-cheat-lab.json`. The page
-  starts as the public, then contrasts a bidder's receipt with what everyone
-  else sees, and states the settlement check as four claims.
+  verifiers refuse it. A change counts only when the check it targets refuses
+  it; an unchanged control copy passes (108 s). One accepted bid changed: 2 s
+  (signed book); a price one higher: 102 s (auction proofs); two payout proofs
+  swapped: 97 s (output bindings). `scripts/cheat_lab.py`; record
+  `evidence/2026-10-21-cheat-lab.json`. The page starts as the public, shows the
+  four verified claims at once from the committed clean-room record, numbers
+  bidders in sealing order as in the video (Bidder 01 won, refund 79), and says
+  what is sold and what the refunds mean. **Inspect the proof trail** shows the
+  public data behind each claim with 35 recomputed consistency checks
+  (`scripts/proof_trail.py`, `/api/trail`, committed bundle only), and each
+  cheat result shows the original beside the changed copy and the exact field.
 - **Tests and hosting (Oct 21):** the three CI jobs (Noir 34, Rust workspace,
   Python 28) pass on a fresh `git archive` export with no local state, and a
   manual run on GitHub was green; the workflow runs on every push to main again. The hosted demo

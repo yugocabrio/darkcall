@@ -32,10 +32,11 @@ exactly as proven.
    (blocks 4,518,254 and 4,518,315) on a testnet explorer.
 2. **That auction, from creation to receipts** (2 minutes). The video is edited
    stills of that same run, with every time cut labelled.
-3. **Try to cheat it** (live demo, `/demo/settled`, 4 s to 2 minutes per try).
-   Raise the price, swap two bidders' refunds or swap in a different bid: the
+3. **Try to cheat it** (live demo, `/demo/settled`, 2 s to 2 minutes per try).
+   Change an accepted bid, claim a higher price or swap two payout proofs: the
    page makes that one change to a copy of the recorded settlement and runs the
-   real verifiers, which refuse each one and say which check broke.
+   real verifiers. Each is refused by the check it targets, and the page says
+   which claim broke.
 4. **The settlement verifies with no secrets, and tampering is refused**
    (about 100 s per bundle once the pinned tools are built). `scripts/docker_verify.sh`
    builds every tool from committed source in a clean Linux container (about

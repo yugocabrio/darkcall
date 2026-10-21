@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "auction_id": "3e1361da746515f4bdaa91194f982ed8",
+  "txid": "e3ffa436a2fd747653dec92e052f622135f51912c6707ec95b7373ab84769754",
+  "scope": "Ticket ids in the order the bids were sealed in the browser; display labels only",
+  "sealing_order": [
+    "4f91cd45b2fb84bf15a61a5192edc82094f3ef06fc1c72cebecc118b07f0ae06",
+    "1225574ef065cf671b2edd417f2244142d244a90764e265b8694b5465e6b1e70",
+    "ef078ac990440d60d959cecaf81fc599f29cd888ea6a24eeee4aadbd43874bbd",
+    "89dde4016ff703efc36cb79b53cffb673a96dc2423494e8d6fc43dea7b3d8441"
+  ]
+}

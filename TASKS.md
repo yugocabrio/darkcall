@@ -81,6 +81,28 @@ Done:
       compose), scripts/hosted_local_set.py (11 recorded-run files + testnet bank; the recorded-mode
       HTTP check passes with only that as .local). See docs/hosting-plan.md.
 - [ ] Deploy the hosted demo: waiting on the author's server and SSH access.
+- [x] Judge review fixes (Oct 21): the four claims show at once as recorded (clean-room record,
+      Oct 19) beside Re-run verification; cheats are named for what they change (change one
+      accepted bid, claim a higher price, swap two payout proofs, corrupt a receipt proof) with
+      the 2-second one first; a cheat is "refused" only when its targeted check refuses it,
+      other failures are test errors, and a control copy must pass; bidders are numbered in
+      sealing order (demo/ticket-order, scripts/ticket_order.py), so Bidder 01 is the video's
+      Ticket 01 (won, 79); the auction card says what is sold and what 79 / 100 mean.
+- [x] Proof trail and cheat comparison (Oct 21): Inspect the proof trail under the four claims
+      (scripts/proof_trail.py, GET /api/trail; committed bundle, authority and evidence only;
+      35 consistency checks recomputed, all true); cheat results show original vs changed copy and the
+      exact file/field/before/after; "The Zcash transaction is valid" replaces "The payment is
+      real Zcash", and the auction story no longer claims nobody saw a bid. Role icons are colour
+      emoji again (bidder with a light skin tone so it does not echo the yellow highlights).
+- [x] Proof trail precision (Oct 21): cmx and txid are read from the transaction bytes (new
+      parse-only SDK command `transaction-identity`, no proof or signature check), not only from
+      the bundle's identity file; full values on click and a link to each file in the repository;
+      tickets named by public-book order, so the trail adds nothing beyond the bundle; the page
+      says these are 35 consistency checks between files, not proofs. Recorded confirmations
+      were already present (2), contrary to the review.
+- [ ] Optional, stronger negative test: a transaction that really pays a refund elsewhere,
+      signed by a 2-of-3 quorum, refused by the output bindings. Needs the recorded escrow
+      signing shares and a new transaction build; not started.
 - [ ] At the UI-freeze video re-record (about Oct 25): consider a short "try to cheat" segment
       from /demo/settled of the same testnet auction, labelled with its own date and real
       refusal time, if it fits the length.

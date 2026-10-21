@@ -211,6 +211,32 @@ pub(crate) fn identity<A: Authorization>(tx: &TransactionData<A>) -> Result<Iden
         native_actions,
     })
 }
+/// Parse a NU7 transaction from standard input and print its txid and each
+/// action's note commitment (cmx), so a reader can compare the transaction
+/// bytes themselves with a public bundle. Proofs and signatures are not
+/// checked here; verify-funded-auction checks them.
+pub fn transaction_identity() -> Result<serde_json::Value> {
+    let mut bytes = Vec::new();
+    std::io::stdin()
+        .take(100_001)
+        .read_to_end(&mut bytes)
+        .map_err(|_| "transaction input")?;
+    if bytes.len() > 100_000 {
+        return Err("transaction exceeds bound".into());
+    }
+    let mut reader = std::io::Cursor::new(&bytes[..]);
+    let tx = zcash_primitives::transaction::Transaction::read(&mut reader, BranchId::Nu7)
+        .map_err(|_| "NU7 transaction encoding")?;
+    if reader.position() != bytes.len() as u64 {
+        return Err("trailing transaction data".into());
+    }
+    let parsed = identity(&tx)?;
+    Ok(serde_json::json!({
+        "scope": "parsed from the transaction bytes only; proofs and signatures not checked here",
+        "txid": parsed.txid, "branch": parsed.branch, "bytes": bytes.len(),
+        "native_actions": parsed.native_actions.iter().map(hex::encode).collect::<Vec<_>>(),
+    }))
+}
 fn application(directory: &Path, actual: &Identity) -> Result<serde_json::Value> {
     application_for(directory, actual, None)
 }

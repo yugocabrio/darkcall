@@ -145,6 +145,8 @@ def main():
             raise RuntimeError('Receipt is from a different auction')
         clean(value)
         verified.append({'case':name,'ticket':index,'won':won,'refund':refund})
+    if sorted(served.get('labels', [])) != [1, 2, 3, 4]:
+        raise RuntimeError('Bidder labels are not one number per ticket')
     if args.canonical and winners != served['sold']:
         raise RuntimeError('Opened winners differ from the public units sold')
     for name in ('positive',) if args.canonical else ('positive','zero'):
@@ -155,19 +157,38 @@ def main():
         clean(value)
     cheat_refused = None
     if args.canonical and args.funded:
-        # The fastest cheat (a swapped bid in the signed book) must be refused by
-        # the real verifiers; unknown or extra cheat fields are rejected outright.
-        for label,payload in [('unknown-cheat',{'kind':'mint'}),('extra-cheat-field',{'kind':'book','path':'/'})]:
+        # The fastest cheat (one accepted bid changed in the signed book) must be
+        # refused by that check itself; unknown or extra cheat fields are rejected,
+        # and the control is not exposed over HTTP.
+        for label,payload in [('unknown-cheat',{'kind':'mint'}),('control-over-http',{'kind':'none'}),('extra-cheat-field',{'kind':'book','path':'/'})]:
             if call('POST','/api/cheat',json.dumps(payload),headers)[0] != 400: raise RuntimeError('Missing input rejection: '+label)
             denied.append(label)
         status,data = call('POST','/api/cheat',json.dumps({'kind':'book'}),headers)
         value = json.loads(data)
-        if status != 200 or not value['refused'] or value['caught_by'] != ['book']:
-            raise RuntimeError('Swapped-bid cheat was not refused by the signed-book check')
+        if (status != 200 or value['outcome'] != 'refused' or value['expected_check'] != 'book'
+                or value['caught_by'] != ['book'] or value['test_error']):
+            raise RuntimeError('Changed-bid cheat was not refused by the signed-book check')
+        if not value['changed'] or value['changed']['before'] == value['changed']['after']:
+            raise RuntimeError('Cheat result does not say what changed')
         clean(value)
         cheat_refused = value['caught_by']
+        # The proof trail: public bundle only, every recomputed cross-check true.
+        status,data = call('GET','/api/trail')
+        trail = json.loads(data)
+        checks = []
+        def walk(node):
+            if isinstance(node,dict):
+                for key,item in node.items():
+                    if isinstance(item,bool): checks.append(item)
+                    else: walk(item)
+            elif isinstance(node,list):
+                for item in node: walk(item)
+        walk(trail)
+        if status != 200 or len(checks) != 35 or not all(checks) or trail['transaction']['txid'] != served['txid']:
+            raise RuntimeError('Proof trail cross-checks differ')
+        clean(trail)
     print(json.dumps({'scope':'loopback receipt demo actual API/client integration',
-        'verified':verified,'http_rejections':denied,'swapped_bid_cheat_caught_by':cheat_refused,'corrupt_proofs_rejected_before_key':1 if args.canonical else 2,
+        'verified':verified,'http_rejections':denied,'changed_bid_cheat_caught_by':cheat_refused,'proof_trail_consistency_checks':35 if cheat_refused else None,'corrupt_proofs_rejected_before_key':1 if args.canonical else 2,
         'private_fields_served':False,'browser_ui_checked_separately':True,
         'six_output_memo_e2e_verified':args.canonical,'seconds':time.monotonic()-start},indent=2))
 

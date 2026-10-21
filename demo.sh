@@ -21,6 +21,7 @@ if [ "${1-}" = "--regtest-recorded" ]; then
     --run settle-35b2a2569d-settlement \
     --bundle "$TASK_ROOT/demo/artifacts/browser-auction-nu7-v2" \
     --authority "$TASK_ROOT/demo/authority/browser-auction-nu7-v2.json" \
+    --ticket-order "$TASK_ROOT/demo/ticket-order/browser-auction-nu7-v2.json" \
     --recorded-note "Created, funded, cleared and settled in this UI on Oct 19 · isolated Zcash regtest" "$@"
 fi
 # Trusted local demo configuration, separately pinned from the proof bundle.
@@ -33,4 +34,5 @@ exec python3 "$TASK_ROOT/scripts/serve_demo.py" --canonical --funded \
   --run settle-aa36c45a6a-settlement \
   --bundle "$TASK_ROOT/demo/artifacts/testnet-auction-nu7-v2" \
   --authority "$TASK_ROOT/demo/authority/testnet-auction-nu7-v2.json" \
+  --ticket-order "$TASK_ROOT/demo/ticket-order/testnet-auction-nu7-v2.json" \
   --recorded-note "Created, funded, cleared and settled in this UI on public Zcash testnet on Oct 19" "$@"

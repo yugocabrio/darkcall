@@ -15,16 +15,24 @@ receipt memo.
    (`4dde6fcb…`, settlement `be1157c8…a1c8ad67`), created and settled in the
    browser and captured by `tools/demo-capture/capture.mjs`. Every time cut
    states the real elapsed time.
-1. **A settled auction, checked by you.** `/demo/settled` on the live demo. Start as
-   the public (what you can and cannot see), switch to a bidder to open only that
-   bidder's receipt, re-run the public verification (about 100 s), then try to
-   cheat: raise the price, swap two bidders' refunds, swap in a different bid or
-   fake a receipt. Each cheat makes that one change to a copy of the recorded
-   bundle and runs the same fixed verifiers (`scripts/cheat_lab.py`); the page
-   shows which claim the verifiers say it breaks. In the recorded run all three
-   were refused: the swapped bid in about 4 s (signed book), the higher price and
-   the swapped refunds in about 2 minutes (auction proof, output bindings):
-   [evidence/2026-10-21-cheat-lab.json](../evidence/2026-10-21-cheat-lab.json).
+1. **A settled auction, checked by you.** `/demo/settled` on the live demo. It
+   is the auction in the video, and bidders are numbered as they were there.
+   Start as the public (what you can and cannot see), switch to a bidder to open
+   only that bidder's receipt, and read the four verified claims (recorded on
+   Oct 19; re-run them here in about 100 s). **Inspect the proof trail** under
+   them shows the public data behind each claim, read from the committed bundle
+   only: the four bid commitments and the root the three operators signed, the
+   auction proof's public inputs (price 21, sold 3, terms), each payout row's
+   hash, action and cmx with its Halo2 proof, and the transaction, with 35
+   consistency checks recomputed between those files and the transaction bytes. Then try to cheat, starting with
+   **Change one accepted bid** (a few seconds): each change is made to a copy of
+   the recorded bundle and checked by the same fixed verifiers
+   (`scripts/cheat_lab.py`), and counts as refused only when the check it
+   targets refuses it. The result sets the original bundle beside your changed
+   copy and shows the exact field, before and after. In the recorded run an unchanged control copy passed and
+   all three changes were refused: the bid in 2 s (signed book), a higher price
+   in 102 s (auction proofs), two swapped payout proofs in 97 s (output
+   bindings): [evidence/2026-10-21-cheat-lab.json](../evidence/2026-10-21-cheat-lab.json).
 2. **The product, live.** `./demo.sh --chain testnet` (or `./demo.sh` on the
    local regtest), then **Run an auction**. Create an
    auction, seal four demo bids, certify the book, then **Fund on Zcash**: real
