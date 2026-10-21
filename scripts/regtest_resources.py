@@ -67,17 +67,21 @@ def check(observation):
 def stop(process):
     # Descendants may still be alive after the parent exits. Kill only this
     # invocation's fresh session/group, including those descendants.
+    # macOS answers EPERM, not ESRCH, when only zombies are left in the group;
+    # nothing is left to signal then, and the wait below reaps the parent.
     try:
         os.killpg(process.pid, signal.SIGTERM)
     except ProcessLookupError:
         return
+    except PermissionError:
+        pass
     try:
         process.wait(timeout=3)
     except subprocess.TimeoutExpired:
         pass
     try:
         os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
+    except (ProcessLookupError, PermissionError):
         pass
     process.wait()
 

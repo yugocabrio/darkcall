@@ -85,8 +85,12 @@ Done:
       root-owned pinned checkouts the drivers check at run time ("dubious ownership", reproduced
       in a Debian trixie container as uid 10001). Both checkouts are now listed as safe.directory
       in the image's system git config. The full image has not been built here (disk).
-- [ ] CI green in a clean checkout: Python and Noir pass there; Rust tests that need .local,
-      .deps or compiled circuits must skip or build what they need.
+- [x] CI green in a clean checkout (Oct 21, on this Mac): the exact three job commands were run
+      on a `git archive` export with no .local, .deps or built binaries. The one failure was a
+      wallet-bridge test that assumed .local exists (it now creates it, owner-only). Noir 34,
+      Rust all crates (slowest 107 s, peak RSS about 0.4 GiB), Python 28 pass. A macOS-only
+      flake in the resource guard (EPERM from killpg on a zombie-only group, 1 in 6) is fixed:
+      0 in 15. The workflow stays manual until one run on GitHub is green.
 - [x] Settled page, checked by the judge (Oct 21): starts as the public (can / cannot see), a
       bidder's receipt is contrasted with what everyone else sees, the settlement check is four
       plain claims (price, six payouts, real Zcash payment, accepted bids) with the Oct 19 record,

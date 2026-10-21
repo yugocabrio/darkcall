@@ -118,7 +118,9 @@ mod tests {
             use std::os::unix::fs::DirBuilderExt;
             builder.mode(0o700);
         }
-        builder.create(&directory).unwrap();
+        // A fresh checkout (CI) has no ignored .local yet; create it owner-only.
+        builder.recursive(true).create(&root).unwrap();
+        builder.recursive(false).create(&directory).unwrap();
         let sk = SpendingKey::from_bytes([7; 32]).unwrap();
         let expected = FullViewingKey::from(&sk);
         write(
