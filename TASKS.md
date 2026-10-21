@@ -100,6 +100,22 @@ Done:
       tickets named by public-book order, so the trail adds nothing beyond the bundle; the page
       says these are 35 consistency checks between files, not proofs. Recorded confirmations
       were already present (2), contrary to the review.
+- [x] Not planned: 8-bid end-to-end settlement (recorded run of 8 bids / 10 outputs,
+      live demo stays at 4). Gap survey (Oct 21): the auction rule in circuits/protocol_lib is
+      already generic in n (fees: n + 2 actions × 5,000), and the 8-bid clearing circuit is derived,
+      compiled and jointly proven (6.5 s). Fixed at four bids / six outputs elsewhere: the three
+      top-level circuits (derivable, but flags and plan are not yet jointly proven at 8); about 18
+      Rust files as fixed-size arrays and count checks (input-tool book/shares/flags/link-plan,
+      wallet-bridge final book [Payload; 4], settlement-types, native-gate nu7_auction and
+      row_worker, the SDK's funded_prepare/funded_settlement/receipt_transport/admission/deposits,
+      including value conservation 4 × 15,100 and spends == 4); about 16 Python drivers
+      (statement sizes 187/232, 12 share pairs, 6 recipient scans); the public bundle format and
+      verifiers; the UI. Not fixed: the per-row Halo2 binding circuit (only the proof count grows,
+      10 × about 90 s) and FROST signing (loops over actions). Estimate 4 to 6 days plus regtest,
+      testnet and clean-room runs, and every 4-bid path would need re-verification on the
+      generalized code. Decision (author, Oct 21): finish at four bids; no further 8-bid work,
+      including the half-day joint proofs of the 8-bid flags and plan. No development is planned
+      after the submission.
 - [ ] Optional, stronger negative test: a transaction that really pays a refund elsewhere,
       signed by a 2-of-3 quorum, refused by the output bindings. Needs the recorded escrow
       signing shares and a new transaction build; not started.
