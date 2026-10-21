@@ -55,7 +55,7 @@ settlement peaks at about 3 GiB for the native prover and takes about 17 to
    `sudo mkdir -m 700 /srv/darkcall-local && sudo tar -xzf darkcall-local.tar.gz -C /srv/darkcall-local && sudo chown -R 10001 /srv/darkcall-local`,
    and delete both copies of the tarball.
 4. Start: `DARKCALL_HOST=<server-ip>.sslip.io docker compose -f darkcall/docker/demo/compose.yaml up -d`.
-5. Check `https://HOST/`, `/demo/settled` (open a receipt, run the tamper check,
+5. Check `https://HOST/`, `/demo/settled` (open a receipt, try each cheat,
    verify the settlement) and `/demo/run` (create an auction, seal a bid).
 
 To update, rebuild the image from the new revision and run `docker compose up -d`

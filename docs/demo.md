@@ -89,16 +89,25 @@ own receipt about 3 s.
 
 ## Recorded settlement view ("See a settled auction")
 
-1. The recorded auction's price and units are public; its four bids stay secret-shared.
-2. Choose a bidder and **Open my result**. The fixed C++ proofs, the exact
+1. The page opens as the public: the price and units sold, and what nobody
+   can see (who won, any bid, any refund). The four bids stay
+   secret-shared.
+2. Choose a bidder and **Switch to Bidder 0N's view**. The fixed C++ proofs, the exact
    context/price/sold and the signed admission must all pass before that
    bidder's own viewing key is read. The client then verifies native
    authorization, decrypts its memo, checks the expected ticket and book, and
-   matches the native amount to the refund. No other identity is copied.
-3. **Run tamper check** rejects an altered proof before key access.
-4. **Verify public settlement** checks the same native transaction, the six
+   matches the native amount to the refund. The page then sets what that
+   bidder sees beside what everyone else sees. No other identity is copied.
+3. **Re-run verification** checks the same native transaction, the six
    binding proofs, the fixed MPC and receipt proofs, and the signed book under
-   the configured authority (about 2 minutes).
+   the configured authority (about 2 minutes), and states the result as four
+   claims: the price is right, every payout matches the result, the payment is
+   real Zcash, these are the accepted bids.
+4. **Try to cheat**: raise the price, swap two bidders' refunds, swap in a
+   different bid, or fake a bidder's receipt. The first three change a copy of
+   the recorded bundle and run the same verifiers on it
+   (`scripts/cheat_lab.py`); the last corrupts a receipt proof, which is
+   refused before any key is read. Each result names the claim that broke.
 
 Bidders here are listed in canonical ticket order, not sealing order. Choosing
 one is a demo convenience, not a login. The settlement badge appears only after
