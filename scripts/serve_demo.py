@@ -179,6 +179,20 @@ class Demo:
         finally:
             self.lock.release()
 
+    def cheat(self, kind):
+        # Forge a copy of the recorded public bundle one dishonest way and run the
+        # fixed verifiers on it (scripts/cheat_lab.py). Public artifacts only.
+        if not (self.canonical and self.funded):
+            return 409, {'error':'The cheat lab needs the recorded funded settlement.'}
+        from cheat_lab import CHEATS, run as run_cheat
+        if kind not in CHEATS: raise ValueError('Unknown cheat')
+        if not self.lock.acquire(blocking=False):
+            return 409, {'error':'Another verification is running. Please try again shortly.'}
+        try:
+            return 200, run_cheat(self.bundle, self.authority, kind)
+        finally:
+            self.lock.release()
+
     def settlement(self):
         if not self.lock.acquire(blocking=False):
             return 409, {'error':'Another verification is running. Please try again shortly.'}
@@ -325,8 +339,8 @@ def handler(demo, port, public_origin=None):
                 return self.reply(403,{'error':'Same origin and session token required'})
             rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close',
                 '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result','/api/rehearsal/fund':'fund','/api/rehearsal/settle':'settle'}
-            if self.path not in ('/api/verify','/api/settlement',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
-            bucket = {'/api/verify':'verify','/api/settlement':'settlement','/api/rehearsal/create':'create'}.get(self.path,'rehearsal')
+            if self.path not in ('/api/verify','/api/settlement','/api/cheat',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
+            bucket = {'/api/verify':'verify','/api/settlement':'settlement','/api/cheat':'settlement','/api/rehearsal/create':'create'}.get(self.path,'rehearsal')
             if self.limited(bucket): return
             try:
                 length = int(self.headers.get('Content-Length','0'))
@@ -336,6 +350,11 @@ def handler(demo, port, public_origin=None):
                 if self.path in rehearsal_actions:
                     try: status,result=demo.rehearsal.post(rehearsal_actions[self.path],value)
                     except ValueError as error: return self.reply(400,{'error':str(error)})
+                    return self.reply(status,result)
+                if self.path == '/api/cheat':
+                    if not isinstance(value,dict) or set(value) != {'kind'} or not isinstance(value['kind'],str):
+                        return self.reply(400,{'error':'Expected one cheat kind'})
+                    status,result = demo.cheat(value['kind'])
                     return self.reply(status,result)
                 if self.path == '/api/settlement':
                     if value != {}: return self.reply(400,{'error':'Settlement accepts no supplied paths or keys'})

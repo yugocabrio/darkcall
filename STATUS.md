@@ -1,6 +1,6 @@
 # DarkCall status
 
-Updated: 2026-10-19 (git HEAD is authoritative).
+Updated: 2026-10-21 (git HEAD is authoritative).
 
 ## Current state, in one screen
 
@@ -17,6 +17,13 @@ Updated: 2026-10-19 (git HEAD is authoritative).
   clearing proof 3.1 s at 4 and 6.5 s at 8 bids (measured, verified), about 30 s
   at 16 (estimated; not run on the shared machine). Per-payout Halo2 bindings,
   about 90 s each, dominate. Record: `evidence/2026-10-21-bid-scaling.json`.
+- **Try to cheat (Oct 21):** on `/demo/settled` a judge can make one dishonest
+  change to a copy of the recorded testnet settlement and watch the real
+  verifiers refuse it: a swapped bid in 3.5 s (signed book), a price one higher
+  in 129 s (auction proof), two swapped refunds in 121 s (output bindings).
+  `scripts/cheat_lab.py`; record `evidence/2026-10-21-cheat-lab.json`. The page
+  starts as the public, then contrasts a bidder's receipt with what everyone
+  else sees, and states the settlement check as four claims.
 - **Product flow (browser and API):** Create → Bid → Fund on Zcash → Clear →
   Result → Settle on Zcash → own shielded receipt → tamper refusal. The same
   sealed tickets, commitments, REP3 shares and accepted root carry through every

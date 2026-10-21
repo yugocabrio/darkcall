@@ -70,8 +70,9 @@ Done:
 - [x] Bid-count scaling (Oct 21): measured N-bid variants (4/8/16 gate counts; 4 and 8 joint clearing
       proofs run and verified; 16 estimated). README, judge guide and draft say four is the circuit
       size, not a speed limit. Next if needed: a sorting network beyond a few dozen bids.
-- [x] CI (Oct 21): GitHub Actions runs 34 Noir, 66 Rust (release) and 28 Python tests on every push;
-      all pass locally. Own-wallet deposits: format allows ZIP-321 payment, but no consumer wallet
+- [x] CI (Oct 21): GitHub Actions runs 34 Noir, 66 Rust (release) and 28 Python tests; all pass
+      locally. Push runs failed on GitHub and emailed the author, so the workflow is manual
+      (workflow_dispatch) until a clean-checkout run is green (next item). Own-wallet deposits: format allows ZIP-321 payment, but no consumer wallet
       sends NU7 testnet transactions yet (Oct 15 Arborist call); recorded in the judge guide.
 - [x] One site (Oct 21): the static evidence page (docs/index.html, docs/site, build_evidence_site.py)
       is retired; the landing at / and the live demo at /demo/settled and /demo/run are the site,
@@ -80,6 +81,16 @@ Done:
       compose), scripts/hosted_local_set.py (11 recorded-run files + testnet bank; the recorded-mode
       HTTP check passes with only that as .local). See docs/hosting-plan.md.
 - [ ] Deploy the hosted demo: waiting on the author's server and SSH access.
+- [ ] CI green in a clean checkout: Python and Noir pass there; Rust tests that need .local,
+      .deps or compiled circuits must skip or build what they need.
+- [x] Settled page, checked by the judge (Oct 21): starts as the public (can / cannot see), a
+      bidder's receipt is contrasted with what everyone else sees, the settlement check is four
+      plain claims (price, six payouts, real Zcash payment, accepted bids) with the Oct 19 record,
+      and a cheat lab (scripts/cheat_lab.py, POST /api/cheat) forges one change into a copy of the
+      recorded bundle and runs the real verifiers: swapped bid refused in 3.5 s (signed book),
+      price +1 in 129 s (auction proof), swapped refunds in 121 s (output bindings). Record:
+      evidence/2026-10-21-cheat-lab.json. The HTTP check runs the swapped-bid cheat. The
+      walkthrough is grouped into labelled lanes (bidders, operators, clearing, who sees what).
 - [x] Review fixes: job timeouts stop the whole process tree before the lock is released;
       "Start another auction" cannot drop ticket capabilities mid-job or silently; the bid
       helper is described as the bidder's own client; colluding-signer caveat stated.

@@ -12,10 +12,14 @@ const setError = message => { $('error').textContent = message; $('error').hidde
 function element(tag, text, className) { const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node; }
 function resetResult() {
   receiptVerified = false; stages();
-  const result = $('result'); result.className = 'result-box'; result.replaceChildren(
-    element('h3','Still sealed.'), element('p','Open your encrypted receipt to see your result.'));
+  // Start as the public: what anyone can see, and what stays sealed.
+  const result = $('result'); result.className = 'result-box'; const sees=element('ul','','public-view');
+  for (const line of ['The clearing price and the units sold','Four sealed tickets, no amounts','One shielded transaction with six outputs']) sees.append(element('li',line));
+  const hidden=element('ul','','public-view sealed-view');
+  for (const line of ['Who won','Any bid','Any refund']) hidden.append(element('li',line));
+  result.replaceChildren(element('h3','You are the public.'), element('p','You can see:'), sees, element('p','You cannot see:'), hidden);
   ['proof','native','open'].forEach(step => $('step-'+step).classList.remove('done'));
-  $('verify').textContent='Open my result';
+  $('verify').textContent='Switch to '+$('ticket').selectedOptions[0].textContent+"'s view";
   $('tamper-result').textContent = ''; setError('');
 }
 function renderCase() {
@@ -39,13 +43,13 @@ async function run(action) {
   if (action === 'verify') {
     resetResult(); $('result').className = 'result-box loading';
     $('result').replaceChildren(element('h3','Verifying…'),element('p','Checking the proof and opening only your receipt.'));
-  } else $('tamper-result').textContent = 'Submitting a corrupted proof to the real verifier…';
+  } else $('tamper-result').textContent = 'Changing one byte of a bidder\'s receipt proof and giving it to the real verifier…';
   try {
     const response = await fetch('/api/verify', {method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify({case:selected,ticket,action})});
     const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Verification failed');
     if (action === 'tamper') {
       if (!result.rejected || result.key_read || result.memo_decrypted) throw new Error('Unexpected tamper result');
-      $('tamper-result').textContent = '✓ Cheating rejected. Viewing key untouched. Receipt stays encrypted.';
+      $('tamper-result').replaceChildren(element('b','✗ Refused. '),document.createTextNode('The fixed verifier rejects the forged receipt proof before the bidder\'s key is read, so the receipt stays encrypted.'));
     } else {
       if (!result.fixed_cpp_ticket_proof_verified || !result.native_proof_and_signatures_verified || !result.own_ticket_opening_verified || !result.native_amount_matches_refund || result.ticket_index !== ticket) throw new Error('Incomplete verification result');
       const current = state.cases.find(c => c.id === selected);
@@ -72,6 +76,27 @@ async function run(action) {
 document.querySelectorAll('[data-case]').forEach(button => button.addEventListener('click',() => { if (!busy && state) { selected=button.dataset.case; renderCase(); } }));
 $('ticket').addEventListener('change',resetResult);
 $('verify').addEventListener('click',() => run('verify'));
+// Cheat lab: each cheat changes a copy of the recorded settlement one way and
+// reports which of the four claims the real verifiers say it breaks.
+const CLAIMS={price:'The price is right',payouts:'Every payout matches the result',book:'These are the accepted bids',transaction:'The payment is real Zcash',bundle:'The package check'};
+const WHY={book:'The changed bid no longer adds up to the accepted root that the operators signed and the proofs were made over.',
+  price:'The auction proofs were made for the true price; they do not verify for any other.',
+  payout:'Each payout proof fits exactly one output of the transaction; swapped, neither fits.'};
+async function cheat(kind) {
+  if (busy || !state) return;
+  lock(true); setError('');
+  $('tamper-result').textContent='Copying this settlement with that one change and running the real verifiers on it'+(kind==='book'?'…':'. About 100 seconds…');
+  try {
+    const response=await fetch('/api/cheat',{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify({kind})});
+    const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Cheat check failed');
+    if (!result.refused) throw new Error('The verifiers accepted a forged settlement. Please report this.');
+    const broken=result.caught_by.map(c=>'“'+(CLAIMS[c]||c)+'”').join(' and ');
+    $('tamper-result').replaceChildren(element('b','✗ Refused in '+Math.round(result.seconds)+' s. '),
+      document.createTextNode(broken+' fails. '+(WHY[kind]||'')+(result.verifier_message?' The verifier says: '+result.verifier_message+'.':'')+' This copy could not pass as the auction\'s settlement.'));
+  } catch (error) { $('tamper-result').textContent=''; setError(error.message); }
+  finally { lock(false); }
+}
+document.querySelectorAll('[data-cheat]').forEach(button=>button.addEventListener('click',()=>cheat(button.dataset.cheat)));
 $('tamper').addEventListener('click',() => run('tamper'));
 // The settlement check, said as the four things it proves.
 function claim(ok,title,text,extra) {
@@ -131,6 +156,12 @@ fetch('/api/state').then(async response => {
     $('remaining-scope').textContent = 'Synthetic funding and no broadcast in this view; all parties on one host. Funded runs on public testnet and regtest are served by ./demo.sh.';
     if (state.funded_canonical) {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
+      if (recordedTestnet) {
+        // Already verified when recorded; the button re-runs the same check here.
+        const record=Object.assign(document.createElement('a'),{href:'https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json',textContent:'see the record',rel:'noopener'});
+        $('settlement-scope').replaceChildren('This settlement passed this check when it was recorded on Oct 19 (',record,'). Run the same check again here: about 100 seconds, with no secret.');
+        $('settlement').textContent='Re-run verification';
+      }
       $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts and larger bid counts remain unverified.';
       $('chain-scope').textContent = recordedTestnet ? 'Two public-testnet confirmations recorded through one trusted lightwalletd provider; the public bundle does not itself prove chain inclusion.' : state.recorded_local_confirmations ? 'Two controlled regtest confirmations recorded; public bundle does not prove chain inclusion' : 'Recorded regtest run; no chain inclusion proof in the public bundle';
     }
@@ -162,6 +193,7 @@ fetch('/api/state').then(async response => {
     $('settle-time').textContent='About 16 to 19 minutes on public testnet, including two confirmations.';
   }
   const recordedTx=state.cases[0].txid, hero=state.cases[0];
+  $('cheat-price-label').textContent='Raise the price to '+(hero.price+1);
   $('hero-price').textContent=hero.price; $('hero-tickets').textContent=hero.tickets+' sealed bids';
   $('hero-sold').textContent=hero.sold+' of '+hero.units+' units sold · every winner pays the same';
   $('hero-txid').textContent=recordedTx.slice(0,8)+'…'+recordedTx.slice(-8); $('hero-txid').title=recordedTx;

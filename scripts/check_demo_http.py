@@ -153,8 +153,21 @@ def main():
         if status != 200 or not value['rejected'] or value['key_read'] or value['memo_decrypted']:
             raise RuntimeError('HTTP corrupted-proof gate did not preserve recipient secrecy')
         clean(value)
+    cheat_refused = None
+    if args.canonical and args.funded:
+        # The fastest cheat (a swapped bid in the signed book) must be refused by
+        # the real verifiers; unknown or extra cheat fields are rejected outright.
+        for label,payload in [('unknown-cheat',{'kind':'mint'}),('extra-cheat-field',{'kind':'book','path':'/'})]:
+            if call('POST','/api/cheat',json.dumps(payload),headers)[0] != 400: raise RuntimeError('Missing input rejection: '+label)
+            denied.append(label)
+        status,data = call('POST','/api/cheat',json.dumps({'kind':'book'}),headers)
+        value = json.loads(data)
+        if status != 200 or not value['refused'] or value['caught_by'] != ['book']:
+            raise RuntimeError('Swapped-bid cheat was not refused by the signed-book check')
+        clean(value)
+        cheat_refused = value['caught_by']
     print(json.dumps({'scope':'loopback receipt demo actual API/client integration',
-        'verified':verified,'http_rejections':denied,'corrupt_proofs_rejected_before_key':1 if args.canonical else 2,
+        'verified':verified,'http_rejections':denied,'swapped_bid_cheat_caught_by':cheat_refused,'corrupt_proofs_rejected_before_key':1 if args.canonical else 2,
         'private_fields_served':False,'browser_ui_checked_separately':True,
         'six_output_memo_e2e_verified':args.canonical,'seconds':time.monotonic()-start},indent=2))
 

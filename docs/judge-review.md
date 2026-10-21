@@ -15,7 +15,17 @@ receipt memo.
    (`4dde6fcb…`, settlement `be1157c8…a1c8ad67`), created and settled in the
    browser and captured by `tools/demo-capture/capture.mjs`. Every time cut
    states the real elapsed time.
-1. **The product, live.** `./demo.sh --chain testnet` (or `./demo.sh` on the
+1. **A settled auction, checked by you.** `/demo/settled` on the live demo. Start as
+   the public (what you can and cannot see), switch to a bidder to open only that
+   bidder's receipt, re-run the public verification (about 100 s), then try to
+   cheat: raise the price, swap two bidders' refunds, swap in a different bid or
+   fake a receipt. Each cheat makes that one change to a copy of the recorded
+   bundle and runs the same fixed verifiers (`scripts/cheat_lab.py`); the page
+   shows which claim the verifiers say it breaks. In the recorded run all three
+   were refused: the swapped bid in about 4 s (signed book), the higher price and
+   the swapped refunds in about 2 minutes (auction proof, output bindings):
+   [evidence/2026-10-21-cheat-lab.json](../evidence/2026-10-21-cheat-lab.json).
+2. **The product, live.** `./demo.sh --chain testnet` (or `./demo.sh` on the
    local regtest), then **Run an auction**. Create an
    auction, seal four demo bids, certify the book, then **Fund on Zcash**: real
    deposits and chain admission over the same root. Clear it by MPC and open
@@ -25,7 +35,7 @@ receipt memo.
    on public testnet (funding about 10, settlement 16 to 19) or about 20 on the
    local regtest; **See a settled auction** shows a finished run at once. See
    [local-rehearsal.md](local-rehearsal.md).
-2. **Verification without secrets.** The easiest route is
+3. **Verification without secrets.** The easiest route is
    `scripts/docker_verify.sh`. It builds every pinned tool from committed source
    in a clean Linux container and verifies every committed bundle plus a tamper
    case for each. On Oct 19 a fresh image built from commit `a7f67bd` verified
@@ -46,7 +56,7 @@ receipt memo.
    `browser-auction-nu7-v1` and `fresh-book-nu7-v1`.
    Each check takes about two minutes. It needs no wallet key, PCZT, bid, mask
    or witness.
-3. **Exact records.** See
+4. **Exact records.** See
    [fresh-book settlement](../evidence/2026-10-18-fresh-book-native-settlement.json)
    and [recorded settlement](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 
