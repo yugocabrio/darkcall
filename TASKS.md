@@ -179,6 +179,9 @@ Done:
 - [x] Clean-room container covers all seven bundles (Oct 19, strict tamper refusal): first
       with the 66988f5 image and bundles mounted read-only, then with a fresh image built
       from `a7f67bd` by `scripts/docker_verify.sh`.
+- [x] Browser bid sealing spike (Oct 21): bb.js + noir_js at the pinned commits build the
+      commitment, share pairs and proof in the page; pinned bb and the unmodified admission accept
+      them (evidence/2026-10-21-browser-bid-spike.json). The demo's bid endpoint is unchanged.
 - [ ] Optional (about a day): four bidder wallets each funding their own deposit instead of one
       local test bank, to remove the "one wallet funds all four" limit.
 

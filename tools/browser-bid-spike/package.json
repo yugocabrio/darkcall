@@ -1,0 +1,10 @@
+{
+  "name": "darkcall-browser-bid-spike",
+  "private": true,
+  "description": "Spike: seal a DarkCall bid (commitment, REP3 share pairs, bid_input proof) in the browser",
+  "dependencies": {
+    "@aztec/bb.js": "5.0.0-nightly.20260522",
+    "@noir-lang/noir_js": "1.0.0-rc.2",
+    "esbuild": "0.25.10"
+  }
+}

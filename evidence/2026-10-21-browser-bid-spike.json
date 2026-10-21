@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-21",
+  "question": "Can the bidder's browser build the bid commitment, the REP3 share pairs and the bid_input proof, so the plaintext bid never reaches the server, with a proof the pinned verifier accepts?",
+  "answer": "Yes, for the bid itself. A headless browser page sealed synthetic bids with no server-side tool; the unmodified operator admission accepted them. The full flow is not built.",
+  "versions": {
+    "@aztec/bb.js": "5.0.0-nightly.20260522 (MIT); its git tag v5.0.0-nightly.20260522 is identical to the pinned bb source 87aa5283d5b0cab6632ed49fdd25f6548d2ba91f (GitHub compare: identical, 0 ahead, 0 behind)",
+    "@noir-lang/noir_js": "1.0.0-rc.2 (MIT OR Apache-2.0), gitHead 0ecc97a242ed37c0d1567e25747ed8d4c59cae49, the same commit as the pinned nargo 1.0.0-rc.2",
+    "esbuild": "0.25.10 (MIT), bundling only",
+    "browser": "Brave (Chromium), headless, incognito, driven by puppeteer-core from tools/demo-capture",
+    "lockfile": "tools/browser-bid-spike/package-lock.json (installed with --ignore-scripts)"
+  },
+  "what_the_page_does": [
+    "Reads the public auction terms and its ticket id from the server",
+    "Draws a random salt and REP3 shares of bid and salt (x = x0 + x1 + x2; operator p gets (x_p, x_{p-1}), the mpc-core layout)",
+    "Computes the context, bid commitment, three pair commitments and single-ticket root with bb.js Poseidon2, using the sponge of crates/input-tool/src/lib.rs",
+    "Executes the bid_input witness with noir_js and proves it with bb.js UltraHonk, verifierTarget noir-recursive (Poseidon2 transcript, ZK)",
+    "Posts book.json, the proof, the public inputs and one bincode share-pair file per operator; never the bid, the salt or a full share set"
+  ],
+  "checks": {
+    "commitments_match_prepare_one": "JS recomputed commitment, three pair commitments and root from a prepare-one Prover.toml: all equal; the three share files are byte-identical to prepare-one's",
+    "pinned_bb_verify": "bb verify --scheme ultra_honk --verifier_target noir-recursive with a vk from bb write_vk on the committed circuit: verified",
+    "operator_share_check": "darkcall-input-tool check for parties 0, 1, 2: passed",
+    "operator_admission": "rehearsal_admission admit (unmodified) on three browser-style bids, two from the browser page: accepted, client_input_proof_verified true, share_pairs_verified 3, receipt_signatures_verified 3",
+    "proof_size": "14,656 bytes, the same as plaindriver's proof for this circuit",
+    "refusals": "a proof with one low byte flipped: bb 'Proof verification failed', exit 1; a changed pair commitment in the public inputs: exit 1; a share file with one bit flipped, or sent to the wrong operator: 'delivered share pair does not match proof'",
+    "network": "the page made 12 requests, all to its own origin (page, wasm, circuit, CRS slices, auction terms) plus one POST; no other origin was contacted (interception would have aborted and listed it)"
+  },
+  "measurements_ms": {
+    "node_wasm_single_thread": {"backend_init": 520, "commitments_and_shares": 296, "witness": 60, "proof": 985, "bbjs_self_verify": 198, "peak_memory_bytes": 599873280},
+    "browser_single_thread": {"load": 411, "commitments_and_shares": 126, "witness": 49, "proof": 638},
+    "browser_cross_origin_isolated_6_threads": {"load": 360, "commitments_and_shares": 123, "witness": 48, "proof": 357},
+    "machine": "the shared 16 GiB Mac, other project running"
+  },
+  "download_sizes_bytes": {"page_bundle_with_bb_wasm": 8593180, "acvm_wasm": 3047916, "noirc_abi_wasm": 788505, "circuit": 39168, "bn254_crs_slice_65537_points": 4194368, "grumpkin_crs": 4194304},
+  "limits": [
+    "Synthetic bids and a synthetic auction only; the demo's bid endpoint still takes maximum_bid and runs prepare-one + plaindriver on the server.",
+    "In the demo all three operators run on one server. Moving sealing to the browser keeps the typed bid out of every request, but that server still receives all three share pairs unless each pair is encrypted to an operator running elsewhere.",
+    "The ticket id came from the server, as today. The receiver commitment, deposit and receipt opening are not part of this spike.",
+    "The Grumpkin CRS file was the public one bb.js downloads (crs.aztec-cdn.foundation) during the Node run; the BN254 points were the pinned co-noir CRS. The page itself fetched both from its own origin.",
+    "Not a privacy demonstration: no deployment, no real bids, no timing or traffic-shape analysis."
+  ],
+  "commands": [
+    "cd tools/browser-bid-spike && npm ci --ignore-scripts",
+    "node client.mjs <node_modules> <repo> <out> <bidder> <bid> [threads] [--check-ref <prepare-one dir>]",
+    "NODE_PATH=node_modules esbuild page.mjs <bb.js main.worker.js> <bb.js thread.worker.js> --bundle --format=esm --platform=browser --outdir=site --entry-names=[name]",
+    "python3 -I serve.py <site> <crs> <grumpkin> <auction.json> <receive dir under .local> <port> [--isolated]",
+    "node drive.mjs tools/demo-capture/node_modules/puppeteer-core http://127.0.0.1:<port>/ <bid>",
+    "target/release/examples/rehearsal_admission admit <auction> <received dir> <ticket index>"
+  ]
+}

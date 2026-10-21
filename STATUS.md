@@ -37,6 +37,14 @@ Updated: 2026-10-21 (git HEAD is authoritative).
 - **One to three units (Oct 21):** the same four-bid protocol now settles one-
   and two-unit auctions; a one-unit auction settled on public testnet (price 61,
   tx `1d85d98f…82db`), committed as `demo/artifacts/testnet-one-unit-nu7-v1`.
+- **Bidding from the browser, spike (Oct 21):** a browser page sealed synthetic bids itself:
+  commitment, REP3 share pairs (byte-identical to `prepare-one`'s format) and the `bid_input`
+  proof with bb.js 5.0.0-nightly.20260522 (the same commit as the pinned bb) and noir_js
+  1.0.0-rc.2. Pinned `bb verify` accepted the proofs; the unmodified operator admission accepted
+  three such bids (proof, 3 share pairs, 3 receipts). Proof 0.64 s single-threaded, 0.36 s with
+  6 threads; only same-origin requests. Not built into the demo; in the demo one server runs all
+  three operators, so it would still receive every share pair unless each is encrypted to an
+  operator elsewhere. `tools/browser-bid-spike`, `evidence/2026-10-21-browser-bid-spike.json`.
 - **Tests and hosting (Oct 21):** the three CI jobs (Noir 34, Rust workspace,
   Python 28) pass on a fresh `git archive` export with no local state, and a
   manual run on GitHub was green; the workflow runs on every push to main again. The hosted demo
