@@ -122,19 +122,22 @@ does who paid whom.
 
 ## Why it is different
 
-To let everyone check the price, other designs open the bid amounts at the close.
-DarkCall proves the price without opening them, then pays out in shielded ZEC.
+Some designs let everyone check the price by opening the bid amounts at the
+close. Others keep them from the public, but an operator decrypts them after the
+close to compute and prove the price. DarkCall proves the price without anyone
+opening them, then pays out in shielded ZEC.
 
-| | **DarkCall** | Open on-chain auction | Commit–reveal or published viewing key | Trusted auctioneer or key committee |
+| | **DarkCall** | Open on-chain auction | Commit–reveal or published viewing key | Operator decrypts after the close, then proves (timelock or key committee) |
 | --- | --- | --- | --- | --- |
 | Bids hidden from the public | **Yes, never opened** | No | Only until the close | Yes |
-| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No, it decrypts them |
-| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | No, you trust it |
+| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No, it decrypts them after the close |
+| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | Yes, by its proof |
 | Payments and refunds stay private | **Yes, one shielded transaction** | No | Possible, if paid shielded | Possible, if it pays shielded |
-| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | By contract, or audited afterwards | No, the signers decide |
+| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | By contract, or audited afterwards | Only if the payouts are proven too |
 
-Auditable sealed-bid designs usually **disclose the bids to prove the result**.
-DarkCall **proves the result without disclosing them**. Only the clearing price
+Auditable sealed-bid designs usually **disclose the bids to prove the result**,
+or let one operator decrypt them to prove it. DarkCall **proves the result
+without anyone opening them**. Only the clearing price
 and the units sold are public; by the auction rule the price equals the highest
 losing bid or the reserve. Neither the public nor any single operator learns
 who bid what, and no winner's maximum bid is ever published.

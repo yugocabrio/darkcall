@@ -10,7 +10,8 @@ receipt memo.
 
 In short: blind auctions keep the bids secret but ask everyone to trust the
 result; reveal-to-audit designs open the bids, or publish a viewing key, to
-check it. DarkCall keeps the bids secret and still lets anyone check, with no
+check it; single-prover ZK designs check the price without publishing the bids,
+but the prover reads them all. DarkCall keeps the bids secret and still lets anyone check, with no
 published viewing key and no operator reconstructing the bid book. The landing's
 "Auditable without revealing" block shows the three side by side, and two bid
 books (77 · 61 · 43 · 21 and 22 · 22 · 22 · 21) that give the same public

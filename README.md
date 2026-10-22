@@ -97,17 +97,19 @@ size this prototype's circuits are compiled for.
 
 ## What is different
 
-To let everyone check the price, other designs open the bid amounts at the close.
-DarkCall proves the price without opening them, then pays out in shielded ZEC.
+Some designs let everyone check the price by opening the bid amounts at the
+close. Others keep them from the public, but an operator decrypts them after the
+close to compute and prove the price. DarkCall proves the price without anyone
+opening them, then pays out in shielded ZEC.
 
-| | **DarkCall** | Open on-chain auction | Commit–reveal or published viewing key | Trusted auctioneer or key committee |
+| | **DarkCall** | Open on-chain auction | Commit–reveal or published viewing key | Operator decrypts after the close, then proves (timelock or key committee) |
 | --- | --- | --- | --- | --- |
 | Bids hidden from the public | **Yes, never opened** | No | Only until the close | Yes |
-| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No, it decrypts them |
-| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | No, you trust it |
+| Bids hidden from whoever runs it | **Yes, from any single operator** | No | No | No, it decrypts them after the close |
+| Anyone can check the price | **Yes, by zero-knowledge proof** | Yes | Yes, by opening every bid amount | Yes, by its proof |
 | Payments and refunds stay private | **Yes, one shielded transaction** | No | Possible, if paid shielded | Possible, if it pays shielded |
-| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | By contract, or audited afterwards | No, the signers decide |
-| Audit without revealing bids or keys | **Yes, proofs only** | No, nothing is hidden | No, opens the bids or publishes a key | No, only it can check |
+| Payout provably follows the result | **Yes, six output proofs** | Yes, by contract | By contract, or audited afterwards | Only if the payouts are proven too |
+| Audit without revealing bids or keys | **Yes, proofs only** | No, nothing is hidden | No, opens the bids or publishes a key | For the price; the operator reads every bid |
 
 Common designs compared, not specific projects. "Any single operator" is the
 REP3 bound: two colluding operators could reconstruct bids (see
@@ -329,6 +331,8 @@ assumptions:
   Two colluding operators can reconstruct bids. It is not malicious-secure MPC.
 - **Custody** is 2-of-3 FROST from a DKG. No escrow master key exists, but two
   colluding signers can move funds, and bidders have no unilateral refund path.
+  Clearing needs all three operators, and there is no built-in refund if an
+  auction does not settle (an operator stops, say): the deposits stay in escrow.
 - **Operators see outcomes.** The three operators hold the escrow's viewing key,
   which admitting deposits needs: it shows them fixed-size deposits, not bids, and
   they learn refunds and winners. No viewing key is published, and public
