@@ -566,7 +566,10 @@ same-root preset or redesign cryptography.
   - The interrupted row-0 run had no reservation/signature. Existing deposits,
     cutoff, DKG packages and all three Frozen journals survived the PC reboot;
     rerunning with fresh output artifacts, one heavy prover and resource guards.
-- [ ] Cancellation, late/unaccepted deposits and reorg-safe state transitions.
+- [x] Cancellation of a funded book that cannot settle (Oct 24): two operators refund every deposit,
+      2-of-3 FROST, without the stopped operator; regtest E2E over HTTP; journals forbid a second payout.
+- [ ] Late/unaccepted deposits, a returning operator's journal reconciliation, reorg-safe transitions.
+- [ ] Refund on public testnet (needs the author's approval to spend testnet coins).
 - [ ] Resolve fee/dust policy for wrong-amount deposits before wallet integration.
 
 ## Priority 2 · presentation and reproducibility

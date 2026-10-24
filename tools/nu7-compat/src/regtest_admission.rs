@@ -103,6 +103,22 @@ fn checked(command: &mut Command, log: &Path) -> Result<()> {
     }
     Ok(())
 }
+/// "0,1"-style operator subset for state/record; all three when absent. A
+/// stopped operator's journal is then never opened.
+fn operator_set(arg: Option<&String>) -> Result<Vec<usize>> {
+    let Some(text) = arg else {
+        return Ok(vec![0, 1, 2]);
+    };
+    let set: Vec<usize> = text
+        .split(',')
+        .map(|s| s.parse().map_err(|_| "operator list"))
+        .collect::<std::result::Result<_, _>>()?;
+    if set.len() < 2 || set.iter().any(|i| *i >= 3) || set.windows(2).any(|w| w[0] >= w[1]) {
+        return Err("two or three increasing operator indices required".into());
+    }
+    Ok(set)
+}
+
 pub fn execute(args: &[String]) -> Result<()> {
     if args.len() == 3 && args[0] == "verify" {
         // Authority is a separate explicit caller input, never discovered from
@@ -124,17 +140,19 @@ pub fn execute(args: &[String]) -> Result<()> {
         .unwrap()
         .parent()
         .unwrap();
-    if args.len() == 3 && args[0] == "state" {
+    if (args.len() == 3 || args.len() == 4) && args[0] == "state" {
         let out = Path::new(&args[1]);
+        let operators = operator_set(args.get(3))?;
         let manifest: Manifest = serde_json::from_slice(&read(&out.join("manifest.json"), 16384)?)?;
         let mut encoded = hex::decode(&args[2])?;
         encoded.reverse();
         let effects: [u8; 32] = encoded.try_into().map_err(|_| "effects length")?;
         let mut states = Vec::new();
-        // Keep all locks while auditing the complete set; only public state
+        // Keep all locks while auditing the named set; only public state
         // flags leave this command, never note IDs or reservation contents.
-        let journals = (0..3)
-            .map(|i| {
+        let journals = operators
+            .iter()
+            .map(|&i| {
                 if !out
                     .join(format!("private-node-{i}.jsonl"))
                     .try_exists()
@@ -150,7 +168,7 @@ pub fn execute(args: &[String]) -> Result<()> {
                 )
             })
             .collect::<std::result::Result<Vec<_>, _>>()?;
-        for (i, journal) in journals.iter().enumerate() {
+        for (&i, journal) in operators.iter().zip(&journals) {
             states.push(
                 serde_json::json!({"operator":i,"phase":format!("{:?}",journal.phase()),
                 "reserved_transaction_matches":journal.reserved_effects()==Some(effects),
@@ -160,8 +178,9 @@ pub fn execute(args: &[String]) -> Result<()> {
         println!("{}", serde_json::json!({"operators":states}));
         return Ok(());
     }
-    if args.len() == 4 && args[0] == "record" {
+    if (args.len() == 4 || args.len() == 5) && args[0] == "record" {
         let out = Path::new(&args[1]);
+        let operators = operator_set(args.get(4))?;
         let manifest: Manifest = serde_json::from_slice(&read(&out.join("manifest.json"), 16384)?)?;
         let mut encoded = hex::decode(&args[2])?;
         encoded.reverse();
@@ -172,8 +191,9 @@ pub fn execute(args: &[String]) -> Result<()> {
             _ => return Err("expected broadcast or finalize".into()),
         };
         let mut written = 0;
-        let mut journals = (0..3)
-            .map(|i| {
+        let mut journals = operators
+            .iter()
+            .map(|&i| {
                 if !out
                     .join(format!("private-node-{i}.jsonl"))
                     .try_exists()
@@ -197,7 +217,7 @@ pub fn execute(args: &[String]) -> Result<()> {
         }
         println!(
             "{}",
-            serde_json::json!({"recorded_in_three_durable_journals":args[3],"journal_events_written":written,"unchanged_operator_records":3-written,"chain_check":"caller must verify actual canonical inclusion"})
+            serde_json::json!({"recorded_in_durable_journals":args[3],"operators":operators,"journal_events_written":written,"unchanged_operator_records":operators.len()-written,"chain_check":"caller must verify actual canonical inclusion"})
         );
         return Ok(());
     }
@@ -283,7 +303,10 @@ pub fn execute(args: &[String]) -> Result<()> {
     let chain = crate::network::Chain::checked(
         openings["genesis"].as_str().unwrap_or_default(),
         openings["branch"].as_str().unwrap_or_default(),
-        openings["nu7_height"].as_u64().and_then(|h| u32::try_from(h).ok()).unwrap_or(0),
+        openings["nu7_height"]
+            .as_u64()
+            .and_then(|h| u32::try_from(h).ok())
+            .unwrap_or(0),
     )?;
     if openings["scope"] != chain.openings_scope() {
         return Err("snapshot scope mismatch".into());
@@ -495,10 +518,14 @@ pub fn execute(args: &[String]) -> Result<()> {
 
 /// Network recorded by the deposit builder; runs from before the field existed
 /// were regtest-only.
-fn mapping_genesis(deposit: &Path) -> std::result::Result<crate::network::Chain, Box<dyn std::error::Error>> {
+fn mapping_genesis(
+    deposit: &Path,
+) -> std::result::Result<crate::network::Chain, Box<dyn std::error::Error>> {
     let mapping: serde_json::Value =
         serde_json::from_slice(&read(&deposit.join("private-deposit-map.json"), 16384)?)?;
     Ok(crate::network::Chain::from_genesis(
-        mapping["network_genesis"].as_str().unwrap_or(crate::network::REGTEST_GENESIS),
+        mapping["network_genesis"]
+            .as_str()
+            .unwrap_or(crate::network::REGTEST_GENESIS),
     )?)
 }

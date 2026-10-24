@@ -206,7 +206,9 @@ Only the bidder's own client sees the typed bid; operators receive shares and a 
 - Bid secrecy: at most one semi-honest corrupt operator (REP3). Two colluding
   operators can reconstruct bids. Not malicious-secure.
 - Custody: 2-of-3 FROST from DKG. Two colluders can move funds. No unilateral
-  refund.
+  refund. If one operator stops before settlement, the other two refund every
+  deposit (less a share of the network fee), signed 2-of-3 (shown on regtest);
+  if two stop, the deposits wait in escrow.
 - Operators learn winners and refunds and hold escrow viewing capability.
 - The public clearing price equals the highest losing bid, or the reserve. That
   one value is public by the rules; who placed it is not. Small markets allow

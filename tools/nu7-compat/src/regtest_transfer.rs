@@ -24,7 +24,12 @@ use pczt::roles::{
 use rand_old::rngs::OsRng;
 use reddsa_frost::frost::redpallas as frost;
 use serde::Deserialize;
-use std::{collections::BTreeMap, convert::Infallible, path::Path, time::Instant};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    convert::Infallible,
+    path::Path,
+    time::Instant,
+};
 use zcash_primitives::transaction::{
     TxVersion,
     builder::{BuildConfig, Builder, BundlePadding},
@@ -94,6 +99,22 @@ pub(super) fn signing_keys(
     wallet: &Path,
     fvk: &FullViewingKey,
 ) -> Result<(native::ThresholdKeys, bool)> {
+    signing_keys_of(wallet, fvk, &[0, 1, 2])
+}
+
+/// Only the named operators' DKG key packages are opened: a stopped operator's
+/// share is never read. Signing still needs two of them.
+pub(super) fn signing_keys_of(
+    wallet: &Path,
+    fvk: &FullViewingKey,
+    operators: &[usize],
+) -> Result<(native::ThresholdKeys, bool)> {
+    if operators.len() < 2
+        || operators.iter().any(|i| *i >= 3)
+        || operators.iter().collect::<BTreeSet<_>>().len() != operators.len()
+    {
+        return Err("two or three distinct DKG operators required".into());
+    }
     if wallet.join("private-spending-key.bin").exists() {
         let bytes = auction::read(&wallet.join("private-spending-key.bin"), 32)?
             .try_into()
@@ -120,7 +141,7 @@ pub(super) fn signing_keys(
         return Err("NU7 DKG FVK/group/participant mismatch".into());
     }
     let mut packages = BTreeMap::new();
-    for i in 0..3 {
+    for &i in operators {
         let id: frost::Identifier = ((i + 1) as u16)
             .try_into()
             .map_err(|_| "NU7 DKG identifier")?;

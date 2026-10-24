@@ -56,11 +56,11 @@ pub(super) struct Request {
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Receiver {
-    receiver: Vec<u8>,
-    nonce: [u8; 32],
+pub(super) struct Receiver {
+    pub(super) receiver: Vec<u8>,
+    pub(super) nonce: [u8; 32],
 }
-fn json<T: serde::de::DeserializeOwned>(path: &Path, limit: u64) -> Result<T> {
+pub(super) fn json<T: serde::de::DeserializeOwned>(path: &Path, limit: u64) -> Result<T> {
     auction::directory(path.parent().ok_or("funded input parent")?)?;
     serde_json::from_slice(&auction::read(path, limit)?)
         .map_err(|_| "funded strict input schema".into())

@@ -77,6 +77,32 @@ class Chain:
             return scan, notes
         return capture(wallet, json.loads(private_read(wallet / 'nu7-birthday.json')), snapshot)
 
+    def birthday(self, snapshot):
+        """Frontier at SNAPSHOT's tip: where a wallet that has not seen this
+        auction's payouts starts scanning."""
+        if self.backend:
+            return self.backend.tree_at_tip()
+        from regtest_funding import tree
+        from regtest_nu7_node import rpc
+        return tree(rpc('z_gettreestate', [snapshot['tip']]))
+
+    def broadcast(self, transaction, txid, notes):
+        """Send the signed bytes and wait for two confirmations (mined on regtest)."""
+        if self.backend:
+            self.backend.source_check(notes)
+            if self.backend.send(transaction)['txid'] != txid:
+                raise RuntimeError('Network accepted another transaction identity')
+            record = self.backend.wait_confirmations(txid)
+            return {'confirmations': record['confirmations'], 'height': record['height']}
+        from regtest_nu7_node import rpc
+        if rpc('sendrawtransaction', [private_read(transaction).hex()], timeout=180) != txid:
+            raise RuntimeError('Node accepted another transaction identity')
+        rpc('generate', [2], timeout=300)
+        tx = rpc('getrawtransaction', [txid, 1])
+        if not tx['in_active_chain'] or tx['confirmations'] < 2:
+            raise RuntimeError('Cancellation lacks two canonical controlled confirmations')
+        return {'confirmations': tx['confirmations'], 'height': tx.get('height')}
+
 
 REGTEST = Chain('regtest')
 
@@ -302,6 +328,116 @@ def settle_funded(auction, name, progress, threads=2, expected=None, chain=REGTE
     return public, paths
 
 
+# Operator C (index 2) is the one that stopped; A and B sign the refund.
+CANCEL_SIGNERS = (0, 1)
+CANCEL_SCOPE = 'actual NU7 cancellation refund of a funded certified book'
+
+
+def sdk_json(*args, timeout=900):
+    return json.loads(subprocess.check_output([str(SDK), *map(str, args)], cwd=ROOT, env=ENV,
+                                              text=True, timeout=timeout))
+
+
+def cancel_funded(auction, name, progress, chain=REGTEST, signers=CANCEL_SIGNERS):
+    """Refund every deposit of a funded, certified book that cannot settle, for
+    example because one operator stopped (clearing needs all three). Two named
+    operators sign one transaction that returns each deposit to its ticket's
+    certified refund receiver, less an equal share of the network fee; the third
+    operator's journal and key share are never opened. Each journal reserves one
+    transaction for good, so a book reserved for this refund can no longer be
+    settled, and one reserved for settlement cannot be refunded this way. There
+    is no auction result, hence no auction proof: each bidder sees its refund in
+    its own wallet."""
+    auction, book_run, root, tickets = book_run_for(auction)
+    funded = json.loads(private_read(ROOT / '.local' / (name + '-funded.json')))
+    funding = funded['funding']
+    if (funded['auction'] != str(auction) or funded['public']['accepted_root'] != root
+            or funded['tickets'] != tickets or funded.get('chain', 'regtest') != chain.name):
+        raise RuntimeError('Funding record belongs to another book')
+    run = ROOT / '.local' / (name + '-cancel')
+    if run.exists():
+        raise RuntimeError('Preserve prior runs and choose a fresh name')
+    admission = ROOT / '.local' / (funding + '-admission')
+    if certified_root(admission / 'final-book-certificate.json') != (root, tickets):
+        raise RuntimeError('Funded certificate is not the same browser book')
+    operators = ','.join(map(str, signers))
+    progress.event('cancel_preflight', 'started')
+    if not SDK.is_file():
+        raise RuntimeError('Build the pinned SDK first')
+    snapshot = chain.status()
+    escrow = ROOT / '.local' / (funding + '-escrow')
+    escrow_scan, escrow_notes = chain.capture(escrow, snapshot)
+    if escrow_scan['decrypted_unspent_native_notes'] != 4:
+        raise RuntimeError('Escrow no longer holds exactly the four admitted deposits')
+    wallets = [ROOT / '.local' / f'{funding}-receiver-{i}' for i in range(4)]
+    receivers = json.loads(private_read(ROOT / '.local' / (funding + '-inputs/private-receivers.json')))
+    birthday = chain.birthday(snapshot)
+    for wallet, receiver in zip(wallets, receivers):
+        info = json.loads(subprocess.check_output([str(ROOT / 'target/release/examples/regtest_wallet'),
+            'init', str(wallet)], cwd=ROOT, env=ENV, text=True, timeout=60))
+        if info['receiver'] != receiver['receiver']:
+            raise RuntimeError('Refund wallet differs from the certified receiver opening')
+        if not (wallet / 'nu7-birthday.json').exists():
+            private_write(wallet / 'nu7-birthday.json', birthday)
+    progress.event('cancel_preflight', 'done', height=snapshot['blocks'], signers=list(signers))
+
+    progress.event('cancel_sign', 'started')
+    started = time.monotonic()
+    run.mkdir(mode=0o700)
+    private_write(run / 'nu7-cancel-request.json', {'format': 1, 'scope': CANCEL_SCOPE,
+        'sdk': '9c5705f56517c040c50f96d29f1ff15a9383f3e0', 'branch': '77190ad9', 'escrow': str(escrow),
+        'notes': str(escrow_notes), 'receivers': str(ROOT / '.local' / (funding + '-inputs/private-receivers.json')),
+        'admission': str(admission), 'signers': list(signers)})
+    prepared = sdk_json('funded-cancel-prepare', run)
+    construction = sdk_json('funded-cancel-finalize', run)
+    txid = construction['txid']
+    refund = construction['refund_each']
+    if (prepared['txid'] != txid or construction['threshold_spends'] != 4 or construction['refunds'] != 4
+            or construction['signers'] != list(signers) or construction['other_operator_key_or_journal_read']):
+        raise RuntimeError('Cancellation construction incomplete')
+    state = sdk_json('regtest-admission', 'state', admission, txid, operators)
+    if any(s['phase'] != 'Prepared' or not s['reserved_transaction_matches'] or s['accepted_tickets'] != 4
+           for s in state['operators']):
+        raise RuntimeError('Refund is not reserved in both signers\' journals')
+    progress.event('cancel_sign', 'done', txid=txid, refund_each=refund, signers=list(signers))
+
+    progress.event('cancel_broadcast', 'started')
+    mined = chain.broadcast(run / 'cancel-nu7-transaction.bin', txid, escrow_notes)
+    sdk_json('regtest-admission', 'record', admission, txid, 'broadcast', operators)
+    final = chain.status()
+    scans = []
+    for wallet in wallets:
+        scan, notes = chain.capture(wallet, final)
+        openings = json.loads(private_read(notes))
+        if (scan['decrypted_unspent_native_notes'] != 1 or scan['balance_zatoshi'] != refund
+                or len(openings['notes']) != 1 or openings['notes'][0]['amount'] != refund
+                or bytes(openings['notes'][0]['txid'])[::-1].hex() != txid):
+            raise RuntimeError('A refund wallet does not show exactly this refund')
+        scans.append({'balance_zatoshi': scan['balance_zatoshi'], 'notes': 1})
+    escrow_scan, remaining = chain.capture(escrow, final)
+    if (escrow_scan['balance_zatoshi'] != 0 or escrow_scan['spent_native_notes'] != 4
+            or json.loads(private_read(remaining))['notes']):
+        raise RuntimeError('Escrow did not return exactly all four deposits')
+    sdk_json('regtest-admission', 'record', admission, txid, 'finalize', operators)
+    state = sdk_json('regtest-admission', 'state', admission, txid, operators)
+    if any(s['phase'] != 'Finalized' or not s['reserved_transaction_matches'] for s in state['operators']):
+        raise RuntimeError('Signer journals failed to finalize the refund')
+    progress.event('cancel_broadcast', 'done', confirmations=mined['confirmations'])
+    public = {'scope': ('funded book refunded on public Zcash testnet' if chain.name == 'testnet'
+                        else 'funded book refunded on isolated NU7 regtest') + '; all actors on one host',
+        'accepted_root': root, 'deposit_txid': funded['public']['deposit_txid'], 'txid': txid,
+        'refunds': 4, 'refund_each': refund, 'deposit_each': 15100, 'network_fee': construction['fee'],
+        'signers': ['ABC'[i] for i in signers], 'stopped_operator': 'ABC'[3 - sum(signers)],
+        'stopped_operator_key_or_journal_read': False, 'threshold_spends': 4,
+        'refund_wallets_checked': scans, 'escrow_empty': True,
+        'confirmations': mined['confirmations'], 'seconds': round(time.monotonic() - started, 3),
+        'auction_or_binding_proof': False, 'public_testnet': chain.name == 'testnet'}
+    private_write(run / 'confirmed-summary.json', {'public': public, 'construction': construction})
+    private_write(ROOT / '.local' / (name + '-cancelled.json'), {'public': public})
+    progress.event('complete', 'done', txid=txid)
+    return public
+
+
 def settle(auction, name, progress, bank=None, threads=2, expected=None, chain=REGTEST):
     """Both phases back to back (CLI default)."""
     fund(auction, name, progress, bank, chain)
@@ -319,8 +455,9 @@ def main():
                         help='testnet: standard public testnet through the pinned provider (testnet coins only)')
     parser.add_argument('--native-threads', type=int, choices=(1, 2), default=2)
     parser.add_argument('--expect', help='Browser clearing PRICE,SOLD that the settlement must reproduce')
-    parser.add_argument('--phase', choices=('all', 'fund', 'settle'), default='all',
-                        help='fund: deposits + chain admission only; settle: settle an already funded book')
+    parser.add_argument('--phase', choices=('all', 'fund', 'settle', 'cancel'), default='all',
+                        help='fund: deposits + chain admission only; settle: settle an already funded book; '
+                             'cancel: refund an already funded book that cannot settle (operators A and B sign)')
     args = parser.parse_args()
     expected = tuple(int(v) for v in args.expect.split(',')) if args.expect else None
     progress = Progress(args.progress)
@@ -330,6 +467,8 @@ def main():
             public = fund(args.auction, simple(args.name), progress, args.bank, chain)
         elif args.phase == 'settle':
             public, _ = settle_funded(args.auction, simple(args.name), progress, args.native_threads, expected, chain)
+        elif args.phase == 'cancel':
+            public = cancel_funded(args.auction, simple(args.name), progress, chain)
         else:
             public, _ = settle(args.auction, simple(args.name), progress, args.bank, args.native_threads, expected, chain)
     except BaseException as error:

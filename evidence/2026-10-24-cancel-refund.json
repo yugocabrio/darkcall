@@ -1,0 +1,95 @@
+{
+  "date": "2026-10-24",
+  "question": "If an operator stops before settlement, can the other two refund every deposit without the stopped operator, and without any chance of also settling the same deposits?",
+  "answer": "Yes, on regtest. Operators A and B refunded all four deposits of a funded, certified book in one NU7 transaction signed 2-of-3 with FROST; operator C's journal and key share were never opened.",
+  "why_it_is_needed": "Clearing is REP3 multi-party computation over all three operators, so if one stops the auction cannot clear or settle. Before this change there was no built-in refund and the deposits stayed in escrow.",
+  "design": {
+    "transaction": "Four Ironwood spends of the four accepted escrow notes, four outputs to the four tickets' certified refund receivers (the receiver commitments in the signed book), each 15,100 - 5,000 = 10,100 zatoshi; ZIP-317 fee 20,000 for four logical actions. No seller or operator fee is paid.",
+    "checks_before_signing": "certified book under the configured authority; the four accepted escrow notes with two confirmations and one anchor; each output recovered with the escrow outgoing key and compared with the certified refund receiver, amount and memo; the two named operators' journals hold no other reservation; private PCZT fields verified",
+    "signing": "Both named operators reserve the refund in their journals first, then only their two DKG key packages are opened (signing_keys_of); FROST 2-of-3 for each of the four spends; one share alone is checked to fail; a changed digest is checked to fail",
+    "no_double_payout": "Each operator journal reserves exactly one transaction for good. Two of three signatures are needed for any spend and any two operators share one journal, so once two journals reserve the refund, no settlement of the same deposits can be signed, and the reverse.",
+    "what_it_does_not_prove": "There is no auction result, so the refund carries no auction or output-binding proof; each bidder sees its own refund in its own wallet. Two colluding operators could still sign a different transaction, as for settlement. If two operators stop, the deposits wait in escrow. Bidders still have no unilateral refund."
+  },
+  "code": [
+    "tools/nu7-compat/src/funded_cancel.rs (funded-cancel-prepare, funded-cancel-finalize)",
+    "tools/nu7-compat/src/regtest_transfer.rs signing_keys_of (named operators only)",
+    "tools/nu7-compat/src/regtest_admission.rs state/record for a named operator set",
+    "scripts/settle_fresh_book.py --phase cancel",
+    "scripts/rehearsal.py and /api/rehearsal/cancel",
+    "demo/app.js refund panel",
+    "scripts/check_cancel_refund.py (end-to-end over HTTP)"
+  ],
+  "regtest_run": {
+    "command": "python3 -B scripts/check_cancel_refund.py --port 8891 --units 3 --bids 77,61,43,21 --reserve 20",
+    "auction_id": "ba27a511fb61f86e09a6cbc398229094",
+    "accepted_root": "0d3c7e21c8339d5c221595d02cf4399b9af5c63c360978d7946e393f60cd61fb",
+    "deposit_txid": "a43fee9300e6fabefcffb002c7ce00383d70aeacd4856b620eaf08091507f220",
+    "refund_txid": "5f1d12157dd8a2a49112dedef828b5957357037d69bdddfbaa86b599d9463481",
+    "confirmations": 2,
+    "refunds": 4,
+    "refund_each": 10100,
+    "deposit_each": 15100,
+    "network_fee": 20000,
+    "signers": [
+      "A",
+      "B"
+    ],
+    "stopped_operator": "C",
+    "refund_wallets": [
+      {
+        "balance_zatoshi": 10100,
+        "notes": 1
+      },
+      {
+        "balance_zatoshi": 10100,
+        "notes": 1
+      },
+      {
+        "balance_zatoshi": 10100,
+        "notes": 1
+      },
+      {
+        "balance_zatoshi": 10100,
+        "notes": 1
+      }
+    ],
+    "escrow_empty": true,
+    "threshold_spends": 4,
+    "one_share_rejected": true,
+    "changed_digest_rejected": true,
+    "native_proof_and_signatures_verified": true,
+    "transaction_bytes": 15478,
+    "seconds": {
+      "sign_and_prove": 9.8,
+      "orchard_proof": 6.2,
+      "refund_driver_total": 10.983,
+      "cancel_request_to_done": 15.061
+    },
+    "journals_after": {
+      "A": "Finalized (this refund)",
+      "B": "Finalized (this refund)",
+      "C": "Frozen, never opened"
+    },
+    "refusals": {
+      "cancel_before_funding": "400",
+      "clear_after_refund": "400",
+      "settle_after_refund": "400",
+      "second_cancel": "same job returned"
+    },
+    "progress_phases": [
+      "cancel_preflight:started",
+      "cancel_preflight:done",
+      "cancel_sign:started",
+      "cancel_sign:done",
+      "cancel_broadcast:started",
+      "cancel_broadcast:done",
+      "complete:done"
+    ]
+  },
+  "negative_on_a_settled_book": {
+    "book": "settle-3ebc924448 (three-unit regtest settlement of Oct 21)",
+    "result": "funded-cancel-prepare refused: \"operator journal already reserved another transaction\""
+  },
+  "not_done": "Not run on public testnet (spends testnet coins; needs the author's approval). A returning operator C must reconcile its journal with the confirmed refund; not implemented.",
+  "machine": "shared 16 GiB Apple M1; all actors on one host; deposits from one local test bank"
+}

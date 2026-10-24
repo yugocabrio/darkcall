@@ -31,7 +31,7 @@ ID=re.compile(r'[0-9a-f]{32}\Z')
 SETTLE_FIELDS={'phase','state','elapsed_seconds','at_unix','height','accepted_root','deposit_txid',
     'confirmations','client_proofs','share_pairs','receipt_signatures','final_book_signatures',
     'same_accepted_root','txid','price','sold','recipient_scans','seconds',
-    'native_row_proofs_verified','accepted_book_certified'}
+    'native_row_proofs_verified','accepted_book_certified','refund_each','signers'}
 
 
 def standard_terms(a):
@@ -100,7 +100,8 @@ class Rehearsal:
             'settlement_available':self.settlement_available and standard_terms(a),
             'funding_required':self.funding_required(a),
             'funding':self.settlement_view(a,'funding'),
-            'settlement':self.settlement_view(a)}
+            'settlement':self.settlement_view(a),
+            'cancellation':self.settlement_view(a,'cancellation')}
 
     def settlement_view(self,a,kind='settlement'):
         job=a[kind]
@@ -113,7 +114,7 @@ class Rehearsal:
         view={'state':job['state'],'started_at_unix':job['started_at_unix'],'events':events,
             'funding_scope':('actual public-testnet NU7 deposits' if self.chain=='testnet' else 'actual isolated NU7 regtest deposits')+' from a local test bank',
             'public_testnet':self.chain=='testnet','result':job['public']}
-        if job['state']=='failed': view['error']=('Funding' if kind=='funding' else 'Settlement')+' stopped. Its private checkpoint is retained.'
+        if job['state']=='failed': view['error']={'funding':'Funding','cancellation':'The refund'}.get(kind,'Settlement')+' stopped. Its private checkpoint is retained.'
         return view
 
     def funding_required(self,a):
@@ -137,7 +138,7 @@ class Rehearsal:
         cutoff=number(value['closes_at_utc'],now+30,now+86400)
         if self.prune_after:
             for key,old in list(self.auctions.items()):
-                running=any(old[k] and old[k]['state']=='running' for k in ('funding','settlement'))
+                running=any(old[k] and old[k]['state']=='running' for k in ('funding','settlement','cancellation'))
                 if not running and now-old['created_at_unix']>self.prune_after: del self.auctions[key]
         if len(self.auctions)>=8: raise ValueError('Eight demo auctions are open on this server; please try again later')
         self.initialize()
@@ -151,7 +152,8 @@ class Rehearsal:
         a={'id':identifier,'created_at_unix':now,'units':units,'reserve':reserve,'budget':budget,'closes_at_utc':cutoff,
             'digest':list(digest),'path':path,'authority':initialized['authority'],'receipts':[],
             'clients':[],'opening_tokens':{},'certificate':None,'poisoned':False,
-            'clearing':None,'clearing_run':None,'clearing_failed':False,'funding':None,'settlement':None}
+            'clearing':None,'clearing_run':None,'clearing_failed':False,'funding':None,'settlement':None,
+            'cancellation':None}
         self.auctions[identifier]=a
         return self.public(a)
 
@@ -213,6 +215,7 @@ class Rehearsal:
         if type(value) is not dict or set(value)!={'auction_id'}: raise ValueError('Expected auction ID')
         a=self.lookup(value['auction_id'])
         if a['clearing'] is not None: return a['clearing']
+        if a['cancellation'] is not None: raise ValueError('This auction was cancelled; its deposits are being or were refunded')
         if not self.clearing_available: raise ValueError('Pinned MPC tools required')
         if a['clearing_failed']: raise ValueError('Incomplete clearing retained; start a new demo auction')
         if a['poisoned'] or not a['certificate'] or len(a['clients'])!=4:
@@ -303,10 +306,22 @@ class Rehearsal:
         if kind=='settlement':
             if a['funding'] is None or a['funding']['state']!='done': raise ValueError('Fund this auction on Zcash first')
             if a['clearing'] is None: raise ValueError('Clear and verify this auction first')
+            if a['cancellation'] is not None: raise ValueError('This auction was cancelled; its deposits are being or were refunded')
+        if kind=='cancellation':
+            # Shown on regtest only; it has not been run on public testnet.
+            if self.chain=='testnet': raise ValueError('The operator-stopped refund is demonstrated on regtest only')
+            # Only a funded book that has not started settling: each operator journal
+            # reserves one transaction, and a refund must never race a settlement.
+            if a['funding'] is None or a['funding']['state']!='done': raise ValueError('Only a funded auction can be refunded')
+            if a['settlement'] is not None: raise ValueError('This auction is settling or settled; its deposits pay out there')
         import shutil
         from settle_fresh_book import MIN_START_DISK
-        if shutil.disk_usage(ROOT).free < MIN_START_DISK:
+        # A refund runs no auction prover: it must not be blocked by the
+        # settlement prover's disk headroom, or a stuck auction stays stuck.
+        if kind!='cancellation' and shutil.disk_usage(ROOT).free < MIN_START_DISK:
             raise ValueError('Free at least 10 GiB of disk before funding or settling; the proof guard would refuse later')
+        if shutil.disk_usage(ROOT).free < 1024**3:
+            raise ValueError('Free at least 1 GiB of disk first')
         if self.chain=='testnet':
             from testnet_chain import status
             try: status()
@@ -319,6 +334,9 @@ class Rehearsal:
             self.prepare_book(a)
             name='settle-'+secrets.token_hex(5)
             args=['--phase','fund']
+        elif kind=='cancellation':
+            name=a['funding']['name']
+            args=['--phase','cancel']
         else:
             name=a['funding']['name']
             args=['--phase','settle','--expect',f"{a['clearing']['price']},{a['clearing']['sold']}"]
@@ -339,6 +357,11 @@ class Rehearsal:
                     if funded['public']['accepted_root']!=a['certificate']['accepted_root']:
                         raise RuntimeError('Funded a different book')
                     job['public']=funded['public']
+                elif kind=='cancellation':
+                    cancelled=json.loads(private_read(ROOT/'.local'/(name+'-cancelled.json'),65536))
+                    if cancelled['public']['accepted_root']!=a['certificate']['accepted_root']:
+                        raise RuntimeError('Refunded a different book')
+                    job['public']=cancelled['public']
                 else:
                     settled=json.loads(private_read(ROOT/'.local'/(name+'-settled.json'),65536))
                     if (settled['public']['accepted_root']!=a['certificate']['accepted_root']
@@ -361,10 +384,10 @@ class Rehearsal:
     def post(self,action,value):
         if not self.enabled: return 409,{'error':'Local input prover/admission helper required. Recorded verification remains available.'}
         if not self.lock.acquire(blocking=False): return 409,{'error':'Another auction is being funded or settled on this server, and only one runs at a time. Try again in a few minutes, or open the settled auction meanwhile.'}
-        if action in ('fund','settle'):
+        if action in ('fund','settle','cancel'):
             started=False
             try:
-                view,started=self.start_job('funding' if action=='fund' else 'settlement',value)
+                view,started=self.start_job({'fund':'funding','settle':'settlement','cancel':'cancellation'}[action],value)
                 return 200,view
             finally:
                 if not started: self.lock.release()

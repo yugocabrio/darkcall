@@ -2,6 +2,7 @@
 //! captures may be scanned locally. No transaction broadcast operation.
 mod auction;
 mod claims;
+mod funded_cancel;
 mod funded_prepare;
 mod funded_settlement;
 mod interop_export;
@@ -37,6 +38,8 @@ async fn main() -> Result<()> {
         [command, wallet, notes, escrow, book, receivers, name] if command == "regtest-deposits" => regtest_deposits::build(std::path::Path::new(wallet),std::path::Path::new(notes),std::path::Path::new(escrow),std::path::Path::new(book),std::path::Path::new(receivers),name),
         [command, escrow, deposit] if command == "regtest-claim-check" => claims::check_deposit(std::path::Path::new(escrow),std::path::Path::new(deposit)),
         [command, directory] if command == "prepare-funded-auction" => funded_prepare::prepare(std::path::Path::new(directory)),
+        [command, directory] if command == "funded-cancel-prepare" => funded_cancel::prepare(std::path::Path::new(directory)),
+        [command, directory] if command == "funded-cancel-finalize" => funded_cancel::finalize(std::path::Path::new(directory)),
         [command, directory, authority] if command == "funded-certificate-link" => funded_settlement::certificate_link(std::path::Path::new(directory),std::path::Path::new(authority)),
         [command, directory, index, wallet] if command == "funded-receipt-export" => receipt_transport::export_funded(std::path::Path::new(directory),index.parse().map_err(|_| "funded recipient index")?,std::path::Path::new(wallet)),
         [command, directory, index, out] if command == "funded-receipt-open" => receipt_transport::open_funded(std::path::Path::new(directory),index.parse().map_err(|_| "funded recipient index")?,std::path::Path::new(out)),

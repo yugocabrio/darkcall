@@ -391,7 +391,8 @@ def handler(demo, port, public_origin=None):
                     or self.headers.get('X-DarkCall-Token') != demo.token):
                 return self.reply(403,{'error':'Same origin and session token required'})
             rehearsal_actions={'/api/rehearsal/create':'create','/api/rehearsal/bid':'bid','/api/rehearsal/close':'close',
-                '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result','/api/rehearsal/fund':'fund','/api/rehearsal/settle':'settle'}
+                '/api/rehearsal/clear':'clear','/api/rehearsal/result':'result','/api/rehearsal/fund':'fund','/api/rehearsal/settle':'settle',
+                '/api/rehearsal/cancel':'cancel'}
             if self.path not in ('/api/verify','/api/settlement','/api/cheat',*rehearsal_actions): return self.reply(404,{'error':'Not found'})
             bucket = {'/api/verify':'verify','/api/settlement':'settlement','/api/cheat':'cheat','/api/rehearsal/create':'create'}.get(self.path,'rehearsal')
             if self.limited(bucket): return

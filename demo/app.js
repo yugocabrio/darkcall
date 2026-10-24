@@ -363,12 +363,14 @@ function refreshRoom() {
   const settling=Boolean(room.settlement && room.settlement.state==='running') || Boolean(room.funding && room.funding.state==='running');
   $('open-fresh-result').disabled=busy || settling || !room.clearing || !currentTicket();
   $('tamper-fresh').disabled=busy || settling || !room.clearing || !currentTicket();
-  renderTicketPickers(); renderFunding();
+  renderTicketPickers(); renderFunding(); renderCancel();
   // Clearing is shown once it is the next real step: after close, and after funding when required.
-  $('clearing-section').hidden=!room.closed || fundingPending;
+  // A refunded book is never cleared or settled.
+  $('clearing-section').hidden=!room.closed || fundingPending || Boolean(room.cancellation);
   renderSettlement();
   $('clear-auction').hidden=Boolean(room.clearing);
-  $('rehearsal-title').textContent=settled?'Your auction settled on Zcash.':room.clearing?'Your auction cleared.':room.closed?(fundingPending?'Fund the sealed book.':'Ready to clear.'):room.accepted===4?'Bids are sealed.':'Place your bid.';
+  const refunded=Boolean(room.cancellation && room.cancellation.state==='done');
+  $('rehearsal-title').textContent=refunded?'Every deposit refunded.':settled?'Your auction settled on Zcash.':room.clearing?'Your auction cleared.':room.closed?(fundingPending?'Fund the sealed book.':'Ready to clear.'):room.accepted===4?'Bids are sealed.':'Place your bid.';
   document.querySelector('.rehearsal-scope').textContent=settled?'Same sealed book. One shielded transaction. Publicly verified.':room.clearing?'Fresh outcome. Verified against your accepted bids.':room.closed?(fundingPending?'Every sealed ticket gets a real shielded deposit before clearing.':'Four sealed bids. One verified outcome.'):room.accepted===4?'Waiting for the scheduled close.':'Seal four demo bids. Each gets a ZK proof and three operator signatures.';
   $('close-status').textContent=room.stopped_after_incomplete_admission ? 'Admission stopped. The checkpoint is preserved.' : room.closed ? '✓ Closed bids certified.' :
     remaining>0 ? 'Bidding closes in '+Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')+'.' :
@@ -531,12 +533,43 @@ function renderFunding() {
   const begin=at['preflight:started']||job.started_at_unix;
   li.querySelector('em').textContent=done?minutes((at['funding:done']||now)-begin):failed?'stopped':minutes(now-begin);
   $('fund-title').textContent=done?'Deposits locked.':'Lock the deposits.';
-  $('fund-status').textContent=failed?(job.error||'Funding stopped.'):done?'✓ Funded and admitted on '+chainName()+'. Now clear the book.':'Running · '+minutes(now-job.started_at_unix)+' elapsed · includes a '+(onTestnet()?'10-minute':'120 s')+' admission window';
+  $('fund-status').textContent=failed?(job.error||'Funding stopped.'):done?'✓ Funded and admitted on '+chainName()+(room.cancellation?'.':'. Now clear the book.'):'Running · '+minutes(now-job.started_at_unix)+' elapsed · includes a '+(onTestnet()?'10-minute':'120 s')+' admission window';
   if (done && job.result) {
     if (job.result.accepted_root!==room.accepted_root) { $('fund-status').textContent='Funding does not match this book.'; return; }
-    if (!fundedFocused) { fundedFocused=true; focusNext('clear-auction'); }
+    if (!fundedFocused && !room.cancellation) { fundedFocused=true; focusNext('clear-auction'); }
     $('fund-deposit').textContent=job.result.deposit_txid;
     $('fund-admission').textContent='✓ '+job.result.client_proofs+' bid proofs + '+job.result.share_pairs+' secret-share pairs re-verified · '+job.result.receipt_signatures+' receipts · '+job.result.final_book_signatures+' book signatures · same root '+shortId(job.result.accepted_root);
+  }
+  if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
+}
+// Refund of a funded book that cannot settle: [step, begins at, ends at].
+const CANCEL_STEPS=[['sign','cancel_sign:started','cancel_sign:done'],['broadcast','cancel_broadcast:started','cancel_broadcast:done']];
+function renderCancel() {
+  const box=$('cancel-box'), job=room && room.cancellation;
+  const funded=Boolean(room && room.funding && room.funding.state==='done');
+  // Demonstrated on regtest only: a testnet server neither offers nor accepts it.
+  box.hidden=onTestnet() || !(funded && (job || !room.settlement));
+  if (box.hidden) return;
+  $('cancel-auction').hidden=Boolean(job);
+  $('cancel-auction').disabled=busy || Boolean(job) || Boolean(room.settlement);
+  $('cancel-steps').hidden=!job;
+  $('cancel-facts').hidden=!(job && job.state==='done');
+  if (!job) { $('cancel-status').textContent=''; return; }
+  const at={}; for (const e of job.events||[]) { const key=e.phase+':'+e.state; if (!(key in at)) at[key]=e.at_unix; }
+  const now=Math.floor(Date.now()/1000), failed=job.state==='failed';
+  CANCEL_STEPS.forEach(([id,begin,end])=>{
+    const li=$('cancel-step-'+id), finished=end in at, active=!finished && begin in at;
+    li.className=finished?'done':active?(failed?'failed':'running'):'';
+    li.querySelector('em').textContent=finished?minutes(at[end]-at[begin]):active?(failed?'stopped':minutes(now-at[begin])):'';
+  });
+  const result=job.result;
+  $('cancel-status').textContent=failed?(job.error||'The refund stopped.'):job.state==='done'
+    ?'✓ Refunded on '+chainName()+': operators '+result.signers.join(' and ')+' signed, operator '+result.stopped_operator+'\'s key share was never read, and every refund wallet was checked.'
+    :'Running · '+minutes(now-job.started_at_unix)+' elapsed';
+  if (job.state==='done') {
+    if (result.accepted_root!==room.accepted_root) { $('cancel-status').textContent='The refund does not match this book.'; $('cancel-facts').hidden=true; return; }
+    $('cancel-txid').textContent=result.txid;
+    $('cancel-each').textContent=result.refund_each.toLocaleString('en-US')+' of '+result.deposit_each.toLocaleString('en-US')+' zatoshi back · the '+result.network_fee.toLocaleString('en-US')+' zatoshi network fee shared four ways · '+result.confirmations+' confirmations';
   }
   if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
 }
@@ -544,11 +577,17 @@ async function pollSettlement() {
   settlePoll=null; if (!room) return;
   try { const response=await fetch('/api/rehearsal/auction/'+room.auction_id); if (response.ok) showRoom(await response.json()); }
   catch { /* Retry on the next tick. */ }
-  if (room && ((room.settlement && room.settlement.state==='running') || (room.funding && room.funding.state==='running')) && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
+  if (room && ['settlement','funding','cancellation'].some(k=>room[k] && room[k].state==='running') && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
 }
 $('fund-auction').addEventListener('click',async()=>{
   if (busy || !room || room.funding) return; rehearsalError(''); lock(true);
   try { room.funding=await rehearsalRequest('fund',{auction_id:room.auction_id}); $('rehearsal-status').textContent=''; }
+  catch(error) { rehearsalError(error.message); }
+  finally { lock(false); refreshRoom(); }
+});
+$('cancel-auction').addEventListener('click',async()=>{
+  if (busy || !room || room.cancellation || room.settlement) return; rehearsalError(''); lock(true);
+  try { room.cancellation=await rehearsalRequest('cancel',{auction_id:room.auction_id}); }
   catch(error) { rehearsalError(error.message); }
   finally { lock(false); refreshRoom(); }
 });

@@ -434,7 +434,11 @@ details[open] > summary::after {transform:translateY(0) rotate(-135deg)}
 .settle-facts dt {color:var(--ink-3)}
 .settle-facts dd {margin:0;color:var(--ink);overflow-wrap:anywhere}
 /* Monospace only where the value is an identifier. */
-#fund-deposit,#settle-txid,#settle-deposit,#txid,#root {font:13px var(--mono)}
+#fund-deposit,#settle-txid,#settle-deposit,#cancel-txid,#txid,#root {font:13px var(--mono)}
+.cancel-box {margin-top:26px;padding:20px 22px;border:1px dashed var(--line-strong);border-radius:14px;max-width:820px}
+.cancel-box p {margin:0 0 12px;color:var(--ink-2);font-size:14px}
+.cancel-box .cancel-title {color:var(--ink);font-weight:600;font-size:15px}
+#cancel-status {font-size:14px;font-weight:500;color:var(--ink)}
 
 .fresh-result-layout {display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start;margin-top:8px}
 .market-stats {display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:6px 0 4px}

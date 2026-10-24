@@ -338,8 +338,13 @@ assumptions:
   Two colluding operators can reconstruct bids. It is not malicious-secure MPC.
 - **Custody** is 2-of-3 FROST from a DKG. No escrow master key exists, but two
   colluding signers can move funds, and bidders have no unilateral refund path.
-  Clearing needs all three operators, and there is no built-in refund if an
-  auction does not settle (an operator stops, say): the deposits stay in escrow.
+  Clearing needs all three operators. If one stops before settlement, the other
+  two refund every deposit to its certified refund address, less a 5,000 zatoshi
+  share of the network fee, in one transaction signed 2-of-3 with FROST; the
+  stopped operator's key share and journal are not needed. Shown on regtest
+  ([record](evidence/2026-10-24-cancel-refund.json)). A refund carries no auction
+  proof, since there is no result: each bidder sees its refund in its own wallet.
+  If two operators stop, the deposits wait in escrow.
 - **Operators see outcomes.** The three operators hold the escrow's viewing key,
   which admitting deposits needs: it shows them fixed-size deposits, not bids, and
   they learn refunds and winners. No viewing key is published, and public

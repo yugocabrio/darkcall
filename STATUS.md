@@ -37,6 +37,14 @@ Updated: 2026-10-21 (git HEAD is authoritative).
 - **One to three units (Oct 21):** the same four-bid protocol now settles one-
   and two-unit auctions; a one-unit auction settled on public testnet (price 61,
   tx `1d85d98f…82db`), committed as `demo/artifacts/testnet-one-unit-nu7-v1`.
+- **Refund if an operator stops (Oct 24):** clearing needs all three operators, so a funded book whose
+  operator stops cannot settle. Operators A and B can now refund every deposit in one NU7 transaction
+  (four Ironwood spends, 2-of-3 FROST, 10,100 of 15,100 zatoshi back each, 20,000 network fee) to
+  each ticket's certified refund receiver, without opening C's journal or key share. Each journal
+  reserves one transaction for good, so a refunded book cannot also be settled (and a settled book's
+  journals refuse a refund). Regtest over HTTP: refund `5f1d1215…63481`, four wallets 10,100 each,
+  escrow empty, C's journal still Frozen, clear/settle afterwards 400. No auction proof (no result);
+  if two operators stop, deposits wait. `evidence/2026-10-24-cancel-refund.json`.
 - **Faster settlement and verification (Oct 21):** Halo2 `Params::new(17)` (about 87 s, deterministic)
   was rebuilt by every process that needed it: three times per settlement and once per public check.
   It is now cached behind a SHA-256 pinned in the source; a copy that does not match is ignored and
