@@ -28,6 +28,13 @@ reveal, no published viewing key, no operator reconstructs the bid book.
 - **Proof-bound shielded settlement** (Halo2). Four refunds, the seller and the
   operator fee: each of the six payouts has its own proof that its amount and
   recipient match the proven result, all in one shielded Zcash transaction.
+- **Threshold custody on Ironwood** (FROST). The escrow's four Ironwood spends
+  in that transaction are signed 2-of-3 with keys made by a DKG; no escrow
+  master key ever exists.
+
+**Only the clearing price and the units sold are public.** No bid, no winner's
+maximum bid, and not how many bid at any other price: there is no demand curve
+to read, and no payout amount or recipient.
 
 ## What a reviewer can check, and how long it takes
 
