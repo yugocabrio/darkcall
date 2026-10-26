@@ -21,8 +21,7 @@ KIND = 'darkcall-source-review-kit-v1'
 MAX_TOTAL = 32 * 1024 * 1024
 MAX_FILE = 8 * 1024 * 1024
 MAX_FILES = 1500
-ROOT_FILES = {'.gitignore', 'AGENTS.md', 'Cargo.lock', 'Cargo.toml', 'LICENSE',
-              'README.md', 'STATUS.md', 'TASKS.md', 'demo.sh', 'verify.sh'}
+ROOT_FILES = {'.gitignore', 'Cargo.lock', 'Cargo.toml', 'LICENSE', 'README.md', 'demo.sh', 'verify.sh'}
 ROOT_DIRS = {'circuits', 'crates', 'demo', 'docker', 'docs', 'evidence', 'patches', 'scripts', 'tools', 'vendor'}
 # Vendored upstream source whose name matches the witness-artifact rule.
 SOURCE_EXCEPTIONS = {'vendor/halo2_gadgets/src/ecc/chip/witness_point.rs'}

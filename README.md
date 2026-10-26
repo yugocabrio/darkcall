@@ -453,7 +453,7 @@ because they need chains, pinned prover builds and minutes of proving.
 
 More: [judge review](docs/judge-review.md) · [submission](docs/submission-draft.md) ·
 [demo guide](docs/demo.md) · [reproduction](docs/reproduce.md) ·
-[protocol (Japanese design spec)](docs/protocol.md) · [status](STATUS.md) · [tasks](TASKS.md).
+[protocol (Japanese design spec)](docs/protocol.md) · [development record](docs/development.md).
 
 All code is MIT licensed; upstream components keep their own licenses
 ([dependencies](docs/dependencies.md)).

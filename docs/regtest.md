@@ -382,7 +382,7 @@ post-broadcast/reorg recovery on an advancing public chain is unfinished. Never
 start a replacement transaction just because the driver stopped: inspect its
 saved signed bytes, node status and all three journals first. Disk/memory guards
 remain active; the one-thread option changes scheduling, not circuit statements,
-verifiers or trust assumptions. Completion evidence is recorded in STATUS.md.
+verifiers or trust assumptions. Completion evidence is recorded in `evidence/`.
 
 ## Confirmed canonical funded NU7 memo auction
 

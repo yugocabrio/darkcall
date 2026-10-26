@@ -220,7 +220,7 @@ the explicit shared verifier chooses a hardcoded trusted circuit. A proof cannot
 supply an arbitrary circuit/key. MockProver passed the correct new-SDK output and
 rejected altered amount, recipient point, digest, cmx and index in 57.485s; this
 is constraint testing, not a SNARK or reduced PK/proving memory demonstration.
-The actual key/proof run is recorded in STATUS.md and separate evidence.
+The actual key/proof run is recorded in the evidence records.
 
 
 The explicit shared18 actual proof now passes: 9,504 bytes, 115.076s key,
