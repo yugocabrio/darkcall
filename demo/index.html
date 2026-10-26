@@ -50,7 +50,7 @@
       </div>
     </section>
     <nav class="page-nav landing-section" aria-label="On this page">
-      <a href="#problem">Problem</a><a href="#how">How it works</a><a href="#privacy">Privacy</a><a href="#what-if">What if</a><a href="#proven">Public run</a><a href="#evidence">Evidence</a><a href="#compare">Compare</a><a href="#try">Try it</a>
+      <a href="#problem">Problem</a><a href="#how">How it works</a><a href="#tech">Under the hood</a><a href="#privacy">Privacy</a><a href="#what-if">What if</a><a href="#proven">Public run</a><a href="#evidence">Evidence</a><a href="#compare">Compare</a><a href="#try">Try it</a>
     </nav>
     <section id="problem" class="problem landing-section" aria-labelledby="problem-title">
       <p class="section-kicker">The problem</p>
@@ -201,6 +201,59 @@
       </ol>
     </section>
 
+    <section id="tech" class="tech landing-section" aria-labelledby="tech-title">
+      <p class="section-kicker">Under the hood</p>
+      <h2 id="tech-title">Exactly what is computed, and what is proven</h2>
+      <p class="section-lead">Three proof systems, each with one job. These are the relations the code checks.</p>
+      <div class="tech-cards">
+        <article class="tech-card">
+          <span class="tech-tag">1 · REP3 secret sharing</span>
+          <h3>No operator holds a bid</h3>
+          <p>Each bid <i>x</i> and its salt <i>s</i> are split into three field elements, two of them fresh random values. Every share is held by two operators, so any one operator sees only two uniformly random numbers.</p>
+          <pre class="math"><span class="c"># in the BN254 scalar field</span>
+x = x₁ + x₂ + x₃
+A holds (x₁, x₃)
+B holds (x₂, x₁)
+C holds (x₃, x₂)</pre>
+          <p>The bidder's client proves in <code>bid_input</code> (4,580 gates) that the commitment and the pairs it sends hold the same bid, so each operator checks its pair without learning <i>x</i>:</p>
+          <pre class="math"><span class="c"># the bid commitment, public in the book</span>
+c  = Poseidon2(ctx, id, x, s)
+<span class="c"># the pair operator i receives</span>
+cᵢ = Poseidon2(ctx, id, i, xᵢ, xᵢ₋₁, sᵢ, sᵢ₋₁)
+<span class="c"># the shares add up, within the budget</span>
+x₁ + x₂ + x₃ = x ≤ budget
+s₁ + s₂ + s₃ = s</pre>
+        </article>
+        <article class="tech-card">
+          <span class="tech-tag">2 · coNoir · multi-party ZK proving</span>
+          <h3>The proof is generated on shares</h3>
+          <p>The three operators run the Noir circuits as REP3 multi-party computation. The witness is computed on shares, and coNoir turns it into one UltraHonk proof that Barretenberg's verifier checks like any other. Three circuits: clearing <code>auction4</code> (10,247 gates), winner flags <code>delivery_flags4</code> (11,894) and the settlement plan <code>settlement_poseidon4</code> (24,016). The settlement proof has 232 public fields:</p>
+          <table class="statement">
+            <tr><th scope="row">Fixed in public</th><td>auction conditions, four ticket ids, units, reserve, budget, processing fee, the four bid commitments, the accepted root the operators signed, six receiver commitments, six action indices</td></tr>
+            <tr><th scope="row">Proven outputs</th><td>clearing price, units sold, a commitment to the private payout plan, and six row hashes <i>h₁…h₆</i>, one per payout</td></tr>
+          </table>
+        </article>
+        <article class="tech-card">
+          <span class="tech-tag">3 · Halo2 output binding</span>
+          <h3>Each payout matches one proven row</h3>
+          <p>A payout row is 224 bytes: conditions, accepted root, ticket, role, action index, recipient (<i>g<sub>d</sub></i>, <i>pk<sub>d</sub></i>), amount and salt. For each of the six rows, one Halo2 proof on Pallas (K = 17) shows, for the same private row and note opening:</p>
+          <pre class="math"><span class="c"># the row hash the coNoir proof output</span>
+Poseidon2_BN254(rowᵢ) = hᵢ
+<span class="c"># the note at action aᵢ of the Zcash transaction</span>
+NoteCommit(g_d, pk_d, v, ρ, rseed) = cmxᵢ</pre>
+          <p>Its public inputs are the eight words of <i>hᵢ</i>, the note commitment <i>cmxᵢ</i> and its action index <i>aᵢ</i>. BN254 arithmetic is emulated inside the Pallas field, which is why one binding is a 2<sup>17</sup>-row circuit.</p>
+        </article>
+      </div>
+      <div class="tech-foot">
+        <p><b>Signing.</b> The escrow key is a 2-of-3 FROST key on RedPallas from a DKG, so no master key exists. Honest signers authorize the four Ironwood spends only after checking the coNoir proofs, the six bindings and the accepted book's three signatures.</p>
+        <table class="stack">
+          <tr><th scope="row">Noir</th><td>1.0.0-rc.2</td><th scope="row">coNoir, REP3 (TACEO co-snarks)</th><td><code>467a2abb</code></td></tr>
+          <tr><th scope="row">Barretenberg, UltraHonk</th><td><code>87aa5283</code></td><th scope="row">halo2_proofs · halo2_gadgets</th><td>0.3.5 · 0.5.0</td></tr>
+          <tr><th scope="row">librustzcash (NU7)</th><td><code>9c5705f5</code></td><th scope="row">Orchard native fork</th><td><code>42015f15</code></td></tr>
+          <tr><th scope="row">RedDSA FROST fork</th><td><code>ed49e9ca</code></td><th scope="row">Zebra (NU7 regtest)</th><td>7.0.0-rc.0</td></tr>
+        </table>
+      </div>
+    </section>
     <section id="privacy" class="facts landing-section" aria-labelledby="privacy-title">
       <p class="section-kicker">Privacy</p>
       <h2 id="privacy-title">What each party sees</h2>

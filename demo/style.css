@@ -332,7 +332,23 @@ i.share.s3 {background:var(--surface);color:var(--ink);border:1.5px solid var(--
 .page-nav a {flex:none;padding:6px 12px;border-radius:999px;color:var(--ink-2);font-size:14px;text-decoration:none;white-space:nowrap}
 .page-nav a:hover,.page-nav a:focus-visible {background:var(--surface);color:var(--ink)}
 .landing-section[id],#how,#proven,#compare,#try {scroll-margin-top:64px}
-.problem,.facts,.evidence {margin-top:112px}
+.problem,.facts,.evidence,.tech {margin-top:112px}
+.tech h2 {font-size:clamp(30px,3.6vw,44px);letter-spacing:-.03em}
+.tech-cards {display:grid;gap:16px;margin-top:32px}
+.tech-card {padding:24px 26px;background:var(--surface);border:1px solid var(--line);border-radius:18px;min-width:0}
+.tech-tag {font:500 13px var(--mono);color:var(--gold-ink)}
+.tech-card h3 {margin:6px 0 10px;font-size:20px;font-weight:600}
+.tech-card p {margin:0 0 12px;color:var(--ink-2);font-size:15px;max-width:860px}
+.tech-card code {font:13px var(--mono);background:var(--surface-2);padding:1px 5px;border-radius:5px}
+.math {margin:0 0 14px;padding:14px 16px;background:#141413;color:#f6f4ee;border-radius:12px;font:13.5px/1.7 var(--mono);overflow-x:auto;white-space:pre}
+.math .c {color:#a8a49a}
+.statement,.stack {width:100%;border-collapse:collapse;font-size:14px}
+.statement th,.statement td,.stack th,.stack td {text-align:left;vertical-align:top;padding:10px 12px;border-top:1px solid var(--line)}
+.statement th,.stack th {font-weight:500;color:var(--ink);white-space:nowrap}
+.statement td,.stack td {color:var(--ink-2)}
+.tech-foot {margin-top:16px;padding:22px 26px;border:1px solid var(--line);border-radius:18px}
+.tech-foot p {margin:0 0 12px;color:var(--ink-2);font-size:15px}
+.tech-foot p b {color:var(--ink)}
 .problem {margin-top:72px}
 .problem h2,.facts h2,.evidence h2 {font-size:clamp(30px,3.6vw,44px);letter-spacing:-.03em}
 .problem-grid {list-style:none;padding:0;margin:32px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -360,6 +376,11 @@ i.share.s3 {background:var(--surface);color:var(--ink);border:1.5px solid var(--
 @media (max-width:1000px) {.evidence-grid {grid-template-columns:repeat(2,1fr)} .problem-grid {grid-template-columns:1fr}}
 @media (max-width:760px) {
   .evidence-grid {grid-template-columns:1fr}
+  .tech-card,.tech-foot {padding:18px}
+  .math {font-size:12px;padding:12px}
+  .statement th,.stack th {white-space:normal}
+  .stack tr {display:grid;grid-template-columns:minmax(0,1fr) auto}
+  .stack th,.stack td {border-top:1px solid var(--line)}
   .facts-table thead {display:none}
   .facts-table tr {display:block;padding:14px 16px;border-bottom:1px solid var(--line)}
   .facts-table tbody tr:last-child {border-bottom:0}
