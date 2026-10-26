@@ -49,7 +49,21 @@
         </aside>
       </div>
     </section>
-    <section class="how" aria-labelledby="how-title">
+    <nav class="page-nav landing-section" aria-label="On this page">
+      <a href="#problem">Problem</a><a href="#how">How it works</a><a href="#privacy">Privacy</a><a href="#what-if">What if</a><a href="#proven">Public run</a><a href="#evidence">Evidence</a><a href="#compare">Compare</a><a href="#try">Try it</a>
+    </nav>
+    <section id="problem" class="problem landing-section" aria-labelledby="problem-title">
+      <p class="section-kicker">The problem</p>
+      <h2 id="problem-title">Why a sealed auction is hard to verify</h2>
+      <p class="section-lead">Bidders want their ceilings kept secret. Everyone else wants proof that the price and the payouts are right. Usually one of the two gives way.</p>
+      <ol class="problem-grid">
+        <li><span>01</span><b>Checking the price usually opens the bids</b><p>Commit–reveal auctions and viewing-key audits prove the result by making every bid amount readable after the close.</p></li>
+        <li><span>02</span><b>Whoever proves it sees every bid</b><p>A zero-knowledge proof can keep the bids from the public, but its prover, or an operator who decrypts them after the close, still reads the whole book.</p></li>
+        <li><span>03</span><b>A proven price doesn't move the money</b><p>The payout is a separate transaction. Unless each refund and the seller's payment are proven too, the result and the money can disagree.</p></li>
+      </ol>
+      <p class="problem-answer"><b>DarkCall answers all three.</b> Bids become secret shares (REP3), the operators generate the proof together from those shares (coNoir), and every payout gets its own proof (Halo2), in one shielded Zcash transaction.</p>
+    </section>
+    <section id="how" class="how" aria-labelledby="how-title">
       <p class="section-kicker">How it works</p>
       <h2 id="how-title">How can a sealed auction be publicly verified?</h2>
       <p class="section-lead"><b>A bid is a willingness to pay.</b> Say a newsletter sells three sponsor slots every month. If a sponsor's ceiling leaks after the close, next month's floor is set from it, and rival sponsors learn each other's budgets. In four stages, DarkCall turns private bids into a provably correct Zcash payment.</p>
@@ -187,7 +201,42 @@
       </ol>
     </section>
 
-    <section class="proven" aria-labelledby="proven-title">
+    <section id="privacy" class="facts landing-section" aria-labelledby="privacy-title">
+      <p class="section-kicker">Privacy</p>
+      <h2 id="privacy-title">What each party sees</h2>
+      <p class="section-lead">Every observer, from the public to the operators, and what each one learns. The full trust model is at the end of the page.</p>
+      <div class="compare-wrap"><table class="facts-table">
+        <thead><tr><th scope="col">Observer</th><th scope="col">Learns</th><th scope="col">Does not learn</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Anyone checking the auction</th><td data-label="Learns">The terms, the clearing price, the units sold, the bid commitments, the proofs and the settlement transaction. By the auction rule the price is the highest losing bid or the reserve, so that one amount follows.</td><td data-label="Does not learn">Any other bid, any winner's maximum, who won, any refund or payout, or how many bid at any other price.</td></tr>
+          <tr><th scope="row">Anyone watching Zcash</th><td data-label="Learns">The shielded deposit and settlement transactions, with their fees and timing. The settlement has six outputs.</td><td data-label="Does not learn">Amounts, senders, recipients, or which output pays whom.</td></tr>
+          <tr><th scope="row">Each bidder</th><td data-label="Learns">Its own bid, and its own result and refund, decrypted from its own memo with its own key.</td><td data-label="Does not learn">Other bids, or other bidders' results.</td></tr>
+          <tr><th scope="row">Any one operator</th><td data-label="Learns">Two of the three secret shares of every bid, which reveal nothing on their own; who won, each refund, and which deposit is whose. When only one bid loses, knowing the winners tells it that bid was the price.</td><td data-label="Does not learn">The bids, beyond what the price implies.</td></tr>
+          <tr class="limit"><th scope="row">Two colluding operators</th><td data-label="Learns">Every bid, by combining their shares: the stated REP3 limit. Together they could also sign a different payout, which then fails public verification.</td><td data-label="Does not learn">Nothing more is kept from them.</td></tr>
+          <tr class="limit"><th scope="row">This demo's host</th><td data-label="Learns">Everything: here every role runs on one machine, each bidder's client included. A deployment puts each operator and each bidder's client on its own machine.</td><td data-label="Does not learn">—</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    <section id="what-if" class="facts landing-section" aria-labelledby="whatif-title">
+      <p class="section-kicker">Recovery</p>
+      <h2 id="whatif-title">What if something goes wrong?</h2>
+      <p class="section-lead">What happens under the stated assumptions, and where each case is shown.</p>
+      <div class="compare-wrap"><table class="facts-table">
+        <thead><tr><th scope="col">If this happens</th><th scope="col">Outcome</th><th scope="col">Shown</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">One operator stops before settlement</th><td data-label="Outcome">Clearing needs all three, so the auction cannot settle. The other two refund every deposit, 10,100 of 15,100 zatoshi each (the rest is the network fee), signing 2-of-3 with FROST without the stopped operator's key share.</td><td data-label="Shown"><a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-24-cancel-refund.json">Regtest run ↗</a></td></tr>
+          <tr><th scope="row">The settlement crashes midway</th><td data-label="Outcome">It resumes from the operators' journals with the exact prepared transaction: no new transaction, no second payment.</td><td data-label="Shown"><a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-05-dkg-funded-resumed-auction.json">Record ↗</a></td></tr>
+          <tr><th scope="row">A refunded book is sent to settle, or a settled one to refund</th><td data-label="Outcome">Refused. Each operator journal reserves one transaction for good.</td><td data-label="Shown"><a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-24-cancel-refund.json">Regtest run ↗</a></td></tr>
+          <tr><th scope="row">Someone changes a bid, the price or a payout proof</th><td data-label="Outcome">The public verifier refuses the changed copy; an unchanged control passes.</td><td data-label="Shown"><a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-21-cheat-lab.json">Cheat lab ↗</a></td></tr>
+          <tr><th scope="row">A bidder is handed a corrupted receipt proof</th><td data-label="Outcome">Refused before the bidder's viewing key is read.</td><td data-label="Shown"><a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-21-one-and-two-unit-settlement.json">Record ↗</a></td></tr>
+          <tr class="limit"><th scope="row">Two operators stop</th><td data-label="Outcome">Nobody can sign. The deposits wait in escrow until they return.</td><td data-label="Shown">Limit</td></tr>
+          <tr class="limit"><th scope="row">Two colluding operators sign a different payout</th><td data-label="Outcome">Not prevented. It fails public verification, so it cannot pass as this auction's settlement.</td><td data-label="Shown">Limit</td></tr>
+          <tr class="limit"><th scope="row">The operators drop an accepted bid</th><td data-label="Outcome">That bidder holds all three operators' signed acceptance and sees its ticket missing; outsiders cannot tell.</td><td data-label="Shown">Limit</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="proven" class="proven" aria-labelledby="proven-title">
       <p class="section-kicker">Proven on public Zcash testnet</p>
       <h2 id="proven-title">It ran end to end on testnet.</h2>
       <p class="section-lead">On October 19 this auction was created, funded, cleared and settled <b>in this UI on standard public Zcash testnet (NU7)</b>. It is the auction in the video and under "See a settled auction".</p>
@@ -201,7 +250,23 @@
       <p class="fine-print">Zcash validated these native transactions; DarkCall's public verifier checked the auction proof, the six output bindings and the signed accepted book. Transaction links open ZecBlock, a third-party testnet explorer. The run read chain data from one lightwalletd provider (testnet.zec.rocks). <a href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json">Full record</a>.</p>
     </section>
 
-    <section class="landing-more" aria-labelledby="compare-title">
+    <section id="evidence" class="evidence landing-section" aria-labelledby="evidence-title">
+      <p class="section-kicker">Evidence</p>
+      <h2 id="evidence-title">Claims you can check</h2>
+      <p class="section-lead">Each record is committed with the code and states its own commands and limits.</p>
+      <div class="evidence-grid">
+        <a class="evidence-card" href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-19-public-testnet-settlement.json"><span>Oct 19 and 21 · public testnet</span><b>Three auctions settled on Zcash testnet</b><p>Created, funded, cleared and settled, one of them in this UI for the video; every payout proven, signed 2-of-3 and confirmed.</p></a>
+        <a class="evidence-card" href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-18-clean-room-linux-verification.json"><span>Oct 18–19 · clean Linux container</span><b>Verified from source, with no secrets</b><p>A container built from git archive rebuilt every pinned tool and verified the bundles committed then, refusing a corrupted proof.</p></a>
+        <a class="evidence-card" href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-21-cheat-lab.json"><span>Oct 21 · try to cheat</span><b>Each change refused by its own check</b><p>A changed bid, a higher price and swapped payout proofs are each refused by the check they target; an unchanged control passes.</p></a>
+        <a class="evidence-card" href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-24-cancel-refund.json"><span>Oct 24 · regtest</span><b>Refund when an operator stops</b><p>Operator C stopped; A and B refunded all four deposits in one FROST-signed transaction, and C's journal stayed untouched.</p></a>
+        <a class="evidence-card" href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-21-halo2-params-cache.json"><span>Oct 21 · same proofs, faster</span><b>Public check 106 s → 18 s</b><p>Fixed Halo2 parameters cached behind a pinned digest; proofs made either way verify the other way, and every check still runs.</p></a>
+        <a class="evidence-card" href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-21-one-and-two-unit-settlement.json"><span>Oct 21 · regtest and testnet</span><b>One to three units, same circuits</b><p>One- and two-unit auctions settle with no circuit change; a one-unit auction settled on public testnet.</p></a>
+        <a class="evidence-card" href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-21-browser-bid-spike.json"><span>Oct 21 · spike</span><b>Bids sealed in the browser</b><p>The page built the commitment, secret shares and proof itself, and the unchanged admission accepted them. Not wired into the demo.</p></a>
+        <a class="evidence-card" href="https://github.com/yugocabrio/ZECATHON/blob/main/evidence/2026-10-21-bid-scaling.json"><span>Oct 21 · beyond four bids</span><b>Clearing at 8 bids in 6.5 s</b><p>The joint clearing proof measured at 4 and 8 bids; larger auctions and settlements estimated, not run.</p></a>
+      </div>
+    </section>
+
+    <section id="compare" class="landing-more" aria-labelledby="compare-title">
       <h2 id="compare-title">Commit–reveal opens the bids to prove the price.</h2>
       <p class="section-lead">So do audits by a published viewing key or by bids revealed after the close: the bid information becomes readable. That matters wherever the same buyers come back: monthly sponsor slots, where this month's ceilings would set next month's floor, or a treasury selling blocks of a holding to funds, where each bid is a fund's valuation. DarkCall proves the price without opening any, then pays out in shielded ZEC.</p>
       <div class="compare-wrap">
@@ -231,7 +296,7 @@
         <li>In this demo every party runs on one host: each bidder's client (which sees its own typed bid) and all three operators, and one test wallet funds all four tickets.</li>
       </ul></details>
       <p class="fine-print">Common designs compared, not specific projects. Other ZK and MPC auction designs also keep bids private; DarkCall's focus is combining multi-party ZK proving with proof-bound, native shielded settlement on Zcash. Timings from one 16 GiB laptop; testnet coins only.</p>
-      <div class="end-cta">
+      <div id="try" class="end-cta">
         <div><p class="section-kicker">Try it yourself</p><h2>Check the settled auction, or run your own.</h2></div>
         <div class="end-cta-actions"><button type="button" class="primary-button" data-go="settlement">See a settled auction <span>→</span></button><button type="button" class="secondary-button" data-go="try">Run an auction <span>→</span></button></div>
       </div>

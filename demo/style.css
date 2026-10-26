@@ -106,7 +106,7 @@ h1 {font-size:clamp(44px,6.6vw,80px);line-height:1.02;letter-spacing:-.04em;max-
 .back-overview {display:none}
 .has-experience .back-overview {display:inline-flex;align-items:center;margin:0 14px 0 0;padding:9px 4px;border:0;background:none;font:500 15px var(--sans);color:var(--ink-2);cursor:pointer;vertical-align:middle}
 .has-experience .back-overview:hover {color:var(--ink);text-decoration:underline;text-underline-offset:4px}
-.has-experience .hero-copy > :not(.experience-picker):not(.back-overview),.has-experience .hero-receipt,.has-experience .landing-more,.has-experience .how,.has-experience .proven {display:none}
+.has-experience .hero-copy > :not(.experience-picker):not(.back-overview),.has-experience .hero-receipt,.has-experience .landing-more,.has-experience .how,.has-experience .proven,.has-experience .landing-section {display:none}
 .has-experience .experience-picker {margin:0;vertical-align:middle;display:inline-flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
 .has-experience .experience-card {padding:8px 18px;border:0;border-radius:999px;background:transparent;color:var(--ink-2)}
 .has-experience .experience-card.active {background:var(--ink);color:#fff}
@@ -326,6 +326,48 @@ i.share.s3 {background:var(--surface);color:var(--ink);border:1.5px solid var(--
 
 /* Why it is different, and what was measured */
 .landing-more {margin-top:112px}
+/* On-this-page nav and the judge-facing sections: problem, privacy, what if, evidence. */
+.page-nav {position:sticky;top:0;z-index:20;display:flex;gap:2px;overflow-x:auto;margin:4px 0 0;padding:10px 0;background:var(--paper);border-bottom:1px solid var(--line);scrollbar-width:none}
+.page-nav::-webkit-scrollbar {display:none}
+.page-nav a {flex:none;padding:6px 12px;border-radius:999px;color:var(--ink-2);font-size:14px;text-decoration:none;white-space:nowrap}
+.page-nav a:hover,.page-nav a:focus-visible {background:var(--surface);color:var(--ink)}
+.landing-section[id],#how,#proven,#compare,#try {scroll-margin-top:64px}
+.problem,.facts,.evidence {margin-top:112px}
+.problem {margin-top:72px}
+.problem h2,.facts h2,.evidence h2 {font-size:clamp(30px,3.6vw,44px);letter-spacing:-.03em}
+.problem-grid {list-style:none;padding:0;margin:32px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.problem-grid li {padding:22px;background:var(--surface);border:1px solid var(--line);border-radius:18px}
+.problem-grid span {font:500 13px var(--mono);color:var(--gold-ink)}
+.problem-grid b {display:block;margin:8px 0 6px;font-size:18px;font-weight:600;line-height:1.3}
+.problem-grid p {margin:0;color:var(--ink-2);font-size:15px}
+.problem-answer {margin:20px 0 0;max-width:820px;color:var(--ink-2)}
+.problem-answer b {color:var(--ink)}
+.facts-table {width:100%;border-collapse:collapse;font-size:14px}
+.facts-table th,.facts-table td {text-align:left;padding:15px 18px;border-bottom:1px solid var(--line);vertical-align:top}
+.facts-table thead th {font-size:13px;font-weight:500;color:var(--ink-3);background:var(--surface-2)}
+.facts-table tbody th {font-weight:500;color:var(--ink);width:24%}
+.facts-table td {color:var(--ink-2)}
+.facts-table tbody tr:last-child > * {border-bottom:0}
+.facts-table tr.limit > * {background:var(--surface-2)}
+.facts-table a {color:var(--ink);white-space:nowrap}
+.evidence-grid {display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:32px}
+.evidence-card {display:flex;flex-direction:column;gap:6px;padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:16px;color:inherit;text-decoration:none}
+.evidence-card:hover,.evidence-card:focus-visible {border-color:var(--line-strong);box-shadow:var(--shadow)}
+.evidence-card span {font-size:12px;color:var(--ink-3)}
+.evidence-card b {font-size:16px;font-weight:600;line-height:1.3}
+.evidence-card p {margin:0;color:var(--ink-2);font-size:14px}
+.evidence-card::after {content:"Record ↗";margin-top:auto;padding-top:6px;font-size:13px;font-weight:500;color:var(--gold-ink)}
+@media (max-width:1000px) {.evidence-grid {grid-template-columns:repeat(2,1fr)} .problem-grid {grid-template-columns:1fr}}
+@media (max-width:760px) {
+  .evidence-grid {grid-template-columns:1fr}
+  .facts-table thead {display:none}
+  .facts-table tr {display:block;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .facts-table tbody tr:last-child {border-bottom:0}
+  .facts-table th,.facts-table td,.facts-table tbody th {display:block;width:auto;padding:3px 0;border:0}
+  .facts-table tr.limit > * {background:none}
+  .facts-table tr.limit {background:var(--surface-2)}
+  .facts-table td::before {content:attr(data-label);display:block;font-size:12px;color:var(--ink-3)}
+}
 .landing-more h2 {font-size:clamp(30px,3.6vw,44px);letter-spacing:-.03em}
 .section-lead {font-size:18px;color:var(--ink-2);margin:12px 0 0;max-width:620px}
 .compare-wrap {margin-top:32px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
