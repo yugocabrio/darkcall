@@ -77,6 +77,12 @@ class Chain:
             return scan, notes
         return capture(wallet, json.loads(private_read(wallet / 'nu7-birthday.json')), snapshot)
 
+    def spendable(self, wallet, snapshot):
+        """The bank's notes to deposit from; testnet may reuse its latest scan."""
+        if self.backend:
+            return self.backend.bank_notes(wallet)
+        return self.capture(wallet, snapshot)
+
     def birthday(self, snapshot):
         """Frontier at SNAPSHOT's tip: where a wallet that has not seen this
         auction's payouts starts scanning."""
@@ -218,7 +224,7 @@ def fund(auction, name, progress, bank=None, chain=REGTEST):
         raise RuntimeError('Preserve prior runs and choose a fresh name')
     bank = bank or chain.bank
     snapshot = preflight(progress, root, 'preflight', chain)
-    bank_scan, bank_notes = chain.capture(bank, snapshot)
+    bank_scan, bank_notes = chain.spendable(bank, snapshot)
     if bank_scan['balance_zatoshi'] < 4 * 15100 + 25000:
         raise RuntimeError(f'Local test bank lacks {chain.name} funds')
     progress.event('funding', 'started')
@@ -240,6 +246,13 @@ def fund(auction, name, progress, bank=None, chain=REGTEST):
     public = {'deposit_txid': summary['native_construction']['txid'], 'confirmations': summary['canonical_confirmations'],
               'client_proofs': 4, 'share_pairs': 12, 'receipt_signatures': summary['admission']['operator_receipt_signatures'],
               'final_book_signatures': 3, 'same_accepted_root': True, 'accepted_root': root}
+    if chain.backend:
+        # Funding is done either way; a bank that keeps its old birthday reuses its latest scan.
+        try:
+            print(json.dumps({'bank_birthday': chain.backend.advance_birthday(bank, bank_notes, public['deposit_txid'])}),
+                  file=sys.stderr, flush=True)
+        except Exception as error:
+            print(f'Bank birthday kept: {error}', file=sys.stderr, flush=True)
     progress.event('funding', 'done', **{k: v for k, v in public.items() if k != 'accepted_root'})
     private_write(ROOT / '.local' / (name + '-funded.json'), {'public': public, 'funding': funding,
         'auction': str(auction), 'tickets': tickets, 'chain': chain.name})
