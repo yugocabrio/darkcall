@@ -72,6 +72,7 @@ pub fn build(
     book: &Path,
     receivers: &Path,
     name: &str,
+    target: Option<u32>,
 ) -> Result<serde_json::Value> {
     let start = Instant::now();
     let mut rng = rand::rng();
@@ -188,11 +189,16 @@ pub fn build(
         )
         .ok_or("insufficient actual funds")?;
     let anchor = source.path.root(source.note.commitment().into());
+    // Testnet may build from an older scan: its anchor stays valid, but the
+    // target and expiry heights follow the chain tip the caller read.
+    let target = match target {
+        Some(height) if height > source.tip_height => height,
+        Some(_) => return Err("target height precedes the source notes' snapshot".into()),
+        None => source.tip_height.checked_add(1).ok_or("height overflow")?,
+    };
     let mut builder = Builder::new(
         Regtest,
-        zcash_protocol::consensus::BlockHeight::from_u32(
-            source.tip_height.checked_add(1).ok_or("height overflow")?,
-        ),
+        zcash_protocol::consensus::BlockHeight::from_u32(target),
         BuildConfig::Standard {
             sapling_anchor: None,
             orchard_anchor: None,

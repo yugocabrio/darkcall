@@ -48,6 +48,12 @@ def main():
             raise RuntimeError('Write the pack outside the repository')
         os.umask(0o077)
         with tarfile.open(args.tar, 'w:gz') as archive:
+            # Directories first and 0700, as the wallet tools require; otherwise
+            # extraction creates them with the server's default mode.
+            for name in sorted({str(p) for _, n in files for p in pathlib.PurePosixPath(n).parents if str(p) != '.'}):
+                info = tarfile.TarInfo(name)
+                info.type, info.mode = tarfile.DIRTYPE, 0o700
+                archive.addfile(info)
             for path, name in files:
                 archive.add(path, arcname=name, recursive=False)
         print(f'wrote {args.tar}')

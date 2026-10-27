@@ -67,8 +67,11 @@ def main():
     private_write(escrow / 'nu7-birthday.json', initial)
     cutoff = int(time.time()) + args.funding_window
     private_write(inputs / 'declared-cutoff.json', {'closes_at_utc': cutoff})
+    # The bank may spend from an older scan, so the deposit's target and expiry
+    # heights follow the tip read for the escrow birthday, not the scan.
     construction = call(SDK, 'regtest-deposits', args.source_wallet, args.private_notes,
-                        escrow, inputs / 'private-book.json', inputs / 'private-receivers.json', args.name)
+                        escrow, inputs / 'private-book.json', inputs / 'private-receivers.json', args.name,
+                        initial['height'] + 1)
     mapping = json.loads(private_read(out / 'private-deposit-map.json'))
     if mapping['source_index'] != source_index or mapping.get('network_genesis') != notes['genesis']:
         raise RuntimeError('Native builder selected another source note or network')
