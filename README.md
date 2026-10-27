@@ -7,6 +7,32 @@ not for any single operator. Even the zero-knowledge proof of the clearing price
 is generated without opening the bids, and one shielded transaction that anyone
 can verify pays the seller and refunds every bidder exactly as proven.**
 
+ZECATHON 2026 · Private Markets track ·
+**[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)** ·
+**[Settled on public Zcash testnet](#settled-on-public-zcash-testnet)** ·
+**[Verify it yourself](#try-it)** (`make verify`) ·
+**[Evidence index](docs/evidence-index.md)**
+
+## The problem
+
+Bidders want their ceilings kept secret. Everyone else wants proof that the
+price and the payouts are right. Usually one of the two gives way:
+
+1. **Checking the price usually opens the bids.** Commit–reveal auctions and
+   viewing-key audits prove the result by making every bid amount readable after
+   the close.
+2. **Whoever proves it sees every bid.** A zero-knowledge proof can keep the bids
+   from the public, but its prover, or an operator who decrypts them after the
+   close, still reads the whole book.
+3. **A proven price doesn't move the money.** The payout is a separate
+   transaction. Unless each refund and the seller's payment are proven too, the
+   result and the money can disagree.
+
+## The idea
+
+DarkCall answers each point with a different proof system, and settles in one
+shielded Zcash transaction:
+
 - **Multi-party computation** (REP3). Each bid becomes secret shares; no single
   operator can read one.
 - **Multi-party ZK proving** (coNoir). The operators compute the clearing price
@@ -21,12 +47,11 @@ can verify pays the seller and refunds every bidder exactly as proven.**
 
 **Only the clearing price and the units sold are public.** No bid, no winner's
 maximum bid, and not how many bid at any other price: there is no demand curve
-to read, and no payout amount or recipient.
-
-ZECATHON 2026 · Private Markets track. **[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)**:
-one real auction, from creation to shielded receipts, with every time cut labeled.
-**Settled on public Zcash testnet** from the browser on Oct 19: settlement tx
-[`be1157c8…a1c8ad67`](https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67) at block 4,518,315 ([record](#settled-on-public-zcash-testnet)).
+to read, and no payout amount or recipient. The demo auction settled on public
+testnet on Oct 19 in settlement tx
+[`be1157c8…a1c8ad67`](https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67)
+(block 4,518,315), and the 2-minute video shows that same run with every time
+cut labelled.
 
 ![DarkCall landing page: no bid is ever opened, the price is still proven, settled on Zcash; split, prove and pay as multi-party computation, multi-party ZK proving and proof-bound settlement; beside it, a real auction settled in this UI on public Zcash testnet](demo/media/landing-hero.jpg)
 
@@ -179,6 +204,44 @@ Hiding who bid is not enough when the amounts are published after the close:
 DarkCall publishes one number, the clearing price, and proves that it follows
 from bids that are never opened.
 
+## Design choices
+
+The questions a reviewer is likely to ask first, answered from the design.
+
+**Why not one prover with a zero-knowledge proof?** A ZK proof hides the bids
+from the verifier, not from the prover, who must hold every bid to build it.
+DarkCall's three operators generate the proof together from secret shares
+(coNoir over REP3), so the proving step never gathers the bid book.
+
+**Why not decrypt after the close and prove the result?** Timelock or
+committee decryption keeps bids sealed until the close, but whoever decrypts
+then reads them all. DarkCall never reconstructs a bid, before or after.
+
+**Why not publish a viewing key, or reveal the bids, for audits?** Either
+makes every amount readable. DarkCall's audit is the proofs: verifying needs no
+key and no bid.
+
+**Why two proof systems?** coNoir proves on BN254 (UltraHonk, checked by
+Barretenberg), while Zcash notes are commitments on Pallas, so the auction proof
+cannot speak about the notes directly. Each Halo2 proof recomputes one payout
+row's BN254 Poseidon2 hash inside a Pallas circuit and opens the matching note
+commitment, which ties the two without a trusted bridge.
+
+**Why REP3, which is only semi-honest?** It is the honest-majority, three-party
+setting the pinned coNoir proves in, and the joint clearing proof takes seconds.
+A malicious-secure version is not claimed: two colluding operators could
+reconstruct the bids, and the trust model says so.
+
+**Why 2-of-3 FROST rather than 3-of-3?** One operator alone cannot move the
+escrow, and one stopped operator cannot strand it: the other two can still
+refund every deposit ([record](evidence/2026-10-24-cancel-refund.json)).
+
+**Why a uniform price, and why four bids?** Every winner pays the same price,
+the highest losing bid or the reserve, so that one amount follows from the
+public price; it is disclosed rather than hidden. The circuits have four bid
+slots and six outputs; clearing was measured at eight bids, and the settlement
+cost grows with one Halo2 binding per payout.
+
 ## Settled on public Zcash testnet
 
 On October 19, 2026 an auction was **created, funded, cleared and settled by
@@ -254,6 +317,14 @@ Frames from the video run on public testnet (auction `4dde6fcb…`, settlement `
 [demo/media/v2/manifest.json](demo/media/v2/manifest.json).
 
 ## Try it
+
+With the pinned tools built ([reproduce.md](docs/reproduce.md)):
+
+```sh
+make doctor   # are the pinned tools, bundles and disk ready?
+make verify   # public verification of the recorded testnet settlement, no secrets
+make demo     # the local demo at http://127.0.0.1:8877
+```
 
 **Verify every committed settlement in a clean Linux container, with one
 command.** It needs Docker and at least 15 GB of free disk; the build takes
@@ -446,10 +517,16 @@ sorting network.
 | `evidence/` | Measured, public-only run records |
 
 [![tests](https://github.com/yugocabrio/ZECATHON/actions/workflows/tests.yml/badge.svg)](.github/workflows/tests.yml)
-128 automated tests run on every push: 34 Noir circuit tests, 66 Rust tests
+129 automated tests run on every push: 34 Noir circuit tests, 67 Rust tests
 (including Halo2 proof round trips) and 28 Python tests of the drivers' crash
 and resource handling. Settlements and the clean-room verifier stay local,
 because they need chains, pinned prover builds and minutes of proving.
+
+Common commands are in the `Makefile` (`make help`): `doctor` checks the pinned
+tools, `demo` starts the local demo, `verify` checks the recorded testnet
+settlement with no secrets, `cheat` runs the cheat lab and `test` runs the CI
+suites. Documentation is grouped in [docs/](docs/README.md), and every record in
+`evidence/` is listed in the [evidence index](docs/evidence-index.md).
 
 More: [judge review](docs/judge-review.md) · [submission](docs/submission-draft.md) ·
 [demo guide](docs/demo.md) · [reproduction](docs/reproduce.md) ·
