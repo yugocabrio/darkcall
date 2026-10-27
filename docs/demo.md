@@ -49,6 +49,24 @@ python3 -B scripts/render_demo_video_v2.py --output .local/darkcall-demo-NEW.mp4
 The committed stills and manifest for the rendered draft are in `demo/media/v2/`.
 The storyboard is `demo/video-storyboard-v2.json`.
 
+### The v3 video (screen recordings)
+
+`demo/media/v3/darkcall-demo-v3.mp4` replaces the stills cut. Two real-time
+recordings of `./demo.sh`, the slides in `docs/slides/` and the Oct 19 frames
+above are cut only at recorded marks; each span plays at one speed, and a span
+sped up by 15% or more states the real time it covers. The voice is macOS
+`say` (Samantha, Enhanced); `--no-voice` renders the same timing silent for a
+recorded narration read from `demo/media/v3/narration.md`.
+
+```sh
+node tools/demo-capture/record.mjs live    .local/rec-live      # ≈ 2 min: create, seal four bids, certify, clear, open a result
+node tools/demo-capture/record.mjs settled .local/rec-settled   # ≈ 2 min: receipts, public check, two cheats
+python3 -B scripts/render_demo_video_v3.py --live .local/rec-live --settled .local/rec-settled --output .local/darkcall-demo-NEW.mp4
+```
+
+The live auction uses reserve 10, outside the native settlement terms, so it
+clears on secret shares without deposits and touches no chain.
+
 ## Capture-ready demo plan (about 2 minutes edited)
 
 Settle takes minutes, so the human records it in one continuous session and
@@ -103,7 +121,7 @@ own receipt about 3 s.
    transaction is valid, these are the accepted bids. **Re-run verification** checks
    the same native transaction, the six binding proofs, the fixed MPC and
    receipt proofs, and the signed book under the configured authority here
-   (about 2 minutes) and refreshes them. **Inspect the proof trail** lists the
+   (about 20 seconds once the fixed Halo2 parameters are cached) and refreshes them. **Inspect the proof trail** lists the
    public data behind each claim (`/api/trail`, built by `scripts/proof_trail.py`
    from the committed bundle and authority only, every file checked against
    bundle.json) with 35 recomputed consistency checks: commitments and root in the

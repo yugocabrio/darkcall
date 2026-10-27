@@ -38,3 +38,5 @@ model, then the [review guide](judge-review.md) for what to check in what order.
 | [evidence-index.md](evidence-index.md) | Every committed run record, with the ones to start with |
 | [dependencies.md](dependencies.md) | Pinned dependencies, versions and licenses |
 | [submission-draft.md](submission-draft.md) | The ZECATHON submission text |
+| [slides/](slides/) | The 12-slide deck (one HTML section per slide; `tools/demo-capture/slides.mjs` renders them) |
+| [../demo/media/v3/](../demo/media/v3/) | The 2-minute video, its captions, narration script and recording record |

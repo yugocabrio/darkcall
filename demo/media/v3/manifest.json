@@ -1,0 +1,389 @@
+{
+  "format": 3,
+  "passed": true,
+  "seconds": 119.7,
+  "output": "darkcall-demo-v3.mp4",
+  "captions": "darkcall-demo-v3.srt",
+  "narration_script": "darkcall-demo-v3-narration.md",
+  "voice": "macOS say, Samantha (Enhanced), rate 175",
+  "video_sha256": "57ce1d7d0eb68098c3295353baa57087500d521b9f4da1cafe0000988bb4b0e2",
+  "recordings": {
+    "live": {
+      "scope": "a new local auction recorded by `record.mjs live`: reserve 10 is outside the native settlement terms, so it clears without deposits and touches no chain",
+      "started_at": "2026-10-27T08:36:45.948Z",
+      "frames": 1254,
+      "seconds": 108.9,
+      "marks": [
+        {
+          "t": 0,
+          "label": "start"
+        },
+        {
+          "t": 4.3,
+          "label": "create-form"
+        },
+        {
+          "t": 9.1,
+          "label": "room"
+        },
+        {
+          "t": 14.2,
+          "label": "seal-1-start"
+        },
+        {
+          "t": 14.7,
+          "label": "seal-1-done"
+        },
+        {
+          "t": 22.8,
+          "label": "seal-2-start"
+        },
+        {
+          "t": 23.3,
+          "label": "seal-2-done"
+        },
+        {
+          "t": 26.9,
+          "label": "seal-3-start"
+        },
+        {
+          "t": 27.4,
+          "label": "seal-3-done"
+        },
+        {
+          "t": 31,
+          "label": "seal-4-start"
+        },
+        {
+          "t": 31.5,
+          "label": "seal-4-done"
+        },
+        {
+          "t": 35,
+          "label": "wait-close"
+        },
+        {
+          "t": 82,
+          "label": "close-ready"
+        },
+        {
+          "t": 83.8,
+          "label": "close-start"
+        },
+        {
+          "t": 83.8,
+          "label": "close-done"
+        },
+        {
+          "t": 88.1,
+          "label": "clear-start"
+        },
+        {
+          "t": 96.1,
+          "label": "clear-done"
+        },
+        {
+          "t": 102.9,
+          "label": "result-start"
+        },
+        {
+          "t": 103.4,
+          "label": "result-done"
+        },
+        {
+          "t": 108.9,
+          "label": "end"
+        }
+      ],
+      "results": {
+        "auction_id": "9832377ad24f1a0a4a6e4c6afa0b30f2",
+        "terms": "3 units · reserve 10 · budget 100 zatoshi",
+        "first_acceptance": "Bid sealedTicket 01 · proof, 3 secret-share pairs (one per operator) and 3 operator signatures verified.",
+        "close": "✓ Closed bids certified.",
+        "clearing": "✓ Auction verified · 7.9s",
+        "outcome": "Clearing price21zatoshi per unitUnits sold3 / 3of 3 Every winner pays the same price. Three operators computed it on secret shares, and no bid was reconstructed.No deposits · these terms clear without settling on Zcash TicketTicket 01Ticket 02Ticket 03Ticket 04 Still sealed.Open the result of a ticket you sealed here. Open my result Try to cheatChange one byte of the proof and watch it fail.Tamper with proof Clearing detailsREP3 delivery_flags4/v2 · fixed C++ verification · three final-book signatures. Proof generation: 3.3 seconds.Same accepted root: 2432fdf80bd856561aeeee4fe94dd6e720fac1d496a2a80fb6d7940a3a134556The bidder's client on this computer sees demo inputs; operators get only secret shares of the bids. Three semi-honest REP3 parties run on this computer; privacy assumes at most one is corrupt. The ticket capability lives only in this page's memory, so reloading loses it. It is not a production login.",
+        "own_result": "You won a unitAt 21 zatoshi, the price every winner pays.Refund due (zatoshi)79✓ Your result verified"
+      }
+    },
+    "settled": {
+      "scope": "the Oct 19 public-testnet settlement re-checked by `record.mjs settled` on this machine",
+      "started_at": "2026-10-27T08:38:46.352Z",
+      "frames": 597,
+      "seconds": 100.1,
+      "marks": [
+        {
+          "t": 0,
+          "label": "start"
+        },
+        {
+          "t": 9.7,
+          "label": "receipt-01-start"
+        },
+        {
+          "t": 12.2,
+          "label": "receipt-01-done"
+        },
+        {
+          "t": 21.9,
+          "label": "receipt-04-start"
+        },
+        {
+          "t": 24.6,
+          "label": "receipt-04-done"
+        },
+        {
+          "t": 31.9,
+          "label": "verify-start"
+        },
+        {
+          "t": 52.9,
+          "label": "verify-done"
+        },
+        {
+          "t": 61.4,
+          "label": "cheat-book-start"
+        },
+        {
+          "t": 63.4,
+          "label": "cheat-book-done"
+        },
+        {
+          "t": 71.7,
+          "label": "cheat-price-start"
+        },
+        {
+          "t": 93.5,
+          "label": "cheat-price-done"
+        },
+        {
+          "t": 100.1,
+          "label": "end"
+        }
+      ],
+      "results": {
+        "receipt_01": "You won a unitAt 21 zatoshi, the price every winner pays.Refund (zatoshi)79🔑What Bidder 01 seesWon a unit at 21 · refund 79 zatoshi, decrypted with Bidder 01's own key.🌐What everyone else seesOne shielded transaction with six outputs: no amounts, no addresses, no memo text. Open it on the explorer",
+        "receipt_04": "No unit this timeYour full refund is verified.Refund (zatoshi)100🔑What Bidder 04 seesNo unit · refund 100 zatoshi, decrypted with Bidder 04's own key.🌐What everyone else seesOne shielded transaction with six outputs: no amounts, no addresses, no memo text. Open it on the explorer",
+        "settlement": "Verified again just now: in 21 s on this server, with no viewing key or other secret. What that proves:",
+        "cheat_book": "✗ Refused in 2 s. “These are the accepted bids” fails. The changed bid no longer hashes to the accepted root that all three operators signed and that the proofs were made over.",
+        "cheat_price": "✗ Refused in 22 s. “The price is right” fails. The auction proofs were made for the true price; they do not verify for any other."
+      }
+    }
+  },
+  "scenes": [
+    {
+      "index": 0,
+      "narration": "DarkCall is a sealed-bid auction on Zcash where no bid is ever opened, yet the price is proven and paid out in one shielded transaction.",
+      "band": null,
+      "speech_seconds": 7.291125,
+      "seconds": 8.8,
+      "source": "slide",
+      "slide": "01-cover",
+      "badge": null,
+      "started_at": 0.0
+    },
+    {
+      "index": 1,
+      "narration": "Normally, checking the price means someone reads the bids: everyone after the close, or whoever makes the proof. And a proven price doesn't prove the payout.",
+      "band": null,
+      "speech_seconds": 8.939729,
+      "seconds": 10.433333333333334,
+      "source": "slide",
+      "slide": "02-problem",
+      "badge": null,
+      "started_at": 8.8
+    },
+    {
+      "index": 2,
+      "narration": "Let's run one, live. A seller lists three units.",
+      "band": "A seller lists three units",
+      "speech_seconds": 3.181188,
+      "seconds": 4.266666666666667,
+      "source": "live",
+      "start": 0,
+      "end": 9.1,
+      "real_seconds": 9.1,
+      "speed": 2.13,
+      "badge": "2.1× · 9 s of real time",
+      "started_at": 19.233,
+      "frames_used": 206
+    },
+    {
+      "index": 3,
+      "narration": "Each bidder's client splits its bid into three secret shares, one per operator, and proves in zero knowledge that they match its commitment. Operators check the proof and sign a receipt, but none can read a bid.",
+      "band": "Each bid becomes three secret shares and a zero-knowledge proof",
+      "speech_seconds": 11.586813,
+      "seconds": 12.7,
+      "source": "live",
+      "start": 9.1,
+      "end": 35,
+      "real_seconds": 25.9,
+      "speed": 2.04,
+      "badge": "2.0× · 26 s of real time",
+      "started_at": 23.5,
+      "frames_used": 716
+    },
+    {
+      "index": 4,
+      "narration": "",
+      "band": "Bidding stays open until its deadline",
+      "speech_seconds": 0,
+      "seconds": 3.0,
+      "source": "live",
+      "start": 35,
+      "end": 82,
+      "real_seconds": 47,
+      "speed": 15.67,
+      "badge": "16× · 47 s of real time",
+      "started_at": 36.2,
+      "frames_used": 57
+    },
+    {
+      "index": 5,
+      "narration": "At the deadline, the operators certify the book. All three clear it on the shares with REP3, and coNoir turns that into one proof of the price, in about eight seconds. Nobody rebuilds a bid, not even the prover.",
+      "band": "REP3 clears on the shares · coNoir proves the price",
+      "speech_seconds": 12.492396,
+      "seconds": 13.6,
+      "source": "live",
+      "start": 82,
+      "end": 102.9,
+      "real_seconds": 20.9,
+      "speed": 1.54,
+      "badge": "1.5× · 21 s of real time",
+      "started_at": 39.2,
+      "frames_used": 246
+    },
+    {
+      "index": 6,
+      "narration": "Twenty-one per unit, three sold. Each bidder opens only its own result.",
+      "band": "Each bidder opens only its own result",
+      "speech_seconds": 4.411854,
+      "seconds": 5.5,
+      "source": "live",
+      "start": 102.9,
+      "end": 108.9,
+      "real_seconds": 6.0,
+      "speed": 1.09,
+      "badge": null,
+      "started_at": 52.8,
+      "frames_used": 33
+    },
+    {
+      "index": 7,
+      "narration": "That run had no deposits. On October 19th the same four bids ran on public Zcash testnet: shielded deposits into a two-of-three FROST escrow, six Halo2 proofs binding every payout to the result, and one shielded transaction.",
+      "band": "2-of-3 FROST escrow · six Halo2 payout proofs · one shielded transaction",
+      "speech_seconds": 14.024917,
+      "seconds": 15.133333333333333,
+      "source": "oct19-stills",
+      "stills": [
+        "06-funding.jpg",
+        "07-funded.jpg",
+        "12-settle-bindings.jpg",
+        "14-settle-sign.jpg",
+        "16-settled.jpg"
+      ],
+      "badge": null,
+      "started_at": 58.3
+    },
+    {
+      "index": 8,
+      "narration": "Here is that settlement. Bidder one decrypts its own receipt: one unit, at twenty-one. Everyone else sees one shielded transaction.",
+      "band": "Each bidder decrypts only its own receipt",
+      "speech_seconds": 7.755521,
+      "seconds": 8.866666666666667,
+      "source": "settled",
+      "start": 0,
+      "end": 21.9,
+      "real_seconds": 21.9,
+      "speed": 2.47,
+      "badge": "2.5× · 22 s of real time",
+      "started_at": 73.433,
+      "frames_used": 311
+    },
+    {
+      "index": 9,
+      "narration": "Bidder four: no unit, full refund.",
+      "band": "Each bidder decrypts only its own receipt",
+      "speech_seconds": 2.531021,
+      "seconds": 4.5,
+      "source": "settled",
+      "start": 21.9,
+      "end": 31.9,
+      "real_seconds": 10.0,
+      "speed": 2.22,
+      "badge": "2.2× · 10 s of real time",
+      "started_at": 82.3,
+      "frames_used": 93
+    },
+    {
+      "index": 10,
+      "narration": "Anyone can re-verify it with no secrets: the price proof, six payout proofs, the signed book and the Zcash signatures.",
+      "band": "Public verification · no viewing key, no bid",
+      "speech_seconds": 7.337563,
+      "seconds": 10.0,
+      "source": "settled",
+      "start": 31.9,
+      "end": 61.4,
+      "real_seconds": 29.5,
+      "speed": 2.95,
+      "badge": "3.0× · 30 s of real time",
+      "started_at": 86.8,
+      "frames_used": 103
+    },
+    {
+      "index": 11,
+      "narration": "Now try to cheat. Change one accepted bid: the signed book refuses it.",
+      "band": "Try to cheat: change one accepted bid",
+      "speech_seconds": 4.504729,
+      "seconds": 5.6,
+      "source": "settled",
+      "start": 61.4,
+      "end": 71.7,
+      "real_seconds": 10.3,
+      "speed": 1.84,
+      "badge": "1.8× · 10 s of real time",
+      "started_at": 96.8,
+      "frames_used": 77
+    },
+    {
+      "index": 12,
+      "narration": "Claim a higher price:",
+      "band": "Try to cheat: claim a higher price",
+      "speech_seconds": 1.346813,
+      "seconds": 3.5,
+      "source": "settled",
+      "start": 71.7,
+      "end": 93.5,
+      "real_seconds": 21.8,
+      "speed": 6.23,
+      "badge": "6.2× · 22 s of real time",
+      "started_at": 102.4,
+      "frames_used": 14
+    },
+    {
+      "index": 13,
+      "narration": "the price proof refuses it.",
+      "band": "Try to cheat: claim a higher price",
+      "speech_seconds": 1.579021,
+      "seconds": 5.0,
+      "source": "settled",
+      "start": 93.5,
+      "end": 100.1,
+      "real_seconds": 6.6,
+      "speed": 1.32,
+      "badge": "1.3× · 7 s of real time",
+      "started_at": 105.9,
+      "frames_used": 4
+    },
+    {
+      "index": 14,
+      "narration": "Private inputs, public checks. Every run is recorded in the repository, and make verify checks it on your own machine.",
+      "band": null,
+      "speech_seconds": 7.291125,
+      "seconds": 8.8,
+      "source": "slide",
+      "slide": "12-close",
+      "badge": null,
+      "started_at": 110.9
+    }
+  ]
+}

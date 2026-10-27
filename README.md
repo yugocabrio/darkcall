@@ -8,7 +8,7 @@ is generated without opening the bids, and one shielded transaction that anyone
 can verify pays the seller and refunds every bidder exactly as proven.**
 
 ZECATHON 2026 · Private Markets track ·
-**[Watch the 2-minute demo](demo/media/v2/darkcall-demo-v2.mp4)** ·
+**[Watch the 2-minute demo](demo/media/v3/darkcall-demo-v3.mp4)** ·
 **[Settled on public Zcash testnet](#settled-on-public-zcash-testnet)** ·
 **[Verify it yourself](#try-it)** (`make verify`) ·
 **[Evidence index](docs/evidence-index.md)**
@@ -50,8 +50,9 @@ maximum bid, and not how many bid at any other price: there is no demand curve
 to read, and no payout amount or recipient. The demo auction settled on public
 testnet on Oct 19 in settlement tx
 [`be1157c8…a1c8ad67`](https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67)
-(block 4,518,315), and the 2-minute video shows that same run with every time
-cut labelled.
+(block 4,518,315). The 2-minute video records a new auction live in the browser,
+sealed and cleared on secret shares, then re-checks that testnet settlement and
+tries to cheat it; every sped-up span states the real time it covers.
 
 ![DarkCall landing page: no bid is ever opened, the price is still proven, settled on Zcash; split, prove and pay as multi-party computation, multi-party ZK proving and proof-bound settlement; beside it, a real auction settled in this UI on public Zcash testnet](demo/media/landing-hero.jpg)
 
@@ -247,7 +248,7 @@ cost grows with one Halo2 binding per payout.
 On October 19, 2026 an auction was **created, funded, cleared and settled by
 clicking through the browser UI on standard public Zcash testnet (NU7)**, with
 testnet coins and the same proofs, admission and signing as below. It is the
-auction in the video and under "See a settled auction":
+settlement re-checked in the video and under "See a settled auction":
 
 | Step | Public testnet record |
 | --- | --- |

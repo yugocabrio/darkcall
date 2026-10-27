@@ -1,0 +1,123 @@
+1
+00:00:00,400 --> 00:00:07,691
+DarkCall is a sealed-bid auction on Zcash where no bid is ever opened, yet the price is proven and paid out in one shielded transaction.
+
+2
+00:00:09,200 --> 00:00:12,545
+Normally, checking the price means someone reads the bids:
+
+3
+00:00:12,545 --> 00:00:15,602
+everyone after the close, or whoever makes the proof.
+
+4
+00:00:15,602 --> 00:00:18,140
+And a proven price doesn't prove the payout.
+
+5
+00:00:19,633 --> 00:00:20,987
+Let's run one, live.
+
+6
+00:00:20,987 --> 00:00:22,814
+A seller lists three units.
+
+7
+00:00:23,900 --> 00:00:31,625
+Each bidder's client splits its bid into three secret shares, one per operator, and proves in zero knowledge that they match its commitment.
+
+8
+00:00:31,625 --> 00:00:35,487
+Operators check the proof and sign a receipt, but none can read a bid.
+
+9
+00:00:39,600 --> 00:00:42,469
+At the deadline, the operators certify the book.
+
+10
+00:00:42,469 --> 00:00:49,522
+All three clear it on the shares with REP3, and coNoir turns that into one proof of the price, in about eight seconds.
+
+11
+00:00:49,522 --> 00:00:52,092
+Nobody rebuilds a bid, not even the prover.
+
+12
+00:00:53,200 --> 00:00:55,217
+Twenty-one per unit, three sold.
+
+13
+00:00:55,217 --> 00:00:57,612
+Each bidder opens only its own result.
+
+14
+00:00:58,700 --> 00:01:00,279
+That run had no deposits.
+
+15
+00:01:00,279 --> 00:01:04,259
+On October 19th the same four bids ran on public Zcash testnet:
+
+16
+00:01:04,259 --> 00:01:12,725
+shielded deposits into a two-of-three FROST escrow, six Halo2 proofs binding every payout to the result, and one shielded transaction.
+
+17
+00:01:13,833 --> 00:01:15,287
+Here is that settlement.
+
+18
+00:01:15,287 --> 00:01:17,468
+Bidder one decrypts its own receipt:
+
+19
+00:01:17,468 --> 00:01:18,923
+one unit, at twenty-one.
+
+20
+00:01:18,923 --> 00:01:21,589
+Everyone else sees one shielded transaction.
+
+21
+00:01:22,700 --> 00:01:23,620
+Bidder four:
+
+22
+00:01:23,620 --> 00:01:25,231
+no unit, full refund.
+
+23
+00:01:27,200 --> 00:01:29,709
+Anyone can re-verify it with no secrets:
+
+24
+00:01:29,709 --> 00:01:34,538
+the price proof, six payout proofs, the signed book and the Zcash signatures.
+
+25
+00:01:37,200 --> 00:01:38,326
+Now try to cheat.
+
+26
+00:01:38,326 --> 00:01:39,916
+Change one accepted bid:
+
+27
+00:01:39,916 --> 00:01:41,705
+the signed book refuses it.
+
+28
+00:01:42,800 --> 00:01:44,147
+Claim a higher price:
+
+29
+00:01:46,300 --> 00:01:47,879
+the price proof refuses it.
+
+30
+00:01:51,300 --> 00:01:53,170
+Private inputs, public checks.
+
+31
+00:01:53,170 --> 00:01:58,591
+Every run is recorded in the repository, and make verify checks it on your own machine.

@@ -1,0 +1,30 @@
+<section id="tech" style="background:#f6f4ee;color:#141413;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;color:#8a6408;font-weight:500">Under the hood</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#141413">Exactly what is proven</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="background:#141413;border-radius:18px;padding:40px;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-size:32px;font-weight:600;color:#f4b728">Secret shares and the client’s proof</h3>
+<div data-text style="font-family:'IBM Plex Mono', monospace;font-size:26px;line-height:1.6;color:#f6f4ee">
+<p>x = x₁ + x₂ + x₃   (BN254 field)</p>
+<p>A (x₁, x₃) · B (x₂, x₁) · C (x₃, x₂)</p>
+<p>c  = Poseidon2(ctx, id, x, s)</p>
+<p>cᵢ = Poseidon2(ctx, id, i, xᵢ, xᵢ₋₁, sᵢ, sᵢ₋₁)</p>
+</div>
+</div>
+<div style="background:#141413;border-radius:18px;padding:40px;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-size:32px;font-weight:600;color:#f4b728">Each payout bound to a proven row</h3>
+<div data-text style="font-family:'IBM Plex Mono', monospace;font-size:26px;line-height:1.6;color:#f6f4ee">
+<p>Poseidon2_BN254(rowᵢ) = hᵢ</p>
+<p>NoteCommit(g_d, pk_d, v, ρ, rseed) = cmxᵢ</p>
+<p>public: hᵢ, cmxᵢ, action aᵢ</p>
+<p>one Halo2 proof per row, K = 17</p>
+</div>
+</div>
+</div>
+<p style="font-size:30px;color:#4a4944;line-height:1.45"><b>coNoir</b> computes the witness on shares and outputs one UltraHonk proof. Its 232 public fields fix the terms, the four bid commitments, the signed accepted root and six receivers, and output the price, units sold and row hashes h₁…h₆.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:800px;font-size:24px;color:#706e66">DarkCall · ZECATHON 2026</p>
+<p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#706e66">6</p>
+<aside>Here is exactly what is proven. Each bid is split into three field elements that sum to it, and every share is held by two operators. The client’s proof ties the public commitment to the share pair each operator receives. The operators then compute the witness on shares, and coNoir turns it into one UltraHonk proof whose public statement fixes the terms, the commitments, the signed accepted root and the receivers, and outputs the price, the units sold and six row hashes. For each payout, one Halo2 proof on Pallas recomputes that row hash in BN254 arithmetic and opens the note commitment in the Zcash transaction, which ties the two curves together.</aside>
+</section>

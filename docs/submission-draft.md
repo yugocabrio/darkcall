@@ -42,8 +42,9 @@ to read, and no payout amount or recipient.
    [`af6cf7cf…eff6354`](https://testnet.zecblock.com/tx/af6cf7cf6314bd946d76aec951f8277f12a4e27a97a335b81dbcbc241eff6354)
    and the settlement [`be1157c8…a1c8ad67`](https://testnet.zecblock.com/tx/be1157c884ce015e87993f105ebf44c3ab7f78e895d783fd002948c3a1c8ad67)
    (blocks 4,518,254 and 4,518,315) on a testnet explorer.
-2. **That auction, from creation to receipts** (2 minutes). The video is edited
-   stills of that same run, with every time cut labelled.
+2. **The 2-minute video.** A new auction sealed and cleared live in the
+   browser, then that testnet settlement re-checked: receipts, the public check
+   and two refused cheats. Every sped-up span states its real time.
 3. **Try to cheat it** (live demo, `/demo/settled`, 2 to 30 s per try).
    Change an accepted bid, claim a higher price or swap two payout proofs: the
    page makes that one change to a copy of the recorded settlement and runs the
@@ -82,7 +83,7 @@ to read, and no payout amount or recipient.
   larger settlements are estimated, not run.
 - **Execution.** An auction was created, funded, cleared and settled by clicking
   through the browser on public Zcash testnet (settlement `be1157c8…a1c8ad67`,
-  block 4,518,315), and that is the run in the video. A single-unit auction
+  block 4,518,315), and the video re-checks that settlement. A single-unit auction
   (price 61, one sold) settled the same way on testnet on Oct 21 (tx
   `1d85d98f…82db`), and a two-unit one on regtest; one to three units now settle
   with the same circuits and six outputs. Seven public bundles,
@@ -170,7 +171,7 @@ Only the bidder's own client sees the typed bid; operators receive shares and a 
   standard testnet (NU7): deposits `af6cf7cf…eff6354` at block 4,518,254,
   settlement `be1157c8…a1c8ad67` at block 4,518,315, two confirmations each,
   public check in 102 s, own receipts won 79 and lost 100, and a corrupted
-  receipt proof refused. This is the run in the video. An earlier API-driven
+  receipt proof refused. The video re-checks this settlement. An earlier API-driven
   testnet auction (`8e6da99b…034f0db7`) also passed every refusal check. Chain
   data came from one trusted lightwalletd provider.
 
@@ -186,10 +187,12 @@ Only the bidder's own client sees the typed bid; operators receive shares and a 
   this way. The headline six-step run (Oct 19) has deposits `5e9432e5…`, price
   21 with 3 sold, and settlement `e3ffa436…84769754`. Its refunds were
   79/79/100/79 and the seller received 63.
-- **A 2-minute video from one real testnet auction.** `demo/media/v2/darkcall-demo-v2.mp4`
-  (auction `4dde6fcb…`, settlement `be1157c8…`) is captured by a reproducible
-  headless script with labeled time cuts.
-- **Public verification without secrets.** About 2 minutes. It covers native
+- **A 2-minute video of the running system.** `demo/media/v3/darkcall-demo-v3.mp4`:
+  real-time screen recordings of a new auction sealed and cleared live, and of
+  the testnet settlement `be1157c8…` re-checked (receipts, public check, two
+  refused cheats), with frames captured during that run. Recorded and rendered
+  by committed scripts; every sped-up span states its real time.
+- **Public verification without secrets.** About 20 seconds. It covers native
   authorization, six output bindings, the auction proof and the operator
   certificate. Corrupted proofs, transactions, books and authorities are
   rejected.
@@ -197,7 +200,7 @@ Only the bidder's own client sees the typed bid; operators receive shares and a 
   receipt proof is rejected before the bidder's key is read.
 - **A recorded view of the same settlement.** `./demo.sh` serves the six-step
   auction under "See a settled auction". Open each bidder's receipt in about 3 s, or
-  re-verify the whole settlement in about 2 minutes, without running a new
+  re-verify the whole settlement in about 20 seconds, without running a new
   auction. `./demo.sh --fixture-recorded` shows the Oct 5 fixture-bid run
   `47019e02…a211938`.
 
@@ -242,7 +245,7 @@ unit, 623 s three units; 885–951 s before). Public verification: about 20–30
 
 ## Links
 
-- Video: `demo/media/v2/darkcall-demo-v2.mp4` (119 s, captions in `.srt`)
+- Video: `demo/media/v3/darkcall-demo-v3.mp4` (120 s, captions in `.srt`, script in `narration.md`)
 - Repository: `README.md`, then `docs/judge-review.md`
 - Demo guide: `docs/demo.md` · Reproduction: `docs/reproduce.md`
 - Evidence: `evidence/2026-10-18-fresh-book-native-settlement.json`

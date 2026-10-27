@@ -1,0 +1,32 @@
+<section id="idea" style="background:#f6f4ee;color:#141413;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;color:#8a6408;font-weight:500">The idea</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#141413">One proof system for each problem</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px">
+<div style="background:#ffffff;border:1px solid #e6e2d7;border-radius:18px;padding:36px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#8a6408;font-family:'IBM Plex Mono', monospace">REP3 · MPC</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.2;color:#141413">Split</h3>
+<p style="font-size:28px;color:#4a4944;line-height:1.4">Each bidder’s client splits the bid into secret shares. No operator can read one.</p>
+</div>
+<div style="background:#ffffff;border:1px solid #e6e2d7;border-radius:18px;padding:36px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#8a6408;font-family:'IBM Plex Mono', monospace">coNoir · ZK</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.2;color:#141413">Prove</h3>
+<p style="font-size:28px;color:#4a4944;line-height:1.4">Three operators prove the price together from the shares. No one holds the bid book.</p>
+</div>
+<div style="background:#ffffff;border:1px solid #e6e2d7;border-radius:18px;padding:36px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#8a6408;font-family:'IBM Plex Mono', monospace">Halo2</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.2;color:#141413">Pay</h3>
+<p style="font-size:28px;color:#4a4944;line-height:1.4">Four refunds, the seller and the fee: each payout has its own proof that it matches the result.</p>
+</div>
+<div style="background:#141413;border-radius:18px;padding:36px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#f4b728;font-family:'IBM Plex Mono', monospace">FROST · 2-of-3</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.2;color:#f6f4ee">Custody</h3>
+<p style="font-size:28px;color:#d8d6cf;line-height:1.4">The escrow’s Ironwood spends are signed by any two operators. No master key exists.</p>
+</div>
+</div>
+<p style="font-size:32px;color:#4a4944;line-height:1.4">All six payouts settle in <b>one shielded Zcash transaction</b> that anyone can verify.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:800px;font-size:24px;color:#706e66">DarkCall · ZECATHON 2026</p>
+<p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#706e66">3</p>
+<aside>DarkCall answers each problem with a different proof system. REP3 multi-party computation splits each bid into secret shares, so no operator can read one. The three operators then generate one zero-knowledge proof of the price together from those shares, with coNoir, so no one ever holds the bid book. Halo2 proves that each of the six payouts matches the proven result. And the escrow is a 2-of-3 FROST key made by a distributed key generation, so no master key exists. Everything settles in one shielded Zcash transaction.</aside>
+</section>

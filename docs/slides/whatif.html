@@ -1,0 +1,21 @@
+<section id="whatif" style="background:#f6f4ee;color:#141413;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;color:#8a6408;font-weight:500">Recovery</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#141413">When something goes wrong</h2>
+</div>
+<div style="background:#ffffff;border:1px solid #e6e2d7;border-radius:18px;padding:12px 32px 4px">
+<table style="font-size:28px;color:#141413">
+<tr><th style="width:36%">If this happens</th><th style="width:64%">Outcome</th></tr>
+<tr><td>One operator stops before settlement</td><td>The other two refund all deposits, 2-of-3, without its key share</td></tr>
+<tr><td>The settlement crashes midway</td><td>Resumes from the journals with the same prepared transaction</td></tr>
+<tr><td>A refunded book is sent to settle</td><td>Refused: each operator journal reserves one transaction for good</td></tr>
+<tr><td>A bidder gets a corrupted receipt</td><td>Refused before the bidder’s viewing key is read</td></tr>
+<tr style="background:#faf9f5"><td>Two operators stop</td><td>Nobody can sign; the deposits wait in escrow · limit</td></tr>
+<tr style="background:#faf9f5"><td>Two operators collude on a payout</td><td>Not prevented; it fails public verification · limit</td></tr>
+</table>
+</div>
+<p style="font-size:26px;color:#4a4944;line-height:1.4">Refund shown on regtest: 10,100 of each 15,100 zatoshi deposit back; the rest is the network fee.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:800px;font-size:24px;color:#706e66">DarkCall · ZECATHON 2026</p>
+<p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#706e66">9</p>
+<aside>What happens when something goes wrong? Clearing needs all three operators, so if one stops, the auction cannot settle; instead the other two refund every deposit, signing 2-of-3 without the stopped operator’s key share. A settlement that crashes midway resumes from the operators’ journals with the same prepared transaction, never a second payment, and a refunded book can never also be settled. A corrupted receipt is refused before a bidder’s key is read. Two limits remain, and we state them: if two operators stop, the deposits wait; and two colluding operators could sign a different payout, which would then fail public verification.</aside>
+</section>

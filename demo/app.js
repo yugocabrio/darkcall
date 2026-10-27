@@ -251,7 +251,7 @@ fetch('/api/state').then(async response => {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
       if (recordedTestnet) {
         // Already verified when recorded; the button re-runs the same check here.
-        $('settlement-scope').textContent='Check that the shielded Zcash transaction matches the auction outcome, without seeing any bid. The result below is recorded; run the same check again here in about 100 seconds, with no viewing key or other secret.';
+        $('settlement-scope').textContent='Check that the shielded Zcash transaction matches the auction outcome, without seeing any bid. The result below is recorded; run the same check again here in about 20 seconds, with no viewing key or other secret.';
         $('settlement').textContent='Re-run verification';
       }
       $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts and larger bid counts remain unverified.';
@@ -344,7 +344,7 @@ function refreshRoom() {
   $('new-auction').disabled=busy || jobRunning();
   const settled=Boolean(room && room.settlement && room.settlement.state==='done');
   const funded=Boolean(room && room.funding && room.funding.state==='done');
-  const complete=[Boolean(room),Boolean(room && room.accepted===4),funded || Boolean(room && !room.funding_required && freshClearingVerified),freshClearingVerified,freshResultVerified || settled,settled];
+  const complete=[Boolean(room),Boolean(room && room.accepted===4),funded || Boolean(room && !room.funding_required && room.closed),freshClearingVerified,freshResultVerified || settled,settled];
   const current=complete.findIndex(done=>!done);
   ['create','bid','fund','clear','result','settle'].forEach((name,i)=>{
     const step=$('progress-'+name); step.classList.toggle('done',complete[i]);
@@ -475,14 +475,14 @@ function renderSettlement() {
   const section=$('settle-section'), job=room && room.settlement, settledState=Boolean(job && job.state==='done');
   $('rehearsal-label').textContent=settledState?'Settled on '+chainName():job?'Settling on '+chainName():'Demo bids';
   const fundedState=Boolean(room && room.funding && room.funding.state==='done');
-  $('payment-status').textContent=settledState?'Paid in one shielded '+(onTestnet()?'testnet':'regtest')+' transaction ↓':job?'Settlement on '+chainName()+' in progress ↓':fundedState?'Real deposits locked · paid out at Settle ↓':'No deposit yet · funding comes after the close';
+  $('payment-status').textContent=settledState?'Paid in one shielded '+(onTestnet()?'testnet':'regtest')+' transaction ↓':job?'Settlement on '+chainName()+' in progress ↓':fundedState?'Real deposits locked · paid out at Settle ↓':room && !room.funding_required?'No deposits · these terms clear without settling on Zcash':'No deposit yet · funding comes after the close';
   section.hidden=!(room && room.clearing);
   if (section.hidden) return;
   const available=Boolean(room.settlement_available);
   $('settle-auction').hidden=Boolean(job);
   $('settle-auction').disabled=busy || !available || Boolean(job);
   $('settle-note').hidden=available || Boolean(job);
-  $('settle-note').textContent=room.units===3 && room.budget===100 && [0,20].includes(room.reserve) ? (onTestnet()?'Testnet':'Regtest')+' settlement tools are not available on this checkout.' : 'The native settlement prototype supports the default terms: 3 units, budget 100, reserve 0 or 20.';
+  $('settle-note').textContent=[1,2,3].includes(room.units) && room.budget===100 && [0,20].includes(room.reserve) ? (onTestnet()?'Testnet':'Regtest')+' settlement tools are not available on this checkout.' : 'Settling on Zcash needs the prototype terms: budget 100 and reserve 0 or 20. This auction clears and proves its price without deposits.';
   $('settle-steps').hidden=!job;
   if (!job) { $('settle-status').textContent=''; $('settle-outcome').hidden=true; return; }
   const events=job.events||[], at={};

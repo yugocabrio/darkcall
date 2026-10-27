@@ -20,13 +20,16 @@ month, where this month's ceilings would otherwise set next month's floor.
 
 ## What to look at
 
-0. **The 2-minute video.** Watch [demo/media/v2/darkcall-demo-v2.mp4](../demo/media/v2/darkcall-demo-v2.mp4).
-   It is edited stills from one real auction on public Zcash testnet
-   (`4dde6fcb…`, settlement `be1157c8…a1c8ad67`), created and settled in the
-   browser and captured by `tools/demo-capture/capture.mjs`. Every time cut
-   states the real elapsed time.
+0. **The 2-minute video.** Watch [demo/media/v3/darkcall-demo-v3.mp4](../demo/media/v3/darkcall-demo-v3.mp4)
+   (narration and captions in [narration.md](../demo/media/v3/narration.md)).
+   Screen recordings, not stills: a new auction sealed, certified and cleared
+   live by REP3 and coNoir (reserve 10, so no deposits and no chain), then the
+   Oct 19 testnet settlement (`be1157c8…a1c8ad67`) with frames captured during
+   that run, its receipts opened, its public check run and two cheats refused
+   on this machine. Each sped-up span states the real time it covers; the
+   record is [demo/media/v3/manifest.json](../demo/media/v3/manifest.json).
 1. **A settled auction, checked by you.** `/demo/settled` on the live demo. It
-   is the auction in the video, and bidders are numbered as they were there.
+   is the settlement in the video, and bidders are numbered as they were there.
    Start as the public (what you can and cannot see), switch to a bidder to open
    only that bidder's receipt, and read the four verified claims (recorded on
    Oct 19; re-run them here in about 20–30 s). **Inspect the proof trail** under
@@ -75,8 +78,9 @@ month, where this month's ceilings would otherwise set next month's floor.
    second is the earlier recorded settlement with fixture bids. Two more
    browser-created books from October 18 are also committed:
    `browser-auction-nu7-v1` and `fresh-book-nu7-v1`.
-   Each check takes about two minutes. It needs no wallet key, PCZT, bid, mask
-   or witness.
+   Each check takes about 20 seconds once the tools are built and the fixed
+   Halo2 parameters cached (the first check computes them, about 1.5 minutes
+   more). It needs no wallet key, PCZT, bid, mask or witness.
 4. **Exact records.** See
    [fresh-book settlement](../evidence/2026-10-18-fresh-book-native-settlement.json)
    and [recorded settlement](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
