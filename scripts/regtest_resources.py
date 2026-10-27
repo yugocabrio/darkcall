@@ -17,9 +17,11 @@ from mpc_process import GROUP_ENV
 
 MIN_FREE_BYTES = 4 * 1024 ** 3
 # A measured native row transiently reached 6.14 GiB while macOS reported 70%
-# headroom. Keep one prover, a half-of-16-GiB resident ceiling, and independent
-# system/disk guards rather than interrupt that observed legitimate peak.
-MAX_RESIDENT_KIB = 8 * 1024 ** 2
+# headroom, and the six funded rows 7.91 GiB on the hosted Linux server. Keep one
+# prover, a half-of-16-GiB resident ceiling on the shared Mac, and independent
+# system/disk guards rather than interrupt that observed legitimate peak. A
+# dedicated server raises the ceiling with DARKCALL_MAX_PROVER_GIB.
+MAX_RESIDENT_KIB = int(float(os.environ.get('DARKCALL_MAX_PROVER_GIB', '8')) * 1024 ** 2)
 MIN_MAC_FREE_PERCENT = 10
 
 

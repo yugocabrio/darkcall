@@ -8,6 +8,7 @@ witnesses) is never committed; records cite public txids and commit hashes.
 
 | Topic | Record | What it shows |
 | --- | --- | --- |
+| Public Zcash testnet | [2026-10-27-hosted-testnet-auction](../evidence/2026-10-27-hosted-testnet-auction.json) | A new auction through the hosted live demo on a Linux server: deposit 76329a49…, settlement 03feb02b…, 24 min 16 s from the landing page; the five deployment fixes it needed |
 | Public Zcash testnet | [2026-10-19-public-testnet-settlement](../evidence/2026-10-19-public-testnet-settlement.json) | Two auctions funded, cleared and settled on standard public testnet (NU7), one of them in the browser for the video; deposits and settlement txids with blocks |
 | Public Zcash testnet | [2026-10-21-one-and-two-unit-settlement](../evidence/2026-10-21-one-and-two-unit-settlement.json) | One- and two-unit auctions with no circuit change; a one-unit auction settled on public testnet |
 | Verification | [2026-10-18-clean-room-linux-verification](../evidence/2026-10-18-clean-room-linux-verification.json) | A clean Linux container built from git archive verified every committed bundle with no secrets and refused a corrupted proof |
@@ -124,3 +125,4 @@ whose limits a later record lifts; the record says which.
 | 2026-10-21 | [halo2-params-cache](../evidence/2026-10-21-halo2-params-cache.json) | Where do funded settlement and public verification spend their time, and what can be removed without changing any circuit, proof, statement,… |
 | 2026-10-21 | [one-and-two-unit-settlement](../evidence/2026-10-21-one-and-two-unit-settlement.json) | Can the existing four-bid protocol settle one- and two-unit auctions natively, with no circuit or proof change? |
 | 2026-10-24 | [cancel-refund](../evidence/2026-10-24-cancel-refund.json) | If an operator stops before settlement, can the other two refund every deposit without the stopped operator, and without any chance of also… |
+| 2026-10-27 | [hosted-testnet-auction](../evidence/2026-10-27-hosted-testnet-auction.json) | a new auction created, sealed, funded, cleared and settled through the hosted live demo (https://49-12-250-128.sslip.io) on standard public… |

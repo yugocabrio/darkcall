@@ -2,8 +2,8 @@
 
 The public site is one server: the landing at `/` and the live demo derived
 from it at `/demo/settled` (the recorded testnet settlement, verified live) and
-`/demo/run` (a new auction on public testnet). Nothing is deployed until the
-author provides the server and approves the deployment.
+`/demo/run` (a new auction on public testnet). It is deployed at
+**https://49-12-250-128.sslip.io** (see [Deployed](#deployed-oct-27) below).
 
 ## What runs where
 
@@ -63,7 +63,8 @@ After the first deploy, check the parameter cache: the image build log shows
 
 ## Deploy
 
-1. Install Docker Engine and the compose plugin on the server.
+1. Install Docker Engine, BuildKit (buildx) and the compose plugin on the server
+   (Ubuntu 24.04: `apt-get install docker.io docker-buildx docker-compose-v2`).
 2. From this checkout, send the committed tree and build the image there:
    `git archive HEAD | ssh HOST 'mkdir -p darkcall && tar -x -C darkcall'`, then on
    the server `docker build -f darkcall/docker/demo/Dockerfile -t darkcall-demo:current darkcall`
@@ -78,3 +79,37 @@ After the first deploy, check the parameter cache: the image build log shows
 
 To update, rebuild the image from the new revision and run `docker compose up -d`
 again; `.local` and the certificate volume persist.
+
+## Deployed (Oct 27)
+
+| | |
+| --- | --- |
+| URL | https://49-12-250-128.sslip.io (Let's Encrypt certificate through Caddy) |
+| Server | Hetzner, x86_64 AMD, 8 vCPU, 15 GiB RAM (+ 8 GiB swap), 301 GB disk, Ubuntu 24.04 |
+| Docker | Engine 29.1.3, buildx 0.30.1 (the image needs BuildKit for `TARGETARCH`) |
+| Image | `darkcall-demo` from `git archive` of the deployed commit; first build 16 min with `JOBS=6` (co-snarks 310 s, Barretenberg 231 s, workspace 279 s), 8.05 GB |
+| Halo2 parameters | `--prepare-params` ran at build time in 35 s; **Re-run verification** finishes in 17.8 s on the server (18.5 s seen from a browser) |
+| Hosted checks | `scripts/check_hosted_http.py` through an SSH tunnel: all nine checks pass in 8.4 s |
+| Parallel rows | not measured: 15 GiB is below the guard's 24 GiB for two workers |
+| A new auction through the site | settled on public testnet on Oct 27: deposit `76329a49…`, settlement `03feb02b…`, 24 min 16 s from the landing page (clearing 6.8 s, settlement 11 min 11 s); [record](../evidence/2026-10-27-hosted-testnet-auction.json) |
+| Prover memory | the six funded rows peaked at 7.91 GiB against the default 8 GiB guard; `compose.yaml` sets `DARKCALL_MAX_PROVER_GIB=12` on this dedicated server |
+
+The testnet bank's only note was mined at block 4,518,254 on Oct 19. Public
+testnet captures now run near 10 KB a block, so rescanning from that birthday
+(31,000 blocks) passed both the scanner's 100 MB read bound and its 20,000-block
+window and every new auction would have failed at funding. A bank whose
+birthday is more than 5,000 blocks old now deposits from its latest scan (any
+past anchor stays valid, and `source_check` re-confirms the scan against the
+chain), and each funding moves the bank's birthday to the block before its
+deposit.
+
+The first hosted runs also showed that tar created the private directories
+0755 (the wallet tool needs 0700; the pack now carries 0700 entries), that a
+deposit built from an old scan took that scan's expiry (an optional target
+height now follows the tip), that the bank's last scan predated the Oct 21
+deposit (`python3 -B scripts/testnet_chain.py rebase-bank TXID` restarts the
+bank at a deposit), and that every MPC gate called macOS `time -l` (GNU time on
+Linux now). One of those runs funded before the last fix and could not clear;
+its 4 × 15,100 zatoshi stay in that auction's escrow, whose keys and journals
+are kept on the server outside the served data.
+

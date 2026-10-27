@@ -28,11 +28,11 @@ month, where this month's ceilings would otherwise set next month's floor.
    that run, its receipts opened, its public check run and two cheats refused
    on this machine. Each sped-up span states the real time it covers; the
    record is [demo/media/v3/manifest.json](../demo/media/v3/manifest.json).
-1. **A settled auction, checked by you.** `/demo/settled` on the live demo. It
+1. **A settled auction, checked by you.** [https://49-12-250-128.sslip.io/demo/settled](https://49-12-250-128.sslip.io/demo/settled). It
    is the settlement in the video, and bidders are numbered as they were there.
    Start as the public (what you can and cannot see), switch to a bidder to open
    only that bidder's receipt, and read the four verified claims (recorded on
-   Oct 19; re-run them here in about 20–30 s). **Inspect the proof trail** under
+   Oct 19; re-run them here in about 20 s). **Inspect the proof trail** under
    them shows the public data behind each claim, read from the committed bundle
    only: the four bid commitments and the root the three operators signed, the
    auction proof's public inputs (price 21, sold 3, terms), each payout row's
@@ -55,8 +55,9 @@ month, where this month's ceilings would otherwise set next month's floor.
    deposits and chain admission over the same root. Clear it by MPC and open
    your result. Then **Settle on Zcash**: one shielded transaction,
    bound output by output to the result and publicly verified. Finally open
-   your own shielded receipt and try the tamper check. Plan on about 30 minutes
-   on public testnet (funding about 10, settlement 16 to 19) or about 20 on the
+   your own shielded receipt and try the tamper check. Plan on about 25 minutes
+   on public testnet (funding about 10, settlement about 12; 24 min 16 s on the
+   live demo on Oct 27, [record](../evidence/2026-10-27-hosted-testnet-auction.json)) or about 20 on the
    local regtest; **See a settled auction** shows a finished run at once. See
    [local-rehearsal.md](local-rehearsal.md).
 3. **Verification without secrets.** The easiest route is

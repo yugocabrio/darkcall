@@ -1,0 +1,94 @@
+{
+  "format": 1,
+  "scope": "a new auction created, sealed, funded, cleared and settled through the hosted live demo (https://49-12-250-128.sslip.io) on standard public Zcash testnet (NU7); every role on the one hosted server; testnet coins and synthetic demo bids only",
+  "date_utc": "2026-10-27",
+  "host": {
+    "provider": "Hetzner",
+    "cpu": "x86_64 AMD, 8 vCPU",
+    "memory": "15 GiB RAM + 8 GiB swap",
+    "os": "Ubuntu 24.04.4",
+    "docker": "Engine 29.1.3, buildx 0.30.1",
+    "image_commit": "b96295a"
+  },
+  "driven_by": "tools/demo-capture/capture.mjs with DARKCALL_URL=https://49-12-250-128.sslip.io/ (headless browser, the same clicks a visitor makes)",
+  "auction": {
+    "auction_id": "12f0b0bd64037d4e06e85db3807d5f80",
+    "terms": "3 units, reserve 20, budget 100 zatoshi, processing fee 15,000 zatoshi",
+    "demo_bids": [77, 61, 43, 21],
+    "accepted_root": "15219348afbd71a0c777ccc85243f66f21499042f678f0857f7ce770f74eb99f",
+    "same_accepted_root_and_tickets_at_funding_clearing_and_settlement": true,
+    "price": 21,
+    "sold": 3,
+    "browser_clearing_matches_settlement": true
+  },
+  "chain": {
+    "deposit_txid": "76329a49cc6e7709cf559c609a7f42135463aab4659f7d1db88462a9e3835245",
+    "deposit_height": 4548955,
+    "settlement_txid": "03feb02b365a0f2a3df1bef3b338fdcd8689e2081981b0f896ad95269cf72d8b",
+    "settlement_height": 4548995,
+    "settlement_confirmations_at_record": 2,
+    "settlement_bytes": 21790,
+    "provider": "https://testnet.zec.rocks:443 (trusted for chain data; the network validates every broadcast)"
+  },
+  "timings_seconds_from_landing": {
+    "auction_created": 4.1,
+    "four_bids_sealed": 9.9,
+    "book_certified_at_deadline": 125.7,
+    "funding_started": 141.5,
+    "funded_and_admitted": 732.2,
+    "cleared": 740.3,
+    "own_result_opened": 742.1,
+    "settlement_started": 754.9,
+    "settled_and_publicly_verified": 1446.1,
+    "receipts_and_tamper_refusal_done": 1456.2
+  },
+  "stages": {
+    "joint_clearing_proof_seconds": 6.8,
+    "settlement_seconds": 670.9,
+    "native_payout_rows": 6,
+    "native_row_proof_and_verify_seconds": [79.8, 78.8, 79.0, 77.0, 78.2, 78.2],
+    "native_key_seconds": 28.3,
+    "native_prover_peak_resident_gib": 7.91,
+    "public_verification_seconds": 17.6
+  },
+  "checks": {
+    "native_row_proofs_verified": true,
+    "normal_cpp_auction_proof_verified": true,
+    "accepted_book_and_recipients_authenticated": true,
+    "native_proof_and_signatures_verified": true,
+    "maximum_bids_read_by_settlement": false,
+    "winner_receipt": "ticket 01 decrypted its own memo: won, refund 79",
+    "loser_receipt": "ticket 04 decrypted its own memo: lost, refund 100",
+    "corrupted_receipt_proof": "refused before the bidder's key was read",
+    "public_bundle": "demo/artifacts/hosted-testnet-auction-nu7-v1 with demo/authority/hosted-testnet-auction-nu7-v1.json",
+    "public_bundle_verified_on_a_second_machine": "make verify BUNDLE=hosted-testnet-auction-nu7-v1 on the author's Mac, 21 s, no private material"
+  },
+  "same_server_also": {
+    "settled_page_reverification_seconds": 17.8,
+    "hosted_http_checks": "scripts/check_hosted_http.py through an SSH tunnel: 9 of 9 in 8.4 s (pages, other host refused, hosted state, origin and token required, bidder receipt, proof trail, refused cheat, per-address limit)",
+    "unfunded_live_auction": "reserve 10, outside the native settlement terms: four bids sealed, certified and cleared by REP3 and coNoir in 7.1 s, own result opened (tools/demo-capture/record.mjs live)"
+  },
+  "fixed_before_this_run": [
+    {"symptom": "the bank rescan from its Oct 19 birthday spanned 31,000 blocks, past the 100 MB capture read bound (public testnet now runs near 10 KB a block) and the 20,000-block window", "fix": "an old bank deposits from its latest scan; each funding moves its birthday to the block before the deposit", "commit": "0430d62"},
+    {"symptom": "extracted bank and run directories were 0755; the wallet tool requires 0700", "fix": "the hosted pack carries 0700 directory entries", "commit": "2329020"},
+    {"symptom": "a deposit built from the Oct 21 scan took its expiry from that scan and the network refused it as expired", "fix": "an optional target height; the testnet driver passes the current tip", "commit": "2329020"},
+    {"symptom": "the network refused the next deposit as a double spend: the Oct 21 one-unit deposit had spent the scanned note", "fix": "testnet-capture can stop at a chosen block, and `testnet_chain.py rebase-bank` starts the bank at that deposit", "commit": "af072a3"},
+    {"symptom": "every MPC gate ran its parties under BSD `/usr/bin/time -l`; the Linux image has GNU time or none, so no new auction could clear", "fix": "GNU time -v on Linux, the time package in the image", "commit": "b96295a"}
+  ],
+  "after_this_run": {
+    "prover_memory_ceiling": "the six funded rows peaked at 7.91 GiB against the 8 GiB resident guard; DARKCALL_MAX_PROVER_GIB now sets it, 12 on the hosted server, 8 by default"
+  },
+  "stranded_testnet_deposit": {
+    "auction_id": "857d5ec2cb8a1dddcf7403f186ca30b7",
+    "deposit_txid": "cedefbe60db95a316fca5c391a26a9174e6cafa90423a91f45795d87371f945d",
+    "zatoshi": "4 x 15,100 in the 2-of-3 escrow, plus the 25,000 fee",
+    "cause": "funded before the GNU time fix, then clearing stopped; the demo refuses to clear a book whose clearing failed",
+    "status": "escrow keys, journals and the funding record kept on the server outside the served data; no refund attempted (the refund path is demonstrated on regtest only and disabled for testnet on the hosted API)"
+  },
+  "bank_after_this_run": {"birthday_height": 4548954, "balance_zatoshi": 11987600, "notes": 1},
+  "limits": [
+    "all three operators, the bidders' clients and the bank run on one server; the hosted client sees each typed demo bid",
+    "testnet chain data comes from one trusted lightwalletd provider",
+    "REP3 is semi-honest; two colluding operators could rebuild the bids"
+  ]
+}

@@ -10,6 +10,9 @@ services:
     restart: unless-stopped
     environment:
       DARKCALL_ORIGIN: https://${DARKCALL_HOST:?set DARKCALL_HOST}
+      # The six funded payout rows peaked at 7.91 GiB on a 16 GB server, against
+      # the shared-Mac default of 8; this server runs nothing else.
+      DARKCALL_MAX_PROVER_GIB: ${DARKCALL_MAX_PROVER_GIB:-12}
     volumes:
       - ${DARKCALL_LOCAL:-/srv/darkcall-local}:/src/.local
   proxy:

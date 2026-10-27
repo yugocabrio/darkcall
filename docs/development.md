@@ -16,11 +16,10 @@ and limits.
 | Oct 21 | Clearing measured at 8 bids; hosted mode; the cheat lab and proof trail; one- and two-unit settlement, with a one-unit auction on testnet; bids sealed in the browser (spike); cached Halo2 parameters (public check 106 s to 18 s) | [scaling](../evidence/2026-10-21-bid-scaling.json), [cheat lab](../evidence/2026-10-21-cheat-lab.json), [units](../evidence/2026-10-21-one-and-two-unit-settlement.json), [browser spike](../evidence/2026-10-21-browser-bid-spike.json), [parameters](../evidence/2026-10-21-halo2-params-cache.json) |
 | Oct 24 | Refund of every deposit when an operator stops before settlement, signed by the other two | [refund](../evidence/2026-10-24-cancel-refund.json) |
 | Oct 26 | Judge-facing landing: the problem, what each party sees, what happens when something fails, the technical relations and the evidence | landing page |
-| Oct 27 | Slide deck; the v3 video from real-time screen recordings: a live auction sealed and cleared without deposits, and the testnet settlement re-checked | [video record](../demo/media/v3/manifest.json), [slides](slides/) |
+| Oct 27 | Slide deck; the v3 video from real-time screen recordings; the hosted live demo deployed, and a new auction settled through it on public testnet after five Linux and testnet-bank fixes | [video record](../demo/media/v3/manifest.json), [slides](slides/), [hosted run](../evidence/2026-10-27-hosted-testnet-auction.json) |
 
 ## Not done
 
-- The hosted public demo is prepared (`docker/demo`) but not deployed.
 - The operator-stopped refund has run on regtest only, not on public testnet.
 - Parallel payout proofs (`DARKCALL_ROW_WORKERS`) are wired behind the Linux
   memory guard but not measured.

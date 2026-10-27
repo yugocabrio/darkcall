@@ -8,6 +8,7 @@ is generated without opening the bids, and one shielded transaction that anyone
 can verify pays the seller and refunds every bidder exactly as proven.**
 
 ZECATHON 2026 · Private Markets track ·
+**[Live demo](https://49-12-250-128.sslip.io)** ([settled auction](https://49-12-250-128.sslip.io/demo/settled)) ·
 **[Watch the 2-minute demo](demo/media/v3/darkcall-demo-v3.mp4)** ·
 **[Settled on public Zcash testnet](#settled-on-public-zcash-testnet)** ·
 **[Verify it yourself](#try-it)** (`make verify`) ·
@@ -276,6 +277,17 @@ every connection, and the scanner checks every block's tree size and the final
 root. Full record: [testnet evidence](evidence/2026-10-19-public-testnet-settlement.json).
 `./demo.sh --chain testnet` runs Fund and Settle on testnet from the browser.
 
+**Again on the live demo, Oct 27.** A new auction went through the hosted site
+at [https://49-12-250-128.sslip.io](https://49-12-250-128.sslip.io) on a Linux server, every click as a visitor makes it: deposit
+[`76329a49…3835245`](https://testnet.zecblock.com/tx/76329a49cc6e7709cf559c609a7f42135463aab4659f7d1db88462a9e3835245)
+(block 4,548,955), clearing 6.8 s, settlement
+[`03feb02b…9cf72d8b`](https://testnet.zecblock.com/tx/03feb02b365a0f2a3df1bef3b338fdcd8689e2081981b0f896ad95269cf72d8b)
+(block 4,548,995) after six output bindings and 2-of-3 FROST signing, public
+check 17.6 s, both receipts opened and a corrupted receipt proof refused:
+24 min 16 s from the landing page. Its bundle verifies with
+`make verify BUNDLE=hosted-testnet-auction-nu7-v1`
+([record](evidence/2026-10-27-hosted-testnet-auction.json)).
+
 ## It runs, end to end, for an auction you create
 
 On October 19, 2026 an auction was **created, bid on, funded, cleared and
@@ -367,7 +379,7 @@ recorded run took 2, 102 and 97 s, before the fixed Halo2 parameters were
 cached; [record](evidence/2026-10-21-cheat-lab.json),
 [rerun](evidence/2026-10-21-halo2-params-cache.json)). These change proofs and
 signed data, not the transaction: a quorum of operators that signed a
-different transaction is outside this test. The live demo's
+different transaction is outside this test. The [live demo's](https://49-12-250-128.sslip.io/demo/settled)
 **See a settled auction** page has the same buttons.
 
 The same page's **Inspect the proof trail** prints the public data behind each

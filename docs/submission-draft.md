@@ -45,7 +45,7 @@ to read, and no payout amount or recipient.
 2. **The 2-minute video.** A new auction sealed and cleared live in the
    browser, then that testnet settlement re-checked: receipts, the public check
    and two refused cheats. Every sped-up span states its real time.
-3. **Try to cheat it** (live demo, `/demo/settled`, 2 to 30 s per try).
+3. **Try to cheat it** ([live demo](https://49-12-250-128.sslip.io/demo/settled), 2 to 25 s per try).
    Change an accepted bid, claim a higher price or swap two payout proofs: the
    page makes that one change to a copy of the recorded settlement and runs the
    real verifiers. Each is refused by the check it targets, and the page says
@@ -88,7 +88,10 @@ to read, and no payout amount or recipient.
   `1d85d98f…82db`), and a two-unit one on regtest; one to three units now settle
   with the same circuits and six outputs. Seven public bundles,
   both testnet runs included, verify in a clean Linux container with no network,
-  and a tampered proof is refused.
+  and a tampered proof is refused. On Oct 27 a new auction went end to end
+  through the live demo (https://49-12-250-128.sslip.io) on a Linux server: deposit
+  `76329a49…3835245`, settlement `03feb02b…9cf72d8b`, 24 min 16 s from the
+  landing page, bundle `hosted-testnet-auction-nu7-v1`.
 - **Originality.** Multi-party ZK proving: the operators generate the price's
   zero-knowledge proof jointly from secret shares (coNoir over REP3), so no
   single prover ever sees the bid book. Proof-bound shielded settlement: six
@@ -245,6 +248,7 @@ unit, 623 s three units; 885–951 s before). Public verification: about 20–30
 
 ## Links
 
+- Live demo: https://49-12-250-128.sslip.io (settled auction at `/demo/settled`)
 - Video: `demo/media/v3/darkcall-demo-v3.mp4` (120 s, captions in `.srt`, script in `narration.md`)
 - Repository: `README.md`, then `docs/judge-review.md`
 - Demo guide: `docs/demo.md` · Reproduction: `docs/reproduce.md`

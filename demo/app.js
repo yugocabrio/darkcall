@@ -281,10 +281,10 @@ fetch('/api/state').then(async response => {
     for (const node of document.querySelectorAll('.chain-text')) node.textContent='public Zcash testnet';
     // Measured on public testnet, Oct 19: funding 612 s (a 600 s admission
     // window), settlement 984-1122 s, about 30 min from creation to receipts.
-    $('try-card-scope').textContent='Real shielded settlement · about 30 min on testnet';
-    $('run-time').textContent='About 30 minutes on public testnet, most of it funding and settlement.';
+    $('try-card-scope').textContent='Real shielded settlement · about 25 min on testnet';
+    $('run-time').textContent='About 25 minutes on public testnet, most of it funding and settlement.';
     $('fund-time').textContent='About 10 minutes on public testnet, most of it the admission window.';
-    $('settle-time').textContent='About 16 to 19 minutes on public testnet, including two confirmations.';
+    $('settle-time').textContent='About 12 minutes on public testnet, including two confirmations.';
   }
   const recordedTx=state.cases[0].txid, hero=state.cases[0];
   $('cheat-price-label').textContent='Claim the price was '+(hero.price+1);
