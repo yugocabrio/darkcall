@@ -190,16 +190,18 @@ pub async fn tree(endpoint: &str, height: &str) -> Result<serde_json::Value> {
     snapshot(&mut client, height).await
 }
 
-/// Captures a wallet from its birthday to the tip in the regtest capture format
-/// and runs the same scanner. Full transactions are fetched only for compact
+/// Captures a wallet from its birthday to the tip (or to END) in the regtest
+/// capture format and runs the same scanner. An earlier END gives notes with
+/// witnesses at that block's anchor, which stays valid for spending. Full transactions are fetched only for compact
 /// transactions with Ironwood actions; the scanner then checks every block's
 /// Ironwood tree size and the final frontier root against the provider.
-pub async fn capture(wallet: &Path, endpoint: &str) -> Result<serde_json::Value> {
+pub async fn capture(wallet: &Path, endpoint: &str, end: Option<u32>) -> Result<serde_json::Value> {
     let directory = auction::directory(wallet)?;
     let initial = json_file(&directory.join("nu7-birthday.json"), 100_000)?;
     let start = initial["height"].as_u64().and_then(|h| u32::try_from(h).ok()).ok_or("birthday height")?;
-    let (mut client, tip) = connect(endpoint).await?;
-    if tip < start || tip - start > 20_000 {
+    let (mut client, chain_tip) = connect(endpoint).await?;
+    let tip = end.unwrap_or(chain_tip);
+    if tip > chain_tip || tip < start || tip - start > 20_000 {
         return Err("wallet birthday outside the bounded testnet capture window".into());
     }
     let final_tree = snapshot(&mut client, tip).await?;

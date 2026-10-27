@@ -37,9 +37,10 @@ def tree_at_tip():
     return sdk('testnet-tree', ENDPOINT, 'tip', timeout=120)
 
 
-def capture(wallet):
-    """Scan WALLET from its birthday to the current tip. Returns (scan, notes path, tip)."""
-    result = sdk('testnet-capture', wallet, ENDPOINT)
+def capture(wallet, end=None):
+    """Scan WALLET from its birthday to the current tip, or to block END.
+    Returns (scan, notes path, tip)."""
+    result = sdk('testnet-capture', wallet, ENDPOINT, *([end] if end else []))
     return result['scan'], pathlib.Path(result['notes']), {'blocks': result['tip_height'], 'tip': result['tip_hash']}
 
 
@@ -62,29 +63,36 @@ def bank_notes(wallet):
             'from_scan_at': int(scans[-1].stem.rsplit('-', 1)[1])}, scans[-1]
 
 
-def advance_birthday(wallet, notes, txid):
-    """After a deposit TXID that spent the bank's only note, start the bank's
-    scans at the block before TXID: its change is then all the bank owns. The old
-    birthday is kept beside the new one. Returns the bank's rescan, or None when
-    the bank held other notes and keeps its birthday."""
-    if len(json.loads(private_read(notes))['notes']) != 1:
-        return None
+def rebase(wallet, txid, end=None):
+    """Start WALLET's scans at the block before TXID, which spent all it owned
+    before, and scan to END or the tip. The old birthday is kept beside the new
+    one. Returns the new birthday and balance."""
     record = sdk('testnet-tx', ENDPOINT, txid, timeout=120)
     if not record.get('mined'):
-        raise RuntimeError('Deposit is not mined; the bank keeps its birthday')
+        raise RuntimeError('Transaction is not mined; the wallet keeps its birthday')
     path = wallet / 'nu7-birthday.json'
     old = json.loads(private_read(path))
     height = record['height'] - 1
     if height <= old['height']:
-        return None
+        raise RuntimeError('The wallet already starts at or after that block')
     backup = wallet / f"nu7-birthday-{old['height']}.json"
     if not backup.exists():
         private_write(backup, old)
     staged = wallet / f'nu7-birthday-{height}.json'
-    private_write(staged, sdk('testnet-tree', ENDPOINT, height, timeout=120))
+    if not staged.exists():
+        private_write(staged, sdk('testnet-tree', ENDPOINT, height, timeout=120))
     os.replace(staged, path)
-    scan, _, _ = capture(wallet)
-    return {'birthday': height, 'balance_zatoshi': scan['balance_zatoshi']}
+    scan, notes, _ = capture(wallet, end)
+    return {'birthday': height, 'balance_zatoshi': scan['balance_zatoshi'], 'notes': notes.name}
+
+
+def advance_birthday(wallet, notes, txid):
+    """After a deposit TXID that spent the bank's only note, rebase the bank on
+    it: its change is then all the bank owns. Returns None when the bank held
+    other notes and keeps its birthday."""
+    if len(json.loads(private_read(notes))['notes']) != 1:
+        return None
+    return rebase(wallet, txid)
 
 
 def source_check(notes):
@@ -107,3 +115,15 @@ def wait_confirmations(txid, need=2, timeout=CONFIRMATION_TIMEOUT):
         if time.monotonic() > deadline:
             raise RuntimeError(f'Transaction {txid[:12]} lacks {need} testnet confirmations; preserve state and recheck')
         time.sleep(15)
+
+
+if __name__ == '__main__':
+    # Recovery: the bank's latest scan predates a deposit that spent its note.
+    #   python3 -B scripts/testnet_chain.py rebase-bank TXID
+    # starts the bank at the block before TXID and scans three blocks past it, so
+    # the change note gets a witness at that anchor without a long capture.
+    import sys
+    if len(sys.argv) != 3 or sys.argv[1] != 'rebase-bank':
+        raise SystemExit('usage: testnet_chain.py rebase-bank DEPOSIT_TXID')
+    height = sdk('testnet-tx', ENDPOINT, sys.argv[2], timeout=120)['height']
+    print(json.dumps(rebase(BANK, sys.argv[2], height + 2)))
