@@ -11,7 +11,7 @@ FROM rust:1.93.0-trixie@sha256:bbde3ca426faeebab3eb58b8005d3d6da70607817a14bb92a
 ARG TARGETARCH
 ARG JOBS=4
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      cmake make clang libomp-dev python3 git curl ca-certificates procps nodejs npm \
+      cmake make clang libomp-dev python3 git curl ca-certificates procps time nodejs npm \
     && rm -rf /var/lib/apt/lists/*
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN npm install -g corepack@0.34.0 && corepack enable

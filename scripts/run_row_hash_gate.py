@@ -5,11 +5,11 @@ import argparse
 import json
 import os
 import pathlib
-import re
 import socket
 import subprocess
 import time
 import tomllib
+from mpc_process import TIME, peak_rss
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 UPSTREAM = ROOT / ".deps/co-snarks"
@@ -84,9 +84,8 @@ def main():
                 logs.append(log)
                 handle = log.open("wb")
                 handles.append(handle)
-                # macOS time reports the child maximum resident set in bytes.
                 children.append(subprocess.Popen(
-                    ["/usr/bin/time", "-l", str(binary), *map(str, command)],
+                    [*TIME, str(binary), *map(str, command)],
                     cwd=run, env=env, stdout=handle, stderr=subprocess.STDOUT,
                     start_new_session=True,
                 ))
@@ -122,8 +121,7 @@ def main():
             stage["seconds"] = round(time.monotonic() - start, 3)
             stage["peak_rss_bytes_per_process"] = []
             for log in logs:
-                matches = re.findall(r"(\d+)\s+maximum resident set size", log.read_text(errors="replace"))
-                stage["peak_rss_bytes_per_process"].append(int(matches[-1]) if matches else None)
+                stage["peak_rss_bytes_per_process"].append(peak_rss(log.read_text(errors="replace")))
             summary["stages"].append(stage)
             (run / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
 

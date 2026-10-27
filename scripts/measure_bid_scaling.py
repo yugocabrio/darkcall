@@ -19,7 +19,7 @@ import signal
 import socket
 import subprocess
 import time
-from mpc_process import separate_session, signal_child
+from mpc_process import TIME, peak_rss, separate_session, signal_child
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 NARGO = ROOT / '.deps/noir-1.0.0-rc.2/nargo'
@@ -294,7 +294,7 @@ def mpc_clearing(folder, program, n, threads, summary_path, summary):
             for i, command in enumerate(commands):
                 handle = (run / f'{name}-{i}.log').open('wb')
                 handles.append(handle)
-                children.append(subprocess.Popen(['/usr/bin/time', '-l', str(CONOIR), *map(str, command)],
+                children.append(subprocess.Popen([*TIME, str(CONOIR), *map(str, command)],
                     stdout=handle, stderr=subprocess.STDOUT, env=environment, cwd=run, start_new_session=separate_session()))
             expires = time.monotonic() + timeout
             while any(child.poll() is None for child in children):
@@ -317,8 +317,7 @@ def mpc_clearing(folder, program, n, threads, summary_path, summary):
                     child.wait()
             for handle in handles:
                 handle.close()
-        peaks = [int(re.search(rb'(\d+)\s+maximum resident set size', (run / f'{name}-{i}.log').read_bytes()).group(1))
-                 for i in range(len(commands))]
+        peaks = [peak_rss((run / f'{name}-{i}.log').read_text(errors='replace')) for i in range(len(commands))]
         stages.append({'name': name, 'seconds': round(time.monotonic() - start, 3),
                        'peak_rss_mib': [round(p / 2 ** 20) for p in peaks]})
         summary['mpc'][str(n)] = {'stages': stages, 'price_and_units': list(expected), 'rayon_threads': threads}

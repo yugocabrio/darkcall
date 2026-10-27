@@ -9,12 +9,11 @@ import hashlib
 import json
 import os
 import pathlib
-import re
 import signal
 import socket
 import subprocess
 import time
-from mpc_process import separate_session, signal_child
+from mpc_process import TIME, peak_rss, separate_session, signal_child
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 UPSTREAM = ROOT / '.deps/co-snarks'
@@ -70,7 +69,7 @@ def main():
                 log = run / f'{name}-{i}.log'
                 logs.append(log)
                 handles.append(log.open('wb'))
-                children.append(subprocess.Popen(['/usr/bin/time', '-l', str(binary), *map(str,command)],
+                children.append(subprocess.Popen([*TIME, str(binary), *map(str,command)],
                     cwd=run, env=env, stdout=handles[-1], stderr=subprocess.STDOUT, start_new_session=separate_session()))
             while any(p.poll() is None for p in children):
                 if any(p.poll() not in (None, 0) for p in children):
@@ -97,8 +96,7 @@ def main():
             stage['seconds'] = round(time.monotonic()-start,3)
             stage['peak_rss_bytes_per_process'] = []
             for log in logs:
-                found = re.findall(r'(\d+)\s+maximum resident set size',log.read_text(errors='replace'))
-                stage['peak_rss_bytes_per_process'].append(int(found[-1]) if found else None)
+                stage['peak_rss_bytes_per_process'].append(peak_rss(log.read_text(errors='replace')))
             summary['stages'].append(stage)
             (run/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
 
