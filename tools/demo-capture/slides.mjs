@@ -1,4 +1,4 @@
-// Render the deck in docs/slides to numbered 1920x1080 PNGs for the video and the PDF.
+// Render the deck in tools/demo-capture/slides to numbered 1920x1080 PNGs for the video and the PDF.
 //
 // Each slide is one <section> with inline styles (the published deck's format).
 // This page adds only what the deck runtime would: the slide box, reset margins,
@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const deckDir = path.join(root, 'docs/slides');
+const deckDir = path.join(root, 'tools/demo-capture/slides');
 const out = process.argv[2];
 if (!out) throw new Error('usage: node slides.mjs OUTPUT_DIRECTORY');
 fs.mkdirSync(out, { recursive: true, mode: 0o700 });

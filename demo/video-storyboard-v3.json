@@ -40,7 +40,7 @@
      "narration": "Claim a higher price:"},
     {"clip": "settled", "from": "cheat-price-done", "to": "end", "chip": "settled", "band": "Try to cheat: claim a higher price", "min_seconds": 5,
      "narration": "the price proof refuses it."},
-    {"slide": "12-close",
+    {"slide": "04-close",
      "narration": "Private inputs, public checks. Every run is recorded in the repository, and make verify checks it on your own machine."}
   ]
 }

@@ -1,0 +1,160 @@
+{
+  "format": 4,
+  "scope": "the submission video: real-time recordings of the live site (tools/demo-capture/record.mjs intro, run and settled) and the closing slide; recordings are cut only at recorded marks, each span plays at one speed, and a sped-up span states the real time it covers",
+  "recordings": {
+    "intro": "the landing page of the live site, recorded by `record.mjs intro`",
+    "run": "a new auction on the live site, on public Zcash testnet, recorded end to end by `record.mjs run` on Oct 28: create, four sealed bids, deposits, clearing, settlement and two shielded receipts",
+    "settled": "the Oct 19 public-testnet auction on the live site's Verify page, recorded by `record.mjs settled`: two receipts, the public check and a refused cheat"
+  },
+  "chips": {
+    "intro": "LIVE SITE · 49-12-250-128.sslip.io",
+    "run": "NEW AUCTION · OCT 28 · PUBLIC ZCASH TESTNET · every role on one demo server",
+    "settled": "A SEPARATE AUCTION · OCT 19 · PUBLIC ZCASH TESTNET · re-checked live"
+  },
+  "scenes": [
+    {
+      "slide": "01-cover",
+      "seconds": 8,
+      "band": "Introduction (slide)",
+      "narration": "DarkCall is a sealed-bid auction on Zcash. It proves the price without opening bids, and proves the payouts match."
+    },
+    {
+      "slide": "02-problem",
+      "seconds": 7,
+      "band": "The problem (slide)",
+      "narration": "Normally, auditing an auction reveals the bids, and a proven price doesn't prove the payments."
+    },
+    {
+      "slide": "03-solution",
+      "seconds": 8,
+      "band": "The solution (slide)",
+      "narration": "REP3 keeps bids secret-shared, coNoir proves the price jointly, and Halo2 binds every payout to it."
+    },
+    {
+      "clip": "run",
+      "from": "create-form",
+      "to": "wait-close",
+      "seconds": 9,
+      "chip": "run",
+      "band": "Create and seal four bids",
+      "narration": "Now, a new auction on public testnet. Four demo bidders seal bids, each with a zero-knowledge proof and operator signatures."
+    },
+    {
+      "clip": "run",
+      "from": "close-ready",
+      "to": [
+        "close-done",
+        2
+      ],
+      "seconds": 3,
+      "chip": "run",
+      "band": "Certify the closed book",
+      "narration": ""
+    },
+    {
+      "clip": "run",
+      "from": "fund-start",
+      "to": "fund-done",
+      "seconds": 8,
+      "chip": "run",
+      "band": "Real shielded deposits",
+      "narration": "Shielded deposits fund the escrow, and the operators re-check and sign the same book."
+    },
+    {
+      "clip": "run",
+      "from": "fund-done",
+      "to": [
+        "fund-done",
+        5
+      ],
+      "seconds": 4,
+      "chip": "run",
+      "band": "Funded and admitted",
+      "narration": ""
+    },
+    {
+      "clip": "run",
+      "from": "clear-start",
+      "to": [
+        "clear-done",
+        3
+      ],
+      "seconds": 6,
+      "chip": "run",
+      "band": "MPC clearing",
+      "narration": "The operators compute a fresh price of thirty-five and prove it together."
+    },
+    {
+      "clip": "run",
+      "from": "result-start",
+      "to": [
+        "result-done",
+        3.5
+      ],
+      "seconds": 4,
+      "chip": "run",
+      "band": "A bidder opens its own result",
+      "narration": "No operator reconstructs the bid book."
+    },
+    {
+      "clip": "run",
+      "from": "settle-start",
+      "to": "settle-done",
+      "seconds": 8,
+      "chip": "run",
+      "band": "Shielded settlement",
+      "narration": "One shielded transaction pays everyone. Six Halo2 proofs bind the outputs; two-of-three FROST signs."
+    },
+    {
+      "clip": "run",
+      "from": "settle-done",
+      "to": "end",
+      "seconds": 9,
+      "chip": "run",
+      "band": "Shielded receipts",
+      "narration": "After confirmation, each bidder decrypts only its own receipt: a winner pays the price, a loser is refunded."
+    },
+    {
+      "clip": "settled",
+      "from": "receipt-01-start",
+      "to": [
+        "receipt-04-done",
+        3
+      ],
+      "seconds": 9,
+      "chip": "settled",
+      "band": "A separate recorded auction",
+      "narration": "Here is a separate auction, settled on October nineteenth. Bidder one opens its receipt; bidder four, its refund."
+    },
+    {
+      "clip": "settled",
+      "from": "verify-start",
+      "to": [
+        "verify-done",
+        6
+      ],
+      "seconds": 13,
+      "chip": "settled",
+      "band": "Public verification, no secrets",
+      "narration": "Anyone can check its clearing price, six payouts, Zcash signatures and signed book, without a bid or viewing key."
+    },
+    {
+      "clip": "settled",
+      "from": "cheat-price-start",
+      "to": [
+        "cheat-price-done",
+        6
+      ],
+      "seconds": 14,
+      "chip": "settled",
+      "band": "Try to cheat",
+      "narration": "We change the claimed price from twenty-one to twenty-two. The real verifier rejects the tampered auction proof."
+    },
+    {
+      "slide": "04-close",
+      "seconds": 9,
+      "band": "Closing",
+      "narration": "Private inputs, public checks. Try DarkCall and inspect the evidence."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+<section id="solution" data-section="How it works" style="background:#f6f4ee;color:#141413;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;color:#8a6408;font-weight:500">How it works</p>
+<h2 style="font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#141413">One sealed auction. Three cryptographic layers.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="background:#ffffff;border:1px solid #e6e2d7;border-radius:18px;padding:44px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:28px;color:#8a6408;font-family:'IBM Plex Mono', monospace">01 · REP3</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.2;color:#141413">Split</h3>
+<p style="font-size:30px;color:#4a4944;line-height:1.4">Each bid becomes secret shares for three operators. No single operator can read one.</p>
+</div>
+<div style="background:#ffffff;border:1px solid #e6e2d7;border-radius:18px;padding:44px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:28px;color:#8a6408;font-family:'IBM Plex Mono', monospace">02 · coNoir</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.2;color:#141413">Prove</h3>
+<p style="font-size:30px;color:#4a4944;line-height:1.4">The operators compute the clearing price on the shares and prove it together in zero knowledge.</p>
+</div>
+<div style="background:#ffffff;border:1px solid #e6e2d7;border-radius:18px;padding:44px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:28px;color:#8a6408;font-family:'IBM Plex Mono', monospace">03 · Halo2</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.2;color:#141413">Pay</h3>
+<p style="font-size:30px;color:#4a4944;line-height:1.4">One shielded Zcash transaction. Each payout’s amount and recipient is proven to match the result.</p>
+</div>
+</div>
+<p style="font-size:28px;color:#4a4944;font-family:'IBM Plex Mono', monospace">Settled on public Zcash testnet · every payout proven · signed 2-of-3 with FROST</p>
+<p style="position:absolute;left:128px;bottom:64px;width:800px;font-size:24px;color:#706e66">DarkCall · ZECATHON 2026</p>
+<p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#706e66">3</p>
+<aside>DarkCall answers with three layers. REP3 splits each bid into secret shares, so no single operator can read it. coNoir lets the three operators compute the clearing price on those shares and prove it together, so no prover ever holds the bid book. Halo2 proves that each payout of the one shielded Zcash transaction matches the result. It has settled on public Zcash testnet, signed two-of-three with FROST.</aside>
+</section>

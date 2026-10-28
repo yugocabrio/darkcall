@@ -5,6 +5,11 @@
 //                                 coNoir, open one result. Reserve 10 is outside
 //                                 the native settlement terms, so it clears
 //                                 without deposits and touches no chain.
+//   node record.mjs run     OUT   one new auction on the hosted site, on public
+//                                 testnet: create, seal four bids, certify, fund,
+//                                 clear, open a result, settle, open two shielded
+//                                 receipts (about 25 minutes, real time).
+//   node record.mjs intro   OUT   the landing: hero, the problem, how it works.
 //   node record.mjs settled OUT   the Oct 19 testnet auction: two bidders open
 //                                 their receipts, the public settlement check
 //                                 runs, two cheats are refused.
@@ -21,7 +26,7 @@ import fs from 'node:fs';
 const BRAVE = '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser';
 const BASE = process.env.DARKCALL_URL || 'http://127.0.0.1:8877/';
 const [mode, out] = process.argv.slice(2);
-if (!['live', 'settled'].includes(mode) || !out) throw new Error('usage: node record.mjs live|settled OUTPUT_PREFIX');
+if (!['live', 'run', 'intro', 'settled'].includes(mode) || !out) throw new Error('usage: node record.mjs live|run|intro|settled OUTPUT_PREFIX');
 const frameDir = out + '-frames';
 fs.mkdirSync(frameDir, { mode: 0o700 });
 
@@ -164,6 +169,97 @@ async function live() {
   mark('end');
 }
 
+async function run() {
+  await start(new URL('demo/run', BASE).href);
+  await page.waitForFunction(() => !document.querySelector('#create-auction').disabled, { timeout: 30000 });
+  await pointer();
+  await sleep(2500);
+  mark('create-form');
+  await click('#create-auction');
+  await page.waitForSelector('#auction-room:not([hidden])', { timeout: 60000 });
+  record.results.terms = await text('#room-terms');
+  mark('room');
+  await sleep(1500);
+  for (const [index, bid] of ['82', '64', '47', '35'].entries()) {
+    await typeInto('#maximum-bid', bid);
+    await click('#seal-bid');
+    mark(`seal-${index + 1}-start`);
+    await waitText('#room-count', `${index + 1} / 4`, 180000);
+    mark(`seal-${index + 1}-done`);
+    if (index === 0) { await view('#bid-accepted', 'center'); record.results.first_acceptance = await text('#bid-accepted'); await sleep(3000); }
+  }
+  await view('#sealed-slots', 'center');
+  mark('wait-close');
+  await page.waitForFunction(() => { const b = document.querySelector('#close-auction'); return b && !b.disabled && !b.hidden; }, { timeout: 240000, polling: 500 });
+  mark('close-ready');
+  await click('#close-auction');
+  mark('close-start');
+  await waitText('#close-status', 'certified', 120000);
+  mark('close-done');
+  await sleep(2000);
+  await click('#fund-auction');
+  mark('fund-start');
+  await view('#fund-section', 'start');
+  await waitText('#fund-status', 'Funded and admitted', 1800000);
+  mark('fund-done');
+  record.results.funding = await text('#fund-section');
+  await view('#fund-facts', 'center');
+  await sleep(4000);
+  await page.waitForFunction(() => { const b = document.querySelector('#clear-auction'); return b && !b.disabled && !b.hidden; }, { timeout: 120000, polling: 500 });
+  await click('#clear-auction');
+  mark('clear-start');
+  await view('#clearing-section', 'start');
+  await waitText('#clearing-status', 'Auction verified', 900000);
+  mark('clear-done');
+  record.results.clearing = await text('#clearing-status');
+  record.results.outcome = await text('#fresh-outcome');
+  await sleep(3000);
+  await page.select('#my-ticket', '0');
+  await click('#open-fresh-result');
+  mark('result-start');
+  await waitText('#fresh-result', 'verified', 180000);
+  mark('result-done');
+  record.results.own_result = await text('#fresh-result');
+  await view('#fresh-result', 'center');
+  await sleep(3500);
+  await page.waitForFunction(() => { const b = document.querySelector('#settle-auction'); return b && !b.disabled && !b.hidden; }, { timeout: 120000, polling: 500 });
+  await click('#settle-auction');
+  mark('settle-start');
+  await view('#settle-section', 'start');
+  await waitText('#settle-status', 'Settled and publicly verified', 2400000);
+  mark('settle-done');
+  record.results.settlement = await text('#settle-section');
+  await sleep(1500);
+  await view('#settle-txid', 'center');
+  await sleep(4000);
+  for (const index of ['0', '3']) {
+    await page.select('#my-native-ticket', index);
+    await sleep(600);
+    await click('#open-native-result');
+    mark(`receipt-${index}-start`);
+    await page.waitForFunction(() => document.querySelector('#native-result').classList.contains('verified'), { timeout: 180000, polling: 250 });
+    mark(`receipt-${index}-done`);
+    record.results[`receipt_${index}`] = await text('#native-result');
+    await view('#native-result', 'center');
+    await sleep(4000);
+  }
+  await view('#sealed-slots', 'center');
+  await sleep(3000);
+  mark('end');
+}
+
+async function intro() {
+  await start(BASE);
+  await sleep(5000);
+  mark('hero');
+  for (const id of ['#problem', '#how', '#tech']) {
+    await view(id, 'start');
+    mark(id.slice(1));
+    await sleep(4500);
+  }
+  mark('end');
+}
+
 async function settled() {
   await start(new URL('demo/settled', BASE).href);
   await waitText('#scope-description', 'testnet', 60000);
@@ -208,7 +304,7 @@ async function settled() {
 }
 
 try {
-  await (mode === 'live' ? live() : settled());
+  await ({ live, run, intro, settled })[mode]();
   record.completed = true;
 } catch (error) {
   record.completed = false;
