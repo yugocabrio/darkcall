@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import pathlib
+import re
 import secrets
 import threading
 import time
@@ -324,7 +325,7 @@ def handler(demo, port, public_origin=None):
     limits = RateLimit() if public_origin else None
 
     class Handler(BaseHTTPRequestHandler):
-        def reply(self, status, data, kind='application/json'):
+        def reply(self, status, data, kind='application/json', headers=()):
             if kind == 'application/json': data = json.dumps(data).encode()
             self.send_response(status)
             self.send_header('Content-Type',kind)
@@ -334,8 +335,23 @@ def handler(demo, port, public_origin=None):
             self.send_header('X-Frame-Options','DENY')
             self.send_header('Referrer-Policy','no-referrer')
             self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
+            for name, value in headers: self.send_header(name, value)
             self.end_headers()
             self.wfile.write(data)
+
+        def video(self, data, kind):
+            # Safari plays a video only from byte-range (206) responses; one range per request.
+            size = len(data)
+            match = re.fullmatch(r'bytes=(\d*)-(\d*)', self.headers.get('Range') or '')
+            if not match or not (match[1] or match[2]):
+                return self.reply(200,data,kind,(('Accept-Ranges','bytes'),))
+            if match[1]:
+                start, end = int(match[1]), min(int(match[2]) if match[2] else size - 1, size - 1)
+            else:
+                start, end = max(size - int(match[2]), 0), size - 1
+            if start > end:
+                return self.reply(416,b'',kind,(('Content-Range',f'bytes */{size}'),))
+            return self.reply(206,data[start:end + 1],kind,(('Accept-Ranges','bytes'),('Content-Range',f'bytes {start}-{end}/{size}')))
 
         def allowed_host(self):
             return self.client_address[0] == '127.0.0.1' and self.headers.get('Host') == host
@@ -372,7 +388,10 @@ def handler(demo, port, public_origin=None):
                 'ibm-plex-mono-latin-500-normal.woff2')})
             if self.path in files:
                 name,kind = files[self.path]
-                return self.reply(200,(WEB / name).read_bytes(),kind)
+                data = (WEB / name).read_bytes()
+                if kind == 'video/mp4':
+                    return self.video(data, kind)
+                return self.reply(200,data,kind)
             if self.path.startswith('/api/') and self.limited('state'): return
             if self.path == '/api/state':
                 try: return self.reply(200,{**demo.state(),'hosted':public_origin is not None})

@@ -4,7 +4,7 @@ let state, selected = 'positive', busy = false, receiptVerified = false, settlem
 function stages() {
   $('stage-status').textContent = (receiptVerified ? 'Clearing and your result verified. ' : 'Recorded clearing; own result unopened. ') + (settlementVerified ? 'Shielded settlement re-verified in this session.' : 'Settlement verified when recorded; re-verify it here.');
   const checks = $('result-checks'); checks.replaceChildren();
-  if (receiptVerified) checks.append(element('span','✓ Auction & receipt verified'),element('span','✓ Native Zcash transaction'));
+  if (receiptVerified) checks.append(element('span','✓ Auction & receipt verified'),element('span','✓ Native Zcash transaction'),element('span','✓ Private receipt decrypted & matched'));
   if (settlementVerified && state.six_output_memo_e2e) checks.append(element('span','✓ Settlement verified'));
   checks.hidden = !checks.childElementCount;
 }
@@ -21,11 +21,11 @@ function resetResult() {
   const result = $('result'); result.className = 'result-box'; const sees=element('ul','','public-view');
   for (const line of ['The clearing price and the units sold','Four sealed tickets, no amounts','One shielded transaction with six outputs']) sees.append(element('li',line));
   const hidden=element('ul','','public-view sealed-view');
-  for (const line of ['Who won','Any bid','Any refund']) hidden.append(element('li',line));
+  for (const line of ['Who won','The bidders\' maximum bids','Which bidder received which refund']) hidden.append(element('li',line));
   const title=element('h3','You are the public.'); title.prepend(icon('public'));
   result.replaceChildren(title, element('p','You can see:'), sees, element('p','You cannot see:'), hidden);
   ['proof','native','open'].forEach(step => $('step-'+step).classList.remove('done'));
-  $('verify').textContent='Switch to '+$('ticket').selectedOptions[0].textContent+"'s view";
+  $('verify').textContent='Verify & open '+$('ticket').selectedOptions[0].textContent+"'s receipt";
   $('tamper-result').textContent = ''; setError('');
 }
 function renderCase() {
@@ -42,6 +42,17 @@ function renderCase() {
   }); resetResult();
 }
 function lock(value) { busy = value; document.querySelectorAll('button,select').forEach(node => node.disabled = value); if (!value && state && !state.recipient_identities_available) { $('verify').disabled=true; $('ticket').disabled=true; } }
+// The server makes a fresh session token each time it starts. A page opened before a
+// restart gets 403 once; it then fetches the new token and sends the request again.
+async function post(path, payload) {
+  const send=()=>fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify(payload)});
+  let response=await send();
+  if (response.status===403) {
+    const fresh=await fetch('/api/state').then(r=>r.ok?r.json():null).catch(()=>null);
+    if (fresh && fresh.csrf && fresh.csrf!==state.csrf) { state.csrf=fresh.csrf; response=await send(); }
+  }
+  return response;
+}
 async function run(action) {
   if (busy || !state) return;
   const ticket = Number($('ticket').value);
@@ -49,13 +60,15 @@ async function run(action) {
   if (action === 'verify') {
     resetResult(); $('result').className = 'result-box loading';
     $('result').replaceChildren(element('h3','Verifying…'),element('p','Checking the proof and opening only your receipt.'));
-  } else { $('cheat-detail').hidden=true; $('tamper-result').textContent = 'Changing one byte of a bidder\'s receipt proof and giving it to the real verifier…'; }
+  }
+  let stop=()=>{};
+  if (action === 'tamper') { $('cheat-detail').hidden=true; chooseCheat($('tamper')); stop=waitLine('changing one byte of a bidder\'s receipt proof, then giving it to the real verifier…', 3); }
   try {
-    const response = await fetch('/api/verify', {method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify({case:selected,ticket,action})});
+    const response = await post('/api/verify',{case:selected,ticket,action}); stop();
     const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Verification failed');
     if (action === 'tamper') {
       if (!result.rejected || result.key_read || result.memo_decrypted) throw new Error('Unexpected tamper result');
-      $('tamper-result').replaceChildren(element('b','✗ Refused. '),document.createTextNode('The fixed verifier rejects the corrupted receipt proof before the bidder\'s key is read, so the receipt stays encrypted.'));
+      $('tamper-result').replaceChildren(element('b','✗ Refused. '),document.createTextNode('Changed: one byte of the bidder\'s receipt proof. Rejected by: the receipt proof verifier. Protected: the bidder\'s viewing key was never read, so the receipt stays encrypted.'));
     } else {
       if (!result.fixed_cpp_ticket_proof_verified || !result.native_proof_and_signatures_verified || !result.own_ticket_opening_verified || !result.native_amount_matches_refund || result.ticket_index !== ticket) throw new Error('Incomplete verification result');
       const current = state.cases.find(c => c.id === selected);
@@ -74,28 +87,40 @@ async function run(action) {
       if (state.recorded_chain==='testnet') pub.lastChild.append(document.createTextNode(' '),Object.assign(document.createElement('a'),{href:'https://testnet.zecblock.com/tx/'+result.txid,textContent:'Open it on the explorer',rel:'noopener'}));
       const contrast=element('div','','contrast'); contrast.append(mine,pub); box.append(contrast);
       ['proof','native','open'].forEach(step => $('step-'+step).classList.add('done'));
-      $('verify').textContent='Verify again';
+      $('verify').textContent='Open the receipt again';
     }
-  } catch (error) { if (action === 'verify') resetResult(); else $('tamper-result').textContent=''; setError(error.message); }
-  finally { $('result').classList.remove('loading'); lock(false); }
+  } catch (error) { stop(); if (action === 'verify') resetResult(); else $('tamper-result').textContent=''; setError(error.message); }
+  finally { stop(); $('result').classList.remove('loading'); lock(false); }
 }
 document.querySelectorAll('[data-case]').forEach(button => button.addEventListener('click',() => { if (!busy && state) { selected=button.dataset.case; renderCase(); } }));
 $('ticket').addEventListener('change',resetResult);
 $('verify').addEventListener('click',() => run('verify'));
 // Cheat lab: each cheat changes a copy of the recorded settlement one way and
 // reports which of the four claims the real verifiers say it breaks.
-const CLAIMS={price:'The price is right',payouts:'Every payout matches the result',book:'These are the accepted bids',transaction:'The Zcash transaction is valid',bundle:'The package check'};
+const CLAIMS={price:'The price is right',payouts:'Every payout matches the result',book:'The accepted book is authenticated',transaction:'The Zcash transaction is valid',bundle:'The package check'};
 const CHECK={book:'the signed-book check',price:'the auction proofs',payouts:'the output bindings'};
 const WHY={book:'The changed bid no longer hashes to the accepted root that all three operators signed and that the proofs were made over.',
   price:'The auction proofs were made for the true price; they do not verify for any other.',
   payout:'Each payout proof is bound to one output of the transaction and one row of the result; checked against another output, it fails.'};
+// The gold ring marks the cheat that is running or ran last, not a fixed button.
+function chooseCheat(button) {
+  document.querySelectorAll('.cheat-button').forEach(b=>b.classList.remove('cheat-first','chosen'));
+  if (button) button.classList.add('chosen');
+}
+// While a check runs on the server, say so and count the seconds.
+function waitLine(text, expect) {
+  const started=Date.now();
+  const tick=()=>{ $('tamper-result').textContent='Running on the server · '+Math.round((Date.now()-started)/1000)+' s'+(expect?' (usually about '+expect+' s)':'')+' · '+text; };
+  tick(); const timer=setInterval(tick,1000); return ()=>clearInterval(timer);
+}
 async function cheat(kind) {
   if (busy || !state) return;
   lock(true); setError('');
   $('cheat-detail').hidden=true;
-  $('tamper-result').textContent='Copying this settlement with that one change and running the real verifiers on it'+(kind==='book'?'…':'. About 30 seconds…');
+  chooseCheat(document.querySelector('[data-cheat="'+kind+'"]'));
+  const stop=waitLine('copying this settlement with that one change, then running the real verifiers on the copy…', kind==='book'?4:20);
   try {
-    const response=await fetch('/api/cheat',{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify({kind})});
+    const response=await post('/api/cheat',{kind}); stop();
     const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Cheat check failed');
     if (result.outcome==='accepted') throw new Error('The verifiers accepted a changed settlement. Please report this.');
     if (result.outcome!=='refused') { $('tamper-result').textContent='This test did not run as intended ('+(result.test_error||'no targeted refusal')+'), so it is not counted as a refusal.'; return; }
@@ -103,15 +128,15 @@ async function cheat(kind) {
     $('tamper-result').replaceChildren(element('b','✗ Refused in '+Math.round(result.seconds)+' s. '),
       document.createTextNode(broken+' fails. '+(WHY[kind]||'')));
     showCheatDetail(result);
-  } catch (error) { $('tamper-result').textContent=''; setError(error.message); }
-  finally { lock(false); }
+  } catch (error) { stop(); $('tamper-result').textContent=''; setError(error.message); }
+  finally { stop(); lock(false); }
 }
 // Original bundle beside the changed copy, then exactly what changed.
 function showCheatDetail(result) {
   const box=(cls,title,text)=>{ const b=element('div','','cheat-side '+cls); b.append(element('b',title),element('p',text)); return b; };
   const sides=element('div','','cheat-compare');
-  sides.append(box('ok','Original bundle','✓ Accepted. The same verifiers pass it: the unchanged control copy and the recorded check.'),
-    box('no','Your changed copy','✗ Rejected in '+Math.round(result.seconds)+' s by '+(CHECK[result.expected_check]||'the verifier')+(result.verifier_message?': “'+result.verifier_message+'”':'')+'.'));
+  sides.append(box('ok','Original bundle · previously verified','✓ Passed these verifiers in the recorded check.'),
+    box('no','Tampered copy · rejected just now','✗ Rejected in '+Math.round(result.seconds)+' s by '+(CHECK[result.expected_check]||'the verifier')+(result.verifier_message?': “'+result.verifier_message+'”':'')+'.'));
   const c=result.changed||{}, more=document.createElement('details'), list=element('div','','cheat-diff');
   more.append(element('summary','What exactly changed'));
   const who=Number.isInteger(c.ticket_index)?'Ticket '+(c.ticket_index+1)+' in the public book · ':'';
@@ -138,8 +163,8 @@ function showClaims(checks) {
   $('settlement-claims').replaceChildren(
     claim(checks.price,'The price is right.',price+' zatoshi follows the auction rule over exactly the four sealed bids. This check needs no bid, and the proof reveals none.'),
     claim(checks.payouts,'Every payout matches the result.','Each shielded output pays the amount and recipient the result says:',rows),
-    claim(checks.transaction,'The Zcash transaction is valid.','One valid shielded Zcash transaction, signed from the escrow by 2 of the 3 operators together; no single operator can sign.'),
-    claim(checks.book,'These are the accepted bids.','All three operators signed this exact book of four sealed bids.'),
+    claim(checks.transaction,'The Zcash transaction is valid.','The native Zcash proofs and the escrow\'s spend authorization signatures are valid. The settlement uses 2-of-3 FROST signing.'),
+    claim(checks.book,'The accepted book is authenticated.','All three operators signed the same committed set of four bids. This check does not show that every funded bid was admitted.'),
     note);
   $('settlement-claims').hidden=false; $('settlement-claims').classList.remove('pending');
 }
@@ -147,7 +172,7 @@ function showClaims(checks) {
 // tie one file to another and to the transaction bytes (recomputed by the
 // server from the committed bundle). Values show shortened; click one for all
 // of it, and each line links to its file in the repository.
-const REPO='https://github.com/yugocabrio/ZECATHON/blob/main/';
+const REPO='https://github.com/yugocabrio/darkcall/blob/main/';
 const shortValue = v => /^(0x)?[0-9a-f]{24,}$/i.test(v) ? v.slice(0,12)+'…'+v.slice(-8) : v;
 function mark(ok) { return element('span',ok?'✓':'✗',ok?'trail-ok':'trail-no'); }
 function value(name, full) {
@@ -172,7 +197,7 @@ let trailBundle=null;
 function showTrail(t) {
   trailBundle=t.bundle.path;
   const b=t.book, p=t.price, x=t.transaction, kb=n=>n.toLocaleString()+' bytes';
-  const book=trailSection('These are the accepted bids','The auction proof takes the four bid commitments and their root as public inputs, and all three operators signed the same root. Change one bid and they no longer agree: try it below. Tickets are listed in public-book order (sorted by ticket id).',
+  const book=trailSection('The accepted book is authenticated','The auction proof takes the four bid commitments and their root as public inputs, and all three operators signed the same root. Change one bid and they no longer agree: try it below. Tickets are listed in public-book order (sorted by ticket id).',
     ...b.commitments.map(c=>trailLine('Ticket '+c.ticket+' commitment',[['',c.commitment]],b.file,[c.in_auction_proof,'in the auction proof\'s public inputs'])),
     trailLine('Accepted root',[['',b.accepted_root]],b.file,[b.root_in_auction_proof,'auction proof'],[b.root_in_receipt_proof,'receipt proof']),
     ...b.operators.map(o=>trailLine('Operator '+o.operator,[['signature',o.signature],['trusted key',o.trusted_key]],o.file,[o.signed_root_matches,'signed this root'],[o.signed_commitments_match,'signed the same four bids'])));
@@ -198,8 +223,8 @@ function showTrail(t) {
 const shortDate = iso => new Date(iso+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
 function showRecordedClaims() {
   const recorded=state.cases[0].recorded_check; if (!recorded) return false;
-  const record=Object.assign(document.createElement('a'),{href:'https://github.com/yugocabrio/ZECATHON/blob/main/'+recorded.record,textContent:'record',rel:'noopener'});
-  $('settlement-result').replaceChildren(element('b','Recorded: '),document.createTextNode('verified on '+shortDate(recorded.date)+' in a clean Linux container built from the committed source ('),record,document.createTextNode('). What that proves:'));
+  const record=Object.assign(document.createElement('a'),{href:'https://github.com/yugocabrio/darkcall/blob/main/'+recorded.record,textContent:'record',rel:'noopener'});
+  $('settlement-result').replaceChildren(element('b','Previously verified · not rerun in this session. '),document.createTextNode('Verified on '+shortDate(recorded.date)+' in a clean Linux container built from the committed source ('),record,document.createTextNode('). What that proves:'));
   showClaims(recorded); return true;
 }
 $('settlement').addEventListener('click', async () => {
@@ -208,17 +233,23 @@ $('settlement').addEventListener('click', async () => {
   $('settlement-result').textContent = 'Running the real public verifier on this server. About 20–30 seconds…';
   $('settlement-claims').classList.add('pending');
   try {
-    const response = await fetch('/api/settlement', {method:'POST', headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:'{}'});
+    const response = await post('/api/settlement',{});
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Settlement verification failed');
     if (!result.native_row_proofs_verified || !result.native_proof_and_signatures_verified || !result.normal_cpp_auction_proof_verified || !result.actual_transaction_outputs_match || result.private_openings_read || result.chain_funding_or_finality_verified) throw new Error('Incomplete settlement verification');
     if (state.six_output_memo_e2e && (result.txid !== state.cases[0].txid || !result.receipt_fixed_proof_verified || !result.receipt_settlement_context_link_verified)) throw new Error('Settlement belongs to a different receipt auction');
     settlementVerified = true; stages();
-    $('settlement-result').replaceChildren(element('b','Verified again just now: '),document.createTextNode('in '+Math.round(result.seconds)+' s on this server, with no viewing key or other secret. What that proves:'));
+    document.querySelectorAll('#settle-checks li').forEach(li=>li.classList.add('done'));
+    $('settlement-result').replaceChildren(element('b','Verified again just now · '+Math.round(result.seconds)+' s. '),document.createTextNode('On this server, with no viewing key or other secret. What that proves:'));
     showClaims({price:result.normal_cpp_auction_proof_verified, payouts:result.native_row_proofs_verified && result.actual_transaction_outputs_match,
       transaction:result.native_proof_and_signatures_verified, book:Boolean(result.acceptance_or_recipient_receipts_authenticated)});
     $('settlement-detailed-result').textContent = 'Native authorization, six bindings, fixed auction/receipt proofs and context verified. ' + (result.acceptance_or_recipient_receipts_authenticated ? 'Accepted-book signatures verified. ' : 'No funded admission certificate for this synthetic run. ') + 'Transaction: '+result.txid;
-  } catch (error) { if (!showRecordedClaims()) { $('settlement-result').textContent=''; $('settlement-claims').hidden=true; } setError(error.message); }
+  } catch (error) {
+    // A failed run is reported as failed; the earlier recorded pass is not shown in its place.
+    document.querySelectorAll('#settle-checks li').forEach(li=>li.classList.remove('done'));
+    $('settlement-claims').hidden=true;
+    $('settlement-result').replaceChildren(element('b','✗ This run did not pass. ','fail-mark'),document.createTextNode(error.message.replace(/\.?$/,'.')+' The earlier recorded result is not counted as this run. Try again, or verify on your own machine (below).'));
+  }
   finally { lock(false); }
 });
 lock(true);
@@ -229,7 +260,7 @@ fetch('/api/state').then(async response => {
   const labels=state.cases[0].labels||[1,2,3,4];
   $('ticket').replaceChildren(...labels.map((n,i)=>[n,i]).sort((a,b)=>a[0]-b[0]).map(([n,i])=>Object.assign(document.createElement('option'),{value:String(i),textContent:bidderName(n)})));
   if (state.cases[0].labels_in_sealing_order) document.querySelector('.receipt-panel .panel-lead').append(' Numbered in the order the bids were sealed'+(recordedTestnet?', as in the video.':'.'));
-  $('proof-card-scope').textContent=state.funded_canonical?(recordedTestnet?'Recorded on public Zcash testnet':'Recorded auction · isolated regtest'):'Separate example · synthetic transactions';
+  $('proof-card-scope').textContent=state.funded_canonical?(recordedTestnet?'Public testnet · about 20 s to verify':'Recorded auction · isolated regtest'):'Separate example · synthetic transactions';
   if (recordedTestnet) $('hero-chain').textContent='Zcash NU7 · public testnet';
   if (state.hosted) {
     for (const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT); walker.nextNode();) {
@@ -237,7 +268,6 @@ fetch('/api/state').then(async response => {
       if (text!==node.nodeValue) node.nodeValue=text;
     }
     // Hosted: the bidder client runs on this server, so say so wherever a bid is typed.
-    $('client-scope').textContent="On this hosted demo each bidder's client runs on the server, so the server sees the demo bid you type; operators receive only secret shares of each bid and proofs. In a deployment the client runs on the bidder's own device.";
     $('bid-client-scope').textContent='On this hosted demo your bid client runs on the server, which sees the demo bid you type; operators get only secret shares of it and a proof.';
     $('share-scope').textContent='Open this link in another browser to follow the same auction.';
   }
@@ -251,10 +281,10 @@ fetch('/api/state').then(async response => {
       $('scope-description').textContent = state.recorded_note || 'Recorded proof-backed demo on isolated Zcash regtest.';
       if (recordedTestnet) {
         // Already verified when recorded; the button re-runs the same check here.
-        $('settlement-scope').textContent='Check that the shielded Zcash transaction matches the auction outcome, without seeing any bid. The result below is recorded; run the same check again here in about 20 seconds, with no viewing key or other secret.';
-        $('settlement').textContent='Re-run verification';
+        $('settlement-scope').textContent='One public check for the whole auction, not per bidder: anyone can run it from public data alone, with no bid and no viewing key, and gets the same result.';
+        $('settlement').textContent='Check the price and all six payouts';
       }
-      $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run an auction can be settled the same way with Settle on Zcash. Independent hosts and larger bid counts remain unverified.';
+      $('remaining-scope').textContent = 'This recorded auction is separate from the auctions you create now; any auction you create under Run a new auction can be settled the same way with Settle on Zcash. Independent hosts and larger bid counts remain unverified.';
       $('chain-scope').textContent = recordedTestnet ? 'Two public-testnet confirmations recorded through one trusted lightwalletd provider; the public bundle does not itself prove chain inclusion.' : state.recorded_local_confirmations ? 'Two controlled regtest confirmations recorded; public bundle does not prove chain inclusion' : 'Recorded regtest run; no chain inclusion proof in the public bundle';
     }
     if (!state.recipient_identities_available) {
@@ -276,14 +306,15 @@ fetch('/api/state').then(async response => {
   }
   lock(false);
   if (onTestnet()) {
-    $('local-pill').textContent=(state.hosted?'Live demo':'Local demo')+' · new auctions settle on public Zcash testnet';
+    $('local-pill').replaceChildren(state.hosted?'Live demo':'Local demo',Object.assign(document.createElement('span'),{className:'pill-more',textContent:' · new auctions settle on public Zcash testnet'}));
     for (const id of ['fund-chain','settle-chain']) $(id).textContent='Public testnet';
+    $('settle-sign-chain').textContent='Zcash testnet';
     for (const node of document.querySelectorAll('.chain-text')) node.textContent='public Zcash testnet';
     // Measured on public testnet, Oct 19: funding 612 s (a 600 s admission
     // window), settlement 984-1122 s, about 30 min from creation to receipts.
-    $('try-card-scope').textContent='Real shielded settlement · about 25 min on testnet';
+    $('try-card-scope').textContent='Public testnet · about 25 min';
     $('run-time').textContent='About 25 minutes on public testnet, most of it funding and settlement.';
-    $('fund-time').textContent='About 10 minutes on public testnet, most of it the admission window.';
+    $('fund-time').textContent='About 10 minutes on public testnet: the deposits confirm in a few minutes, then the operators wait for the funding deadline, recheck the deposits and sign.';
     $('settle-time').textContent='About 12 minutes on public testnet, including two confirmations.';
   }
   const recordedTx=state.cases[0].txid, hero=state.cases[0];
@@ -308,13 +339,22 @@ fetch('/api/state').then(async response => {
 let room = null, lastAcceptance = null, freshClearingVerified = false, freshResultVerified = false, bookFolded = false;
 // Every ticket sealed in THIS page keeps its own local opening capability. The page
 // simulates four bidders; each opening uses only that ticket's capability and key.
-let myTickets = [], selectedTicket = 0;
+let myTickets = [], selectedTicket = 0, outcomes = {};
 const currentTicket = () => myTickets[selectedTicket] || null;
+const ticketName = n => 'Ticket '+String(n).padStart(2,'0');
+const outcomeText = n => n in outcomes ? (outcomes[n].won ? ' · won' : ' · no unit') : '';
+// A verified result names its ticket and is marked won (gold) or no unit (grey).
+function showOutcome(box, mine, won, title, detail) {
+  outcomes[mine.ticket_number]={won};
+  box.className='result-box verified '+(won?'won':'lost');
+  box.replaceChildren(element('span',ticketName(mine.ticket_number)+(won?' · won':' · no unit'),'outcome-badge'),element('h3',title),element('p',detail));
+}
 function renderTicketPickers() {
   for (const id of ['my-ticket','my-native-ticket']) {
     const select=$(id), label=select.closest('label');
     label.hidden=myTickets.length<2;
-    if (select.options.length!==myTickets.length) select.replaceChildren(...myTickets.map((t,i)=>{ const option=document.createElement('option'); option.value=String(i); option.textContent='Ticket '+String(t.ticket_number).padStart(2,'0'); return option; }));
+    if (select.options.length!==myTickets.length) select.replaceChildren(...myTickets.map((t,i)=>{ const option=document.createElement('option'); option.value=String(i); return option; }));
+    myTickets.forEach((t,i)=>{ select.options[i].textContent=ticketName(t.ticket_number)+outcomeText(t.ticket_number); });
     select.value=String(selectedTicket); select.disabled=busy;
   }
 }
@@ -331,9 +371,12 @@ function rehearsalError(message) { $('rehearsal-error').textContent=message; $('
 function focusNext(id) { const node=$(id); if (node && !node.hidden) setTimeout(()=>node.scrollIntoView({behavior:'smooth',block:'center'}),150); }
 function renderSlots() {
   const slots=$('sealed-slots'); if (!room) { slots.replaceChildren(); return; }
-  slots.replaceChildren(...[0,1,2,3].map(i=>{ const filled=i<room.accepted; const node=element('span',''); node.className=filled?'filled':'';
-    node.append(document.createTextNode('Ticket '+String(i+1).padStart(2,'0')),element('b',''));
-    node.setAttribute('aria-label','Ticket '+String(i+1).padStart(2,'0')+(filled?' sealed':' open')); return node; }));
+  // The next open ticket glows, and the bid field names it, so it is clear whose bid is being typed.
+  const next=!room.closed && room.accepted<4 ? room.accepted : -1, name=i=>'Ticket '+String(i+1).padStart(2,'0');
+  slots.replaceChildren(...[0,1,2,3].map(i=>{ const filled=i<room.accepted, known=outcomes[i+1]; const node=element('span',''); node.className=known?'filled '+(known.won?'won':'lost'):filled?'filled':i===next?'next':'';
+    node.append(document.createTextNode(name(i)+(i===next?' · bidding now':outcomeText(i+1))),element('b',''));
+    node.setAttribute('aria-label',name(i)+(filled?' sealed':i===next?' next to bid':' open')); return node; }));
+  $('bid-label').textContent=next>=0 ? name(next)+' · maximum bid (zatoshi)' : 'Your maximum bid (zatoshi)';
 }
 function refreshRoom() {
   const available=Boolean(state && state.local_rehearsal_available);
@@ -351,6 +394,9 @@ function refreshRoom() {
     if (i===current) step.setAttribute('aria-current','step'); else step.removeAttribute('aria-current');
   });
   if (!room) return;
+  // Bidding is over once the book is closed: the bid form and its receipts leave the page.
+  $('book-details').hidden=Boolean(room.closed);
+  $('keep-tab').hidden=!myTickets.length;
   const remaining=Math.max(0,room.closes_at_utc-Math.floor(Date.now()/1000));
   $('room-terms').textContent=room.units+' units · reserve '+room.reserve+' · budget '+room.budget+' zatoshi';
   $('room-count').textContent=room.accepted+' / 4 sealed';
@@ -373,27 +419,26 @@ function refreshRoom() {
   $('rehearsal-title').textContent=refunded?'Every deposit refunded.':settled?'Your auction settled on Zcash.':room.clearing?'Your auction cleared.':room.closed?(fundingPending?'Fund the sealed book.':'Ready to clear.'):room.accepted===4?'Bids are sealed.':'Place your bid.';
   document.querySelector('.rehearsal-scope').textContent=settled?'Same sealed book. One shielded transaction. Publicly verified.':room.clearing?'Fresh outcome. Verified against your accepted bids.':room.closed?(fundingPending?'Every sealed ticket gets a real shielded deposit before clearing.':'Four sealed bids. One verified outcome.'):room.accepted===4?'Waiting for the scheduled close.':'Seal four demo bids. Each gets a ZK proof and three operator signatures.';
   $('close-status').textContent=room.stopped_after_incomplete_admission ? 'Admission stopped. The checkpoint is preserved.' : room.closed ? '✓ Closed bids certified.' :
-    remaining>0 ? 'Bidding closes in '+Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')+'.' :
+    remaining>0 ? 'Bidding closes in '+Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')+'. The operators sign the book only after the close, so no bid can slip in later.' :
     room.accepted===4 ? 'Deadline reached. Confirm the accepted bids.' : 'Closed. Four tickets are required.';
 }
 function showRoom(value) {
   if (!value || value.funding_scope!=='offline-synthetic' || value.chain_funding_verified || value.native_settlement_started!==Boolean(value.settlement)) throw new Error('Unexpected rehearsal scope.');
   if (room && room.auction_id!==value.auction_id) {
-    lastAcceptance=null; myTickets=[]; selectedTicket=0; $('bid-accepted').hidden=true; $('copy-acceptance').hidden=true; $('acceptance-details').hidden=true;
+    lastAcceptance=null; myTickets=[]; selectedTicket=0; outcomes={}; $('bid-accepted').hidden=true; $('copy-acceptance').hidden=true; $('acceptance-details').hidden=true;
     resetFresh();
   }
   room=value; $('create-form').hidden=true; $('auction-room').hidden=false;
   $('auction-link').value=location.origin+'/#auction='+room.auction_id;
   refreshRoom();
   if (room.clearing) renderFresh(room.clearing);
-  if (room.closed && !bookFolded) { bookFolded=true; $('book-details').open=false; }
 }
 async function rehearsalRequest(action,payload) {
-  const response=await fetch('/api/rehearsal/'+action,{method:'POST',headers:{'Content-Type':'application/json','X-DarkCall-Token':state.csrf},body:JSON.stringify(payload)});
+  const response=await post('/api/rehearsal/'+action,payload);
   const result=await response.json(); if (!response.ok) throw new Error(result.error || 'Local rehearsal stopped.'); return result;
 }
 function resetFresh() {
-  $('rehearsal-label').textContent='Demo bids'; fundedFocused=false; settledFocused=false; bookFolded=false;
+  $('rehearsal-label').textContent='Demo bids'; fundedFocused=false; settledFocused=false; bookFolded=false; $('book-details').hidden=false; $('keep-tab').hidden=true;
   for (const id of ['clearing-section','fund-section','settle-section']) $(id).hidden=true;
   freshClearingVerified=false; freshResultVerified=false; nativeResultVerified=false; $('book-details').open=true;
   $('native-result').className='result-box'; $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','Only your viewing key can open your memo in this transaction.'));
@@ -443,9 +488,9 @@ async function openFresh(action) {
     } else {
       if (!result.fixed_cpp_proof_verified || !result.certified_book_matches || result.accepted_root!==room.accepted_root
           || result.price!==room.clearing.price || result.sold!==room.clearing.sold || !result.opening_verified) throw new Error('Incomplete own-result verification.');
-      const box=$('fresh-result'); box.className='result-box verified';
+      const box=$('fresh-result');
       freshResultVerified=true;
-      box.replaceChildren(element('h3',result.won?'You won a unit':'No unit this time'),element('p',result.won?'At '+result.price+' zatoshi, the price every winner pays.':'No unit allocated. Your outcome is verified.'));
+      showOutcome(box,mine,result.won,result.won?'Won a unit':'No unit this time',result.won?'At '+result.price+' zatoshi, the price every winner pays.':'No unit allocated. Your outcome is verified.');
       const amounts=element('div','','receipt-amounts'), column=element('div','');
       column.append(element('span','Refund due (zatoshi)'),element('strong',String(result.refund))); amounts.append(column); box.append(amounts,element('p','✓ Your result verified'));
       if (room.settlement_available && !room.settlement) focusNext('settle-auction');
@@ -471,6 +516,11 @@ function minutes(seconds) { seconds=Math.max(0,Math.round(seconds)); return Math
 // server was started with --chain testnet.
 const onTestnet=()=>Boolean(state && state.live_chain==='testnet');
 const chainName=()=>onTestnet()?'Zcash testnet':'regtest';
+// On public testnet each transaction id opens on the explorer.
+function showTx(id, txid) {
+  if (!onTestnet() || !/^[0-9a-f]{64}$/.test(txid || '')) { $(id).textContent=txid; return; }
+  $(id).replaceChildren(Object.assign(document.createElement('a'),{href:'https://testnet.zecblock.com/tx/'+txid,textContent:txid+' ↗',target:'_blank',rel:'noopener'}));
+}
 function renderSettlement() {
   const section=$('settle-section'), job=room && room.settlement, settledState=Boolean(job && job.state==='done');
   $('rehearsal-label').textContent=settledState?'Settled on '+chainName():job?'Settling on '+chainName():'Demo bids';
@@ -500,14 +550,15 @@ function renderSettlement() {
     li.querySelector('em').textContent=label;
   });
   const total=minutes(now-job.started_at_unix);
-  if (room.funding && room.funding.result) $('settle-deposit').textContent=room.funding.result.deposit_txid;
+  if (room.funding && room.funding.result) showTx('settle-deposit',room.funding.result.deposit_txid);
   const result=job.result;
   $('settle-status').textContent=failed?(job.error||'Settlement stopped.'):job.state==='done'?'✓ Settled and publicly verified · '+minutes(result.settlement_seconds+result.public_verification_seconds)+' of proving and checks':'Running · '+total+' elapsed · other proofs wait until this finishes';
+  if (!failed && job.state!=='done') $('settle-status').append(meanwhile());
   $('settle-outcome').hidden=job.state!=='done';
   if (job.state==='done') {
     if (!settledFocused) { settledFocused=true; focusNext('settle-txid'); }
     if (result.accepted_root!==room.accepted_root || result.price!==room.clearing.price || result.sold!==room.clearing.sold) { $('settle-status').textContent='Settlement result does not match this auction.'; $('settle-outcome').hidden=true; return; }
-    $('settle-txid').textContent=result.txid; $('settle-deposit').textContent=result.deposit_txid;
+    showTx('settle-txid',result.txid); showTx('settle-deposit',result.deposit_txid);
     $('know-public').textContent='Price '+result.price+' zatoshi, '+result.sold+' of '+room.units+' sold, one shielded transaction and its proofs.';
     $('settle-root').textContent='✓ '+shortId(result.accepted_root)+' · same tickets and accepted root as your browser book';
     $('settle-price').textContent=result.price+' zatoshi × '+result.sold+' sold · matches the browser clearing · '+result.confirmations+(onTestnet()?' public testnet':' regtest')+' confirmations';
@@ -516,6 +567,12 @@ function renderSettlement() {
     if (!currentTicket() && !nativeResultVerified) $('native-result').replaceChildren(element('h3','Your receipt is encrypted.'),element('p','This page no longer holds a ticket capability. Reloading loses it by design.'));
   }
   if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
+}
+// While a long step runs, offer something to do: the recorded settlement can be checked in another tab.
+function meanwhile() {
+  const node=element('span','','meanwhile'); node.append(document.createTextNode('Meanwhile, you can '),
+    Object.assign(document.createElement('a'),{href:'/demo/settled',target:'_blank',rel:'noopener',textContent:'verify the settled testnet auction in another tab'}),document.createTextNode('.'));
+  return node;
 }
 function renderFunding() {
   const section=$('fund-section'), job=room && room.funding;
@@ -533,11 +590,19 @@ function renderFunding() {
   const begin=at['preflight:started']||job.started_at_unix;
   li.querySelector('em').textContent=done?minutes((at['funding:done']||now)-begin):failed?'stopped':minutes(now-begin);
   $('fund-title').textContent=done?'Deposits locked.':'Lock the deposits.';
-  $('fund-status').textContent=failed?(job.error||'Funding stopped.'):done?'✓ Funded and admitted on '+chainName()+(room.cancellation?'.':'. Now clear the book.'):'Running · '+minutes(now-job.started_at_unix)+' elapsed · includes a '+(onTestnet()?'10-minute':'120 s')+' admission window';
+  if (failed || done) $('fund-status').textContent=failed?(job.error||'Funding stopped.'):'✓ Funded and admitted on '+chainName()+(room.cancellation?'.':'. Now clear the book.');
+  else {
+    // Say which phase the server is in, from its own events; nothing is ticked before it happens.
+    const depositing='funding:started' in at, deadline=onTestnet()?'10 minutes':'120 s';
+    const now_=depositing?'four shielded deposits are sent and confirmed (two blocks); the operators then wait for the funding deadline, '+deadline+' after funding began, recheck that the same deposits are unspent and sign the book.':'checking the chain and the test wallet.';
+    $('fund-status').replaceChildren(element('b','Funding on '+chainName()+' · '+minutes(now-job.started_at_unix)+' elapsed. '),
+      document.createTextNode('Now: '+now_+' The page moves on by itself once the deposits are admitted.'),
+      element('span','Keep this tab open: reloading or closing it loses access to your demo bidders\' private receipts.','keep-tab'),meanwhile());
+  }
   if (done && job.result) {
     if (job.result.accepted_root!==room.accepted_root) { $('fund-status').textContent='Funding does not match this book.'; return; }
     if (!fundedFocused && !room.cancellation) { fundedFocused=true; focusNext('clear-auction'); }
-    $('fund-deposit').textContent=job.result.deposit_txid;
+    showTx('fund-deposit',job.result.deposit_txid);
     $('fund-admission').textContent='✓ '+job.result.client_proofs+' bid proofs + '+job.result.share_pairs+' secret-share pairs re-verified · '+job.result.receipt_signatures+' receipts · '+job.result.final_book_signatures+' book signatures · same root '+shortId(job.result.accepted_root);
   }
   if (job.state==='running' && !settlePoll) settlePoll=setTimeout(pollSettlement,3000);
@@ -616,8 +681,8 @@ async function openNative(action) {
           || !result.accepted_book_and_recipients_authenticated || !result.own_ticket_opening_verified || !result.native_amount_matches_refund
           || !result.native_proof_and_signatures_verified || !result.own_viewing_key_only || !result.receipt_in_same_six_output_transaction) throw new Error('Incomplete shielded receipt verification.');
       nativeResultVerified=true;
-      const box=$('native-result'); box.className='result-box verified';
-      box.replaceChildren(element('h3',result.won?'You won a unit':'No unit this time'),element('p',result.won?'At '+result.price+' zatoshi, paid from your deposit':'No unit allocated · full budget refunded'));
+      showOutcome($('native-result'),mine,result.won,result.won?'Won a unit':'No unit this time',result.won?'At '+result.price+' zatoshi, paid from your deposit':'No unit allocated · full budget refunded');
+      const box=$('native-result');
       const amounts=element('div','','receipt-amounts'), column=element('div','');
       column.append(element('span','Refund received (zatoshi)'),element('strong',String(result.refund))); amounts.append(column);
       box.append(amounts,element('p','✓ Decrypted from '+shortId(result.txid)+' with your viewing key only'));
@@ -639,14 +704,18 @@ function startAuction() {
   $('rehearsal').hidden=false; $('recorded-demo').hidden=true;
   if (!room) setDefaultClose();
   $('rehearsal-status').textContent=state && state.local_rehearsal_available ? '' : 'Local input prover and admission helper are required; recorded verification is available below.';
-  refreshRoom(); $('rehearsal').scrollIntoView({behavior:'smooth',block:'start'});
+  // Each mode opens at the top of the page, with its switch and heading in view.
+  refreshRoom(); window.scrollTo(0,0);
 }
-$('start-auction').addEventListener('click',startAuction);
+// From the landing, each way in opens the demo in its own tab; inside the demo the same buttons switch modes.
+const onLanding=()=>!document.body.classList.contains('has-experience');
+const openDemo=path=>window.open(path,'_blank','noopener');
+$('start-auction').addEventListener('click',()=>onLanding()?openDemo('/demo/run'):startAuction());
 function showRecording() {
   selectExperience('settlement');
   $('rehearsal').hidden=true; $('recorded-demo').hidden=false;
   // Never use the new maximum bid or receipt to choose an old fixture identity.
-  $('recorded-demo').scrollIntoView({behavior:'smooth',block:'start'});
+  window.scrollTo(0,0);
 }
 // Each live-demo mode has a shareable path; the landing is '/'.
 const MODES={'/demo/settled':'settlement','/demo/run':'try'};
@@ -675,9 +744,9 @@ function route() {
   else if (document.body.classList.contains('has-experience')) showOverview(false);
 }
 window.addEventListener('popstate',()=>{ if (state) route(); });
-$('show-recording').addEventListener('click',showRecording);
+$('show-recording').addEventListener('click',()=>onLanding()?openDemo('/demo/settled'):showRecording());
 // The end of the landing offers the same two ways in.
-document.querySelectorAll('[data-go]').forEach(button=>button.addEventListener('click',()=>(button.dataset.go==='try'?startAuction:showRecording)()));
+document.querySelectorAll('[data-go]').forEach(button=>button.addEventListener('click',()=>openDemo(button.dataset.go==='try'?'/demo/run':'/demo/settled')));
 $('continue-recording').addEventListener('click',showRecording);
 function jobRunning() {
   return Boolean(room && ((room.funding && room.funding.state==='running') || (room.settlement && room.settlement.state==='running')));
@@ -688,7 +757,7 @@ $('new-auction').addEventListener('click',()=>{
   // receipts are opened makes those receipts unopenable, so ask first.
   if (myTickets.length && !nativeResultVerified
       && !window.confirm('Start another auction? This page holds the only opening capability for your tickets in this auction; without it you cannot open their receipts.')) return;
-  room=null; lastAcceptance=null; myTickets=[]; selectedTicket=0; history.replaceState(null,'',location.pathname);
+  room=null; lastAcceptance=null; myTickets=[]; selectedTicket=0; outcomes={}; history.replaceState(null,'',location.pathname);
   resetFresh();
   $('auction-room').hidden=true; $('create-form').hidden=false; $('rehearsal-title').textContent='Create your auction.';
   document.querySelector('.rehearsal-scope').textContent='Set the terms. Invite four bidders.';
@@ -739,7 +808,6 @@ $('close-auction').addEventListener('click',async()=>{
     if (!result.closed || result.funding_scope!=='offline-synthetic' || result.fresh_clearing_or_settlement) throw new Error('Unexpected book certification.');
     room.closed=true; room.accepted_root=result.accepted_root;
     $('rehearsal-status').textContent=room.funding_required?'✓ Bids locked. Fund them on Zcash next.':'✓ Bids locked. Ready to clear.';
-    $('book-details').open=false; // Bidding is over: fold the bid form away from the next step.
     refreshRoom(); focusNext(room.funding_required?'fund-auction':'clear-auction');
   } catch(error) { rehearsalError(error.message); }
   finally { lock(false); refreshRoom(); }
@@ -774,7 +842,7 @@ window.addEventListener('hashchange',joinRehearsal);
 window.addEventListener('beforeunload',event=>{
   if (myTickets.length && room && !nativeResultVerified) { event.preventDefault(); event.returnValue=''; }
 });
-function setDefaultClose() { const close=new Date(Date.now()+120000); $('create-close').value=new Date(close-close.getTimezoneOffset()*60000).toISOString().slice(0,19); }
+function setDefaultClose() { const close=new Date(Date.now()+60000); $('create-close').value=new Date(close-close.getTimezoneOffset()*60000).toISOString().slice(0,19); }
 setDefaultClose();
 setInterval(refreshRoom,1000);
 
