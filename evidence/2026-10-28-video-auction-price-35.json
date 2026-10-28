@@ -1,0 +1,47 @@
+{
+  "format": 1,
+  "scope": "The auction filmed for the submission video: a new auction run end to end through the hosted live demo on public Zcash testnet by tools/demo-capture/record.mjs run, clicking the real buttons in headless Brave; create, four sealed demo bids, deposits, REP3/coNoir clearing at a fresh price of 35, native shielded settlement, and two shielded receipts opened (a winner and a loser).",
+  "date_utc": "2026-10-28",
+  "started_at": "2026-10-28T22:22:01.456Z",
+  "host": "https://49-12-250-128.sslip.io/demo/run (one Linux server; every role, including each demo bidder's client, runs on it)",
+  "command": "DARKCALL_URL=https://49-12-250-128.sslip.io/ node tools/demo-capture/record.mjs run .local/video-final/run",
+  "auction": {
+    "terms": "3 units · reserve 20 · budget 100 zatoshi",
+    "demo_bids_typed": [
+      82,
+      64,
+      47,
+      35
+    ],
+    "clearing_price_zatoshi": 35,
+    "units_sold": 3,
+    "accepted_root_shown": "250e3372d0…335ef1e0"
+  },
+  "chain": {
+    "network": "public Zcash testnet (TAZ), NU7 Ironwood",
+    "deposit_txid": "3f6802c79a97bf19061c6a989cf8c04f14a4bd360ef84c5b84404ed5211e4efc",
+    "settlement_txid": "9ec9472fbdd3ecd037f4cd7c707a00ae6b5d51b15980606ea2c33a8df91bfbc7",
+    "explorer": "https://testnet.zecblock.com/tx/9ec9472fbdd3ecd037f4cd7c707a00ae6b5d51b15980606ea2c33a8df91bfbc7"
+  },
+  "page_results": {
+    "clearing": "✓ Auction verified · 6.5s",
+    "settlement": "Settled and publicly verified · 11:04 of proving and checks",
+    "ticket_01": "Ticket 01 · wonWon a unitAt 35 zatoshi, paid from your depositRefund received (zatoshi)65✓ Decrypted from 9ec9472fbd…f91bfbc7 with your viewing key only",
+    "ticket_04": "Ticket 04 · no unitNo unit this timeNo unit allocated · full budget refundedRefund received (zatoshi)100✓ Decrypted from 9ec9472fbd…f91bfbc7 with your viewing key only"
+  },
+  "seconds_from_recording_start": {
+    "seal-4-done": 28.9,
+    "close-done": 60.7,
+    "fund-start": 64.5,
+    "fund-done": 675.2,
+    "clear-start": 682.1,
+    "clear-done": 688.6,
+    "settle-start": 700.2,
+    "settle-done": 1375.7,
+    "end": 1406.1
+  },
+  "limits": [
+    "Synthetic demo bids typed by the recorder; one funding wallet on the server; all three semi-honest REP3 parties and every bidder client on one host.",
+    "Testnet coins only. The frames stay in ignored .local; the video is built from them by scripts/render_demo_video_final.py."
+  ]
+}

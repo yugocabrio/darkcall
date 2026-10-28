@@ -1,0 +1,46 @@
+{
+  "format": 1,
+  "scope": "A second new auction run end to end through the hosted live demo on public Zcash testnet, by the author in an ordinary browser on Oct 28: create, four sealed demo bids, deposits, REP3/coNoir clearing at a fresh price of 30, native shielded settlement with six Halo2 output bindings and 2-of-3 FROST, public verification, and a losing bidder's shielded refund decrypted with its own viewing key.",
+  "date_utc": "2026-10-28",
+  "host": "https://49-12-250-128.sslip.io/demo/run (one Linux server; every role, including each demo bidder's client, runs on it)",
+  "driven_by": "the author, clicking through the live site in a browser; no script",
+  "auction": {
+    "auction_id": "eaf5686b8301faa33301000d44c8d980",
+    "terms": "3 units · reserve 20 · budget 100 zatoshi",
+    "accepted_root": "29fe9111015b4584ae0c57b7f0e90dd78c1d00feb3f7b8ba01fb78c93c4fb827",
+    "tickets": 4,
+    "clearing_price_zatoshi": 30,
+    "units_sold": 3,
+    "same_accepted_root_at_funding_clearing_and_settlement": true,
+    "bids": "demo bids typed by the author; not recorded here (the price 30 is the highest losing bid by the auction rule)"
+  },
+  "chain": {
+    "network": "public Zcash testnet (TAZ), NU7 Ironwood",
+    "deposit_txid": "7922fdc7a8afb072cee425e939e7bd45094acb8e38acdc3a19bfc6c1dacb694e",
+    "deposit_confirmations_at_admission": 2,
+    "settlement_txid": "9d0869fa21ec41d2770284310f2c1292b69be513316ab0376269063f63382976",
+    "settlement_height": 4552260,
+    "settlement_confirmations_at_record": 2,
+    "settlement_on_explorer": "https://testnet.zecblock.com/tx/9d0869fa21ec41d2770284310f2c1292b69be513316ab0376269063f63382976: block 4,552,260, 6 Ironwood actions, fee 0.0003 TAZ, 21,790 bytes; 28 confirmations when looked up at 22:18 UTC",
+    "recipient_scans": 6
+  },
+  "stages_seconds": {
+    "funding_from_start_to_admitted": 602.8,
+    "funding_note": "deposits confirmed, then the operators waited for the declared 600 s funding deadline, rescanned and signed the book again over the same root: 4 client proofs, 12 share pairs, 12 receipt signatures, 3 final-book signatures",
+    "joint_clearing_shown_in_the_page": 6.6,
+    "settlement": 594.7,
+    "settlement_note": "fresh REP3 delivery on the same shares, six Halo2 output bindings (about 73 s each), 2-of-3 FROST signing, broadcast and two confirmations",
+    "public_verification": 16.6,
+    "proving_and_checks_shown_in_the_page": "10:11"
+  },
+  "checks": {
+    "public_verification": "native row proofs verified and accepted book certified (the server's public verifier, no viewing key)",
+    "own_receipt": "a losing ticket's shielded receipt decrypted with that ticket's viewing key only: no unit, refund 100 zatoshi, the full budget",
+    "source": "the server's own progress records for this auction (funding and settlement phases, with times) and the page the author saw"
+  },
+  "why_it_matters": "A different price from the recorded Oct 19 auction (21): the outcome was computed from new bids, not replayed. It is the second new auction through the hosted site after Oct 27 (03feb02b…9cf72d8b).",
+  "limits": [
+    "Demo bids and one funding wallet on the server; the server runs every bidder client and all three semi-honest REP3 parties.",
+    "Testnet coins only."
+  ]
+}
