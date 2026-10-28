@@ -52,11 +52,10 @@ The storyboard is `demo/video-storyboard-v2.json`.
 ### The v3 video (screen recordings)
 
 `demo/media/v3/darkcall-demo-v3.mp4` replaces the stills cut. Two real-time
-recordings of `./demo.sh`, the slides in `docs/slides/` and the Oct 19 frames
+recordings of `./demo.sh`, the slides in `tools/demo-capture/slides/` and the Oct 19 frames
 above are cut only at recorded marks; each span plays at one speed, and a span
 sped up by 15% or more states the real time it covers. The voice is macOS
-`say` (Samantha, Enhanced); `--no-voice` renders the same timing silent for a
-recorded narration read from `demo/media/v3/narration.md`.
+`say` (Samantha, Enhanced); `--no-voice` renders the same timing silent.
 
 ```sh
 node tools/demo-capture/record.mjs live    .local/rec-live      # ≈ 2 min: create, seal four bids, certify, clear, open a result
@@ -232,7 +231,7 @@ is fixed-proof checked and explicitly precedes settlement. Twelve fresh row proo
 fixed C++/SDK application replay, four threshold spends and six decryptions per job
 pass. Four own receipts and four substitutions per job also pass. Shared Mac
 paging prevents a controlled speedup claim. See
-[warm full evidence](../evidence/2026-10-05-warm-full-nu7-auctions.json).
+[warm full evidence](../../evidence/2026-10-05-warm-full-nu7-auctions.json).
 
 ## Same funded run reproduction and measurements
 
@@ -259,4 +258,4 @@ witness1.423s/proof10.824s; public replay112.431s. Shared16GiB M1/one native thr
 not isolated performance or a claimed speedup. The separately stopped190.563s
 run is preserved. No larger Linux2/3/6-way results are available. Exact public,
 client, HTTP, resource observations and limitations are in
-[funded canonical evidence](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
+[funded canonical evidence](../../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).

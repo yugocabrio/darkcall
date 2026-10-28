@@ -91,7 +91,7 @@ again; `.local` and the certificate volume persist.
 | Halo2 parameters | `--prepare-params` ran at build time in 35 s; **Re-run verification** finishes in 17.8 s on the server (18.5 s seen from a browser) |
 | Hosted checks | `scripts/check_hosted_http.py` through an SSH tunnel: all nine checks pass in 8.4 s |
 | Parallel rows | not measured: 15 GiB is below the guard's 24 GiB for two workers |
-| A new auction through the site | settled on public testnet on Oct 27: deposit `76329a49…`, settlement `03feb02b…`, 24 min 16 s from the landing page (clearing 6.8 s, settlement 11 min 11 s); [record](../evidence/2026-10-27-hosted-testnet-auction.json) |
+| A new auction through the site | settled on public testnet on Oct 27: deposit `76329a49…`, settlement `03feb02b…`, 24 min 16 s from the landing page (clearing 6.8 s, settlement 11 min 11 s); [record](../../evidence/2026-10-27-hosted-testnet-auction.json) |
 | Prover memory | the six funded rows peaked at 7.91 GiB against the default 8 GiB guard; `compose.yaml` sets `DARKCALL_MAX_PROVER_GIB=12` on this dedicated server |
 
 The testnet bank's only note was mined at block 4,518,254 on Oct 19. Public

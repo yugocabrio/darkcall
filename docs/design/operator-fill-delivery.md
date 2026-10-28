@@ -54,7 +54,7 @@ Normal C++ verification matches the trusted keys and rejects price/root/cipher
 changes and changed flags. A candidate audit with 16 small blinder guesses finds
 no matches: this is a regression test, **not** an exhaustive or formal hiding
 proof. The native delivery consumer also passes with verified v2 refunds. See
-[recorded evidence](../evidence/2026-10-05-blinded-delivery-and-dictionary-attack.json).
+[recorded evidence](../../evidence/2026-10-05-blinded-delivery-and-dictionary-attack.json).
 
 ## Remaining disclosure and integration scope
 
@@ -77,7 +77,7 @@ decryptions in 742.670s with fabricated funding. Its public replay passes in
 103.898s, including rejection under the other valid compiled layout/VK. This
 does not establish funded-chain zero-price execution. Local per-ticket proof
 receipts are now demonstrated separately below; network delivery remains.
-See [zero-price evidence](../evidence/2026-10-05-zero-price-native-v2.json).
+See [zero-price evidence](../../evidence/2026-10-05-zero-price-native-v2.json).
 
 A **fresh funded v2 auction** now completes new local DKG escrow deposits, 12 signed
 receipts, three final-book endorsements, six fresh native row proofs, committed MPC,
@@ -87,7 +87,7 @@ price-20 book. Public-only certified replay passes in 100.871s and rejects ten
 certificate/book/recipient/layout changes. No escrow master key or maximum-bid list
 is read. All participants share one host on an owned isolated regtest; full
 public-testnet/NU7 wallet migration and funded zero-price remain separate gates.
-See [fresh funded evidence](../evidence/2026-10-05-fresh-funded-blinded-v2.json).
+See [fresh funded evidence](../../evidence/2026-10-05-fresh-funded-blinded-v2.json).
 
 The native integration uses delivered amounts to construct PCZT outputs, proves
 all six row-to-cmx bindings and verifies a second committed MPC proof tying the
@@ -137,7 +137,7 @@ in 2.114s/2.103s without native replay. Across these runs, 72 changed ticket/roo
 mask/blinder/domain/extra-status cases reject. All test outcomes are synthetic.
 Only the operator-side exporter reads all pads; recipient opening processes read
 their own receipt and public data. See
-[ticket receipt evidence](../evidence/2026-10-05-private-ticket-status-receipts.json).
+[ticket receipt evidence](../../evidence/2026-10-05-private-ticket-status-receipts.json).
 
 ```sh
 python3 scripts/check_ticket_receipts.py .local/BOOK_RUN .local/FLAGS_RUN \
@@ -178,7 +178,7 @@ substitutions and12 failed cross-recipient decryptions. Changing the serialized
 encrypted memo fails both native authorization and note AEAD. All fixtures/keys
 are local and synthetic; no node, network service or broadcast is used. Receiver
 registration, six-output memo integration and live wallet delivery remain open.
-See [memo evidence](../evidence/2026-10-05-encrypted-ticket-memos.json).
+See [memo evidence](../../evidence/2026-10-05-encrypted-ticket-memos.json).
 
 ```sh
 python3 scripts/check_receipt_transport.py .local/BOOK_RUN .local/FLAGS_RUN \
@@ -207,4 +207,4 @@ Four zero-price and four positive-price recipient commands pass in18.227s and
 reject. Invalid proof stops before the viewing key is read/copied or a memo is
 decrypted. An initial positive run stopped at the unchanged4GiB resource guard;
 its checkpoint is preserved and a new one passed after headroom returned. See
-[client evidence](../evidence/2026-10-05-recipient-memo-client.json).
+[client evidence](../../evidence/2026-10-05-recipient-memo-client.json).

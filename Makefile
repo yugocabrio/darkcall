@@ -1,4 +1,4 @@
-# Common entry points. Building the pinned tools: docs/reproduce.md.
+# Common entry points. Building the pinned tools: docs/run/reproduce.md.
 BUNDLE ?= testnet-auction-nu7-v2
 NARGO := .deps/noir-1.0.0-rc.2/nargo
 PY_TESTS := test_native_layout test_regtest_prepared_gate test_regtest_recovery test_regtest_resources test_review_kit

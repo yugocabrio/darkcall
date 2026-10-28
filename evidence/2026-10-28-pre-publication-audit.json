@@ -1,0 +1,33 @@
+{
+  "scope": "second pre-publication audit of the full git history (all refs), on the deadline day, before the repository is made public",
+  "date_utc": "2026-10-28",
+  "head": "7e6544f",
+  "refs_scanned": "main (166 commits, identical to origin/main) and a local, unpushed backup of the commits replaced by the Oct 26 history squash; those replaced commits can stay fetchable by hash on GitHub after a force push, so they were scanned too",
+  "commits_scanned": 216,
+  "blobs_scanned": 1809,
+  "method": "every reachable blob decoded and searched, whatever its size; every committed path name; every commit message; author and committer identities; the CI workflow; key names of every committed JSON file",
+  "patterns": [
+    "PEM private keys",
+    "GitHub, AWS, Slack, Google, Anthropic, OpenAI-style and Stripe live tokens",
+    "credentials inside URLs",
+    "Zcash secret key encodings (secret-…1) and viewing keys (uview, zxview)",
+    "secret-looking JSON fields (mnemonic, seed, spending_key, private_key, signing_share, key_package, password, api_key, tokens) and secret assignments",
+    "private, PCZT, witness, database, Prover.toml, .env, key, log and journal file names; .local/ and evidence/private/ paths",
+    "local home-directory paths and personal email addresses in file contents",
+    "private IP addresses"
+  ],
+  "findings": {
+    "keys_tokens_seeds_or_viewing_keys": "none in any version of any file or in any commit message",
+    "wallets_pczts_witnesses_journals_or_logs": "none ever committed; the .bin files are public testnet and regtest transactions inside the public bundles and vendored halo2 test vectors",
+    "json_key_names": "every match is a boolean or descriptive evidence flag (for example private_files_committed: false), not key material",
+    "ci_workflow": "uses no repository secrets; permissions contents: read",
+    "tracked_files_matching_ignore_rules": "none",
+    "largest_blob": "demo/media/v3/darkcall-demo-v3.mp4, 8.9 MiB",
+    "local_paths": "none at HEAD; a local home-directory path remains in older versions of four Oct 5 evidence files, tools/nu7-compat/README.md and the build notes",
+    "build_notes": "the running build notes removed on Oct 26 (STATUS.md, TASKS.md, AGENTS.md) remain readable in earlier commits; they hold build logs, local paths and notes about the shared development machine, no keys",
+    "commit_identity": "all commits carry the same author and committer, with a personal Gmail address that becomes public with the repository"
+  },
+  "not_in_git": ".local/ (wallets, the testnet bank, escrow key packages, PCZTs, witnesses, journals, private logs) and the hosted server's preserved escrow files; checked by file name and content patterns above",
+  "unchanged_since_2026_10_19": "the remaining items are history-only and can be removed only by rewriting history, which would change every commit hash the evidence cites; left to the author",
+  "previous_audit": "evidence/2026-10-19-pre-publication-audit.json"
+}

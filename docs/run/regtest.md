@@ -403,5 +403,5 @@ eight public substitutions13.929s; default funded demo and full HTTP replay pass
 Public bundle has no chain-inclusion proof; its admission authority is explicit
 and separate. Fixture book/keys/operators remain on one host. No public testnet,
 malicious MPC or advancing-chain/general post-broadcast recovery is demonstrated.
-See [canonical evidence](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json)
+See [canonical evidence](../../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json)
 and [demo](demo.md) for public-only and own-client reproduction.

@@ -8,13 +8,14 @@ witnesses) is never committed; records cite public txids and commit hashes.
 
 | Topic | Record | What it shows |
 | --- | --- | --- |
+| Public Zcash testnet | [2026-10-28-hosted-testnet-auction-price-30](../evidence/2026-10-28-hosted-testnet-auction-price-30.json) | A second new auction through the hosted live demo, at a fresh price of 30: deposit 7922fdc7…, settlement 9d0869fa… with six output bindings and 2-of-3 FROST, public check 16.6 s, a loser's 100-zatoshi refund decrypted |
 | Public Zcash testnet | [2026-10-27-hosted-testnet-auction](../evidence/2026-10-27-hosted-testnet-auction.json) | A new auction through the hosted live demo on a Linux server: deposit 76329a49…, settlement 03feb02b…, 24 min 16 s from the landing page; the five deployment fixes it needed |
 | Public Zcash testnet | [2026-10-19-public-testnet-settlement](../evidence/2026-10-19-public-testnet-settlement.json) | Two auctions funded, cleared and settled on standard public testnet (NU7), one of them in the browser for the video; deposits and settlement txids with blocks |
 | Public Zcash testnet | [2026-10-21-one-and-two-unit-settlement](../evidence/2026-10-21-one-and-two-unit-settlement.json) | One- and two-unit auctions with no circuit change; a one-unit auction settled on public testnet |
 | Verification | [2026-10-18-clean-room-linux-verification](../evidence/2026-10-18-clean-room-linux-verification.json) | A clean Linux container built from git archive verified every committed bundle with no secrets and refused a corrupted proof |
 | Verification | [2026-10-21-cheat-lab](../evidence/2026-10-21-cheat-lab.json) | A changed bid, price or payout proof each refused by the check it targets; an unchanged control passes |
 | Verification | [2026-10-21-halo2-params-cache](../evidence/2026-10-21-halo2-params-cache.json) | Public verification 106 s to 18 s by caching fixed Halo2 parameters behind a pinned digest; proofs cross-verified |
-| Verification | [2026-10-19-pre-publication-audit](../evidence/2026-10-19-pre-publication-audit.json) | Audit of the full git history for keys, wallets and private data before publication |
+| Verification | [2026-10-28-pre-publication-audit](../evidence/2026-10-28-pre-publication-audit.json) | Audit of the full git history, including commits replaced by the Oct 26 squash, for keys, wallets and private data before publication (first audit: [Oct 19](../evidence/2026-10-19-pre-publication-audit.json)) |
 | Recovery | [2026-10-24-cancel-refund](../evidence/2026-10-24-cancel-refund.json) | Operator C stopped; A and B refunded all four deposits, 2-of-3 FROST, without C's journal or key share (regtest) |
 | Recovery | [2026-10-05-dkg-funded-resumed-auction](../evidence/2026-10-05-dkg-funded-resumed-auction.json) | A funded DKG auction completed after an exact resume from the prepared transaction |
 | Privacy | [2026-10-05-blinded-delivery-and-dictionary-attack](../evidence/2026-10-05-blinded-delivery-and-dictionary-attack.json) | A refund-guessing attack on the first delivery commitments, reproduced, and the blinded v2 fix |
@@ -126,3 +127,6 @@ whose limits a later record lifts; the record says which.
 | 2026-10-21 | [one-and-two-unit-settlement](../evidence/2026-10-21-one-and-two-unit-settlement.json) | Can the existing four-bid protocol settle one- and two-unit auctions natively, with no circuit or proof change? |
 | 2026-10-24 | [cancel-refund](../evidence/2026-10-24-cancel-refund.json) | If an operator stops before settlement, can the other two refund every deposit without the stopped operator, and without any chance of also… |
 | 2026-10-27 | [hosted-testnet-auction](../evidence/2026-10-27-hosted-testnet-auction.json) | a new auction created, sealed, funded, cleared and settled through the hosted live demo (https://49-12-250-128.sslip.io) on standard public… |
+| 2026-10-28 | [hosted-testnet-auction-price-30](../evidence/2026-10-28-hosted-testnet-auction-price-30.json) | a second new auction run end to end through the hosted live demo on public Zcash testnet, at a fresh price of 30 |
+| 2026-10-28 | [video-auction-price-35](../evidence/2026-10-28-video-auction-price-35.json) | the auction filmed for the submission video: a new auction end to end through the hosted live demo on public Zcash testnet, at a fresh price of 35 |
+| 2026-10-28 | [pre-publication-audit](../evidence/2026-10-28-pre-publication-audit.json) | second pre-publication audit of the full git history (all refs), on the deadline day, before the repository is made public |

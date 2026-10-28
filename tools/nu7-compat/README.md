@@ -15,8 +15,8 @@ Existing2-of-3 DKG signs all four inputs without an escrow master spending key.
 Zebra accepts it, two controlled confirmations and six exact scans pass, four
 source notes are spent and three journals finalize. Default `./demo.sh` and
 `./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 --authority demo/authority/canonical-nu7-funded-v1.json`
-use that transaction. See [demo](../../docs/demo.md),
-[reproduction](../../docs/reproduce.md) and
+use that transaction. See [demo](../../docs/run/demo.md),
+[reproduction](../../docs/run/reproduce.md) and
 [funded evidence](../../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
 All parties remain on one host; controlled regtest is not public testnet.
 Public bundle verification does not prove chain inclusion or ZK funding.
@@ -35,7 +35,7 @@ Bank→DKG and a subsequent DKG-source spend both pass; the DKG spend reads no
 master escrow key. All participants still run locally, and the bank is an
 ordinary retained-key wallet. Scanner RPC/birthday remain trusted.
 
-See [commands and limits](../../docs/regtest.md) and
+See [commands and limits](../../docs/run/regtest.md) and
 [actual evidence](../../evidence/2026-10-05-nu7-funded-dkg-transfer.json).
 The new `regtest-deposits` and `regtest-admission` modes also pass fresh four-note
 funding,12 signed receipts and three final-book signatures after the declared
@@ -46,7 +46,7 @@ above consumes exactly those four notes; their journals are now Finalized.
 Do not reuse the historical source openings as fresh funding.
 The old node/SDK remain preserved. The shared off-chain source package adds only
 a local package to the root lock; the new SDK lock includes its existing primitive
-dependencies. See [pins/licenses](../../docs/dependencies.md).
+dependencies. See [pins/licenses](../../docs/run/dependencies.md).
 
 The native SDK is pinned to librustzcash
 `9c5705f56517c040c50f96d29f1ff15a9383f3e0`: protocol 0.11.0-pre.0, primitives

@@ -4,7 +4,7 @@
 Read-only. It looks for the pinned tool builds, the committed bundles, the
 cached Halo2 parameters, the local regtest node and free disk, and says what
 each missing piece is needed for. It exits non-zero only when the public
-verifier cannot run. Build instructions: docs/reproduce.md.
+verifier cannot run. Build instructions: docs/run/reproduce.md.
 """
 import os
 import pathlib
@@ -68,7 +68,7 @@ def main():
     line(shutil.which('docker') is not None, 'docker', '' if shutil.which('docker') else 'needed only for make verify-docker')
 
     print()
-    print('The public verifier cannot run: build the tools in docs/reproduce.md.' if blocking
+    print('The public verifier cannot run: build the tools in docs/run/reproduce.md.' if blocking
           else 'Ready: make verify checks the recorded testnet settlement with no secrets.')
     return 1 if blocking else 0
 

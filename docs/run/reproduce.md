@@ -35,7 +35,7 @@ This is a clean build environment on the same machine, not a second host.
 A later rebuild run alongside heavy host swap exhausted the disk. Build only
 with ample headroom and no concurrent proving, then remove the image with
 `docker image rm` when you are done. See
-[the record](../evidence/2026-10-18-clean-room-linux-verification.json).
+[the record](../../evidence/2026-10-18-clean-room-linux-verification.json).
 amd64 is supported by the Dockerfile but was not run.
 
 The first container builds also found two portability defects that a same-host
@@ -210,8 +210,8 @@ python3 -B scripts/settle_fresh_book.py .local/browser-rehearsal-SESSION/AUCTION
 The development demo has ignored fixture own-FVK exports and can open all four
 results. A source-only review kit cannot reproduce those openings without a new
 fixture. Do not distribute identities to turn the public-only page into an
-owner-client demo. `docs/demo.md` has a fresh synthetic regeneration procedure;
-`docs/regtest.md` has actual funded DKG/admission commands and their limitations.
+owner-client demo. `docs/run/demo.md` has a fresh synthetic regeneration procedure;
+`docs/run/regtest.md` has actual funded DKG/admission commands and their limitations.
 coNoir, plaindriver, input-tool, additional circuits and an isolated node are
 needed for regeneration; they are intentionally not required for public replay.
 

@@ -39,7 +39,7 @@ def inspect():
         except Exception as error:
             # No arbitrary subprocess output, credential URLs or artifact bytes.
             checks.append({'name':name,'passed':False,'error':type(error).__name__,
-                           'next':'See docs/reproduce.md; no private runtime input is needed'})
+                           'next':'See docs/run/reproduce.md; no private runtime input is needed'})
     check('python',lambda: {'version':platform.python_version()} if sys.version_info>=(3,10)
           else (_ for _ in ()).throw(RuntimeError('Python 3.10+ required')))
     def artifacts():

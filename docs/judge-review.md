@@ -1,142 +1,74 @@
 # DarkCall — review guide
 
-DarkCall runs sealed-bid, uniform-price auctions on Zcash. Bidders' maximum
-bids are secret-shared among three operators and are never reconstructed. The
-operators compute one clearing price with REP3 MPC and prove it with a coNoir
-zero-knowledge proof. One shielded NU7 transaction pays the seller and refunds
-every bidder; six Halo2 proofs bind its outputs to the proven result. Anyone can
-verify the public bundle without secrets. Each bidder decrypts only their own
-receipt memo.
+DarkCall proves a sealed-bid auction's clearing price without opening a single
+bid, and proves that the shielded Zcash payouts match it. This guide says what
+to check, in what order, and what each check proves.
 
-In short: blind auctions keep the bids secret but ask everyone to trust the
-result; reveal-to-audit designs open the bids, or publish a viewing key, to
-check it; single-prover ZK designs check the price without publishing the bids,
-but the prover reads them all. DarkCall keeps the bids secret and still lets anyone check, with no
-published viewing key and no operator reconstructing the bid book. The landing's
-"Auditable without revealing" block shows the three side by side, and two bid
-books (77 · 61 · 43 · 21 and 22 · 22 · 22 · 21) that give the same public
-result. The worked example is a newsletter selling three sponsor slots every
-month, where this month's ceilings would otherwise set next month's floor.
+## Five minutes, on the live demo
 
-## What to look at
+| Step | Where | What you see |
+| --- | --- | --- |
+| 1 | [Verify a real Zcash settlement](https://49-12-250-128.sslip.io/demo/settled) | The Oct 19 testnet auction from the video. As the public you see the price and the transaction, not the bids. As Bidder 01 you open only its own receipt: won, refund 79. |
+| 2 | **Re-run verification** | The four claims checked again with no secrets, in about 20 s: the price, the six payouts, the Zcash transaction and the signed book. |
+| 3 | **Try to cheat** | Change one accepted bid (2 s), claim a higher price, or swap two payout proofs. Each is refused by the check it targets; an unchanged control copy passes. |
+| 4 | **Inspect the proof trail** | The public data behind each claim (commitments, the signed root, the proof's public inputs, each payout row and its note commitment) with 35 consistency checks. |
 
-0. **The 2-minute video.** Watch [demo/media/v3/darkcall-demo-v3.mp4](../demo/media/v3/darkcall-demo-v3.mp4)
-   (narration and captions in [narration.md](../demo/media/v3/narration.md)).
-   Screen recordings, not stills: a new auction sealed, certified and cleared
-   live by REP3 and coNoir (reserve 10, so no deposits and no chain), then the
-   Oct 19 testnet settlement (`be1157c8…a1c8ad67`) with frames captured during
-   that run, its receipts opened, its public check run and two cheats refused
-   on this machine. Each sped-up span states the real time it covers; the
-   record is [demo/media/v3/manifest.json](../demo/media/v3/manifest.json).
-1. **A settled auction, checked by you.** [https://49-12-250-128.sslip.io/demo/settled](https://49-12-250-128.sslip.io/demo/settled). It
-   is the settlement in the video, and bidders are numbered as they were there.
-   Start as the public (what you can and cannot see), switch to a bidder to open
-   only that bidder's receipt, and read the four verified claims (recorded on
-   Oct 19; re-run them here in about 20 s). **Inspect the proof trail** under
-   them shows the public data behind each claim, read from the committed bundle
-   only: the four bid commitments and the root the three operators signed, the
-   auction proof's public inputs (price 21, sold 3, terms), each payout row's
-   hash, action and cmx with its Halo2 proof, and the transaction, with 35
-   consistency checks recomputed between those files and the transaction bytes. Then try to cheat, starting with
-   **Change one accepted bid** (a few seconds): each change is made to a copy of
-   the recorded bundle and checked by the same fixed verifiers
-   (`scripts/cheat_lab.py`), and counts as refused only when the check it
-   targets refuses it. The result sets the original bundle beside your changed
-   copy and shows the exact field, before and after. In the latest run an unchanged control copy passed in 19 s
-   and all three changes were refused: the bid in 2 s (signed book), a higher
-   price in 19 s (auction proofs), two swapped payout proofs in 16 s (output
-   bindings); the first recorded run took 2, 102 and 97 s, before the fixed
-   Halo2 parameters were cached:
-   [evidence/2026-10-21-cheat-lab.json](../evidence/2026-10-21-cheat-lab.json),
-   [rerun](../evidence/2026-10-21-halo2-params-cache.json).
-2. **The product, live.** `./demo.sh --chain testnet` (or `./demo.sh` on the
-   local regtest), then **Run an auction**. Create an
-   auction, seal four demo bids, certify the book, then **Fund on Zcash**: real
-   deposits and chain admission over the same root. Clear it by MPC and open
-   your result. Then **Settle on Zcash**: one shielded transaction,
-   bound output by output to the result and publicly verified. Finally open
-   your own shielded receipt and try the tamper check. Plan on about 25 minutes
-   on public testnet (funding about 10, settlement about 12; 24 min 16 s on the
-   live demo on Oct 27, [record](../evidence/2026-10-27-hosted-testnet-auction.json)) or about 20 on the
-   local regtest; **See a settled auction** shows a finished run at once. See
-   [local-rehearsal.md](local-rehearsal.md).
-3. **Verification without secrets.** The easiest route is
-   `scripts/docker_verify.sh`. It builds every pinned tool from committed source
-   in a clean Linux container and verifies every committed bundle plus a tamper
-   case for each. On Oct 19 a fresh image built from commit `a7f67bd` verified
-   all seven committed bundles, including both public-testnet runs.
-   On a host with the [pinned tools](reproduce.md), run:
+## With more time
 
-   ```sh
-   ./verify.sh --funded demo/artifacts/browser-auction-nu7-v2 \
-     --authority demo/authority/browser-auction-nu7-v2.json
-   ./verify.sh --funded demo/artifacts/canonical-nu7-funded-v1 \
-     --authority demo/authority/canonical-nu7-funded-v1.json
-   ```
-
-   The first bundle comes from an auction that was created, funded, cleared and
-   settled by clicking through the browser on October 19 (tx `e3ffa436…`). The
-   second is the earlier recorded settlement with fixture bids. Two more
-   browser-created books from October 18 are also committed:
-   `browser-auction-nu7-v1` and `fresh-book-nu7-v1`.
-   Each check takes about 20 seconds once the tools are built and the fixed
-   Halo2 parameters cached (the first check computes them, about 1.5 minutes
-   more). It needs no wallet key, PCZT, bid, mask or witness.
-4. **Exact records.** See
-   [fresh-book settlement](../evidence/2026-10-18-fresh-book-native-settlement.json)
-   and [recorded settlement](../evidence/2026-10-05-canonical-funded-nu7-memo-auction.json).
-
-The authority file is separate, caller-trusted configuration. A verifier must
-obtain an auction's admission authority independently and never trust keys
-chosen by the bundle producer. Manifest hashes detect packaging damage; the
-pinned native, Halo2 and C++ verifiers establish validity.
+- **The 2-minute video**, [darkcall-demo-v3.mp4](../demo/media/v3/darkcall-demo-v3.mp4):
+  a live auction cleared on secret shares, then the testnet settlement checked
+  and two cheats refused. Sped-up spans state the real time they cover.
+- **Run a new auction**, [on the live demo](https://49-12-250-128.sslip.io/demo/run),
+  about 25 minutes on public testnet: create it, seal four demo bids, fund,
+  clear, open your result, settle, open your receipt. Done end to end on Oct 27
+  in 24 min 16 s ([record](../evidence/2026-10-27-hosted-testnet-auction.json)).
+- **The protocol, stage by stage**, [design/protocol.md](design/protocol.md): who
+  sends what, who learns what, what is proven and what is trusted, from the sealed
+  bid to the public check.
+- **Verify on your own machine.** `make verify` with the pinned tools
+  ([reproduce.md](run/reproduce.md)), about 20 s per bundle. Or
+  `scripts/docker_verify.sh`, which rebuilds every pinned tool from committed
+  source in a clean Linux container and verifies every bundle (Docker, 15 GB
+  free, about 20 minutes the first time). Neither needs a key, bid or witness.
 
 ## What each proof establishes
 
 | Check | Proven by | Fails when |
 | --- | --- | --- |
 | A bid commitment matches its three REP3 share pairs | Client Noir proof (`bid_input`), checked at admission | Shares or commitment changed |
-| The accepted book is the four admitted tickets | Three operator signatures over the root; root equals the MPC statement's root | A ticket is omitted, swapped or added |
+| The accepted book is the four admitted tickets | Three operator signatures over the root; the root equals the MPC statement's root | A ticket is omitted, swapped or added |
 | The clearing price, winners and refunds follow the rule | REP3 coNoir proofs (`delivery_flags4`, `settlement_poseidon4`) over committed bids | Price, plan or a row changes |
 | Each transaction output pays the planned amount to the planned recipient | Six Halo2 output-binding proofs against native note commitments | Amount, recipient, cmx or action index changes |
 | The transaction is authorized and valid | Native Zcash proof and 2-of-3 FROST signatures | Any byte of the effects changes |
-| A bidder's own result is authentic | Fixed receipt proof plus memo opening with the bidder's own viewing key | The receipt proof or the book is altered; this is refused before the key is read |
+| A bidder's own result is authentic | Fixed receipt proof, then the memo opened with the bidder's own viewing key | The receipt proof or the book is altered; refused before the key is read |
+
+A verifier takes the operators' admission keys from a source it trusts, never
+from the bundle itself.
 
 ## What is assumed
 
 | Question | Answer |
 | --- | --- |
-| Can one operator see the bid list? | No, under REP3 with at most one semi-honest corrupt operator. Two colluding operators can reconstruct it. |
-| Can operators see who won? | Yes. Operators learn refunds and winners and hold the escrow's viewing key, which shows them fixed-size deposits, not bids. None alone rebuilds the bid book. When only one bid loses, knowing the winners tells them that bid was the price: in the four-bid, three-unit demo, the loser's 21. |
-| Who needs a viewing key? | Verifiers need none: the public check uses proofs, signatures and the transaction only. Each bidder opens its own receipt with its own key and hands it to no one. Only the three operators hold the escrow's viewing key. No viewing key is published. |
-| What does the public price reveal? | The clearing price is the highest losing bid, or the reserve, so that one bid value is public by the rules. Who placed it, and every other bid, is not. |
-| Can operators drop a bid? | The public check cannot rule it out: it proves the result over the operators' signed book, not that every funded bid made it in. Each bidder holds all three operators' signed acceptance and checks that its own ticket is in the book, so dropping an accepted bid is visible to that bidder, not to outsiders. |
-| Who controls funds? | Two of three DKG FROST signers. No master key exists, but two colluders can move funds, and bidders have no unilateral refund. |
-| What if an operator stops? | Clearing needs all three, so the auction cannot settle. The other two refund every deposit (10,100 of 15,100 zatoshi; the rest is the network fee) in one transaction signed 2-of-3 with FROST, without the stopped operator's key share or journal. Each operator journal reserves one transaction for good, so a refunded book cannot also be settled. On the run page of a regtest server (`./demo.sh`, not `--chain testnet`): **Simulate operator C stopping**. Shown on regtest: [record](../evidence/2026-10-24-cancel-refund.json). If two stop, the deposits wait in escrow. |
-| Is funding proven publicly? | No. Operator signatures attest funding. The bundle proves transaction validity and output binding, not chain inclusion. |
-| Who saw the demo bids? | Only each bidder's own client, which builds the proof and shares; here it is a localhost service. Operators receive shares and proofs. All operators, the test bank and the bidder wallets run on one machine. |
-| Can bidders deposit from their own wallets? | The deposit format already allows it: one ordinary Ironwood payment of budget plus fee to the escrow address, with a memo binding it to the ticket (network, auction conditions, ticket ID, a fresh client key and a nonce), which a ZIP-321 request can carry. In this demo one local test wallet builds all four deposits in one transaction, and admission from separate wallets or transactions is not exercised. No consumer wallet sent NU7 testnet transactions yet: at the Oct 15 Arborist call, Zallet's NU7 testnet release and Zodl's NU7 support were still in preparation. |
-| Public testnet or mainnet? | Public testnet, never mainnet. Two auctions settled on standard Zcash testnet (NU7) on Oct 19, one of them entirely from the browser (`be1157c8…a1c8ad67`, block 4,518,315); testnet chain data came from one trusted lightwalletd provider. Earlier runs used an isolated Zebra 7.0.0-rc.0 NU7 regtest with controlled confirmations. |
-| How large can an auction be? | The committed circuits have four bid slots and six outputs, and the native settlement path supports the default terms: 3 units, budget 100, reserve 0 or 20. Four is the circuit size, not a speed limit. Measured: gate counts of all three coNoir circuits at 4, 8 and 16 bids, and the joint clearing proof at 8 bids in 6.5 s (3.1 s at 4). Estimated, not run: the clearing proof at 16 bids (about 30 s) and full settlements above four bids, which the per-payout Halo2 bindings dominate (N + 2 rows, about 80–150 s each here, one after another; a Linux host with enough memory can prove them in parallel, not yet measured). [Record](../evidence/2026-10-21-bid-scaling.json). |
+| Can one operator see the bid list? | No, with at most one semi-honest corrupt operator (REP3). Two colluding operators can rebuild it. |
+| Can operators see who won? | Yes. They learn winners and refunds, never the bid book. When only one bid loses, as in the demo, the winners tell them that bid was the price. |
+| Who needs a viewing key? | Verifiers, none. Each bidder, its own, for its own receipt. The three operators, the escrow's, to admit deposits. None is published. |
+| What does the public price reveal? | It is the highest losing bid or the reserve, so that one value is public by the rule. Who placed it is not. |
+| Can operators drop a bid? | The public check cannot rule it out. Each bidder holds all three operators' signed acceptance and sees if its ticket is missing; outsiders cannot. |
+| Who controls the funds? | Any two of three DKG FROST signers. No master key exists; bidders have no unilateral refund. |
+| What if an operator stops? | The other two refund every deposit, signing 2-of-3 without the stopped operator's key share, and a refunded book cannot also settle. Shown on regtest only ([record](../evidence/2026-10-24-cancel-refund.json)); not offered on public testnet, including the live demo. If two stop, the deposits wait in escrow. |
+| Is funding proven publicly? | No. Operator signatures attest it, and the bundle does not prove chain inclusion. |
+| Who saw the demo bids? | Each bidder's client, which in this demo runs on the same host as the operators. Operators receive only shares and proofs. One test wallet funds all four tickets. |
+| Can bidders use their own wallets? | The deposit format allows it: one Ironwood payment with a memo binding it to the ticket, which a ZIP-321 request can carry. No consumer wallet sends NU7 testnet transactions yet. |
+| Testnet or mainnet? | Public testnet only, read through one trusted lightwalletd provider. |
+| How large can an auction be? | Four bid slots and six outputs. Clearing was measured at 8 bids in 6.5 s; larger settlements are estimated, dominated by one Halo2 binding per payout ([record](../evidence/2026-10-21-bid-scaling.json)). |
 
-An earlier delivery commitment let a public observer guess refunds from two
-candidates. We reproduced the attack, withdrew the claim and replaced it with
-independently blinded v2 commitments:
-[attack and fix](operator-fill-delivery.md).
+## Records to start with
 
-## Performance (shared 16 GiB M1, single host)
+- [Oct 27 · live website on public testnet](../evidence/2026-10-27-hosted-testnet-auction.json): a new auction through the hosted demo.
+- [Oct 19 · public testnet](../evidence/2026-10-19-public-testnet-settlement.json): the auction in the video.
+- [Oct 21 · cheat lab](../evidence/2026-10-21-cheat-lab.json): each dishonest change refused by its own check.
+- [Oct 18–19 · clean-room Linux](../evidence/2026-10-18-clean-room-linux-verification.json): every bundle verified from source with no secrets.
+- [Attack and fix](design/operator-fill-delivery.md): an earlier refund delivery leaked to a two-candidate guess; we reproduced it and replaced it.
 
-| Scope | Time |
-| --- | --- |
-| Browser REP3 clearing incl. proof + verification | ~9 s |
-| Fund on Zcash, regtest (deposits, chain admission, certificate; 120 s window) | about 2 min (121 s) |
-| Fund on Zcash, public testnet (10-minute window plus real confirmations) | about 10 min (612 s) |
-| Native settlement of a fresh browser book, uninterrupted | about 10 min with the fixed Halo2 parameters cached (561 s one unit, 623 s three units, regtest, Oct 21); 885–951 s regtest and 984–1122 s testnet before |
-| Settle → publicly verified | about 10 min on regtest with the parameters cached (580 s one unit, 642 s three units); before: 998–1024 s regtest, 1091–1224 s testnet (testnet not re-measured) |
-| Public-only verification | about 20–30 s (18–32 s); about 2 min on a machine's first check, which computes the fixed Halo2 parameters once |
-| Own receipt opening | ~3 s |
-
-Settlement on public Zcash testnet is demonstrated (two auctions, Oct 19). No
-independent operator hosts, second-machine reproduction or mainnet settlement
-is claimed. Repository publication, deployment and contest submission
-are the author's decisions.
+Every record: [evidence index](evidence-index.md). The full trust model and
+measurements: [DarkCall in detail](details.md).
