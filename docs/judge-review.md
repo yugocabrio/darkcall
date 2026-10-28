@@ -15,9 +15,10 @@ to check, in what order, and what each check proves.
 
 ## With more time
 
-- **The 2-minute video**, [darkcall-demo-v3.mp4](../demo/media/v3/darkcall-demo-v3.mp4):
-  a live auction cleared on secret shares, then the testnet settlement checked
-  and two cheats refused. Sped-up spans state the real time they cover.
+- **The 2-minute video**, [on YouTube](https://youtu.be/qfdpmaNw9wU):
+  a new auction run on public testnet through the live site, then the Oct 19
+  settlement checked and a cheat refused. Sped-up spans state the real time
+  they cover.
 - **Run a new auction**, [on the live demo](https://49-12-250-128.sslip.io/demo/run),
   about 25 minutes on public testnet: create it, seal four demo bids, fund,
   clear, open your result, settle, open your receipt. Done end to end on Oct 27
